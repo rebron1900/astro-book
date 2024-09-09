@@ -13,15 +13,15 @@ jobs:
 
 
     env:
-      GHOST_API_URL: '$GHOST_API_URL'
-      GHOST_API_KEY: '$GHOST_API_KEY'
+      GHOST_API_URL: $GHOST_API_URL
+      GHOST_API_KEY: $GHOST_API_KEY
       GHOST_API_POST_LIMIT: $GHOST_API_POST_LIMIT
-      NEODB_URL: '$NEODB_URL'
-      FLUX_URL: '$FLUX_URL'
-      FLUX_KEY: '$FLUX_KEY'
-      CND_URL: '$CND_URL'
-      MAP_URL: '$MAP_URL'
-      MAP_KEY: '$MAP_KEY'
+      NEODB_URL: $NEODB_URL
+      FLUX_URL: $FLUX_URL
+      FLUX_KEY: $FLUX_KEY
+      CND_URL: $CND_URL
+      MAP_URL: $MAP_URL
+      MAP_KEY: $MAP_KEY
 
     steps:
       - name: Install dependencies
