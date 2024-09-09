@@ -5,7 +5,7 @@ export async function GET(context) {
     return rss({
         title: settings.title,
         description: settings.description,
-        site: Astro.site,
+        site: import.meta.env.BASE_URL,
         follow_challenge: {
             feedId: '41342818716915717',
             userId: '41422934521641984'
