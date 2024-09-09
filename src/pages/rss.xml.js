@@ -5,7 +5,11 @@ export async function GET(context) {
     return rss({
         title: settings.title,
         description: settings.description,
-        site: settings.url,
+        site: Astro.site,
+        follow_challenge: {
+            feedId: '41342818716915717',
+            userId: '41422934521641984'
+        },
         items: postsAll.map((item) => ({
             title: item.title,
             description: item.excerpt,
