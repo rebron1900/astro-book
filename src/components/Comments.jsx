@@ -10,7 +10,7 @@ const Comments = () => {
             el: commentinfo.el, // 绑定元素的 Selector
             server: commentinfo.server, // 后端地址
             site: commentinfo.name, // 你的站点名
-            pageKey: document.location.pathname + '/'
+            pageKey: document.location.pathname
         });
     });
 
