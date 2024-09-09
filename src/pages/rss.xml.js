@@ -1,11 +1,12 @@
 import rss from '@astrojs/rss';
 import { settings, postsAll } from '../data/ghost-store.ts';
 
+const site = import.meta.env.SITE;
 export async function GET(context) {
     return rss({
         title: settings.title,
         description: settings.description,
-        site: import.meta.env.BASE_URL,
+        site: site,
         follow_challenge: {
             feedId: '41342818716915717',
             userId: '41422934521641984'
