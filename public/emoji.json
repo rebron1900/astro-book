@@ -1,0 +1,1045 @@
+{
+    "name": "Fluent 3D",
+    "type": "image",
+    "items": [
+        {
+            "key": "嘿嘿",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%98%BF%E5%98%BF.gif!gif",
+            "icon": "😁"
+        },
+        {
+            "key": "哈哈",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%93%88%E5%93%88.gif!gif",
+            "icon": "😄"
+        },
+        {
+            "key": "大笑",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%A4%A7%E7%AC%91.gif!gif",
+            "icon": "🤣"
+        },
+        {
+            "key": "嘻嘻",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%98%BB%E5%98%BB.gif!gif",
+            "icon": "😁"
+        },
+        {
+            "key": "斜眼笑",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%96%9C%E7%9C%BC%E7%AC%91.gif!gif"
+        },
+        {
+            "key": "苦笑",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%8B%A6%E7%AC%91.gif!gif",
+            "icon": "😅"
+        },
+        {
+            "key": "笑得满地打滚",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%AC%91%E5%BE%97%E6%BB%A1%E5%9C%B0%E6%89%93%E6%BB%9A.gif!gif",
+            "icon": "🤣"
+        },
+        {
+            "key": "笑哭了",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%AC%91%E5%93%AD%E4%BA%86.gif!gif",
+            "icon": "🤣"
+        },
+        {
+            "key": "呵呵",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%91%B5%E5%91%B5.gif!gif",
+            "icon": "🙂"
+        },
+        {
+            "key": "倒脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%80%92%E8%84%B8.gif!gif",
+            "icon": "🙃"
+        },
+        {
+            "key": "眨眼",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%9C%A8%E7%9C%BC.gif!gif",
+            "icon": "😉"
+        },
+        {
+            "key": "羞涩微笑",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%BE%9E%E6%B6%A9%E5%BE%AE%E7%AC%91.gif!gif",
+            "icon": "😊"
+        },
+        {
+            "key": "微笑天使",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BE%AE%E7%AC%91%E5%A4%A9%E4%BD%BF.gif!gif",
+            "icon": "😇"
+        },
+        {
+            "key": "喜笑颜开",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%96%9C%E7%AC%91%E9%A2%9C%E5%BC%80.gif!gif",
+            "icon": "🥰"
+        },
+        {
+            "key": "花痴",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%8A%B1%E7%97%B4.gif!gif",
+            "icon": "😍"
+        },
+        {
+            "key": "好崇拜哦",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%A5%BD%E5%B4%87%E6%8B%9C%E5%93%A6.gif!gif",
+            "icon": "🤩"
+        },
+        {
+            "key": "飞吻",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%A3%9E%E5%90%BB.gif!gif",
+            "icon": "😘"
+        },
+        {
+            "key": "亲亲",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%BA%B2%E4%BA%B2.gif!gif",
+            "icon": "😘"
+        },
+        {
+            "key": "微笑",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BE%AE%E7%AC%91.gif!gif",
+            "icon": "😊"
+        },
+        {
+            "key": "羞涩亲亲",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%BE%9E%E6%B6%A9%E4%BA%B2%E4%BA%B2.gif!gif",
+            "icon": "😚"
+        },
+        {
+            "key": "微笑亲亲",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BE%AE%E7%AC%91%E4%BA%B2%E4%BA%B2.gif!gif",
+            "icon": "😙"
+        },
+        {
+            "key": "含泪的笑脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%90%AB%E6%B3%AA%E7%9A%84%E7%AC%91%E8%84%B8.gif!gif",
+            "icon": "🥲"
+        },
+        {
+            "key": "好吃",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%A5%BD%E5%90%83.gif!gif",
+            "icon": "😋"
+        },
+        {
+            "key": "吐舌",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%90%90%E8%88%8C.gif!gif",
+            "icon": "😛"
+        },
+        {
+            "key": "单眼吐舌",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%8D%95%E7%9C%BC%E5%90%90%E8%88%8C.gif!gif",
+            "icon": "😜"
+        },
+        {
+            "key": "眯眼吐舌",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%9C%AF%E7%9C%BC%E5%90%90%E8%88%8C.gif!gif",
+            "icon": "😝"
+        },
+        {
+            "key": "滑稽",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%BB%91%E7%A8%BD.gif!gif"
+        },
+        {
+            "key": "发财",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%8F%91%E8%B4%A2.gif!gif",
+            "icon": "🤑"
+        },
+        {
+            "key": "抱抱",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%8A%B1%E6%8A%B1.gif!gif",
+            "icon": "🤗"
+        },
+        {
+            "key": "不说",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%B8%8D%E8%AF%B4.gif!gif",
+            "icon": "🤐"
+        },
+        {
+            "key": "安静的脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%AE%89%E9%9D%99%E7%9A%84%E8%84%B8.gif!gif",
+            "icon": "🤫"
+        },
+        {
+            "key": "想一想",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%83%B3%E4%B8%80%E6%83%B3.gif!gif",
+            "icon": "🤔"
+        },
+        {
+            "key": "闭嘴",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%97%AD%E5%98%B4.gif!gif",
+            "icon": "🤐"
+        },
+        {
+            "key": "挑眉",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%8C%91%E7%9C%89.gif!gif",
+            "icon": "🤨"
+        },
+        {
+            "key": "冷漠",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%86%B7%E6%BC%A0.gif!gif"
+        },
+        {
+            "key": "无语",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%97%A0%E8%AF%AD.gif!gif",
+            "icon": "😅"
+        },
+        {
+            "key": "沉默",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%B2%89%E9%BB%98.gif!gif",
+            "icon": "😶"
+        },
+        {
+            "key": "得意",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BE%97%E6%84%8F.gif!gif",
+            "icon": "😏"
+        },
+        {
+            "key": "不高兴",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%B8%8D%E9%AB%98%E5%85%B4.gif!gif",
+            "icon": "🙁"
+        },
+        {
+            "key": "翻白眼",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%BF%BB%E7%99%BD%E7%9C%BC.gif!gif",
+            "icon": "🙄"
+        },
+        {
+            "key": "呲牙咧嘴",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%91%B2%E7%89%99%E5%92%A7%E5%98%B4.gif!gif"
+        },
+        {
+            "key": "说谎",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%AF%B4%E8%B0%8E.gif!gif",
+            "icon": "🤥"
+        },
+        {
+            "key": "松了口气",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%9D%BE%E4%BA%86%E5%8F%A3%E6%B0%94.gif!gif",
+            "icon": "😌"
+        },
+        {
+            "key": "沉思",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%B2%89%E6%80%9D.gif!gif"
+        },
+        {
+            "key": "困",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%9B%B0.gif!gif",
+            "icon": "😪"
+        },
+        {
+            "key": "流口水",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%B5%81%E5%8F%A3%E6%B0%B4.gif!gif",
+            "icon": "🤤"
+        },
+        {
+            "key": "睡着了",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%9D%A1%E7%9D%80%E4%BA%86.gif!gif",
+            "icon": "😴"
+        },
+        {
+            "key": "感冒",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%84%9F%E5%86%92.gif!gif",
+            "icon": "😷"
+        },
+        {
+            "key": "发烧",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%8F%91%E7%83%A7.gif!gif",
+            "icon": "🤒"
+        },
+        {
+            "key": "受伤",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%8F%97%E4%BC%A4.gif!gif",
+            "icon": "🤕"
+        },
+        {
+            "key": "恶心",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%81%B6%E5%BF%83.gif!gif",
+            "icon": "🤢"
+        },
+        {
+            "key": "呕吐",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%91%95%E5%90%90.gif!gif",
+            "icon": "🤮"
+        },
+        {
+            "key": "打喷嚏",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%89%93%E5%96%B7%E5%9A%8F.gif!gif",
+            "icon": "🤧"
+        },
+        {
+            "key": "脸发烧",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%84%B8%E5%8F%91%E7%83%A7.gif!gif",
+            "icon": "🥵"
+        },
+        {
+            "key": "冷脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%86%B7%E8%84%B8.gif!gif",
+            "icon": "🥶"
+        },
+        {
+            "key": "头晕眼花",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%A4%B4%E6%99%95%E7%9C%BC%E8%8A%B1.gif!gif",
+            "icon": "😵"
+        },
+        {
+            "key": "头晕目旋",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%A4%B4%E6%99%95%E7%9B%AE%E7%9C%A9.gif!gif"
+        },
+        {
+            "key": "晕头转向",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%99%95%E5%A4%B4%E8%BD%AC%E5%90%91.gif!gif",
+            "icon": "😵"
+        },
+        {
+            "key": "爆炸头",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%88%86%E7%82%B8%E5%A4%B4.gif!gif",
+            "icon": "🤯"
+        },
+        {
+            "key": "牛仔帽脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%89%9B%E4%BB%94%E5%B8%BD%E8%84%B8.gif!gif",
+            "icon": "🤠"
+        },
+        {
+            "key": "聚会笑脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%81%9A%E4%BC%9A%E7%AC%91%E8%84%B8.gif!gif"
+        },
+        {
+            "key": "伪装的脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%BC%AA%E8%A3%85%E7%9A%84%E8%84%B8.gif!gif",
+            "icon": "🥸"
+        },
+        {
+            "key": "墨镜笑脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%A2%A8%E9%95%9C%E7%AC%91%E8%84%B8.gif!gif",
+            "icon": "😎"
+        },
+        {
+            "key": "书呆子脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%B9%A6%E5%91%86%E5%AD%90%E8%84%B8.gif!gif",
+            "icon": "🤓"
+        },
+        {
+            "key": "带单片眼镜的脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%B8%A6%E5%8D%95%E7%89%87%E7%9C%BC%E9%95%9C%E7%9A%84%E8%84%B8.gif!gif"
+        },
+        {
+            "key": "困扰",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%9B%B0%E6%89%B0.gif!gif",
+            "icon": "😕"
+        },
+        {
+            "key": "担心",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%8B%85%E5%BF%83.gif!gif",
+            "icon": "😟"
+        },
+        {
+            "key": "微微不满",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BE%AE%E5%BE%AE%E4%B8%8D%E6%BB%A1.gif!gif",
+            "icon": "🙁"
+        },
+        {
+            "key": "不满",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%B8%8D%E6%BB%A1.gif!gif",
+            "icon": "🙁"
+        },
+        {
+            "key": "吃惊",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%90%83%E6%83%8A.gif!gif",
+            "icon": "😮"
+        },
+        {
+            "key": "缄默",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%BC%84%E9%BB%98.gif!gif"
+        },
+        {
+            "key": "震惊",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%9C%87%E6%83%8A.gif!gif",
+            "icon": "😲"
+        },
+        {
+            "key": "脸红",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%84%B8%E7%BA%A2.gif!gif",
+            "icon": "😊"
+        },
+        {
+            "key": "恳求的脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%81%B3%E6%B1%82%E7%9A%84%E8%84%B8.gif!gif"
+        },
+        {
+            "key": "啊",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%95%8A.gif!gif",
+            "icon": "😲"
+        },
+        {
+            "key": "极度痛苦",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%9E%81%E5%BA%A6%E7%97%9B%E8%8B%A6.gif!gif"
+        },
+        {
+            "key": "害怕",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%AE%B3%E6%80%95.gif!gif",
+            "icon": "😨"
+        },
+        {
+            "key": "冷汗",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%86%B7%E6%B1%97.gif!gif",
+            "icon": "😅"
+        },
+        {
+            "key": "失望但如释重负",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%A4%B1%E6%9C%9B%E4%BD%86%E5%A6%82%E9%87%8A%E9%87%8D%E8%B4%9F.gif!gif",
+            "icon": "😥"
+        },
+        {
+            "key": "哭",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%93%AD.gif!gif",
+            "icon": "😢"
+        },
+        {
+            "key": "放声大哭",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%94%BE%E5%A3%B0%E5%A4%A7%E5%93%AD.gif!gif",
+            "icon": "😭"
+        },
+        {
+            "key": "吓死了",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%90%93%E6%AD%BB%E4%BA%86.gif!gif",
+            "icon": "😱"
+        },
+        {
+            "key": "困惑",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%9B%B0%E6%83%91.gif!gif"
+        },
+        {
+            "key": "痛苦",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%97%9B%E8%8B%A6.gif!gif"
+        },
+        {
+            "key": "失望",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%A4%B1%E6%9C%9B.gif!gif",
+            "icon": "😞"
+        },
+        {
+            "key": "汗",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%B1%97.gif!gif",
+            "icon": "😅"
+        },
+        {
+            "key": "呼气",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%91%BC%E6%B0%94.gif!gif",
+            "icon": "😮‍💨"
+        },
+        {
+            "key": "累死了",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%B4%AF%E6%AD%BB%E4%BA%86.gif!gif"
+        },
+        {
+            "key": "累",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%B4%AF.gif!gif"
+        },
+        {
+            "key": "打哈欠",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%89%93%E5%93%88%E6%AC%A0.gif!gif",
+            "icon": "🥱"
+        },
+        {
+            "key": "傲慢",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%82%B2%E6%85%A2.gif!gif",
+            "icon": "😤"
+        },
+        {
+            "key": "怒火中烧",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%80%92%E7%81%AB%E4%B8%AD%E7%83%A7.gif!gif",
+            "icon": "😡"
+        },
+        {
+            "key": "生气",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%94%9F%E6%B0%94.gif!gif",
+            "icon": "😡"
+        },
+        {
+            "key": "嘴上带有符号脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%98%B4%E4%B8%8A%E5%B8%A6%E6%9C%89%E7%AC%A6%E5%8F%B7%E7%9A%84%E8%84%B8.gif!gif"
+        },
+        {
+            "key": "晃动的脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%99%83%E5%8A%A8%E7%9A%84%E8%84%B8.gif!gif"
+        },
+        {
+            "key": "歪嘴的脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%AD%AA%E5%98%B4%E7%9A%84%E8%84%B8.gif!gif"
+        },
+        {
+            "key": "虚线的脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%99%9A%E7%BA%BF%E7%9A%84%E8%84%B8.gif!gif"
+        },
+        {
+            "key": "云中的脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%BA%91%E4%B8%AD%E7%9A%84%E8%84%B8.gif!gif",
+            "icon": "😶‍🌫️"
+        },
+        {
+            "key": "恶魔微笑",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%81%B6%E9%AD%94%E5%BE%AE%E7%AC%91.gif!gif",
+            "icon": "😈"
+        },
+        {
+            "key": "生气的恶魔",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%94%9F%E6%B0%94%E7%9A%84%E6%81%B6%E9%AD%94.gif!gif",
+            "icon": "👿"
+        },
+        {
+            "key": "头骨",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%A4%B4%E9%AA%A8.gif!gif",
+            "icon": "💀"
+        },
+        {
+            "key": "骷髅",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%AA%B7%E9%AB%85.gif!gif",
+            "icon": "💀"
+        },
+        {
+            "key": "大便",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%A4%A7%E4%BE%BF.gif!gif",
+            "icon": "💩"
+        },
+        {
+            "key": "小丑脸",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%B0%8F%E4%B8%91%E8%84%B8.gif!gif",
+            "icon": "🤡"
+        },
+        {
+            "key": "食人魔",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%A3%9F%E4%BA%BA%E9%AD%94.gif!gif"
+        },
+        {
+            "key": "小妖精",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%B0%8F%E5%A6%96%E7%B2%BE.gif!gif"
+        },
+        {
+            "key": "鬼",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%AC%BC.gif!gif",
+            "icon": "👻"
+        },
+        {
+            "key": "外星人",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%A4%96%E6%98%9F%E4%BA%BA.gif!gif",
+            "icon": "👽"
+        },
+        {
+            "key": "外星怪物",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%A4%96%E6%98%9F%E6%80%AA%E7%89%A9.gif!gif",
+            "icon": "👾"
+        },
+        {
+            "key": "机器人",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%9C%BA%E5%99%A8%E4%BA%BA.gif!gif",
+            "icon": "🤖"
+        },
+        {
+            "key": "大笑的猫",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%A4%A7%E7%AC%91%E7%9A%84%E7%8C%AB.gif!gif"
+        },
+        {
+            "key": "微笑的猫",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BE%AE%E7%AC%91%E7%9A%84%E7%8C%AB.gif!gif",
+            "icon": "😸"
+        },
+        {
+            "key": "笑出眼泪的猫",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%AC%91%E5%87%BA%E7%9C%BC%E6%B3%AA%E7%9A%84%E7%8C%AB.gif!gif",
+            "icon": "😹"
+        },
+        {
+            "key": "花痴的猫",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%8A%B1%E7%97%B4%E7%9A%84%E7%8C%AB.gif!gif",
+            "icon": "😻"
+        },
+        {
+            "key": "奸笑的猫",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%A5%B8%E7%AC%91%E7%9A%84%E7%8C%AB.gif!gif"
+        },
+        {
+            "key": "亲亲猫",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%BA%B2%E4%BA%B2%E7%8C%AB.gif!gif",
+            "icon": "😽"
+        },
+        {
+            "key": "疲倦的猫",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%96%B2%E5%80%A6%E7%9A%84%E7%8C%AB.gif!gif"
+        },
+        {
+            "key": "哭泣的猫",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%96%B2%E5%80%A6%E7%9A%84%E7%8C%AB.gif!gif",
+            "icon": "😿"
+        },
+        {
+            "key": "生气的猫",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%94%9F%E6%B0%94%E7%9A%84%E7%8C%AB.gif!gif",
+            "icon": "😾"
+        },
+        {
+            "key": "非礼勿视",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%9D%9E%E7%A4%BC%E5%8B%BF%E8%A7%86.gif!gif",
+            "icon": "🙈"
+        },
+        {
+            "key": "非礼勿听",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%9D%9E%E7%A4%BC%E5%8B%BF%E5%90%AC.gif!gif",
+            "icon": "🙉"
+        },
+        {
+            "key": "非礼勿言",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%9D%9E%E7%A4%BC%E5%8B%BF%E8%A8%80.gif!gif",
+            "icon": "🙊"
+        },
+        {
+            "key": "情书",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%83%85%E4%B9%A6.gif!gif",
+            "icon": "💌"
+        },
+        {
+            "key": "心中箭了",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BF%83%E4%B8%AD%E7%AE%AD%E4%BA%86.gif!gif",
+            "icon": "💘"
+        },
+        {
+            "key": "系有缎带的心",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%B3%BB%E6%9C%89%E7%BC%8E%E5%B8%A6%E7%9A%84%E5%BF%83.gif!gif",
+            "icon": "💝"
+        },
+        {
+            "key": "闪亮的心",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%97%AA%E4%BA%AE%E7%9A%84%E5%BF%83.gif!gif",
+            "icon": "💖"
+        },
+        {
+            "key": "搏动的心",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%90%8F%E5%8A%A8%E7%9A%84%E5%BF%83.gif!gif",
+            "icon": "💗"
+        },
+        {
+            "key": "心跳",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BF%83%E8%B7%B3.gif!gif",
+            "icon": "💓"
+        },
+        {
+            "key": "心火烧",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BF%83%E7%81%AB%E7%83%A7.gif!gif"
+        },
+        {
+            "key": "舞动的心",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%88%9E%E5%8A%A8%E7%9A%84%E5%BF%83.gif!gif",
+            "icon": "💞"
+        },
+        {
+            "key": "两颗心",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%B8%A4%E9%A2%97%E5%BF%83.gif!gif",
+            "icon": "💕"
+        },
+        {
+            "key": "心叹号",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BF%83%E5%8F%B9%E5%A5%BD.gif!gif",
+            "icon": "❣️"
+        },
+        {
+            "key": "心碎",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BF%83%E7%A2%8E.gif!gif",
+            "icon": "💔"
+        },
+        {
+            "key": "受伤的心",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%8F%97%E4%BC%A4%E7%9A%84%E5%BF%83.gif!gif",
+            "icon": "❤️‍🩹"
+        },
+        {
+            "key": "红心",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%BA%A2%E5%BF%83.gif!gif",
+            "icon": "♥️"
+        },
+        {
+            "key": "一百分",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%B8%80%E7%99%BE%E5%88%86.gif!gif",
+            "icon": "💯"
+        },
+        {
+            "key": "睡着",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%9D%A1%E7%9D%80.gif!gif",
+            "icon": "😴"
+        },
+        {
+            "key": "挥手",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%8C%A5%E6%89%8B.gif!gif",
+            "icon": "👋"
+        },
+        {
+            "key": "立起的手背",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%AB%8B%E8%B5%B7%E7%9A%84%E6%89%8B%E8%83%8C.gif!gif"
+        },
+        {
+            "key": "手掌",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%89%8B%E6%8E%8C.gif!gif",
+            "icon": "✋"
+        },
+        {
+            "key": "举起手",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%B8%BE%E8%B5%B7%E6%89%8B.gif!gif"
+        },
+        {
+            "key": "瓦肯举手礼",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%93%A6%E8%82%AF%E4%B8%BE%E6%89%8B%E7%A4%BC.gif!gif",
+            "icon": "🖖"
+        },
+        {
+            "key": "OK",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%BA%A4%E5%8F%89%E7%9A%84%E6%89%8B%E6%8C%87.gif!gif",
+            "icon": "👌"
+        },
+        {
+            "key": "捏手指",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%8D%8F%E6%89%8B%E6%8C%87.gif!gif",
+            "icon": "🤌"
+        },
+        {
+            "key": "捏合的手势",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%8D%8F%E5%90%88%E7%9A%84%E6%89%8B%E5%8A%BF.gif!gif"
+        },
+        {
+            "key": "胜利手势",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%83%9C%E5%88%A9%E6%89%8B%E5%8A%BF.gif!gif"
+        },
+        {
+            "key": "交叉的手指",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%BA%A4%E5%8F%89%E7%9A%84%E6%89%8B%E6%8C%87.gif!gif",
+            "icon": "🤞"
+        },
+        {
+            "key": "爱你的手势",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%88%B1%E4%BD%A0%E7%9A%84%E6%89%8B%E5%8A%BF.gif!gif",
+            "icon": "🤟"
+        },
+        {
+            "key": "摇滚",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%91%87%E6%BB%9A.gif!gif",
+            "icon": "🤘"
+        },
+        {
+            "key": "给我打电话",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%BB%99%E6%88%91%E6%89%93%E7%94%B5%E8%AF%9D.gif!gif",
+            "icon": "🤙"
+        },
+        {
+            "key": "反手食指向左指",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%8F%8D%E6%89%8B%E9%A3%9F%E6%8C%87%E5%90%91%E5%B7%A6%E6%8C%87.gif!gif",
+            "icon": "👈"
+        },
+        {
+            "key": "反手食指向右指",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%8F%8D%E6%89%8B%E9%A3%9F%E6%8C%87%E5%90%91%E5%8F%B3%E6%8C%87.gif!gif",
+            "icon": "👉"
+        },
+        {
+            "key": "反手食指向上指",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%8F%8D%E6%89%8B%E9%A3%9F%E6%8C%87%E5%90%91%E4%B8%8A%E6%8C%87.gif!gif",
+            "icon": "👆"
+        },
+        {
+            "key": "反手食指向下指",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%8F%8D%E6%89%8B%E9%A3%9F%E6%8C%87%E5%90%91%E4%B8%8B%E6%8C%87.gif!gif",
+            "icon": "👇"
+        },
+        {
+            "key": "竖中指",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%AB%96%E4%B8%AD%E6%8C%87.gif!gif",
+            "icon": "🖕"
+        },
+        {
+            "key": "食指向上指",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%A3%9F%E6%8C%87%E5%90%91%E4%B8%8A%E6%8C%87.gif!gif"
+        },
+        {
+            "key": "拇指向上",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%8B%87%E6%8C%87%E5%90%91%E4%B8%8A.gif!gif",
+            "icon": "👍"
+        },
+        {
+            "key": "拇指向下",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%8B%87%E6%8C%87%E5%90%91%E4%B8%8B.gif!gif"
+        },
+        {
+            "key": "手掌向上",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%89%8B%E6%8E%8C%E5%90%91%E4%B8%8A.gif!gif"
+        },
+        {
+            "key": "举起拳头",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%B8%BE%E8%B5%B7%E6%8B%B3%E5%A4%B4.gif!gif",
+            "icon": "✊"
+        },
+        {
+            "key": "出拳",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%87%BA%E6%8B%B3.gif!gif",
+            "icon": "👊"
+        },
+        {
+            "key": "朝左的拳头",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%9C%9D%E5%B7%A6%E7%9A%84%E6%8B%B3%E5%A4%B4.gif!gif",
+            "icon": "🤛"
+        },
+        {
+            "key": "朝右的拳头",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%9C%9D%E5%8F%B3%E7%9A%84%E6%8B%B3%E5%A4%B4.gif!gif",
+            "icon": "🤜"
+        },
+        {
+            "key": "鼓掌",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%BC%93%E6%8E%8C.gif!gif",
+            "icon": "👏"
+        },
+        {
+            "key": "举双手",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%B8%BE%E5%8F%8C%E6%89%8B.gif!gif",
+            "icon": "🙌"
+        },
+        {
+            "key": "张开双手",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BC%A0%E5%BC%80%E5%8F%8C%E6%89%8B.gif!gif",
+            "icon": "👐"
+        },
+        {
+            "key": "掌心向上托起",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%8E%8C%E5%BF%83%E5%90%91%E4%B8%8A%E6%89%98%E8%B5%B7.gif!gif",
+            "icon": "🤲"
+        },
+        {
+            "key": "握手",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%8F%A1%E6%89%8B.gif!gif",
+            "icon": "🤝"
+        },
+        {
+            "key": "心形手势",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BF%83%E5%BD%A2%E6%89%8B%E5%8A%BF.gif!gif"
+        },
+        {
+            "key": "双手合十",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%8F%8C%E6%89%8B%E5%90%88%E5%8D%81.gif!gif",
+            "icon": "🙏"
+        },
+        {
+            "key": "写字",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%86%99%E5%AD%97.gif!gif",
+            "icon": "✍️"
+        },
+        {
+            "key": "涂指甲油",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%B6%82%E6%8C%87%E7%94%B2%E6%B2%B9.gif!gif",
+            "icon": "💅"
+        },
+        {
+            "key": "肌肉",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%82%8C%E8%82%89.gif!gif",
+            "icon": "💪"
+        },
+        {
+            "key": "腿",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%85%BF.gif!gif",
+            "icon": "🦵"
+        },
+        {
+            "key": "脚",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%84%9A.gif!gif",
+            "icon": "🦶"
+        },
+        {
+            "key": "耳朵",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%80%B3%E6%9C%B5.gif!gif",
+            "icon": "👂"
+        },
+        {
+            "key": "戴助听器的耳朵",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%88%B4%E5%8A%A9%E5%90%AC%E5%99%A8%E7%9A%84%E8%80%B3%E6%9C%B5.gif!gif",
+            "icon": "🦻"
+        },
+        {
+            "key": "鼻子",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%BC%BB%E5%AD%90.gif!gif",
+            "icon": "👃"
+        },
+        {
+            "key": "脑",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%84%91.gif!gif",
+            "icon": "🧠"
+        },
+        {
+            "key": "心脏器官",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BF%83%E8%84%8F%E5%99%A8%E5%AE%98.gif!gif",
+            "icon": "🫀"
+        },
+        {
+            "key": "肺",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%82%BA.gif!gif",
+            "icon": "🫁"
+        },
+        {
+            "key": "牙齿",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%89%99%E9%BD%BF.gif!gif",
+            "icon": "🦷"
+        },
+        {
+            "key": "骨头",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%AA%A8%E5%A4%B4.gif!gif",
+            "icon": "🦴"
+        },
+        {
+            "key": "双眼",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%8F%8C%E7%9C%BC.gif!gif"
+        },
+        {
+            "key": "眼睛",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%9C%BC%E7%9D%9B.gif!gif",
+            "icon": "👀"
+        },
+        {
+            "key": "舌头",
+            "val": "https://cdn.1900.live/fluent-emoji/%E8%88%8C%E5%A4%B4.gif!gif",
+            "icon": "👅"
+        },
+        {
+            "key": "嘴",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%98%B4.gif!gif",
+            "icon": "👄"
+        },
+        {
+            "key": "太阳",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%A4%AA%E9%98%B3.gif!gif",
+            "icon": "☀️"
+        },
+        {
+            "key": "微笑的太阳",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BE%AE%E7%AC%91%E7%9A%84%E5%A4%AA%E9%98%B3.gif!gif",
+            "icon": "🌞"
+        },
+        {
+            "key": "满月",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%BB%A1%E6%9C%88.gif!gif",
+            "icon": "🌕"
+        },
+        {
+            "key": "微笑的月亮",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BE%AE%E7%AC%91%E7%9A%84%E6%9C%88%E4%BA%AE.gif!gif",
+            "icon": "🌝"
+        },
+        {
+            "key": "微笑的朔月",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BE%AE%E7%AC%91%E7%9A%84%E6%9C%94%E6%9C%88.gif!gif",
+            "icon": "🌚"
+        },
+        {
+            "key": "有环行星",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%9C%89%E7%8E%AF%E8%A1%8C%E6%98%9F.gif!gif",
+            "icon": "🪐"
+        },
+        {
+            "key": "星星",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%98%9F%E6%98%9F.gif!gif",
+            "icon": "⭐"
+        },
+        {
+            "key": "闪亮的星星",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%97%AA%E4%BA%AE%E7%9A%84%E6%98%9F%E6%98%9F.gif!gif",
+            "icon": "🌟"
+        },
+        {
+            "key": "彩虹",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BD%A9%E8%99%B9.gif!gif",
+            "icon": "🌈"
+        },
+        {
+            "key": "彗星",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BD%97%E6%98%9F.gif!gif",
+            "icon": "☄️"
+        },
+        {
+            "key": "高压",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%AB%98%E5%8E%8B.gif!gif"
+        },
+        {
+            "key": "火焰",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%81%AB%E7%84%B0.gif!gif",
+            "icon": "🔥"
+        },
+        {
+            "key": "水滴",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%B0%B4%E6%BB%B4.gif!gif",
+            "icon": "💦"
+        },
+        {
+            "key": "雪花",
+            "val": "https://cdn.1900.live/fluent-emoji/%E9%9B%AA%E8%8A%B1.gif!gif",
+            "icon": "❄️"
+        },
+        {
+            "key": "南瓜灯",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%8D%97%E7%93%9C%E7%81%AF.gif!gif",
+            "icon": "🎃"
+        },
+        {
+            "key": "拉炮彩带",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%8B%89%E7%82%AE%E5%BD%A9%E5%B8%A6.gif!gif"
+        },
+        {
+            "key": "水晶球",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%B0%B4%E6%99%B6%E7%90%83.gif!gif",
+            "icon": "🔮"
+        },
+        {
+            "key": "泰迪熊",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%B3%B0%E8%BF%AA%E7%86%8A.gif!gif",
+            "icon": "🧸"
+        },
+        {
+            "key": "炸弹",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%82%B8%E5%BC%B9.gif!gif",
+            "icon": "💣"
+        },
+        {
+            "key": "电话听筒",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%94%B5%E8%AF%9D%E5%90%AC%E7%AD%92.gif!gif",
+            "icon": "📞"
+        },
+        {
+            "key": "开闪光灯的相机",
+            "val": "https://cdn.1900.live/fluent-emoji/%E5%BC%80%E9%97%AA%E5%85%89%E7%81%AF%E7%9A%84%E7%9B%B8%E6%9C%BA.gif!gif",
+            "icon": "📸"
+        },
+        {
+            "key": "线圈日历",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%BA%BF%E5%9C%88%E6%97%A5%E5%8E%86.gif!gif",
+            "icon": "🗓"
+        },
+        {
+            "key": "三角旗",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%B8%89%E8%A7%92%E6%97%97.gif!gif",
+            "icon": "🚩"
+        },
+        {
+            "key": "交叉旗",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%BA%A4%E5%8F%89%E6%97%97.gif!gif",
+            "icon": "🎌"
+        },
+        {
+            "key": "终点旗",
+            "val": "https://cdn.1900.live/fluent-emoji/%E7%BB%88%E7%82%B9%E6%97%97.gif!gif",
+            "icon": "🏁"
+        },
+        {
+            "key": "举黑旗",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%B8%BE%E9%BB%91%E6%97%97.gif!gif",
+            "icon": "🏴"
+        },
+        {
+            "key": "举白旗",
+            "val": "https://cdn.1900.live/fluent-emoji/%E4%B8%BE%E7%99%BD%E6%97%97.gif!gif",
+            "icon": "🏳"
+        },
+        {
+            "key": "海盗旗",
+            "val": "https://cdn.1900.live/fluent-emoji/%E6%B5%B7%E7%9B%97%E6%97%97.gif!gif",
+            "icon": "🏴‍☠️"
+        }
+    ]
+}

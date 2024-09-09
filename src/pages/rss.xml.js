@@ -9,7 +9,7 @@ export async function GET(context) {
         site: site,
         items: postsAll.slice(0, 30).map((item) => ({
             title: item.title,
-            description: item.html,
+            description: sanitizeHtml(item.html),
             link: `/${item.slug}/`,
             pubDate: item.published_at
         }))
