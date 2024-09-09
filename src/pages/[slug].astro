@@ -1,0 +1,69 @@
+---
+import { pages, postsAll, settings } from '../data/ghost-store.js';
+import tocGen from '../utils/toc.js';
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostMeta from '../components/PostMeta.astro';
+import Head from '../components/Head.astro';
+import Pagination from '../components/Pagination.astro';
+import Comments from '../components/Comments.jsx';
+import Toc from '../components/Toc.astro';
+import Relitu from '../components/Relitu.jsx';
+import TocTagloop from '../components/TocTagloop.astro';
+import Header from '../components/Header.astro';
+import Top from '../components/Top.astro';
+import Menu from '../components/Menu.astro';
+import CodeSlot from '../components/CodeSlot.astro';
+import { Markup } from 'astro-remote';
+import RemotePicture from '../components/RemotePicture.astro';
+
+export async function getStaticPaths() {
+    const posts = postsAll.concat(pages);
+    const postCount = posts.length;
+    return posts.map((post, index) => ({
+        params: { slug: post.slug },
+        props: {
+            post,
+            type: post.type,
+            nextPost: index + 1 !== postCount ? posts[index + 1] : null,
+            prevPost: index !== 0 ? posts[index - 1] : null
+        }
+    }));
+}
+
+const { post, prevPost, nextPost } = Astro.props;
+
+const tocHtml = tocGen(await post.html);
+---
+
+<BaseLayout post={post}>
+    <Head slot="head" site={settings} />
+
+    <Header slot="header" title={post.title} />
+
+    <Menu slot="menu" />
+    <article slot="content" class="markdown book-article">
+        <h1 class="book-title">
+            {post.title}
+        </h1>
+        <PostMeta post={post} isFeature={true} />
+        {post.html && <Markup content={post.html} sanitize={{ allowComponents: true }} components={{ pre: CodeSlot, img: RemotePicture }} />}
+    </article>
+
+    {post.type == 'post' && <Pagination slot="pagination" prev={prevPost} next={nextPost} />}
+
+    <Comments slot="comments" client:load />
+
+    <Relitu slot="relitu" />
+
+    <Fragment slot="toc">
+        {!tocHtml && <TocTagloop />}
+
+        <Toc html={tocHtml} isToc={tocHtml && true} />
+        <Top />
+    </Fragment>
+
+    <Fragment slot="h-toc">
+        <Toc />
+    </Fragment>
+</BaseLayout>

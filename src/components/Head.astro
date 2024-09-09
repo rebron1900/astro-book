@@ -1,0 +1,97 @@
+---
+import { ViewTransitions } from 'astro:transitions';
+
+const { post, site } = Astro.props;
+
+// Open Graph Meta Tags
+let og_title = post?.title ? `${post.title} - ${site.title} | ${site.description}` : `${site.title} | ${site.description}`;
+
+let og_Text = post?.title
+    ? encodeURIComponent(`${post.title} - ${site.title} | ${site.description}`)
+    : encodeURIComponent(`${site.title} | ${site.description}`);
+
+let og_img = post?.feature_image || site.cover_image;
+let og_desc = '';
+// c= post?.excerpt
+//     ? post.excerpt
+//           .replace(/<\/?[^>]+(>|$)/g, '')
+//           .trim()
+//           .replace(/"/g, '')
+//     : site.description.replace(/<\/?[^>]+(>|$)/g, '').trim();
+---
+
+<title>{site.title}</title>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content={og_desc} />
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40" />
+<meta name="color-scheme" content="light dark" />
+
+<!-- Facebook Meta Tags -->
+<meta property="og:url" content={site.url} />
+<meta property="og:type" content="website" />
+<meta property="og:title" content={og_title} />
+<meta property="og:description" content={og_desc} />
+<meta property="og:image" />
+
+<!-- Twitter Meta Tags -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:domain" content={site.url} />
+<meta property="twitter:url" content={site.url} />
+<meta name="twitter:title" content={og_title} />
+<meta name="twitter:description" content={og_desc} />
+<meta name="twitter:image" />
+
+<ViewTransitions />
+
+<link rel="sitemap" type="application/xml" title={`${site.title}的站点地图`} href="/sitemap.xml" />
+<link rel="alternate" type="application/rss+xml" title={`${site.title}的Rss`} href="/rss.xml" />
+<!-- <link rel="manifest" href="/manifest.json" /> -->
+<link rel="icon" href="/assets/img/favicon.png" />
+<link rel="canonical" href={Astro.request.url} />
+
+<script>
+    import mediumZoom from 'medium-zoom';
+    import 'medium-zoom/dist/style.css';
+
+    const changeTheme = () => {
+        const theme = localStorage.theme;
+        if (localStorage.theme !== 'auto') {
+            document.documentElement.classList.add(theme);
+            document.body.setAttribute('data-theme', theme);
+
+            localStorage.theme = theme;
+            localStorage.themetype = localStorage.themetype || 'light';
+        } else {
+            const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            localStorage.themetype = prefersDarkScheme ? 'dark' : 'light';
+        }
+
+        localStorage.name = localStorage.name || '自适应';
+        localStorage.theme = theme || 'auto';
+    };
+
+    document.addEventListener('DOMContentLoaded', () => changeTheme());
+    7;
+
+    document.addEventListener('astro:page-load', () => {
+        mediumZoom('.markdown img', {
+            background: 'rgba(0,0,0,0.75)'
+        });
+
+        changeTheme();
+
+        // Scroll to top function
+
+        document.getElementById('scrollToTop').addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    });
+</script>
+
+<Fragment set:html={site.codeinjection_head} />

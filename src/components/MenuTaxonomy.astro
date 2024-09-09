@@ -1,0 +1,20 @@
+---
+import config from '../data/config';
+---
+
+<ul>
+    <li class="book-section-flat">
+        <span>专栏</span>
+        <ul>
+            {
+                config.taxonomy.map((item) => (
+                    <li>
+                        <a href={item.slug} title={item.desc}>
+                            {item.name}
+                        </a>
+                    </li>
+                ))
+            }
+        </ul>
+    </li>
+</ul>

@@ -1,16 +1,27 @@
 import { defineConfig } from 'astro/config';
-import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
-import tailwind from '@astrojs/tailwind';
+import solidJs from '@astrojs/solid-js';
+
+import expressiveCode from 'astro-expressive-code';
 
 // https://astro.build/config
 export default defineConfig({
-    site: 'https://example.com',
+    site: 'https://1900.live',
     integrations: [
-        mdx(),
         sitemap(),
-        tailwind({
-            applyBaseStyles: false
+        solidJs({
+            devtools: true
+        }),
+        expressiveCode({
+            // You can set configuration options here
+            themes: ['dracula', 'github-light'],
+            styleOverrides: {
+                // You can also override styles
+                borderRadius: '0.5rem',
+                frames: {
+                    shadowColor: '#124'
+                }
+            }
         })
     ]
 });

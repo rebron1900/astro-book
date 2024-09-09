@@ -1,0 +1,59 @@
+---
+import probe from 'probe-image-size';
+
+export interface Props {
+    src: string;
+    alt?: string;
+    classNames?: string;
+    widths: number[];
+    sizes: string;
+}
+
+const { src, alt, classNames, widths, sizes } = Astro.props;
+
+async function getImageMetadata(src) {
+    try {
+        const metadata = await probe(encodeURI(src));
+        return metadata; // 返回获取到的元数据
+    } catch (error) {
+        console.error('获取图片元数据时出错:', error);
+        return { width: 0, height: 0 }; // 或者返回一个默认值
+    }
+}
+
+const generateImageSrcset = (image: string, isLocal = false) => {
+    image = encodeURI(image);
+    let imageSrcset = [];
+    const imageWidths = [200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800];
+
+    if (image.match(import.meta.env.CND_URL)) {
+        // If image is local, determine the width of the image and then generate
+        // markup for images at sizes smaller than the image
+        imageWidths.forEach((width) => {
+            let img = image.endsWith('.gif') == true ? image : `${image}!${width}w ${width}w`;
+            imageSrcset.push(img);
+        });
+    } else if (image.match('unsplash.com')) {
+        imageWidths.forEach((width) => {
+            const updatedUrl = image.replace(/(w=)[^\&]+/, '$1' + width);
+            imageSrcset.push(`${updatedUrl} ${width}w`);
+        });
+    } else {
+        imageSrcset.push(image);
+    }
+
+    return imageSrcset.join(', ');
+};
+---
+
+<img class={classNames ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />
+
+<!-- 
+<Picture
+  class={classNames ?? ''}
+  src={src}
+  widths={widths}
+  aspectRatio={metadata.width / metadata.height}
+  sizes={sizes}
+  alt={alt ?? ''}
+/> -->

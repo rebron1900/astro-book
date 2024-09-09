@@ -1,0 +1,18 @@
+---
+import type { Post } from '@ts-ghost/content-api';
+import PostMeta from './PostMeta.astro';
+
+const { page } = Astro.props;
+---
+
+{
+    page.data.map((post: Post) => (
+        <article class="markdown book-post">
+            <h2 class="book-title">
+                <a href={`/${post.slug}`}>{post.title}</a>
+            </h2>
+            <PostMeta post={post} />
+            <p>{post.excerpt.replace(/<[^>]+>/g, '').substring(0, 150)}...</p>
+        </article>
+    ))
+}

@@ -1,18 +1,18 @@
 ---
-import siteConfig from '../data/site-config';
+import { getSvg } from '../utils/help';
+
+const { title } = Astro.props;
 ---
 
-<header class="w-full max-w-3xl mx-auto mb-12 sm:mb-16">
-    {
-        siteConfig.logo && siteConfig.logo?.src ? (
-            <a href="/">
-                <img src={siteConfig.logo.src} alt={siteConfig.logo.alt || ''} class="max-h-12" />
-            </a>
-        ) : (
-            <a class="font-serif text-2xl leading-tight font-medium text-theme-foreground sm:text-4xl" href="/">
-                {siteConfig.title}
-            </a>
-        )
-    }
-    {siteConfig.subtitle && <p class="text-sm leading-tight mt-1">{siteConfig.subtitle}</p>}
-</header>
+<div class="flex align-center justify-between">
+    <label for="menu-control">
+        <Fragment set:html={getSvg('menu')} />
+    </label>
+
+    <strong> {title} </strong>
+
+    <label for="toc-control">
+        <!-- 这里是 toc 图标的 SVG 内容 -->
+        <Fragment set:html={getSvg('toc')} />
+    </label>
+</div>

@@ -1,0 +1,28 @@
+---
+import Brand from './Brand.astro';
+import MenuNav from './MenuNav.astro';
+import MenuOther from './MenuOther.astro';
+import MenuSearch from './MenuSearch';
+import MenuTaxonomy from './MenuTaxonomy.astro';
+import MenuTheme from './MenuTheme';
+
+const { site } = Astro.props;
+---
+
+<nav>
+    <Brand />
+    <MenuSearch client:load />
+    <MenuTheme client:load />
+    <MenuNav />
+    <MenuTaxonomy />
+    <MenuOther />
+    <!--
+        {% include "partials/menu-theme" %}
+        {% include "partials/menu-hugo" %}
+        {% include "partials/menu-taxonomy" %}
+        {% include "partials/menu-other" %}
+        --
+    />
+</nav>
+-->
+</nav>

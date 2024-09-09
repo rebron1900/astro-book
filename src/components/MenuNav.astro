@@ -1,0 +1,20 @@
+---
+import { settings } from '../data/ghost-store';
+---
+
+<ul class="book-menu-nav">
+    <li class="book-section-flat">
+        <span>路线牌</span>
+        <ul>
+            {
+                settings?.navigation.map((item) => (
+                    <li>
+                        <a class={Astro.url.pathname == item.url ? '1' : '1'} href={item.url}>
+                            {item.label}
+                        </a>
+                    </li>
+                ))
+            }
+        </ul>
+    </li>
+</ul>

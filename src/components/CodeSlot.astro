@@ -1,0 +1,17 @@
+---
+import { Code } from 'astro-expressive-code/components';
+import * as cheerio from 'cheerio';
+
+const html = await Astro.slots.render('default');
+const $ = cheerio.load(html);
+
+// 选择第一个 <code> 标签
+const codetag = $('code').first();
+
+const code = codetag.text(); // 获取 <code> 标签中的文本内容
+const checkLang = codetag.attr('class') ? codetag.attr('class').slice(9) : undefined;
+
+const lang = checkLang ? checkLang : 'plaintext';
+---
+
+<Code code={code} lang={lang} />

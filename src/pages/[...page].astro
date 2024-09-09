@@ -1,0 +1,46 @@
+---
+import type { GetStaticPathsOptions } from 'astro';
+import type { Settings } from '@ts-ghost/content-api';
+import { postsAll, settings } from '../data/ghost-store';
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Head from '../components/Head.astro';
+import List from '../components/List.astro';
+import Pagination from '../components/Pagination.astro';
+import Toc from '../components/Toc.astro';
+import Relitu from '../components/Relitu';
+import TocTagloop from '../components/TocTagloop.astro';
+import Header from '../components/Header.astro';
+import Top from '../components/Top.astro';
+import Menu from '../components/Menu.astro';
+
+export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
+    return paginate(postsAll, {
+        pageSize: 10
+    });
+}
+
+const { page } = Astro.props;
+---
+
+<BaseLayout>
+    <Head slot="head" site={settings} />
+
+    <Header slot="header" title={(settings as Settings).title} />
+
+    <Menu slot="menu" />
+
+    <List slot="content" page={page} isFeature={false} />
+
+    <Pagination slot="pagination" page={page} />
+
+    <Fragment slot="toc">
+        <Relitu />
+        <TocTagloop />
+        <Top />
+    </Fragment>
+
+    <Fragment slot="h-toc">
+        <Toc />
+    </Fragment>
+</BaseLayout>

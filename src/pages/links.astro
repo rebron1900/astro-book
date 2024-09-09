@@ -1,0 +1,59 @@
+---
+import { pages, settings, flux } from '../data/ghost-store.js';
+
+import RemotePicture from '../components/RemotePicture.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Head from '../components/Head.astro';
+import Comments from '../components/Comments.jsx';
+import Toc from '../components/Toc.astro';
+import Relitu from '../components/Relitu.jsx';
+import TocTagloop from '../components/TocTagloop.astro';
+import Header from '../components/Header.astro';
+import Top from '../components/Top.astro';
+import Menu from '../components/Menu.astro';
+
+const post = pages.find((post) => post.slug == 'links');
+---
+
+<BaseLayout post={post}>
+    <Head slot="head" site={settings} />
+
+    <Header slot="header" title={post.title} />
+    <Menu slot="menu" />
+
+    <article slot="content" class="markdown book-article">
+        <h1 class="book-title">{post.title}</h1>
+        <Fragment set:html={post.html} />
+
+        <div class="book-columns flex flex-wrap">
+            {
+                flux.map((item) => (
+                    <div class="flex-even markdown-inner">
+                        <h3 class="ellipsis">
+                            <a href={item.feed.site_url} target="_blank">
+                                {item.feed.title}
+                            </a>
+                        </h3>
+                        <div>
+                            <span>{new Date(item.published_at).toLocaleDateString()}</span>
+                        </div>
+                        <div class="ellipsis">
+                            <a href={item.url} target="_blank">
+                                {item.title}
+                            </a>
+                        </div>
+                    </div>
+                ))
+            }
+        </div>
+    </article>
+    <Comments slot="comments" client:load />
+
+    <Fragment slot="toc">
+        <Top />
+    </Fragment>
+
+    <Fragment slot="h-toc">
+        <Toc />
+    </Fragment>
+</BaseLayout>

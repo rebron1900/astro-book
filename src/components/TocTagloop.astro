@@ -1,0 +1,25 @@
+---
+import { tags } from '../data/ghost-store';
+---
+
+<nav>
+    <ul>
+        <li class="book-section-flat">
+            <strong>Tags</strong>
+            <ul>
+                {
+                    tags.map(
+                        (item: any) =>
+                            item.visibility == 'public' &&
+                            item.count.posts >= 3 && (
+                                <li class="flex justify-between">
+                                    <a href={`/tag/${item.slug}`}>#{item.name}</a>
+                                    <span>{item.count.posts}</span>
+                                </li>
+                            )
+                    )
+                }
+            </ul>
+        </li>
+    </ul>
+</nav>

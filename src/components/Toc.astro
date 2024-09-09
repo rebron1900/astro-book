@@ -1,0 +1,22 @@
+---
+const { isToc, html } = Astro.props;
+---
+
+<nav id="TableOfContents">
+    <nav>
+        <ul>
+            {
+                isToc && (
+                        <strong>TOC</strong>
+                        <Fragment set:html={html} />
+                )
+            }
+
+            <li>
+                <strong>
+                    <a href="#join-comments">加入评论</a>
+                </strong>
+            </li>
+        </ul>
+    </nav>
+</nav>

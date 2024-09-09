@@ -1,0 +1,18 @@
+---
+import config from '../data/config';
+---
+
+<ul class="book-copy">
+    <li class="book-section-flat">
+        <span>其他</span>
+        <ul>
+            {
+                config.footer.map((item) => (
+                    <li>
+                        <Fragment set:html={item.html} />
+                    </li>
+                ))
+            }
+        </ul>
+    </li>
+</ul>

@@ -1,0 +1,75 @@
+---
+import { postsAll, pages, settings } from '../data/ghost-store';
+
+import { Code } from 'astro:components';
+import { groupByDate } from '../utils/help';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Head from '../components/Head.astro';
+import Comments from '../components/Comments';
+import Toc from '../components/Toc.astro';
+import Relitu from '../components/Relitu';
+import TocTagloop from '../components/TocTagloop.astro';
+import Header from '../components/Header.astro';
+import Top from '../components/Top.astro';
+import Menu from '../components/Menu.astro';
+
+const page = pages.find((post) => post.slug == 'archives');
+const groupdata = groupByDate(postsAll);
+---
+
+<BaseLayout>
+    <Head slot="head" site={settings} />
+
+    <Header slot="header" title={page.title} />
+    <Menu slot="menu" />
+
+    <div slot="content" class="markdown book-article">
+        <h1 class="book-title">{page.title}</h1>
+        <Fragment set:html={page.html} />
+
+        <Code code={`const foo = 'bar';`} lang="js" />
+        <div>
+            {
+                groupdata.map((post) => (
+                    <div key={post.year}>
+                        <h2>{post.year}</h2>
+                        {post.data.map((month) => (
+                            <div key={month.month}>
+                                <h3 id={`${post.year}-${month.month}`}>
+                                    {month.month.toLocaleString('default', { month: 'long' })} / {month.month}
+                                </h3>
+                                {month.data && month.data.length > 0 && (
+                                    <ul>
+                                        {month.data.map((monthdata) => (
+                                            <li key={monthdata.slug}>
+                                                <div>
+                                                    <a href={monthdata.slug}>{monthdata.title}</a>
+                                                    <span class="float-right">
+                                                        {new Date(monthdata.published_at).toLocaleDateString('zh-CN', { day: 'numeric' })}号
+                                                    </span>
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+
+    <Comments slot="comments" client:load />
+
+    <Fragment slot="toc">
+        <Relitu />
+        <Toc />
+        <TocTagloop />
+        <Top />
+    </Fragment>
+
+    <Fragment slot="h-toc">
+        <Toc />
+    </Fragment>
+</BaseLayout>

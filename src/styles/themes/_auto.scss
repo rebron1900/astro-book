@@ -1,0 +1,35 @@
+// mixin code style
+
+:root {
+    @include theme-light;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        @include theme-dark;
+    }
+}
+
+html.dark {
+    @include theme-dark;
+}
+
+html.light {
+    @include theme-light;
+}
+
+html.yayu {
+    @include theme-yayu;
+}
+
+html.yuhang {
+    @include theme-yuhang;
+}
+
+html.herblue {
+    @include theme-herblue;
+}
+
+html.onojyun {
+    @include theme-onojyun;
+}

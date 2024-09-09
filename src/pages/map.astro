@@ -1,0 +1,51 @@
+---
+import { pages, settings, neodb } from '../data/ghost-store.js';
+import { doubanGroupByDate } from '../utils/help.js';
+
+import RemotePicture from '../components/RemotePicture.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Head from '../components/Head.astro';
+import Comments from '../components/Comments.jsx';
+import Toc from '../components/Toc.astro';
+import Relitu from '../components/Relitu.jsx';
+import TocTagloop from '../components/TocTagloop.astro';
+import Header from '../components/Header.astro';
+import Top from '../components/Top.astro';
+import Menu from '../components/Menu.astro';
+import initMap from '../utils/map';
+
+const post = pages.find((post) => post.slug == 'map');
+---
+
+<BaseLayout post={post}>
+    <Head slot="head" site={settings} />
+
+    <Header slot="header" title={post.title} />
+    <Menu slot="menu" />
+
+    <article slot="content" class="markdown book-article">
+        <h1 class="book-title">{post.title}</h1>
+        <Fragment set:html={post.html} />
+
+        <script>
+            import initMap from '../utils/map';
+
+            document.addEventListener('astro:page-load', () => {
+                initMap();
+            });
+        </script>
+        <div id="map" class="footer-map"></div>
+    </article>
+
+    <Comments slot="comments" client:load />
+
+    <Relitu slot="relitu" />
+
+    <Fragment slot="toc">
+        <Top />
+    </Fragment>
+
+    <Fragment slot="h-toc">
+        <Toc />
+    </Fragment>
+</BaseLayout>

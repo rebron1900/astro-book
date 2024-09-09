@@ -1,0 +1,31 @@
+---
+import Head from '../components/Head.astro';
+import { settings } from '../data/ghost-store';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<style>
+    .not-found {
+        text-align: center;
+    }
+    .not-found h1 {
+        margin: 0.25em 0 0 0;
+        opacity: 0.25;
+        font-size: 40vmin;
+    }
+</style>
+
+<BaseLayout>
+    <Head slot="head" site={settings} />
+    <Fragment slot="content">
+        <main class="flex justify-center not-found">
+            <div>
+                <h1>404</h1>
+                <h2>这个页面似乎迷失在时间隧道里了...</h2>
+                <h3>
+                    <a href="/">回去首页</a>
+                </h3>
+            </div>
+        </main>
+    </Fragment>
+</BaseLayout>

@@ -1,0 +1,31 @@
+---
+// 假设您已经在前面获取了 post 数据并将其传递给这个组件
+import type { Tag } from '@ts-ghost/content-api';
+import RemotePicture from './RemotePicture.astro';
+const { post, isFeature } = Astro.props;
+---
+
+<div>{new Date(post.published_at).toLocaleDateString()}</div>
+
+{
+    post.tags && post.tags.length > 0 && (
+        <div>
+            {post.tags.map(
+                (tag: Tag) =>
+                    tag.visibility === 'public' && (
+                        <span>
+                            <a href={`/tag/${tag.slug}`}>#{tag.name}</a> ,
+                        </span>
+                    )
+            )}
+        </div>
+    )
+}
+
+{
+    post.feature_image && isFeature && (
+        <p>
+            <RemotePicture src={post.feature_image} alt={post.feature_image_alt} />
+        </p>
+    )
+}
