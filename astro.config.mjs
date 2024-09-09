@@ -26,11 +26,11 @@ export default defineConfig({
                     shadowColor: '#124'
                 }
             }
+        }),
+        purgecss({
+            fontFace: true,
+            keyframes: true,
+            content: [process.cwd() + '/src/**/*.{astro,jsx}']
         })
-        // purgecss({
-        //     fontFace: true,
-        //     keyframes: true,
-        //     content: [process.cwd() + '/src/**/*.{astro,jsx}']
-        // })
     ]
 });
