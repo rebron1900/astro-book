@@ -7,10 +7,6 @@ export async function GET(context) {
         title: settings.title,
         description: settings.description,
         site: site,
-        follow_challenge: {
-            feedId: '41342818716915717',
-            userId: '41422934521641984'
-        },
         items: postsAll.slice(0, 30).map((item) => ({
             title: item.title,
             description: item.html,
