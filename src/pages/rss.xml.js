@@ -10,7 +10,7 @@ export async function GET(context) {
             feedId: '41342818716915717',
             userId: '41422934521641984'
         },
-        items: postsAll.map((item) => ({
+        items: postsAll.slice(0, 30).map((item) => ({
             title: item.title,
             description: item.html,
             link: `/${item.slug}/`,
