@@ -30,16 +30,7 @@ export default defineConfig({
         purgecss({
             fontFace: true,
             keyframes: true,
-            safelist: [],
-            blocklist: [],
-            content: [
-                process.cwd() + '/src/**/*.{astro,vue}' // Watching astro and vue sources (for SSR, read the note below)
-            ],
-            extractors: [
-                {
-                    extensions: ['astro', 'html']
-                }
-            ]
+            content: [process.cwd() + '/src/**/*.{astro,jsx}']
         })
     ]
 });
