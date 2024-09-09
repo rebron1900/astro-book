@@ -11,18 +11,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-
-    env:
-      GHOST_API_URL: env.$GHOST_API_URL
-      GHOST_API_KEY: env.$GHOST_API_KEY
-      GHOST_API_POST_LIMIT: env.$GHOST_API_POST_LIMIT
-      NEODB_URL: env.$NEODB_URL
-      FLUX_URL: env.$FLUX_URL
-      FLUX_KEY: env.$FLUX_KEY
-      CND_URL: env.$CND_URL
-      MAP_URL: env.$MAP_URL
-      MAP_KEY: env.$MAP_KEY
-
     steps:
       - name: Install dependencies
         run: env
@@ -43,6 +31,15 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
+
+      - name: Run Script
+        # 设置环境变量
+        env:
+          CONFIG_FILE: ${{ secrets.CONFIG_FILE }}
+        # 先将环境变量内容输出到文件，然后执行脚本
+        run: |
+          echo "$CONFIG_FILE" > ./.env
+
 
       - name: Install dependencies
         run: yarn install
