@@ -1,5 +1,6 @@
 ---
 import config from '../data/config';
+import { normalizeSlug } from '../utils/help';
 ---
 
 <ul>
@@ -9,7 +10,7 @@ import config from '../data/config';
             {
                 config.taxonomy.map((item) => (
                     <li>
-                        <a href={item.slug} title={item.desc}>
+                        <a href={normalizeSlug(item.slug)} title={item.desc}>
                             {item.name}
                         </a>
                     </li>

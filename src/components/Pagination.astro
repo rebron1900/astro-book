@@ -1,5 +1,5 @@
 ---
-import { getSvg } from '../utils/help';
+import { getSvg, normalizeSlug } from '../utils/help';
 
 const { page, prev, next } = Astro.props;
 
@@ -9,15 +9,15 @@ if (!page) {
     post.prev = prev;
     post.next = next;
 } else {
-    post.prev = page.url.prev && { slug: page.url.prev && page.url.prev, title: '' };
-    post.next = page.url.next && { slug: page.url.next && page.url.next, title: '' };
+    post.prev = page.url.prev && { slug: page.url.prev && normalizeSlug(page.url.prev), title: '' };
+    post.next = page.url.next && { slug: page.url.next && normalizeSlug(page.url.next), title: '' };
 }
 ---
 
 <div class="flex flex-wrap justify-between book-pagination">
     {
         post.prev && (
-            <a href={'/' + post.prev.slug} aria-label="Read previous page" class="flex align-center float-left">
+            <a href={post.prev.slug} aria-label="Read previous page" class="flex align-center float-left">
                 <Fragment set:html={getSvg('backward')} />
                 <span>{post.prev.title}</span>
             </a>
@@ -26,7 +26,7 @@ if (!page) {
 
     {
         post.next && (
-            <a href={'/' + post.next.slug} aria-label="Read next page" class="flex align-center float-right">
+            <a href={post.next.slug} aria-label="Read next page" class="flex align-center float-right">
                 <span>{post.next.title}</span>
                 <Fragment set:html={getSvg('forward')} />
             </a>

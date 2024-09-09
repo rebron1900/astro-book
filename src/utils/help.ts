@@ -42,3 +42,17 @@ export const groupByDate = (data) => {
 
     return result;
 };
+
+export function normalizeSlug(slug: string) {
+    // 确保开头有斜杠
+    if (!slug.startsWith('/')) {
+        slug = '/' + slug;
+    }
+
+    // 确保结尾有斜杠
+    if (!slug.endsWith('/')) {
+        slug = slug + '/';
+    }
+
+    return slug;
+}

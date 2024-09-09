@@ -2,7 +2,7 @@
 import { postsAll, pages, settings } from '../data/ghost-store';
 
 import { Code } from 'astro:components';
-import { groupByDate } from '../utils/help';
+import { groupByDate, normalizeSlug } from '../utils/help';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/Head.astro';
 import Comments from '../components/Comments';
@@ -43,7 +43,7 @@ const groupdata = groupByDate(postsAll);
                                         {month.data.map((monthdata) => (
                                             <li key={monthdata.slug}>
                                                 <div>
-                                                    <a href={monthdata.slug}>{monthdata.title}</a>
+                                                    <a href={normalizeSlug(monthdata.slug)}>{monthdata.title}</a>
                                                     <span class="float-right">
                                                         {new Date(monthdata.published_at).toLocaleDateString('zh-CN', { day: 'numeric' })}号
                                                     </span>

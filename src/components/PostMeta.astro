@@ -2,6 +2,7 @@
 // 假设您已经在前面获取了 post 数据并将其传递给这个组件
 import type { Tag } from '@ts-ghost/content-api';
 import RemotePicture from './RemotePicture.astro';
+import { normalizeSlug } from '../utils/help';
 const { post, isFeature } = Astro.props;
 ---
 
@@ -14,7 +15,7 @@ const { post, isFeature } = Astro.props;
                 (tag: Tag) =>
                     tag.visibility === 'public' && (
                         <span>
-                            <a href={`/tag/${tag.slug}`}>#{tag.name}</a> ,
+                            <a href={`/tag${normalizeSlug(tag.slug)}`}>#{tag.name}</a> ,
                         </span>
                     )
             )}

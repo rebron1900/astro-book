@@ -1,5 +1,6 @@
 ---
 import { tags } from '../data/ghost-store';
+import { normalizeSlug } from '../utils/help';
 ---
 
 <nav>
@@ -13,7 +14,7 @@ import { tags } from '../data/ghost-store';
                             item.visibility == 'public' &&
                             item.count.posts >= 3 && (
                                 <li class="flex justify-between">
-                                    <a href={`/tag/${item.slug}`}>#{item.name}</a>
+                                    <a href={`/tag${normalizeSlug(item.slug)}`}>#{item.name}</a>
                                     <span>{item.count.posts}</span>
                                 </li>
                             )
