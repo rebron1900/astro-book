@@ -28,7 +28,7 @@ const config = {
         },
         {
             name: 'theme',
-            html: "Theme: <a href='https://github.com/rebron1900/11ty-book' target='_blank'>11ty-book</a>"
+            html: "Theme: <a href='https://github.com/rebron1900/astro-book' target='_blank'>Astro-book</a>"
         },
         {
             name: 'copyright',
@@ -36,7 +36,7 @@ const config = {
         },
         {
             name: 'power',
-            html: "Power by <a href='https://www.11ty.dev/' target='_blank'>11ty</a> & <a href='https://www.ghost.org/' target='_blank'>ghost</a>"
+            html: "Power by <a href='https://www.astro.build/' target='_blank'>Astro</a> & <a href='https://www.ghost.org/' target='_blank'>ghost</a>"
         },
         {
             name: 'icp',
