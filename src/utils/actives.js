@@ -1,11 +1,13 @@
 // 定义测试用的URL
 // const wsUrl = 'ws://localhost:8081/update';
-// const appListUrl = 'http://localhost:4321/app.json';
+const appListUrl = 'http://localhost:4321/app.json';
+
+import { F } from '../../dist/_astro/web.OQTI1gY5';
 
 // 定义正式环境的url
 const cdn = 'https://cdn.1900.live/apps/';
 const wsUrl = 'wss://api.1900.live/actives_ws';
-const appListUrl = 'https://1900.live/app.json';
+// const appListUrl = 'https://1900.live/app.json';
 
 // app白名单
 let appList = {};
@@ -16,18 +18,21 @@ let activesTippy = null;
 // 初始化WebSocket连接
 export default function initWebSocket(actives) {
     activesTippy = actives;
-    fetch(appListUrl).then((rep) => {
-        rep.json().then((data) => {
-            ws2 = new WebSocket(wsUrl);
-            // 初始化app列表
-            appList = data;
-            // 绑定事件处理函数
-            ws2.onopen = onOpen;
-            ws2.onmessage = onMessage;
-            ws2.onclose = onClose;
-            ws2.onerror = onError;
+
+    if (!ws2) {
+        fetch(appListUrl).then((rep) => {
+            rep.json().then((data) => {
+                ws2 = new WebSocket(wsUrl);
+                // 初始化app列表
+                appList = data;
+                // 绑定事件处理函数
+                ws2.onopen = onOpen;
+                ws2.onmessage = onMessage;
+                ws2.onclose = onClose;
+                ws2.onerror = onError;
+            });
         });
-    });
+    }
 }
 
 // 连接成功的处理函数
