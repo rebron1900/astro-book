@@ -2,7 +2,7 @@
 import Brand from './Brand.astro';
 import MenuNav from './MenuNav.astro';
 import MenuOther from './MenuOther.astro';
-import MenuSearch from './MenuSearch';
+import MenuSearch from './MenuSearch.astro';
 import MenuTaxonomy from './MenuTaxonomy.astro';
 import MenuTheme from './MenuTheme';
 
@@ -11,7 +11,7 @@ const { site } = Astro.props;
 
 <nav>
     <Brand />
-    <MenuSearch client:load />
+    <MenuSearch />
     <MenuTheme client:load />
     <MenuNav />
     <MenuTaxonomy />
