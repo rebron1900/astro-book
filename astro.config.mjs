@@ -12,14 +12,6 @@ export default defineConfig({
         '/rss': {
             status: 302,
             destination: '/rss.html'
-        },
-        '/404': {
-            status: 302,
-            destination: '/404.html'
-        },
-        '/500': {
-            status: 302,
-            destination: '/500.html'
         }
     },
     integrations: [
