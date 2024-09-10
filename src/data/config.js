@@ -28,16 +28,16 @@ const config = {
             html: "<a href='https://github.com/rebron1900' target='_blank'>Github</a> | <a href='https://1900.live/rss/'  target='_blank'>Rss</a>"
         },
         {
+            name: 'power',
+            html: "Power by <a href='https://www.astro.build/' target='_blank'>Astro</a> & <a href='https://www.ghost.org/' target='_blank'>ghost</a>"
+        },
+        {
             name: 'theme',
             html: "Theme: <a href='https://github.com/rebron1900/astro-book' target='_blank'>Astro-book</a>"
         },
         {
             name: 'copyright',
             html: "<a href='https://creativecommons.org/licenses/by-nc-nd/4.0/deed.zh-hans' target='_blank'>CC BY-NC-ND 4.0</a>"
-        },
-        {
-            name: 'power',
-            html: "Power by <a href='https://www.astro.build/' target='_blank'>Astro</a> & <a href='https://www.ghost.org/' target='_blank'>ghost</a>"
         },
         {
             name: 'icp',

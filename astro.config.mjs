@@ -11,7 +11,7 @@ export default defineConfig({
     redirects: {
         '/rss': {
             status: 302,
-            destination: '/rss.html'
+            destination: '/rss.xml'
         }
     },
     integrations: [
