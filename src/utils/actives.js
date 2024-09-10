@@ -12,7 +12,7 @@ let appList = {};
 // 保存WebSocket实例的变量
 let ws2;
 
-const activsTippy = null;
+let activsTippy = null;
 
 // 初始化WebSocket连接
 export default function initWebSocket(tippy) {

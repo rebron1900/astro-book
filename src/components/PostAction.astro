@@ -14,7 +14,7 @@ const { post } = Astro.props;
 </div>
 
 <script>
-    import {} from '../utils/coco-message';
+    const cocoMessage = require('../utils/coco-message');
 
     document.addEventListener('astro:page-load', () => {
         let post_id = document.querySelector('.post_like').dataset.postid;
