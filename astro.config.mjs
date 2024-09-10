@@ -11,6 +11,11 @@ export default defineConfig({
     build: {
         inlineStylesheets: 'never'
     },
+    // redirects: {
+    //     '/rss/': '/rss.xml',
+    //     '/404/': '/404.html',
+    //     '/505/': '/505.html'
+    // },
     integrations: [
         sitemap(),
         solidJs({
