@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import solidJs from '@astrojs/solid-js';
 import expressiveCode from 'astro-expressive-code';
+import compress from 'astro-compress';
 
 // https://astro.build/config
 export default defineConfig({
@@ -27,8 +28,10 @@ export default defineConfig({
                     shadowColor: '#124'
                 }
             }
+        }),
+        compress({
+            Image: false,
+            SVG: false
         })
-        // purgecss(),
-        // compress()
     ]
 });
