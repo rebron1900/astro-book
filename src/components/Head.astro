@@ -81,9 +81,8 @@ if (post) {
     };
 
     document.addEventListener('DOMContentLoaded', () => changeTheme());
-    7;
 
-    document.addEventListener('astro:page-load', () => {
+    document.addEventListener('astro:after-swap', () => {
         mediumZoom('.markdown img', {
             background: 'rgba(0,0,0,0.75)'
         });

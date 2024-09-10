@@ -3,13 +3,31 @@
 import type { Tag } from '@ts-ghost/content-api';
 import { settings } from '../data/ghost-store';
 // import components
-import Menu from '../components/Menu.astro';
+import { fade } from 'astro:transitions';
 // import styles
 import '../styles/book.scss';
 // ...
 const { post } = Astro.props;
 
 const isFullWidth = post && post.tags.some((tag: Tag) => tag.slug === 'hash-page-fullwidth');
+const anim = {
+    old: {
+        name: 'fade-out',
+        duration: '0.5s',
+        easing: 'ease-in',
+        direction: 'reverse'
+    },
+    new: {
+        name: 'fade-in',
+        duration: '0.5s',
+        easing: 'ease-in-out'
+    }
+};
+
+const customTransition = {
+    forwards: anim,
+    backwards: anim
+};
 ---
 
 <html lang={settings?.lang ?? 'en'} dir="ltr">
@@ -29,7 +47,7 @@ const isFullWidth = post && post.tags.some((tag: Tag) => tag.slug === 'hash-page
                     <slot name="menu" />
                 </div>
             </aside>
-            <div class="book-page">
+            <div class="book-page" transition:name="book-page">
                 <header class="book-header">
                     <slot name="header" />
                     <slot name="htoc" />
@@ -46,7 +64,7 @@ const isFullWidth = post && post.tags.some((tag: Tag) => tag.slug === 'hash-page
                 <label for="menu-control" class="hidden book-menu-overlay"></label>
             </div>
 
-            <aside class={`book-toc ${isFullWidth ? 'full-width' : ''}`}>
+            <aside class={`book-toc ${isFullWidth ? 'full-width' : ''}`} transition:name="book-toc">
                 <div class="book-toc-content">
                     <slot name="toc" />
                 </div>
