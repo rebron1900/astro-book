@@ -12,14 +12,16 @@
 
     const commentinfo = { type: 'artalk', name: "1900'Blog", server: 'https://artalk.1900.live', el: '.at-comments' };
 
-    const artalk = Artalk.init({
-        el: commentinfo.el, // 绑定元素的 Selector
-        server: commentinfo.server, // 后端地址
-        site: commentinfo.name, // 你的站点名
-        pageKey: document.location.pathname
-    });
+    document.addEventListener('astro:page-load', () => {
+        const artalk = Artalk.init({
+            el: commentinfo.el, // 绑定元素的 Selector
+            server: commentinfo.server, // 后端地址
+            site: commentinfo.name, // 你的站点名
+            pageKey: document.location.pathname
+        });
 
-    artalk.on('comment-inserted', function () {
-        cocoMessage.success('感谢你发表的想法 💖');
+        artalk.on('comment-inserted', function () {
+            cocoMessage.success('感谢你发表的想法 💖');
+        });
     });
 </script>
