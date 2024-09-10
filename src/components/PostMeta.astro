@@ -11,14 +11,14 @@ const { post, isFeature } = Astro.props;
 {
     post.tags && post.tags.length > 0 && (
         <div>
-            {post.tags.map(
-                (tag: Tag) =>
-                    tag.visibility === 'public' && (
-                        <span>
-                            <a href={`/tag${normalizeSlug(tag.slug)}`}>#{tag.name}</a> ,
-                        </span>
-                    )
-            )}
+            {post.tags
+                .filter((tag) => tag.visibility === 'public') // 过滤出可见的标签
+                .map((tag, index, array) => (
+                    <span key={tag.slug}>
+                        <a href={`/tag${normalizeSlug(tag.slug)}`}>#{tag.name}</a>
+                        {index < array.length - 1 && ', '} {/* 只有在不是最后一个元素时才添加逗号 */}
+                    </span>
+                ))}
         </div>
     )
 }
