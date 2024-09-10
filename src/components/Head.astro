@@ -1,7 +1,7 @@
 ---
 import { ViewTransitions } from 'astro:transitions';
 import { settings } from '../data/ghost-store';
-import { normalizeSlug } from '../utils/help';
+import { normalizeSlug, normalizeData } from '../utils/help';
 
 const { post, title, url } = Astro.props;
 
@@ -21,7 +21,7 @@ if (post) {
               .trim()
               .replace(/"/g, '')
         : settings?.description.replace(/<\/?[^>]+(>|$)/g, '').trim();
-    og_img = encodeURI(`https://og.190102.xyz/api/og?title=${og_title}&desc=${og_img_desc}&date=${new Date(post?.published_at).toISOString().split('T')[0]}`);
+    og_img = encodeURI(`https://og.190102.xyz/api/og?title=${og_title}&desc=${og_img_desc}&date=${normalizeData(post?.published_at)}`);
 } else {
     og_title = settings?.title;
     og_desc = settings?.description;

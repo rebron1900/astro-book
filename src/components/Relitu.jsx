@@ -1,6 +1,6 @@
 // src/components/DateGrid.jsx
 import { postsAll } from '../data/ghost-store';
-import { normalizeSlug } from '../utils/help';
+import { normalizeSlug, normalizeData } from '../utils/help';
 
 function parseDate(str) {
     return new Date(str);
@@ -23,7 +23,7 @@ const calculateTextLength = (htmlString) => {
 function dateBuild(data, today) {
     const dateCounts = {};
     data.forEach((item) => {
-        const dateStr = parseDate(item.published_at).toISOString().split('T')[0];
+        const dateStr = normalizeData(item.published_at);
         dateCounts[dateStr] = (dateCounts[dateStr] || 0) + 1;
     });
 
@@ -35,7 +35,7 @@ function dateBuild(data, today) {
     for (let currentDate = sunday; currentDate >= startDate; currentDate.setDate(currentDate.getDate() - 1)) {
         const dateStr = currentDate.toISOString().split('T')[0];
         const count = dateCounts[dateStr] || 0;
-        const dataContent = data.filter((item) => parseDate(item.published_at).toISOString().split('T')[0] === dateStr);
+        const dataContent = data.filter((item) => normalizeData(item.published_at) === dateStr);
 
         result.push({
             date: dateStr,

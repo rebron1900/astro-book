@@ -35,7 +35,7 @@ const page = pages.find((post) => post.slug == 'links');
                             </a>
                         </h3>
                         <div>
-                            <span>{new Date(item.published_at).toLocaleDateString()}</span>
+                            <span>{normalizeData(item.published_at)}</span>
                         </div>
                         <div class="ellipsis">
                             <a href={item.url} target="_blank">
