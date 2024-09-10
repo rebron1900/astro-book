@@ -54,6 +54,9 @@ let og_desc = '';
 
 <script>
     import mediumZoom from 'medium-zoom';
+    import tippy from 'tippy.js';
+
+    import 'tippy.js/dist/tippy.css';
     import 'medium-zoom/dist/style.css';
 
     const changeTheme = () => {
@@ -91,6 +94,18 @@ let og_desc = '';
                 behavior: 'smooth'
             });
         });
+
+        const actives = tippy('.actives img', {
+            placement: 'right',
+            maxWidth: 300
+        });
+
+        const douban = tippy('.db--icon-comment', {
+            placement: 'bottom',
+            maxWidth: 300
+        });
+
+        const relitu = tippy('.item-info', { allowHTML: true, interactive: true, maxWidth: 'none', theme: 'auto', appendTo: () => document.body });
     });
 </script>
 

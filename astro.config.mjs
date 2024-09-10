@@ -8,14 +8,20 @@ import purgecss from 'astro-purgecss';
 // https://astro.build/config
 export default defineConfig({
     site: 'https://1900.live',
-    build: {
-        inlineStylesheets: 'never'
+    redirects: {
+        '/rss': {
+            status: 302,
+            destination: '/rss.html'
+        },
+        '/404': {
+            status: 302,
+            destination: '/404.html'
+        },
+        '/500': {
+            status: 302,
+            destination: '/500.html'
+        }
     },
-    // redirects: {
-    //     '/rss/': '/rss.xml',
-    //     '/404/': '/404.html',
-    //     '/505/': '/505.html'
-    // },
     integrations: [
         sitemap(),
         solidJs({

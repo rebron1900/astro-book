@@ -1,6 +1,6 @@
 ---
 import { pages, settings, neodb } from '../data/ghost-store';
-import { doubanGroupByDate } from '../utils/help';
+import { doubanGroupByDate, getSvg } from '../utils/help';
 
 import RemotePicture from '../components/RemotePicture.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -13,9 +13,8 @@ import Header from '../components/Header.astro';
 import Top from '../components/Top.astro';
 import Menu from '../components/Menu.astro';
 
-
 const post = pages.find((post) => post.slug == 'douban');
-const groupdata = doubanGroupByDate(neodb.data)
+const groupdata = doubanGroupByDate(neodb.data);
 ---
 
 <BaseLayout post={post}>
@@ -25,60 +24,69 @@ const groupdata = doubanGroupByDate(neodb.data)
     <Menu slot="menu" />
 
     <article slot="content" class="markdown book-article">
-      <h1 class="book-title">{post.title}</h1>
-      <Fragment set:html={post.html} />
-    
-      <div class="db--container" x-data="douban">
-        <nav class="db--nav">
-          <div class="db--navItem current" data-type="all">All</div>
-          <div class="db--navItem" data-type="movie">Movie</div>
-          <div class="db--navItem"  data-type="tv">TV</div>
-          <div class="db--navItem" data-type="book">Book</div>
-          <div class="db--navItem" data-type="game">Game</div>
-          <div class="db--navItem" data-type="music">Music</div>
-          <div class="db--navItem"  data-type="podcast">Podcast</div>
-        </nav>
-    
-        <div class="db--genres"></div>
-        <div class="db--list db--list__card">
-          {groupdata.map(post => (
-            post.data.map(month => (
-              <div class="db--listBydate">
-                <div class="db--titleDate">
-                  <div class="db--titleDate__day">{month.month}</div>
-                  <div class="db--titleDate__month">{post.year}</div>
-                </div>
-                <div class="db--dateList__card">
-                  {month.data && month.data.map(monthdata => (
-                    <div class="db--item" data-itemtype={monthdata.type}>
-                      {monthdata.comment_text && (
-                        <span class="db--icon-comment" data-tippy-content={monthdata.comment_text}>
-                          <svg>...</svg> <!-- Replace with actual SVG code -->
-                        </span>
-                      )}
-  
-        <img loading="lazy" src={`https://images.weserv.nl/?url=${monthdata.item.cover_image_url }&w=180&fit=cover`} />
-                      <div class="db--score">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 20.1l5.82 3.682c1.066.675 2.37-.322 2.09-1.584l-1.543-6.926 5.146-4.667c.94-.85.435-2.465-.799-2.567l-6.773-.602L13.29.89a1.38 1.38 0 0 0-2.581 0l-2.65 6.53-6.774.602C.052 8.126-.453 9.74.486 10.59l5.147 4.666-1.542 6.926c-.28 1.262 1.023 2.26 2.09 1.585L12 20.099z"></path>
-                        </svg>
-                        {monthdata.rating_grade || '无评分'} · {monthdata.type.charAt(0).toUpperCase() + monthdata.type.slice(1)}
-                      </div>
-                      <div class="db--title ellipsis">
-                        <a href={monthdata.item.id} target="_blank" title={monthdata.item.title}>{monthdata.item.title}</a>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))
-          ))}
+        <h1 class="book-title">{post.title}</h1>
+        <Fragment set:html={post.html} />
+
+        <div class="db--container" x-data="douban">
+            <nav class="db--nav">
+                <div class="db--navItem current" data-type="all">All</div>
+                <div class="db--navItem" data-type="movie">Movie</div>
+                <div class="db--navItem" data-type="tv">TV</div>
+                <div class="db--navItem" data-type="book">Book</div>
+                <div class="db--navItem" data-type="game">Game</div>
+                <div class="db--navItem" data-type="music">Music</div>
+                <div class="db--navItem" data-type="podcast">Podcast</div>
+            </nav>
+
+            <div class="db--genres"></div>
+            <div class="db--list db--list__card">
+                {
+                    groupdata.map((post) =>
+                        post.data.map((month) => (
+                            <div class="db--listBydate">
+                                <div class="db--titleDate">
+                                    <div class="db--titleDate__day">{month.month}</div>
+                                    <div class="db--titleDate__month">{post.year}</div>
+                                </div>
+                                <div class="db--dateList__card">
+                                    {month.data &&
+                                        month.data.map((monthdata) => (
+                                            <div class="db--item" data-itemtype={monthdata.type}>
+                                                {monthdata.comment_text && (
+                                                    <span class="db--icon-comment" data-tippy-content={monthdata.comment_text}>
+                                                        <Fragment set:html={getSvg('comment')} />
+                                                    </span>
+                                                )}
+
+                                                <img
+                                                    loading="lazy"
+                                                    src={`https://images.weserv.nl/?url=${monthdata.item.cover_image_url}&w=180&fit=cover`}
+                                                    class="db--image"
+                                                />
+                                                <div class="db--score">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M12 20.1l5.82 3.682c1.066.675 2.37-.322 2.09-1.584l-1.543-6.926 5.146-4.667c.94-.85.435-2.465-.799-2.567l-6.773-.602L13.29.89a1.38 1.38 0 0 0-2.581 0l-2.65 6.53-6.774.602C.052 8.126-.453 9.74.486 10.59l5.147 4.666-1.542 6.926c-.28 1.262 1.023 2.26 2.09 1.585L12 20.099z" />
+                                                    </svg>
+                                                    {monthdata.rating_grade || '无评分'} · {monthdata.type.charAt(0).toUpperCase() + monthdata.type.slice(1)}
+                                                </div>
+                                                <div class="db--title ellipsis">
+                                                    <a href={monthdata.item.id} target="_blank" title={monthdata.item.title}>
+                                                        {monthdata.item.title}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        ))}
+                                </div>
+                            </div>
+                        ))
+                    )
+                }
+            </div>
+
+            <div class="block-more block-more__centered">
+                <div class="lds-ripple"></div>
+            </div>
         </div>
-    
-        <div class="block-more block-more__centered">
-          <div class="lds-ripple"></div>
-        </div>
-      </div>
     </article>
 
     <Comments slot="comments" client:load />
@@ -86,7 +94,7 @@ const groupdata = doubanGroupByDate(neodb.data)
     <Relitu slot="relitu" />
 
     <Fragment slot="toc">
-      <Top />
+        <Top />
     </Fragment>
 
     <Fragment slot="h-toc">
