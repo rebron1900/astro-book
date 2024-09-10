@@ -29,11 +29,19 @@ export default defineConfig({
                     shadowColor: '#124'
                 }
             }
+        }),
+        purgecss({
+            fontFace: true,
+            keyframes: true,
+            content: [process.cwd() + '/src/**/*.{astro,jsx,html,js}'],
+            extractors: [
+                {
+                    // Example using a taiwindcss compatible class extractor
+
+                    extractor: (content) => content.match(/[\w-/:]+(?<!:)/g) || [],
+                    extensions: ['astro', 'html']
+                }
+            ]
         })
-        // purgecss({
-        //     fontFace: true,
-        //     keyframes: true,
-        //     content: [process.cwd() + '/src/**/*.{astro,jsx}']
-        // })
     ]
 });
