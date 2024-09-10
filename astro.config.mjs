@@ -42,6 +42,7 @@ export default defineConfig({
                 ]
             },
             content: [process.cwd() + '/src/**/*.{astro,jsx,html,js}'],
+            css: [`${outDir}/**/*.css`],
             extractors: [
                 {
                     // Example using a taiwindcss compatible class extractor
