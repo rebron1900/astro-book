@@ -150,13 +150,13 @@
 
 @keyframes slide-from-right {
     from {
-        transform: translateY(-50px);
+        transform: translateY(-50px) scale(1);
     }
 }
 
 @keyframes slide-to-left {
     to {
-        transform: translateY(50px);
+        transform: translateY(50px) scale(1);
     }
 }
 
