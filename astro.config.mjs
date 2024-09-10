@@ -2,9 +2,6 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import solidJs from '@astrojs/solid-js';
 import expressiveCode from 'astro-expressive-code';
-import compress from 'astro-compress';
-
-import purgecss from 'astro-purgecss';
 
 // https://astro.build/config
 export default defineConfig({
@@ -14,9 +11,6 @@ export default defineConfig({
             status: 302,
             destination: '/rss.xml'
         }
-    },
-    build: {
-        inlineStylesheets: 'never'
     },
     integrations: [
         sitemap(),
@@ -33,8 +27,8 @@ export default defineConfig({
                     shadowColor: '#124'
                 }
             }
-        }),
+        })
         // purgecss(),
-        compress()
+        // compress()
     ]
 });
