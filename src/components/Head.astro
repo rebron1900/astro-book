@@ -1,26 +1,36 @@
 ---
 import { ViewTransitions } from 'astro:transitions';
+import { settings } from '../data/ghost-store';
+import { normalizeSlug } from '../utils/help';
 
-const { post, site } = Astro.props;
+const { post, title, url } = Astro.props;
 
-// Open Graph Meta Tags
-let og_title = post?.title ? `${post.title} - ${site.title} | ${site.description}` : `${site.title} | ${site.description}`;
+let og_title,
+    og_desc,
+    og_url,
+    og_img_desc,
+    og_img = '';
 
-let og_Text = post?.title
-    ? encodeURIComponent(`${post.title} - ${site.title} | ${site.description}`)
-    : encodeURIComponent(`${site.title} | ${site.description}`);
-
-let og_img = post?.feature_image || site.cover_image;
-let og_desc = '';
-// c= post?.excerpt
-//     ? post.excerpt
-//           .replace(/<\/?[^>]+(>|$)/g, '')
-//           .trim()
-//           .replace(/"/g, '')
-//     : site.description.replace(/<\/?[^>]+(>|$)/g, '').trim();
+if (post) {
+    og_title = post.title;
+    og_url = normalizeSlug(post.slug);
+    og_desc = post.excerpt;
+    og_img_desc = post?.excerpt
+        ? post.excerpt
+              .replace(/<\/?[^>]+(>|$)/g, '')
+              .trim()
+              .replace(/"/g, '')
+        : settings.description.replace(/<\/?[^>]+(>|$)/g, '').trim();
+    og_img = encodeURI(`https://og.190102.xyz/api/og?title=${og_title}&desc=${og_img_desc}&date=${new Date(post?.published_at).toISOString().split('T')[0]}`);
+} else {
+    og_title = settings.title;
+    og_desc = settings.description;
+    og_url = import.meta.env.SITE;
+    og_img = encodeURI(`https://og.190102.xyz/api/og?title=${og_title}&desc=${og_desc}&date=1900-01-01`);
+}
 ---
 
-<title>{site.title}</title>
+<title>{title}</title>
 
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -30,27 +40,26 @@ let og_desc = '';
 <meta name="color-scheme" content="light dark" />
 
 <!-- Facebook Meta Tags -->
-<meta property="og:url" content={site.url} />
+<meta property="og:url" content={url} />
 <meta property="og:type" content="website" />
-<meta property="og:title" content={og_title} />
+<meta property="og:title" content={title} />
 <meta property="og:description" content={og_desc} />
-<meta property="og:image" />
+<meta property="og:image" content={og_img} />
 
 <!-- Twitter Meta Tags -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta property="twitter:domain" content={site.url} />
-<meta property="twitter:url" content={site.url} />
-<meta name="twitter:title" content={og_title} />
+<meta property="twitter:domain" content={import.meta.env.SITE} />
+<meta property="twitter:url" content={url} />
+<meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={og_desc} />
-<meta name="twitter:image" />
+<meta name="twitter:image" content={og_img} />
 
 <ViewTransitions />
 
-<link rel="sitemap" type="application/xml" title={`${site.title}的站点地图`} href="/sitemap.xml" />
-<link rel="alternate" type="application/rss+xml" title={`${site.title}的Rss`} href="/rss.xml" />
-<!-- <link rel="manifest" href="/manifest.json" /> -->
-<link rel="icon" href="/assets/img/favicon.png" />
-<link rel="canonical" href={Astro.request.url} />
+<link rel="sitemap" type="application/xml" title={`${settings.title}的站点地图`} href="/sitemap.xml" />
+<link rel="alternate" type="application/rss+xml" title={`${settings.title}的Rss`} href="/rss.xml" />
+<link rel="icon" href="/favicon.png" />
+<link rel="canonical" href={og_url} />
 
 <script>
     import mediumZoom from 'medium-zoom';
@@ -105,8 +114,12 @@ let og_desc = '';
             maxWidth: 300
         });
 
-        const relitu = tippy('.item-info', { allowHTML: true, interactive: true, maxWidth: 'none', theme: 'auto', appendTo: () => document.body });
+        const relitu = tippy('.item-info', {
+            allowHTML: true,
+            interactive: true,
+            maxWidth: 'none',
+            theme: 'auto',
+            appendTo: () => document.body
+        });
     });
 </script>
-
-<Fragment set:html={site.codeinjection_head} />

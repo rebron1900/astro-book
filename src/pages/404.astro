@@ -16,7 +16,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </style>
 
 <BaseLayout>
-    <Head slot="head" site={settings} />
+    <Head slot="head" site={settings} title={settings?.title + ' | ' + settings?.description} />
     <Fragment slot="content">
         <main class="flex justify-center not-found">
             <div>

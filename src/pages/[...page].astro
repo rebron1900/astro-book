@@ -24,9 +24,9 @@ const { page } = Astro.props;
 ---
 
 <BaseLayout>
-    <Head slot="head" site={settings} />
+    <Head slot="head" site={settings} title={settings?.title + ' | ' + settings?.description} />
 
-    <Header slot="header" title={(settings as Settings).title} />
+    <Header slot="header" title={settings?.title} />
 
     <Menu slot="menu" />
 

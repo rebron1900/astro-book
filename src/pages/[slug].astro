@@ -37,7 +37,7 @@ const tocHtml = tocGen(await post.html);
 ---
 
 <BaseLayout post={post}>
-    <Head slot="head" site={settings} />
+    <Head slot="head" post={post} site={settings} title={post?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
 
     <Header slot="header" title={post.title} />
 

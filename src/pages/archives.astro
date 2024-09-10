@@ -18,7 +18,7 @@ const groupdata = groupByDate(postsAll);
 ---
 
 <BaseLayout>
-    <Head slot="head" site={settings} />
+    <Head slot="head" post={page} site={settings} title={page?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
 
     <Header slot="header" title={page.title} />
     <Menu slot="menu" />
@@ -26,8 +26,6 @@ const groupdata = groupByDate(postsAll);
     <div slot="content" class="markdown book-article">
         <h1 class="book-title">{page.title}</h1>
         <Fragment set:html={page.html} />
-
-        <Code code={`const foo = 'bar';`} lang="js" />
         <div>
             {
                 groupdata.map((post) => (

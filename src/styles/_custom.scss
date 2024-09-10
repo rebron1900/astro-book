@@ -846,23 +846,23 @@ h3#join-comments {
 }
 
 .tippy-box[data-placement^='top'] > .tippy-arrow::before {
-    border-top-color: var(--body-background);
+    border-top-color: var(--body-background) !important;
 }
 .tippy-box[data-placement^='bottom'] > .tippy-arrow::before {
-    border-bottom-color: var(--body-background);
+    border-bottom-color: var(--body-background) !important;
 }
 .tippy-box[data-placement^='left'] > .tippy-arrow::before {
-    border-left-color: var(--body-background);
+    border-left-color: var(--body-background) !important;
 }
 .tippy-box[data-placement^='right'] > .tippy-arrow::before {
-    border-right-color: var(--body-background);
+    border-right-color: var(--body-background) !important;
 }
 
 .tippy-box {
-    background-color: var(--body-background);
-    color: var(--body-font-color);
-    box-shadow: 0 0 0.1rem var(--gray-100);
-    border: solid 1px var(--gray-200);
+    background-color: var(--body-background) !important;
+    color: var(--body-font-color) !important;
+    box-shadow: 0 0 0.1rem var(--gray-100) !important;
+    border: solid 1px var(--gray-200) !important;
 }
 
 .aspect-ratio {

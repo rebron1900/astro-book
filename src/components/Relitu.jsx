@@ -73,6 +73,7 @@ const DateGrid = () => {
                         {column.map((article, index) => {
                             const tooltipStr = article.data.map((item) => `- <a href='${item.href}'>${item.title}</a></br>`).join(' ');
                             const currentStyle = article.date === new Date().toISOString().split('T')[0] ? 'current-item' : '';
+
                             return (
                                 <div class='grid-item'>
                                     <div

@@ -12,18 +12,18 @@ import Header from '../components/Header.astro';
 import Top from '../components/Top.astro';
 import Menu from '../components/Menu.astro';
 
-const post = pages.find((post) => post.slug == 'links');
+const page = pages.find((post) => post.slug == 'links');
 ---
 
-<BaseLayout post={post}>
-    <Head slot="head" site={settings} />
+<BaseLayout post={page}>
+    <Head slot="head" post={page} site={settings} title={page?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
 
-    <Header slot="header" title={post.title} />
+    <Header slot="header" title={page.title} />
     <Menu slot="menu" />
 
     <article slot="content" class="markdown book-article">
-        <h1 class="book-title">{post.title}</h1>
-        <Fragment set:html={post.html} />
+        <h1 class="book-title">{page.title}</h1>
+        <Fragment set:html={page.html} />
 
         <div class="book-columns flex flex-wrap">
             {
