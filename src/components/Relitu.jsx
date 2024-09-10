@@ -1,5 +1,6 @@
 // src/components/DateGrid.jsx
 import { postsAll } from '../data/ghost-store';
+import { normalizeSlug } from '../utils/help';
 
 function parseDate(str) {
     return new Date(str);
@@ -71,7 +72,7 @@ const DateGrid = () => {
                 {columns().map((column, colIndex) => (
                     <div class='grid-column' key={colIndex}>
                         {column.map((article, index) => {
-                            const tooltipStr = article.data.map((item) => `- <a href='${item.href}'>${item.title}</a></br>`).join(' ');
+                            const tooltipStr = article.data.map((item) => `- <a href='${normalizeSlug(item.slug)}'>${item.title}</a></br>`).join(' ');
                             const currentStyle = article.date === new Date().toISOString().split('T')[0] ? 'current-item' : '';
 
                             return (
