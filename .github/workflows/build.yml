@@ -3,63 +3,62 @@ name: Astro-CI
 on:
     workflow_dispatch:
     repository_dispatch:
-      types:
-        - update
+        types:
+            - update
     schedule:
-      - cron: '0 2 * * *'
-    push:  # 添加 push 事件触发器
-      branches:
-        - main  # 你可以根据需要指定分支
+        - cron: '0 2 * * *'
+    push: # 添加 push 事件触发器
+        branches:
+            - main # 你可以根据需要指定分支
 jobs:
-  build:
-    runs-on: ubuntu-latest
+    build:
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: Install dependencies
-        run: env
+        steps:
+            - name: Install dependencies
+              run: env
 
-      - name: Checkout code
-        uses: actions/checkout@v2
+            - name: Checkout code
+              uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '18' 
-          cache: 'yarn' 
+            - name: Set up Node.js
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '18'
+                  cache: 'yarn'
 
-      - name: Cache Yarn dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache/yarn
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+            - name: Cache Yarn dependencies
+              uses: actions/cache@v2
+              with:
+                  path: ~/.cache/yarn
+                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-yarn-
 
-      - name: Run Script
-        # 设置环境变量
-        env:
-          CONFIG_FILE: ${{ secrets.CONFIG_FILE }}
-        # 先将环境变量内容输出到文件，然后执行脚本
-        run: |
-          echo "$CONFIG_FILE" > ./.env
+            - name: Run Script
+              # 设置环境变量
+              env:
+                  CONFIG_FILE: ${{ secrets.CONFIG_FILE }}
+              # 先将环境变量内容输出到文件，然后执行脚本
+              run: |
+                  echo "$CONFIG_FILE" > ./.env
 
+            - name: Install dependencies
+              run: yarn add sharp --ignore-engines  && yarn install
 
-      - name: Install dependencies
-        run: yarn install
+            - name: Build Astro project
+              run: yarn build
 
-      - name: Build Astro project
-        run: yarn build
-
-      - name: Deploy to VPS
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_PORT: ${{ secrets.VPS_PORT }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          echo "$VPS_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          echo "StrictHostKeyChecking no" >> ~/.ssh/config
-          rsync -avz --delete -e "ssh -p $VPS_PORT" dist/ $VPS_USER@$VPS_HOST:/var/11ty-data
+            - name: Deploy to VPS
+              env:
+                  VPS_HOST: ${{ secrets.VPS_HOST }}
+                  VPS_PORT: ${{ secrets.VPS_PORT }}
+                  VPS_USER: ${{ secrets.VPS_USER }}
+                  VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+              run: |
+                  mkdir -p ~/.ssh
+                  chmod 700 ~/.ssh
+                  echo "$VPS_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+                  chmod 600 ~/.ssh/id_rsa
+                  echo "StrictHostKeyChecking no" >> ~/.ssh/config
+                  rsync -avz --delete -e "ssh -p $VPS_PORT" dist/ $VPS_USER@$VPS_HOST:/var/11ty-data
