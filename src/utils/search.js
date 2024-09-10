@@ -78,13 +78,17 @@ const search = () => {
         input.removeEventListener('focus', init); // init once
         input.required = true;
 
-        fetch(searchDataURL)
-            .then((pages) => pages.json())
-            .then((pages) => {
-                window.bookSearchIndex = new Fuse(pages, indexConfig);
-            })
-            .then(() => (input.required = false))
-            .then(search);
+        if (!window.bookSearchIndex) {
+            fetch(searchDataURL)
+                .then((pages) => pages.json())
+                .then((pages) => {
+                    window.bookSearchIndex = new Fuse(pages, indexConfig);
+                })
+                .then(() => (input.required = false))
+                .then(search);
+        } else {
+            input.required = false;
+        }
     }
 
     function search() {
