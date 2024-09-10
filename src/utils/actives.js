@@ -1,6 +1,7 @@
 // 定义测试用的URL
 // const wsUrl = 'ws://localhost:8081/update';
 // const appListUrl = 'http://localhost:4321/app.json';
+import config from '../data/config';
 
 // 定义正式环境的url
 const cdn = 'https://cdn.1900.live/apps/';
@@ -16,7 +17,8 @@ let activesTippy = null;
 // 初始化WebSocket连接
 export default function initWebSocket(actives) {
     activesTippy = actives;
-
+    const test = config.apiUrl;
+    console.log(test);
     if (!ws2) {
         fetch(appListUrl).then((rep) => {
             rep.json().then((data) => {
