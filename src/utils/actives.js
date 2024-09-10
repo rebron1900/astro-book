@@ -2,8 +2,6 @@
 // const wsUrl = 'ws://localhost:8081/update';
 // const appListUrl = 'http://localhost:4321/app.json';
 
-import { F } from '../../dist/_astro/web.OQTI1gY5';
-
 // 定义正式环境的url
 const cdn = 'https://cdn.1900.live/apps/';
 const wsUrl = 'wss://api.1900.live/actives_ws';
