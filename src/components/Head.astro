@@ -8,19 +8,12 @@ const { post, title, url } = Astro.props;
 let og_title,
     og_desc,
     og_url,
-    og_img_desc,
     og_img = '';
 
 if (post) {
     og_title = post.title;
     og_url = normalizeSlug(post.slug);
     og_desc = post.excerpt;
-    og_img_desc = post?.excerpt
-        ? post.excerpt
-              .replace(/<\/?[^>]+(>|$)/g, '')
-              .trim()
-              .replace(/"/g, '')
-        : settings?.description.replace(/<\/?[^>]+(>|$)/g, '').trim();
     og_img = encodeURI(`https://og.190102.xyz/api/og?title=${og_title}&desc=${og_img_desc}&date=${normalizeData(post?.published_at)}`);
 } else {
     og_title = settings?.title;
