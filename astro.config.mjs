@@ -14,6 +14,9 @@ export default defineConfig({
             destination: '/rss.xml'
         }
     },
+    build: {
+        inlineStylesheets: 'never'
+    },
     integrations: [
         sitemap(),
         solidJs({
@@ -32,7 +35,12 @@ export default defineConfig({
         }),
         purgecss({
             fontFace: true,
-            keyframes: true,
+            keyframes: false,
+            safelist: {
+                greedy: [
+                    /*astro*/
+                ]
+            },
             content: [process.cwd() + '/src/**/*.{astro,jsx,html,js}'],
             extractors: [
                 {
