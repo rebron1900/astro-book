@@ -53,7 +53,7 @@ const tocHtml = tocGen(await post.html);
 
     {post.type == 'post' && <Pagination slot="pagination" prev={prevPost} next={nextPost} />}
 
-    <Comments slot="comments" client:load />
+    <Comments slot="comments" />
 
     <Footer slot="footer" post={post} />
 
