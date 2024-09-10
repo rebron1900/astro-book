@@ -14,12 +14,14 @@ if (post) {
     og_title = post.title;
     og_url = normalizeSlug(post.slug);
     og_desc = post.excerpt;
-    og_img = encodeURI(`https://og.190102.xyz/api/og?title=${og_title}&desc=${og_img_desc}&date=${normalizeData(post?.published_at)}`);
+    og_img = encodeURI(
+        `https://og.190102.xyz/api/og?title=${encodeURIComponent(og_title)}&desc=${encodeURIComponent(og_img_desc)}&date=${normalizeData(post?.published_at)}`
+    );
 } else {
     og_title = settings?.title;
     og_desc = settings?.description;
     og_url = import.meta.env.SITE;
-    og_img = encodeURI(`https://og.190102.xyz/api/og?title=${og_title}&desc=${og_desc}&date=1900-01-01`);
+    og_img = `https://og.190102.xyz/api/og?title=${encodeURIComponent(og_title)}&desc=${encodeURIComponent(og_desc)}&date=1900-01-01`;
 }
 ---
 
