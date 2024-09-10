@@ -1,0 +1,28 @@
+---
+
+---
+
+<script>
+    import 'artalk/dist/Artalk.css';
+    import Artalk from 'artalk';
+    import cocoMessage from '../utils/coco-message';
+
+    const commentinfo = { type: 'artalk', name: "1900'Blog", server: 'https://artalk.1900.live', el: '.at-comments' };
+
+    const artalk = Artalk.init({
+        el: commentinfo.el, // 绑定元素的 Selector
+        server: commentinfo.server, // 后端地址
+        site: commentinfo.name, // 你的站点名
+        pageKey: document.location.pathname
+    });
+
+    artalk.on('comment-inserted', function () {
+        cocoMessage.success('感谢你发表的想法 💖');
+    });
+</script>
+<div id="comments">
+    <div>
+        <h3 id="join-comments">加入评论</h3>
+    </div>
+    <div class="at-comments"></div>
+</div>

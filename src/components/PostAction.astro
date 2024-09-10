@@ -14,7 +14,7 @@ const { post } = Astro.props;
 </div>
 
 <script>
-    // import cocoMessage from '../utils/coco-message';
+    import cocoMessage from '../utils/coco-message';
 
     document.addEventListener('astro:page-load', () => {
         if (document.querySelector('.post_like')) {
@@ -29,7 +29,7 @@ const { post } = Astro.props;
                     var mail = JSON.parse(localStorage.getItem('ArtalkUser')) != null ? JSON.parse(localStorage.getItem('ArtalkUser')).mail : '';
 
                     if (likelist.indexOf(post_id + ',') != -1) {
-                        // cocoMessage.success('你已经点过赞了 ❤️');
+                        cocoMessage.success('你已经点过赞了 ❤️');
                         likeButton.classList.add('active');
                     } else {
                         fetch(`${apiUrl}/post/${post_id}/like`, { method: 'post' })
@@ -37,7 +37,7 @@ const { post } = Astro.props;
                                 return res.json();
                             })
                             .then((data) => {
-                                // cocoMessage.success('点赞成功，谢谢你的 ❤️');
+                                cocoMessage.success('点赞成功，谢谢你的 ❤️');
                                 localStorage.setItem('lieklist', likelist + post_id + ',');
                                 likeButton.classList.add('active');
                                 likeText.innerText = data.likes;

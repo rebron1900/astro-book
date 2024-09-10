@@ -1,23 +1,21 @@
 // 定义测试用的URL
-// const wsUrl = "ws://localhost:8081/update";
-// const appListUrl = "http://localhost:8080/assets/app.json";
+// const wsUrl = 'ws://localhost:8081/update';
+const appListUrl = 'http://localhost:4321/app.json';
 
 // 定义正式环境的url
 const cdn = 'https://cdn.1900.live/apps/';
 const wsUrl = 'wss://api.1900.live/actives_ws';
-const appListUrl = 'https://1900.live/app.json';
+// const appListUrl = 'https://1900.live/app.json';
 
 // app白名单
 let appList = {};
 // 保存WebSocket实例的变量
 let ws2;
-
-let activsTippy = null;
+let activesTippy = null;
 
 // 初始化WebSocket连接
-export default function initWebSocket(tippy) {
-    activsTippy = tippy;
-    // 获取远端的app清单
+export default function initWebSocket(actives) {
+    activesTippy = actives;
     fetch(appListUrl).then((rep) => {
         rep.json().then((data) => {
             ws2 = new WebSocket(wsUrl);
@@ -64,7 +62,7 @@ function onMessage(event) {
                 // 更新dom上app的信息
                 activs.dataset.app = processName;
                 // 这里我用Tippy.js做鼠标悬浮提示，更新悬浮提示内容
-                this.activsTippy.forEach(function (e) {
+                activesTippy.forEach(function (e) {
                     e.setContent('@1900 在使用 ' + appList[processName].title + ' ' + appList[processName].action);
                 });
             }, 500);
