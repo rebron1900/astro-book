@@ -13,6 +13,9 @@ import { settings as site } from '../data/ghost-store';
             placement: 'right',
             maxWidth: 300
         });
+
+        initWebSocket(actives);
+
         document.addEventListener('astro:page-load', () => {
             initWebSocket(actives);
         });
