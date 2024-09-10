@@ -14,7 +14,7 @@ function _typeof(obj) {
     return _typeof(obj);
 }
 
-export default cocoMessage(function (global, factory) {
+!(function (global, factory) {
     (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined'
         ? (module.exports = factory())
         : typeof define === 'function' && define.amd
@@ -324,3 +324,5 @@ export default cocoMessage(function (global, factory) {
 
     return cocoMessage;
 });
+
+export default cocoMessage;
