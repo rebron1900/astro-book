@@ -4,6 +4,7 @@ const config = {
         limit: 10,
         offset: 10
     },
+    apiUrl: 'https://api.1900.live',
     customPage: ['archives', 'memos', 'links', 'douban', 'albums', 'map'],
 
     //配置合集信息

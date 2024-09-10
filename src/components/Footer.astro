@@ -1,0 +1,32 @@
+---
+import PostAction from '../components/PostAction.astro';
+
+import { getSvg, normalizeData } from '../utils/help';
+const { post } = Astro.props;
+---
+
+<PostAction post={post} />
+
+<div class="flex flex-wrap justify-start">
+    <div>
+        <a class="flex align-center" href="#" title="Last modified by" rel="noopener">
+            <Fragment set:html={getSvg('calendar')} />
+
+            <span>{normalizeData(post.published_at)}</span>
+        </a>
+    </div>
+
+    <div>
+        <a class="flex align-center" href="#" title="Likes" rel="noopener">
+            <Fragment set:html={getSvg('like')} />
+            <span class="post_likes"></span>
+        </a>
+    </div>
+
+    <div>
+        <a class="flex align-center" href="#" title="Views" rel="noopener">
+            <Fragment set:html={getSvg('views')} />
+            <span class="post_views"></span>
+        </a>
+    </div>
+</div>

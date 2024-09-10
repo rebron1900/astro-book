@@ -16,6 +16,7 @@ import Menu from '../components/Menu.astro';
 import CodeSlot from '../components/CodeSlot.astro';
 import { Markup } from 'astro-remote';
 import RemotePicture from '../components/RemotePicture.astro';
+import Footer from '../components/Footer.astro';
 
 export async function getStaticPaths() {
     const posts = postsAll.concat(pages);
@@ -53,6 +54,8 @@ const tocHtml = tocGen(await post.html);
     {post.type == 'post' && <Pagination slot="pagination" prev={prevPost} next={nextPost} />}
 
     <Comments slot="comments" client:load />
+
+    <Footer slot="footer" post={post} />
 
     <Relitu slot="relitu" />
 

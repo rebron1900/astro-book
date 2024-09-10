@@ -20,11 +20,11 @@ if (post) {
               .replace(/<\/?[^>]+(>|$)/g, '')
               .trim()
               .replace(/"/g, '')
-        : settings.description.replace(/<\/?[^>]+(>|$)/g, '').trim();
+        : settings?.description.replace(/<\/?[^>]+(>|$)/g, '').trim();
     og_img = encodeURI(`https://og.190102.xyz/api/og?title=${og_title}&desc=${og_img_desc}&date=${new Date(post?.published_at).toISOString().split('T')[0]}`);
 } else {
-    og_title = settings.title;
-    og_desc = settings.description;
+    og_title = settings?.title;
+    og_desc = settings?.description;
     og_url = import.meta.env.SITE;
     og_img = encodeURI(`https://og.190102.xyz/api/og?title=${og_title}&desc=${og_desc}&date=1900-01-01`);
 }
@@ -56,8 +56,8 @@ if (post) {
 
 <ViewTransitions />
 
-<link rel="sitemap" type="application/xml" title={`${settings.title}的站点地图`} href="/sitemap.xml" />
-<link rel="alternate" type="application/rss+xml" title={`${settings.title}的Rss`} href="/rss.xml" />
+<link rel="sitemap" type="application/xml" title={`${settings?.title}的站点地图`} href="/sitemap.xml" />
+<link rel="alternate" type="application/rss+xml" title={`${settings?.title}的Rss`} href="/rss.xml" />
 <link rel="icon" href="/favicon.png" />
 <link rel="canonical" href={og_url} />
 
@@ -97,7 +97,7 @@ if (post) {
 
         // Scroll to top function
 
-        document.getElementById('scrollToTop').addEventListener('click', () => {
+        document.getElementById('scrollToTop')?.addEventListener('click', () => {
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'

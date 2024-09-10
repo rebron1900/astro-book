@@ -56,3 +56,21 @@ export function normalizeSlug(slug: string) {
 
     return slug;
 }
+
+export function normalizeData(data: string): string | null {
+    try {
+        const date = new Date(data);
+
+        // 检查日期是否有效
+        if (isNaN(date.getTime())) {
+            console.error('Invalid date format:', data);
+            return null; // 或者返回一个默认值，例如 "Invalid date"
+        }
+
+        const ndata = date.toISOString().split('T')[0];
+        return ndata;
+    } catch (error) {
+        console.error('Error normalizing date:', error);
+        return '1900-01-01'; // 或者返回一个默认值
+    }
+}
