@@ -21,6 +21,7 @@
         });
 
         artalk.on('comment-inserted', function () {
+            cocoMessage.insertCSS();
             cocoMessage.success('感谢你发表的想法 💖');
         });
     });

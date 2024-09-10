@@ -136,7 +136,8 @@ function _typeof(obj) {
                     }
                 }
             }
-        }
+        },
+        insertCSS: insertCssInHead
     };
 
     for (var it in methods) {
