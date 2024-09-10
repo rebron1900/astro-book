@@ -33,24 +33,6 @@ export default defineConfig({
                 }
             }
         }),
-        purgecss({
-            fontFace: true,
-            keyframes: false,
-            safelist: {
-                greedy: [
-                    /*astro*/
-                ]
-            },
-            content: [process.cwd() + '/src/**/*.{astro,jsx,html,js}'],
-            css: [`${outDir}/**/*.css`],
-            extractors: [
-                {
-                    // Example using a taiwindcss compatible class extractor
-
-                    extractor: (content) => content.match(/[\w-/:]+(?<!:)/g) || [],
-                    extensions: ['astro', 'html']
-                }
-            ]
-        })
+        purgecss()
     ]
 });
