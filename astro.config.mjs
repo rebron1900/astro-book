@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import solidJs from '@astrojs/solid-js';
 import expressiveCode from 'astro-expressive-code';
+import compress from 'astro-compress';
 
 import purgecss from 'astro-purgecss';
 
@@ -33,6 +34,7 @@ export default defineConfig({
                 }
             }
         }),
-        purgecss()
+        purgecss(),
+        compress()
     ]
 });
