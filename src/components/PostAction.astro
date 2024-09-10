@@ -17,100 +17,103 @@ const { post } = Astro.props;
     // import cocoMessage from '../utils/coco-message';
 
     document.addEventListener('astro:page-load', () => {
-        let post_id = document.querySelector('.post_like').dataset.postid;
-        let apiUrl = document.querySelector('.post_like').dataset.apiurl;
+        if (document.querySelector('.post_like')) {
+            let post_id = document.querySelector('.post_like').dataset.postid;
+            let apiUrl = document.querySelector('.post_like').dataset.apiurl;
 
-        const postAction = {
-            like: (post_id, apiUrl) => {
-                var likelist = localStorage.getItem('lieklist') || '';
-                var likeButton = document.querySelector('.post_like');
-                var likeText = document.querySelector('.post_likes');
-                var mail = JSON.parse(localStorage.getItem('ArtalkUser')) != null ? JSON.parse(localStorage.getItem('ArtalkUser')).mail : '';
+            const postAction = {
+                like: (post_id, apiUrl) => {
+                    var likelist = localStorage.getItem('lieklist') || '';
+                    var likeButton = document.querySelector('.post_like');
+                    var likeText = document.querySelector('.post_likes');
+                    var mail = JSON.parse(localStorage.getItem('ArtalkUser')) != null ? JSON.parse(localStorage.getItem('ArtalkUser')).mail : '';
 
-                if (likelist.indexOf(post_id + ',') != -1) {
-                    // cocoMessage.success('你已经点过赞了 ❤️');
-                    likeButton.classList.add('active');
-                } else {
-                    fetch(`${apiUrl}/post/${post_id}/like`, { method: 'post' })
+                    if (likelist.indexOf(post_id + ',') != -1) {
+                        // cocoMessage.success('你已经点过赞了 ❤️');
+                        likeButton.classList.add('active');
+                    } else {
+                        fetch(`${apiUrl}/post/${post_id}/like`, { method: 'post' })
+                            .then((res) => {
+                                return res.json();
+                            })
+                            .then((data) => {
+                                // cocoMessage.success('点赞成功，谢谢你的 ❤️');
+                                localStorage.setItem('lieklist', likelist + post_id + ',');
+                                likeButton.classList.add('active');
+                                likeText.innerText = data.likes;
+                            })
+                            .catch((error) => {
+                                console.error('There was a problem with the fetch operation:', error);
+                            });
+                    }
+                },
+                initLike: (post_id, apiUrl) => {
+                    var likelist = localStorage.getItem('lieklist') || '';
+                    var likeButton = document.querySelector('.post_like');
+                    var likeText = document.querySelector('.post_likes');
+                    if (likelist.indexOf(post_id + ',') != -1) {
+                        likeButton.classList.add('active');
+                    }
+                    fetch(`${apiUrl}/post/${post_id}/like`)
                         .then((res) => {
                             return res.json();
                         })
                         .then((data) => {
-                            // cocoMessage.success('点赞成功，谢谢你的 ❤️');
-                            localStorage.setItem('lieklist', likelist + post_id + ',');
-                            likeButton.classList.add('active');
-                            likeText.innerText = data.likes;
+                            if (data.likes) {
+                                likeButton.dataset.like = data.likes;
+                                likeText.innerText = data.likes;
+                            } else {
+                                likeButton.dataset.like = 0;
+                                likeText.innerText = 0;
+                            }
                         })
                         .catch((error) => {
-                            console.error('There was a problem with the fetch operation:', error);
-                        });
-                }
-            },
-            initLike: (post_id, apiUrl) => {
-                var likelist = localStorage.getItem('lieklist') || '';
-                var likeButton = document.querySelector('.post_like');
-                var likeText = document.querySelector('.post_likes');
-                if (likelist.indexOf(post_id + ',') != -1) {
-                    likeButton.classList.add('active');
-                }
-                fetch(`${apiUrl}/post/${post_id}/like`)
-                    .then((res) => {
-                        return res.json();
-                    })
-                    .then((data) => {
-                        if (data.likes) {
-                            likeButton.dataset.like = data.likes;
-                            likeText.innerText = data.likes;
-                        } else {
                             likeButton.dataset.like = 0;
                             likeText.innerText = 0;
-                        }
-                    })
-                    .catch((error) => {
-                        likeButton.dataset.like = 0;
-                        likeText.innerText = 0;
-                        console.error('There was a problem with the fetch operation:', error);
-                    });
-                return true;
-            },
-            initViews: (post_id, apiUrl) => {
-                var viewlist = localStorage.getItem('viewlist') || '';
-                var viewText = document.querySelector('.post_views');
-
-                if (viewlist.indexOf(post_id + ',') != -1) {
-                    fetch(`${apiUrl}/post/${post_id}/views`)
-                        .then((res) => {
-                            return res.json();
-                        })
-                        .then((data) => {
-                            if (data.Views) {
-                                viewText.innerText = data.Views;
-                            } else {
-                                viewText.innerText = 0;
-                            }
-                        });
-                } else {
-                    fetch(`${apiUrl}/post/${post_id}/views`, { method: 'post' })
-                        .then((res) => {
-                            return res.json();
-                        })
-                        .then((data) => {
-                            localStorage.setItem('viewlist', viewlist + post_id + ',');
-                            viewText.innerText = data.Views;
-                        })
-                        .catch((error) => {
-                            viewText.innerText = 0;
                             console.error('There was a problem with the fetch operation:', error);
                         });
-                }
+                    return true;
+                },
+                initViews: (post_id, apiUrl) => {
+                    var viewlist = localStorage.getItem('viewlist') || '';
+                    var viewText = document.querySelector('.post_views');
 
-                return true;
-            }
-        };
-        postAction.initLike(post_id, apiUrl);
-        postAction.initViews(post_id, apiUrl);
-        document.querySelector('.post_like').addEventListener('click', () => {
-            postAction.like(post_id, apiUrl);
-        });
+                    if (viewlist.indexOf(post_id + ',') != -1) {
+                        fetch(`${apiUrl}/post/${post_id}/views`)
+                            .then((res) => {
+                                return res.json();
+                            })
+                            .then((data) => {
+                                if (data.Views) {
+                                    viewText.innerText = data.Views;
+                                } else {
+                                    viewText.innerText = 0;
+                                }
+                            });
+                    } else {
+                        fetch(`${apiUrl}/post/${post_id}/views`, { method: 'post' })
+                            .then((res) => {
+                                return res.json();
+                            })
+                            .then((data) => {
+                                localStorage.setItem('viewlist', viewlist + post_id + ',');
+                                viewText.innerText = data.Views;
+                            })
+                            .catch((error) => {
+                                viewText.innerText = 0;
+                                console.error('There was a problem with the fetch operation:', error);
+                            });
+                    }
+
+                    return true;
+                }
+            };
+
+            postAction.initLike(post_id, apiUrl);
+            postAction.initViews(post_id, apiUrl);
+            document.querySelector('.post_like').addEventListener('click', () => {
+                postAction.like(post_id, apiUrl);
+            });
+        }
     });
 </script>
