@@ -16,7 +16,7 @@ let activsTippy = null;
 
 // 初始化WebSocket连接
 export default function initWebSocket(tippy) {
-    this.activsTippy = tippy;
+    activsTippy = tippy;
     // 获取远端的app清单
     fetch(appListUrl).then((rep) => {
         rep.json().then((data) => {
