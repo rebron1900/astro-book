@@ -469,9 +469,9 @@ pre:hover > .copy-button {
     justify-content: center;
     line-height: 1.5rem;
     opacity: 0.9;
-    position: absolute;
-    right: 10px;
-    top: 10px;
+    position: relative;
+    margin-right: 0;
+    margin-left: auto;
     width: 26px;
     visibility: hidden;
     z-index: 10;
@@ -559,7 +559,7 @@ pre:hover > .copy-button {
 
 .fold-button {
     align-items: baseline;
-    bottom: 0;
+    bottom: 1em;
     color: var(--gray-700);
     cursor: pointer;
     display: flex;

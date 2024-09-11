@@ -14,4 +14,8 @@ const checkLang = codetag.attr('class') ? codetag.attr('class').slice(9) : undef
 const lang = checkLang ? checkLang : 'plaintext';
 ---
 
-<Code code={code} lang={lang} themes={{ dark: 'dracula', light: 'github-light' }} defaultColor={false} />
+<Code code={code} lang={lang} themes={{ dark: 'vitesse-dark', light: 'vitesse-light' }} defaultColor={false} />
+<script>
+    import { initCopyButton } from '../utils/code';
+    initCopyButton();
+</script>

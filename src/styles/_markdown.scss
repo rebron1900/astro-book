@@ -1,4 +1,4 @@
-@import "variables";
+@import 'variables';
 
 .markdown {
     line-height: 2;
@@ -33,7 +33,7 @@
         }
 
         &:before {
-            content: "";
+            content: '';
             font-size: 50%;
             left: 0;
             bottom: 0;
@@ -52,21 +52,21 @@
     h2 {
         font-size: 1.7rem;
         &:before {
-            content: "h2";
+            content: 'h2';
         }
     }
 
     h3 {
         font-size: 1.4rem;
         &:before {
-            content: "h3";
+            content: 'h3';
         }
     }
 
     h4 {
         font-size: 1.3rem;
         &:before {
-            content: "h4";
+            content: 'h4';
         }
     }
 
@@ -115,9 +115,7 @@
         background: var(--gray-200);
         border-radius: $border-radius;
         overflow-x: auto;
-        position: relative;
-
-        code {
+        fold-button code {
             padding: 0;
             background: none;
             color: white;
@@ -181,8 +179,8 @@
         padding-inline-start: $padding-16 * 2;
         word-wrap: break-word;
 
-        li{
-            margin-bottom: 0.25rem
+        li {
+            margin-bottom: 0.25rem;
         }
     }
 
@@ -237,12 +235,14 @@
 
 @media (min-width: 768px) {
     .markdown {
-      h2:before, h3:before, h4:before {
-        position: absolute;
-        left: -1.5rem;
-      }
+        h2:before,
+        h3:before,
+        h4:before {
+            position: absolute;
+            left: -1.5rem;
+        }
     }
-  }
+}
 
 .markdown-inner {
     // Util class to remove extra margin in nested markdown content
