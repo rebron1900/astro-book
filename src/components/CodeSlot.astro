@@ -1,5 +1,7 @@
 ---
 import { Code } from 'astro:components';
+import { transformerNotationDiff, transformerNotationHighlight } from '@shikijs/transformers';
+
 import * as cheerio from 'cheerio';
 
 const html = await Astro.slots.render('default');
@@ -14,8 +16,18 @@ const checkLang = codetag.attr('class') ? codetag.attr('class').slice(9) : undef
 const lang = checkLang ? checkLang : 'plaintext';
 ---
 
-<Code code={code} lang={lang} themes={{ dark: 'vitesse-dark', light: 'vitesse-light' }} defaultColor={false} />
+<Code
+    wrap={true}
+    code={code}
+    lang={lang}
+    themes={{ dark: 'vitesse-dark', light: 'vitesse-light' }}
+    defaultColor={false}
+    transformers={[transformerNotationDiff(), transformerNotationHighlight()]}
+/>
 <script>
     import { initCopyButton } from '../utils/code';
     initCopyButton();
+    document.addEventListener('astro:after-swap', () => {
+        initCopyButton();
+    });
 </script>

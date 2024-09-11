@@ -469,9 +469,10 @@ pre:hover > .copy-button {
     justify-content: center;
     line-height: 1.5rem;
     opacity: 0.9;
-    position: relative;
+    position: absolute;
     margin-right: 0;
     margin-left: auto;
+    right: 22px;
     width: 26px;
     visibility: hidden;
     z-index: 10;

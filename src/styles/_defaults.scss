@@ -38,6 +38,9 @@ $hint-colors: (
     --gray-500: #adb5bd;
     --gray-700: #6c757d;
 
+    --red-soft: rgba(244, 63, 94, 0.16);
+    --green-soft: rgba(16, 185, 129, 0.16);
+
     --color-link: #0055bb;
     --color-visited-link: #0055bb;
     --color-hover-link: #0074ff;
@@ -61,6 +64,9 @@ $hint-colors: (
     --gray-500: rgba(196, 196, 196, 0.5);
     --gray-700: rgba(196, 196, 196, 0.7);
 
+    --red-soft: rgba(244, 63, 94, 0.16);
+    --green-soft: rgba(16, 185, 129, 0.16);
+
     --color-link: #84b2ff;
     --color-visited-link: #84b2ff;
 
@@ -83,6 +89,9 @@ $hint-colors: (
     --gray-200: rgba(227, 204, 148, 0.2);
     --gray-500: rgba(227, 204, 148, 0.5);
     --gray-700: rgba(227, 204, 148, 0.7);
+
+    --red-soft: rgba(244, 63, 94, 0.16);
+    --green-soft: rgba(16, 185, 129, 0.16);
 
     --color-link: #c5900d;
     --color-visited-link: #c5900d;
@@ -110,6 +119,9 @@ $hint-colors: (
     --gray-500: rgba(255, 255, 255, 0.5);
     --gray-700: rgba(255, 255, 255, 0.7);
 
+    --red-soft: rgba(244, 63, 94, 0.16);
+    --green-soft: rgba(16, 185, 129, 0.16);
+
     --color-link: rgb(235, 153, 161);
     --color-visited-link: rgb(235, 153, 161);
 
@@ -131,6 +143,9 @@ $hint-colors: (
     --gray-500: rgba(166, 180, 210, 0.5);
     --gray-700: rgba(166, 180, 210, 0.7);
 
+    --red-soft: rgba(244, 63, 94, 0.16);
+    --green-soft: rgba(16, 185, 129, 0.16);
+
     --color-link: #7b88c8;
     --color-visited-link: #7b88c8;
     --color-hover-link: #4b63db;
@@ -151,6 +166,9 @@ $hint-colors: (
     --gray-200: rgba(69, 73, 81, 0.2);
     --gray-500: rgba(69, 73, 81, 0.5);
     --gray-700: rgba(69, 73, 81, 0.7);
+
+    --red-soft: rgba(244, 63, 94, 0.16);
+    --green-soft: rgba(16, 185, 129, 0.16);
 
     --color-link: #434343;
     --color-visited-link: #434343;
@@ -190,25 +208,115 @@ $hint-colors: (
 }
 
 @mixin code-dark {
-    .astro-code,
-    .astro-code span {
-        color: var(--shiki-dark) !important;
-        background-color: var(--shiki-dark-bg) !important;
-        /* 可选，用于定义字体样式 */
-        font-style: var(--shiki-dark-font-style) !important;
-        font-weight: var(--shiki-dark-font-weight) !important;
-        text-decoration: var(--shiki-dark-text-decoration) !important;
+    .astro-code {
+        background-color: var(--shiki-dark-bg);
+
+        span {
+            color: var(--shiki-dark);
+            font-style: var(--shiki-dark-font-style);
+            font-weight: var(--shiki-dark-font-weight);
+            text-decoration: var(--shiki-dark-text-decoration);
+        }
+
+        code {
+            span {
+                &.highlighted {
+                    margin: 0 -24px;
+                    padding: 0 24px;
+                    width: calc(100% + 48px);
+                    display: inline-block;
+                    transition: background-color 0.5s;
+
+                    background-color: var(--gray-200);
+                }
+
+                &.diff {
+                    margin: 0 -24px;
+                    padding: 0 24px;
+                    width: calc(100% + 48px);
+                    display: inline-block;
+                    transition: background-color 0.5s;
+
+                    &::before {
+                        position: absolute;
+                        left: 4px;
+                    }
+                    &.add {
+                        background-color: var(--green-soft);
+
+                        &:before {
+                            content: '+';
+                            color: var(--hint-color-danger);
+                        }
+                    }
+                    &.remove {
+                        background-color: var(--red-soft);
+
+                        &:before {
+                            content: '-';
+                            color: var(--hint-color-danger);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
 @mixin code-light {
-    .astro-code,
-    .astro-code span {
-        color: var(--shiki-light) !important;
-        background-color: var(--shiki-light-bg) !important;
-        /* 可选，用于定义字体样式 */
-        font-style: var(--shiki-light-font-style) !important;
-        font-weight: var(--shiki-light-font-weight) !important;
-        text-decoration: var(--shiki-light-text-decoration) !important;
+    .astro-code {
+        background-color: var(--shiki-light-bg);
+
+        span {
+            color: var(--shiki-light);
+            font-style: var(--shiki-light-font-style);
+            font-weight: var(--shiki-light-font-weight);
+            text-decoration: var(--shiki-light-text-decoration);
+        }
+
+        code {
+            span {
+                &.highlighted {
+                    margin: 0 -24px;
+                    padding: 0 24px;
+                    width: calc(100% + 48px);
+                    display: inline-block;
+                    transition: background-color 0.5s;
+
+                    background-color: var(--gray-200);
+                }
+
+                &.diff {
+                    margin: 0 -24px;
+                    padding: 0 24px;
+                    width: calc(100% + 48px);
+                    display: inline-block;
+                    transition: background-color 0.5s;
+
+                    &:before {
+                        position: absolute;
+                        left: 4px;
+                    }
+
+                    &.add {
+                        background-color: var(--green-soft);
+
+                        &:before {
+                            content: '+';
+                            color: var(--hint-color-danger);
+                        }
+                    }
+                    &.remove {
+                        background-color: var(--red-soft);
+
+                        &:before {
+                            content: '-';
+                            left: 6px;
+                            color: var(--hint-color-danger);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
