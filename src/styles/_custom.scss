@@ -872,3 +872,17 @@ h3#join-comments {
 .img-post.marker {
     background: linear-gradient(180deg, #2df4a3, #024603);
 }
+/* HTML: <div class="loader"></div> */
+.loader {
+    width: 20px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--color-link);
+    box-shadow: 0 0 0 0 var(--color-link);
+    animation: l1 1s infinite;
+}
+@keyframes l1 {
+    100% {
+        box-shadow: 0 0 0 30px #0000;
+    }
+}

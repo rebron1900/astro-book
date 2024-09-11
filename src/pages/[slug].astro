@@ -67,6 +67,8 @@ const tocHtml = tocGen(await post.html);
     </Fragment>
 
     <Fragment slot="h-toc">
-        <Toc />
+        <aside class="hidden clearfix">
+            <Toc html={tocHtml} isToc={tocHtml && true} />
+        </aside>
     </Fragment>
 </BaseLayout>

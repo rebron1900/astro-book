@@ -7,12 +7,6 @@ import compress from 'astro-compress';
 // https://astro.build/config
 export default defineConfig({
     site: 'https://1900.live',
-    redirects: {
-        '/rss': {
-            status: 302,
-            destination: '/rss.xml'
-        }
-    },
     integrations: [
         sitemap(),
         solidJs({

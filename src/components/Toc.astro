@@ -3,20 +3,20 @@ const { isToc, html } = Astro.props;
 ---
 
 <nav id="TableOfContents">
-    <nav>
-        <ul>
-            {
-                isToc && (
-                        <strong>TOC</strong>
-                        <Fragment set:html={html} />
-                )
-            }
+    <ul>
+        {
+            isToc && (
+                <li>
+                    <strong>TOC</strong>
+                    <Fragment set:html={html} />
+                </li>
+            )
+        }
 
-            <li>
-                <strong>
-                    <a href="#join-comments">加入评论</a>
-                </strong>
-            </li>
-        </ul>
-    </nav>
+        <li>
+            <strong>
+                <a href="#join-comments">加入评论</a>
+            </strong>
+        </li>
+    </ul>
 </nav>

@@ -13,13 +13,13 @@ let og_title,
 if (post) {
     og_title = post.title;
     og_url = normalizeSlug(post.slug);
-    og_desc = post.excerpt;
+    og_desc = post.excerpt.replace(/[\r\n]+/g, '');
     og_img = encodeURI(
         `https://og.190102.xyz/api/og?title=${encodeURIComponent(og_title)}&desc=${encodeURIComponent(og_desc)}&date=${normalizeData(post?.published_at)}`
     );
 } else {
     og_title = settings?.title;
-    og_desc = settings?.description;
+    og_desc = settings?.description.replace(/[\r\n]+/g, '');
     og_url = import.meta.env.SITE;
     og_img = `https://og.190102.xyz/api/og?title=${encodeURIComponent(og_title)}&desc=${encodeURIComponent(og_desc)}&date=1900-01-01`;
 }
@@ -35,17 +35,17 @@ if (post) {
 <meta name="color-scheme" content="light dark" />
 
 <!-- Facebook Meta Tags -->
-<meta property="og:url" content={url} />
+<meta property="og:url" content={og_url} />
 <meta property="og:type" content="website" />
-<meta property="og:title" content={title} />
+<meta property="og:title" content={og_title} />
 <meta property="og:description" content={og_desc} />
 <meta property="og:image" content={og_img} />
 
 <!-- Twitter Meta Tags -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta property="twitter:domain" content={import.meta.env.SITE} />
-<meta property="twitter:url" content={url} />
-<meta name="twitter:title" content={title} />
+<meta property="twitter:url" content={og_url} />
+<meta name="twitter:title" content={og_title} />
 <meta name="twitter:description" content={og_desc} />
 <meta name="twitter:image" content={og_img} />
 
@@ -96,11 +96,6 @@ if (post) {
                 top: 0,
                 behavior: 'smooth'
             });
-        });
-
-        const douban = tippy('.db--icon-comment', {
-            placement: 'bottom',
-            maxWidth: 300
         });
 
         const relitu = tippy('.item-info', {

@@ -21,10 +21,12 @@ async function getImageMetadata(src) {
     }
 }
 
+let metas = await getImageMetadata(src);
+
 const generateImageSrcset = (image: string, isLocal = false) => {
     image = encodeURI(image);
     let imageSrcset = [];
-    const imageWidths = [200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800];
+    const imageWidths = [400, 600, 800, 1000, 1200, 1400, 1600, 1800];
 
     if (image.match(import.meta.env.CND_URL)) {
         // If image is local, determine the width of the image and then generate
@@ -46,7 +48,7 @@ const generateImageSrcset = (image: string, isLocal = false) => {
 };
 ---
 
-<img class={classNames ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />
+<img class={classNames ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} aspectRatio={metas.width / metas.height} />
 
 <!-- 
 <Picture
