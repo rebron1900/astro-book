@@ -21,8 +21,6 @@ async function getImageMetadata(src) {
     }
 }
 
-let metas = await getImageMetadata(src);
-
 const generateImageSrcset = (image: string, isLocal = false) => {
     image = encodeURI(image);
     let imageSrcset = [];
@@ -48,7 +46,7 @@ const generateImageSrcset = (image: string, isLocal = false) => {
 };
 ---
 
-<img class={classNames ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} aspectRatio={metas.width / metas.height} />
+<img class={classNames ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />
 
 <!-- 
 <Picture
