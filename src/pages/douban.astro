@@ -1,7 +1,6 @@
 ---
 import { pages, settings, neodb } from '../data/ghost-store.js';
 import { doubanGroupByDate, getSvg } from '../utils/help.js';
-import type { GetStaticPathsOptions } from 'astro';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/Head.astro';
@@ -10,7 +9,6 @@ import Relitu from '../components/Relitu.jsx';
 import Header from '../components/Header.astro';
 import Top from '../components/Top.astro';
 import Menu from '../components/Menu.astro';
-import Button from '../components/shortcode/button.astro';
 
 const pageDouban = pages.find((post) => post.slug == 'douban');
 const groupdata = doubanGroupByDate(neodb.data);
@@ -84,6 +82,9 @@ const groupdata = doubanGroupByDate(neodb.data);
 
             <script src="https://unpkg.com/htmx.org@2.0.2"></script>
             <script>
+                import 'https://unpkg.com/htmx.org@2.0.2';
+                import tippy from 'tippy.js';
+                import 'tippy.js/dist/tippy.css';
                 const douban = {
                     change: function (type) {
                         // 选择所有具有data-itemtype属性的元素
@@ -135,19 +136,16 @@ const groupdata = doubanGroupByDate(neodb.data);
                 };
 
                 document.addEventListener('astro:page-load', () => {
+                    tippy('.db--icon-comment', {
+                        placement: 'bottom',
+                        maxWidth: 300
+                    });
+
                     document.querySelectorAll('.db--navItem').forEach((el) => {
                         el.addEventListener('click', function (e) {
                             douban.change(e.target.dataset.type);
                             douban.active(e.currentTarget);
                         });
-                    });
-
-                    document.body.addEventListener('htmx:afterSwap', function (event) {
-                        document.querySelector('.douban-more')?.remove();
-
-                        const currentCG = document.querySelector('.db--navItem.current');
-                        douban.change('all');
-                        douban.active(document.querySelectorAll('.db--navItem')[0]);
                     });
                 });
             </script>
