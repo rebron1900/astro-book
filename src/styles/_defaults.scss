@@ -28,7 +28,7 @@ $hint-colors: (
     danger: #f66,
     kg-callout-card-blue: #6bf,
     kg-callout-card-yellow: #fd6,
-    kg-callout-card-red: #f66,
+    kg-callout-card-red: #f66
 ) !default;
 
 // Themes
@@ -99,7 +99,7 @@ $hint-colors: (
     --hint-color-danger: #f66;
 
     body {
-        font-family: "Noto Serif SC", serif;
+        font-family: 'Noto Serif SC', serif;
         word-wrap: break-word;
     }
 }
@@ -172,19 +172,43 @@ $hint-colors: (
     }
 
     .markdown {
-        a:not(.kg-product-card-btn-accent,.book-btn,.kg-btn,.kg-header-card-button)  {
+        a:not(.kg-product-card-btn-accent, .book-btn, .kg-btn, .kg-header-card-button) {
             text-decoration: underline;
         }
     }
 
     .book-title {
-        a{
+        a {
             text-decoration: none !important;
         }
     }
 
     body {
         word-wrap: break-word;
-        font-family: "Noto Serif SC", serif;
+        font-family: 'Noto Serif SC', serif;
+    }
+}
+
+@mixin code-dark {
+    .astro-code,
+    .astro-code span {
+        color: var(--shiki-dark) !important;
+        background-color: var(--shiki-dark-bg) !important;
+        /* 可选，用于定义字体样式 */
+        font-style: var(--shiki-dark-font-style) !important;
+        font-weight: var(--shiki-dark-font-weight) !important;
+        text-decoration: var(--shiki-dark-text-decoration) !important;
+    }
+}
+
+@mixin code-light {
+    .astro-code,
+    .astro-code span {
+        color: var(--shiki-light) !important;
+        background-color: var(--shiki-light-bg) !important;
+        /* 可选，用于定义字体样式 */
+        font-style: var(--shiki-light-font-style) !important;
+        font-weight: var(--shiki-light-font-weight) !important;
+        text-decoration: var(--shiki-light-text-decoration) !important;
     }
 }

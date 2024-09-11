@@ -1,5 +1,5 @@
 ---
-import { Code } from 'astro-expressive-code/components';
+import { Code } from 'astro:components';
 import * as cheerio from 'cheerio';
 
 const html = await Astro.slots.render('default');
@@ -14,4 +14,4 @@ const checkLang = codetag.attr('class') ? codetag.attr('class').slice(9) : undef
 const lang = checkLang ? checkLang : 'plaintext';
 ---
 
-<Code code={code} lang={lang} />
+<Code code={code} lang={lang} themes={{ dark: 'dracula', light: 'github-light' }} defaultColor={false} />

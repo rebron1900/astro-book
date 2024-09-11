@@ -1,5 +1,4 @@
 // mixin code style
-
 :root {
     @include theme-light;
 }
@@ -12,24 +11,30 @@
 
 html.dark {
     @include theme-dark;
+    @include code-dark;
 }
 
 html.light {
     @include theme-light;
+    @include code-light;
 }
 
 html.yayu {
     @include theme-yayu;
+    @include code-dark;
 }
 
 html.yuhang {
     @include theme-yuhang;
+    @include code-dark;
 }
 
 html.herblue {
     @include theme-herblue;
+    @include code-dark;
 }
 
 html.onojyun {
     @include theme-onojyun;
+    @include code-light;
 }
