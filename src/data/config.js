@@ -1,6 +1,6 @@
 const config = {
     memos: {
-        url: 'https://memos.1900.live/api/v1/memo?creatorId=101',
+        url: 'https://memos.1900.live/api/v1/memo?creatorId=101&limit=all',
         limit: 10,
         offset: 10
     },

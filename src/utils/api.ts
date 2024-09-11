@@ -1,6 +1,7 @@
 import type { Page, Post } from '@ts-ghost/content-api';
 
 import { TSGhostContentAPI } from '@ts-ghost/content-api';
+import config from '../data/config';
 
 const ghostUrl = import.meta.env.GHOST_API_URL;
 const ghostApiKey = import.meta.env.GHOST_API_KEY;
@@ -168,4 +169,8 @@ export async function getFlux() {
         console.error('请求错误:', error);
         return []; // Return an empty array or handle the error as needed
     }
+}
+
+export async function getMemos() {
+    return fetch(config.memos.url).then((res) => res.json());
 }

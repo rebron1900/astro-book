@@ -1,28 +1,19 @@
 ---
-import { pages, settings, neodb } from '../../data/ghost-store.js';
-import { doubanGroupByDate, getSvg } from '../../utils/help.js';
+import { pages, settings, neodb } from '../data/ghost-store.js';
+import { doubanGroupByDate, getSvg } from '../utils/help.js';
 import type { GetStaticPathsOptions } from 'astro';
 
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Head from '../../components/Head.astro';
-import Comments from '../../components/Comments.astro';
-import Relitu from '../../components/Relitu.jsx';
-import Header from '../../components/Header.astro';
-import Top from '../../components/Top.astro';
-import Menu from '../../components/Menu.astro';
-import Button from '../../components/shortcode/button.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Head from '../components/Head.astro';
+import Comments from '../components/Comments.astro';
+import Relitu from '../components/Relitu.jsx';
+import Header from '../components/Header.astro';
+import Top from '../components/Top.astro';
+import Menu from '../components/Menu.astro';
+import Button from '../components/shortcode/button.astro';
 
 const pageDouban = pages.find((post) => post.slug == 'douban');
-
-export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
-    const db = neodb.data;
-    return paginate(db, {
-        pageSize: 50
-    });
-}
-
-const { page } = Astro.props;
-const groupdata = doubanGroupByDate(page.data);
+const groupdata = doubanGroupByDate(neodb.data);
 ---
 
 <BaseLayout post={pageDouban}>
@@ -89,28 +80,10 @@ const groupdata = doubanGroupByDate(page.data);
                         ))
                     )
                 }
-                <div class="flex flex-wrap douban-more justify-center" style="padding: 3rem; gap:1.5rem">
-                    {
-                        page.url.next && (
-                            <a
-                                class="loader"
-                                href="javascript:(void)"
-                                hx-trigger="revealed delay:0.5s"
-                                hx-get={`${page.url.next}`}
-                                hx-target="#db--list__card"
-                                hx-swap="beforeend transition:true scroll:bottom"
-                                hx-select="#db--list__card"
-                            />
-                        )
-                    }
-                </div>
             </div>
+
             <script src="https://unpkg.com/htmx.org@2.0.2"></script>
-
             <script>
-                import tippy from 'tippy.js';
-                import 'tippy.js/dist/tippy.css';
-
                 const douban = {
                     change: function (type) {
                         // 选择所有具有data-itemtype属性的元素
@@ -169,22 +142,12 @@ const groupdata = doubanGroupByDate(page.data);
                         });
                     });
 
-                    tippy('.db--icon-comment', {
-                        placement: 'bottom',
-                        maxWidth: 300
-                    });
-
                     document.body.addEventListener('htmx:afterSwap', function (event) {
                         document.querySelector('.douban-more')?.remove();
 
                         const currentCG = document.querySelector('.db--navItem.current');
                         douban.change('all');
                         douban.active(document.querySelectorAll('.db--navItem')[0]);
-
-                        tippy('.db--icon-comment', {
-                            placement: 'bottom',
-                            maxWidth: 300
-                        });
                     });
                 });
             </script>
@@ -194,6 +157,8 @@ const groupdata = doubanGroupByDate(page.data);
             </div>
         </div>
     </article>
+
+    <Comments slot="comments" />
 
     <Relitu slot="relitu" />
 

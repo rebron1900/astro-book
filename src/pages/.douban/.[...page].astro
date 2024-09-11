@@ -14,8 +14,15 @@ import Button from '../../components/shortcode/button.astro';
 
 const pageDouban = pages.find((post) => post.slug == 'douban');
 
+export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
+    const db = neodb.data;
+    return paginate(db, {
+        pageSize: 50
+    });
+}
+
 const { page } = Astro.props;
-const groupdata = doubanGroupByDate(neodb);
+const groupdata = doubanGroupByDate(page.data);
 ---
 
 <BaseLayout post={pageDouban}>
@@ -82,27 +89,28 @@ const groupdata = doubanGroupByDate(neodb);
                         ))
                     )
                 }
-
-                {
-                    page.url.next && (
-                        <div class="flex flex-wrap justify-center  douban-more" style="padding: 3rem;">
+                <div class="flex flex-wrap btn-more justify-center" style="padding: 3rem; gap:1.5rem">
+                    {
+                        page.url.next && (
                             <a
+                                class="loader"
                                 href="javascript:(void)"
-                                class="book-btn"
+                                hx-trigger="revealed "
                                 hx-get={`${page.url.next}`}
                                 hx-target="#db--list__card"
-                                hx-swap="beforeend transition:true"
+                                hx-swap="beforeend transition:true scroll:bottom"
                                 hx-select="#db--list__card"
-                            >
-                                加载更多
-                            </a>
-                        </div>
-                    )
-                }
+                            />
+                        )
+                    }
+                </div>
             </div>
             <script src="https://unpkg.com/htmx.org@2.0.2"></script>
 
             <script>
+                import tippy from 'tippy.js';
+                import 'tippy.js/dist/tippy.css';
+
                 const douban = {
                     change: function (type) {
                         // 选择所有具有data-itemtype属性的元素
@@ -161,12 +169,22 @@ const groupdata = doubanGroupByDate(neodb);
                         });
                     });
 
+                    tippy('.db--icon-comment', {
+                        placement: 'bottom',
+                        maxWidth: 300
+                    });
+
                     document.body.addEventListener('htmx:afterSwap', function (event) {
-                        document.querySelector('.douban-more')?.remove();
+                        document.querySelector('.btn-more')?.remove();
 
                         const currentCG = document.querySelector('.db--navItem.current');
                         douban.change('all');
                         douban.active(document.querySelectorAll('.db--navItem')[0]);
+
+                        tippy('.db--icon-comment', {
+                            placement: 'bottom',
+                            maxWidth: 300
+                        });
                     });
                 });
             </script>
@@ -176,8 +194,6 @@ const groupdata = doubanGroupByDate(neodb);
             </div>
         </div>
     </article>
-
-    <Comments slot="comments" />
 
     <Relitu slot="relitu" />
 
