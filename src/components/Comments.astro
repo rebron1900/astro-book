@@ -13,6 +13,7 @@
     const commentinfo = { type: 'artalk', name: "1900'Blog", server: 'https://artalk.1900.live', el: '.at-comments' };
 
     document.addEventListener('astro:page-load', () => {
+        if (!document.querySelector(commentinfo.el)) return;
         const artalk = Artalk.init({
             el: commentinfo.el, // 绑定元素的 Selector
             server: commentinfo.server, // 后端地址
