@@ -10,10 +10,10 @@ const { site } = Astro.props;
 ---
 
 <nav>
-    <Brand />
+    <Brand transition:persist />
     <MenuSearch />
     <MenuTheme client:load />
-    <MenuNav />
+    <MenuNav transition:persist />
     <MenuTaxonomy />
     <MenuOther />
     <!--

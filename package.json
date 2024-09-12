@@ -26,6 +26,7 @@
         "astro-remote": "^0.3.3",
         "cheerio": "^1.0.0",
         "fuse.js": "^7.0.0",
+        "html-parse-stringify": "^3.0.1",
         "mapbox-gl": "^3.6.0",
         "marked": "^13.0.2",
         "medium-zoom": "^1.1.0",

@@ -33,6 +33,39 @@ export async function getStaticPaths() {
 }
 
 const { post, prevPost, nextPost } = Astro.props;
+import HTML from 'html-parse-stringify';
+
+var ast = HTML.parse(post?.html);
+let fatherList = '';
+
+function findTextNodes(node, text) {
+    let result = [];
+    fatherList += text;
+
+    // 检查当前节点
+    if (node.type === 'text' && node.content.startsWith('[[') && !fatherList.endsWith('precode')) {
+        node.content = node.content.replace('[[', '<a>test').replace(']]', '</a>');
+        result.push(node);
+    }
+
+    // 如果有子节点，递归遍历
+    if (node.children) {
+        node.children.forEach((child) => {
+            result = result.concat(findTextNodes(child, node.name));
+        });
+    }
+
+    return result;
+}
+
+const result = [];
+
+ast.forEach((node) => {
+    const temp = findTextNodes(node, node.name);
+    let fatherList = '';
+});
+
+const html = HTML.stringify(ast);
 
 const tocHtml = tocGen(await post.html);
 ---
@@ -48,7 +81,7 @@ const tocHtml = tocGen(await post.html);
             {post.title}
         </h1>
         <PostMeta post={post} isFeature={true} />
-        {post.html && <Markup content={post.html} sanitize={{ allowComponents: true }} components={{ pre: CodeSlot, img: RemotePicture }} />}
+        {post.html && <Markup content={html} sanitize={{ allowComponents: true }} components={{ pre: CodeSlot, img: RemotePicture }} />}
     </article>
 
     {post.type == 'post' && <Pagination slot="pagination" prev={prevPost} next={nextPost} />}

@@ -18,14 +18,12 @@ import { settings } from '../data/ghost-store';
         </ul>
     </li>
 </ul>
-
-<!-- <script>
+<!-- 
+<script>
     document.addEventListener('astro:after-swap', () => {
         document.querySelectorAll('.book-menu-nav ul li').forEach((li, index) => {
             li.addEventListener('click', (env) => {
-                env.preventDefault();
-
-                document.querySelector('.book-menu-nav ul li:first-child').style.transform = `translateY(${index * 30}px) scale(1)`;
+                document.querySelector('.book-menu-nav ul li:first-child:after').style.transform = `translateY(${index * 30}px) scale(1)`;
             });
         });
     });
