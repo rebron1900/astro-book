@@ -210,7 +210,7 @@ $hint-colors: (
 @mixin code-dark {
     .astro-code {
         background-color: var(--shiki-dark-bg);
-
+        position: relative;
         span {
             color: var(--shiki-dark);
             font-style: var(--shiki-dark-font-style);
