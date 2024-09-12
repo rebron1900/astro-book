@@ -176,8 +176,13 @@ ul.pagination {
 
         @include fixed;
     }
+    .book-menu-nav a {
+        transition: 0.2s ease-in-out;
+    }
 
     .book-menu-nav a.current {
+        transition: 0.2s ease-in-out;
+
         color: var(--color-link);
         font-weight: 600;
         border-left: solid 2px var(--color-link);
@@ -209,22 +214,22 @@ ul.pagination {
     }
 
     input.toggle + label::after {
-        content: "▸";
+        content: '▸';
     }
 
     input.toggle:checked + label::after {
-        content: "▾";
+        content: '▾';
     }
 }
 
 // for RTL support
-body[dir="rtl"] .book-menu {
+body[dir='rtl'] .book-menu {
     input.toggle + label::after {
-        content: "◂";
+        content: '◂';
     }
 
     input.toggle:checked + label::after {
-        content: "▾";
+        content: '▾';
     }
 }
 
@@ -409,7 +414,7 @@ body[dir="rtl"] .book-menu {
         display: block;
     }
 
-    #menu-control:focus ~ main label[for="menu-control"] {
+    #menu-control:focus ~ main label[for='menu-control'] {
         @include outline;
     }
 
@@ -437,7 +442,7 @@ body[dir="rtl"] .book-menu {
         }
     }
 
-    #toc-control:focus ~ main label[for="toc-control"] {
+    #toc-control:focus ~ main label[for='toc-control'] {
         @include outline;
     }
 
@@ -448,7 +453,7 @@ body[dir="rtl"] .book-menu {
     }
 
     // for RTL support
-    body[dir="rtl"] #menu-control:checked ~ main {
+    body[dir='rtl'] #menu-control:checked ~ main {
         .book-menu .book-menu-content {
             transform: translateX(-$menu-width);
         }
