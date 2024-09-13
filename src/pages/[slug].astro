@@ -53,7 +53,7 @@ function findTextNodes(node, text) {
         node.content = node.content.replace(_reLink, (val) => {
             val = val.replace('[[', '').replace(']]', '');
             const filteredPosts = postss.filter((post) => post.data.title == val);
-            val = filteredPosts.length != 0 ? `<a href='/garden/${filteredPosts[0].slug}'>${filteredPosts[0].data.title}` : val;
+            val = filteredPosts.length != 0 ? `<a href='/garden/${filteredPosts[0].slug}'>${filteredPosts[0].data.title}</a>` : val;
             return val;
         });
 
