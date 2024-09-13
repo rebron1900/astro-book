@@ -906,3 +906,39 @@ h3#join-comments {
 //     transform: translateY(0px) scale(1);
 //     transition: transform 1s;
 // }
+
+span.menu-flag {
+    position: absolute;
+    background-color: var(--color-link);
+    width: 2px;
+    left: -5px;
+    height: 100%;
+    opacity: 0;
+
+    &.current {
+        opacity: 1;
+    }
+}
+
+@keyframes bump {
+    from {
+        opacity: 0;
+        transform: scale(1) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+@keyframes bump-out {
+    from {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(1) translateY(-10px);
+    }
+}

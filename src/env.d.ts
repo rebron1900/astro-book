@@ -10,7 +10,3 @@ interface ImportMetaEnv {
     readonly MAP_URL: string;
     readonly MAP_KEY: string;
 }
-
-interface Window {
-    Alpine: import('alpinejs').Alpine;
-}

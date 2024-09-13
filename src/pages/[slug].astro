@@ -35,14 +35,14 @@ export async function getStaticPaths() {
 }
 
 const { post, prevPost, nextPost } = Astro.props;
-import HTML from 'html-parse-stringify';
 import IFrameSlot from '../components/IFrameSlot.astro';
 
-var ast = HTML.parse(post?.html);
-let fatherList = '';
+import HTML from 'html-parse-stringify';
 
 const postss = await getCollection('Obsidian');
 
+var ast = HTML.parse(post?.html);
+let fatherList = '';
 function findTextNodes(node, text) {
     let result = [];
     fatherList += text;
@@ -70,9 +70,6 @@ function findTextNodes(node, text) {
 
     return result;
 }
-
-const result = [];
-
 ast.forEach((node) => {
     if (node.name != 'pre' || node.name != 'code') {
         findTextNodes(node, node.name);

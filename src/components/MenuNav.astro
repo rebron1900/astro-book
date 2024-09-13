@@ -5,11 +5,19 @@ import { settings } from '../data/ghost-store';
 <ul class="book-menu-nav">
     <li class="book-section-flat">
         <span>路线牌</span>
+        <span class=""></span>
         <ul>
             {
                 settings?.navigation.map((item) => (
                     <li>
-                        <a class={Astro.url.pathname == item.url ? 'current' : ''} href={item.url}>
+                        {Astro.url.pathname === item.url && (
+                            <span
+                                transition:name={Astro.url.pathname == item.url ? item.url : ''}
+                                class={`menu-flag ${Astro.url.pathname == item.url ? 'current' : ''}`}
+                            />
+                        )}
+
+                        <a href={item.url} class={`menu-flag ${Astro.url.pathname == item.url ? 'current' : ''}`}>
                             {item.label}
                         </a>
                     </li>
@@ -18,13 +26,3 @@ import { settings } from '../data/ghost-store';
         </ul>
     </li>
 </ul>
-<!-- 
-<script>
-    document.addEventListener('astro:after-swap', () => {
-        document.querySelectorAll('.book-menu-nav ul li').forEach((li, index) => {
-            li.addEventListener('click', (env) => {
-                document.querySelector('.book-menu-nav ul li:first-child:after').style.transform = `translateY(${index * 30}px) scale(1)`;
-            });
-        });
-    });
-</script> -->
