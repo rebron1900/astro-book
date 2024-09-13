@@ -219,6 +219,7 @@ $hint-colors: (
         }
 
         code {
+            background-color: transparent;
             span {
                 &.highlighted {
                     margin: 0 -24px;
@@ -276,6 +277,8 @@ $hint-colors: (
         }
 
         code {
+            background-color: transparent;
+
             span {
                 &.highlighted {
                     margin: 0 -24px;
