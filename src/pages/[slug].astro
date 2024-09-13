@@ -34,6 +34,7 @@ export async function getStaticPaths() {
 
 const { post, prevPost, nextPost } = Astro.props;
 import HTML from 'html-parse-stringify';
+import IFrameSlot from '../components/IFrameSlot.astro';
 
 var ast = HTML.parse(post?.html);
 let fatherList = '';
@@ -81,7 +82,7 @@ const tocHtml = tocGen(await post.html);
             {post.title}
         </h1>
         <PostMeta post={post} isFeature={true} />
-        {post.html && <Markup content={html} sanitize={{ allowComponents: true }} components={{ pre: CodeSlot, img: RemotePicture }} />}
+        {post.html && <Markup content={html} sanitize={{ allowComponents: true }} components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot }} />}
     </article>
 
     {post.type == 'post' && <Pagination slot="pagination" prev={prevPost} next={nextPost} />}
