@@ -1,7 +1,6 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import solidJs from '@astrojs/solid-js';
-import expressiveCode from 'astro-expressive-code';
 import compress from 'astro-compress';
 
 // https://astro.build/config

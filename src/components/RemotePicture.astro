@@ -1,6 +1,4 @@
 ---
-import probe from 'probe-image-size';
-
 export interface Props {
     src: string;
     alt?: string;
@@ -10,16 +8,6 @@ export interface Props {
 }
 
 const { src, alt, classNames, widths, sizes } = Astro.props;
-
-async function getImageMetadata(src) {
-    try {
-        const metadata = await probe(encodeURI(src));
-        return metadata; // 返回获取到的元数据
-    } catch (error) {
-        console.error('获取图片元数据时出错:', error);
-        return { width: 0, height: 0 }; // 或者返回一个默认值
-    }
-}
 
 const generateImageSrcset = (image: string, isLocal = false) => {
     image = encodeURI(image);
