@@ -1,5 +1,7 @@
 ---
 import { pages, postsAll, settings } from '../data/ghost-store.js';
+import { getCollection, getEntry } from 'astro:content';
+
 import tocGen from '../utils/toc.js';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -39,14 +41,24 @@ import IFrameSlot from '../components/IFrameSlot.astro';
 var ast = HTML.parse(post?.html);
 let fatherList = '';
 
+const postss = await getCollection('Obsidian');
+
 function findTextNodes(node, text) {
     let result = [];
     fatherList += text;
 
     // 检查当前节点
-    if (node.type === 'text' && node.content.startsWith('[[') && !fatherList.endsWith('precode')) {
-        node.content = node.content.replace('[[', '<a>test').replace(']]', '</a>');
+    if (node.type === 'text' && node.content.includes('[[') && !fatherList.endsWith('code')) {
+        let _reLink = /\[\[(([\/\-\.\*\$\:\#]|\w|\s|[^\x00-\xff])*)\|?(([\/\-\.\*\$]|\w|\s|[^\x00-\xff])*)\]\]/g;
+        node.content = node.content.replace(_reLink, (val) => {
+            val = val.replace('[[', '').replace(']]', '');
+            const filteredPosts = postss.filter((post) => post.data.title == val);
+            val = filteredPosts.length != 0 ? `<a href='/garden/${filteredPosts[0].slug}'>${filteredPosts[0].data.title}` : val;
+            return val;
+        });
+
         result.push(node);
+        fatherList = '';
     }
 
     // 如果有子节点，递归遍历
@@ -62,7 +74,9 @@ function findTextNodes(node, text) {
 const result = [];
 
 ast.forEach((node) => {
-    const temp = findTextNodes(node, node.name);
+    if (node.name != 'pre' || node.name != 'code') {
+        findTextNodes(node, node.name);
+    }
     let fatherList = '';
 });
 
