@@ -80,12 +80,18 @@ if (post) {
         localStorage.theme = theme || 'auto';
     };
 
-    document.addEventListener('DOMContentLoaded', () => changeTheme());
-
-    document.addEventListener('astro:after-swap', () => {
+    const initZoom = () => {
         mediumZoom('.markdown img', {
             background: 'rgba(0,0,0,0.75)'
         });
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        changeTheme(), initZoom();
+    });
+
+    document.addEventListener('astro:after-swap', () => {
+        initZoom();
 
         changeTheme();
 

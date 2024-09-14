@@ -6,23 +6,14 @@ import MenuSearch from './MenuSearch.astro';
 import MenuTaxonomy from './MenuTaxonomy.astro';
 import MenuTheme from './MenuTheme';
 
-const { site } = Astro.props;
+const { site, post } = Astro.props;
 ---
 
 <nav>
-    <Brand transition:persist />
+    <Brand />
     <MenuSearch />
     <MenuTheme client:load />
-    <MenuNav transition:persist />
+    <MenuNav post={post} />
     <MenuTaxonomy />
     <MenuOther />
-    <!--
-        {% include "partials/menu-theme" %}
-        {% include "partials/menu-hugo" %}
-        {% include "partials/menu-taxonomy" %}
-        {% include "partials/menu-other" %}
-        --
-    />
-</nav>
--->
 </nav>

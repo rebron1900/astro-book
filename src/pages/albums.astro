@@ -1,0 +1,30 @@
+---
+import { pages, settings, neodb } from '../data/ghost-store.js';
+import { doubanGroupByDate } from '../utils/help.js';
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Head from '../components/Head.astro';
+import Comments from '../components/Comments.astro';
+import Relitu from '../components/Relitu.jsx';
+import Header from '../components/Header.astro';
+import Top from '../components/Top.astro';
+import Menu from '../components/Menu.astro';
+
+const page = pages.find((post) => post.slug == 'albums');
+---
+
+<BaseLayout post={page}>
+    <Head slot="head" post={page} site={settings} title={page?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
+
+    <Header slot="header" title={page.title} />
+    <Menu slot="menu" />
+
+    <article slot="content" class="markdown book-article">
+        <h1 class="book-title">{page.title}</h1>
+        <Fragment set:html={page.html} />
+    </article>
+
+    <Comments slot="comments" />
+
+    <Relitu slot="relitu" />
+</BaseLayout>

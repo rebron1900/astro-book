@@ -87,7 +87,7 @@ const tocHtml = tocGen(await post.html);
 
     <Header slot="header" title={post.title} />
 
-    <Menu slot="menu" />
+    <Menu slot="menu" post={post} />
     <article slot="content" class="markdown book-article">
         <h1 class="book-title">
             {post.title}

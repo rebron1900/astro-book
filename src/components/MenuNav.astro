@@ -1,5 +1,7 @@
 ---
 import { settings } from '../data/ghost-store';
+
+const { post } = Astro.props;
 ---
 
 <ul class="book-menu-nav">
@@ -8,14 +10,24 @@ import { settings } from '../data/ghost-store';
         <span class=""></span>
         <ul>
             {
+                post && post.type === 'post' && (
+                    <li transition:name={Astro.url.pathname == post.slug ? post.slug : ''}>
+                        <span class={`menu-flag current ellipsis`} />
+                        <a
+                            href="javascript:void(0)"
+                            style="display: block;
+}"
+                            class="menu-flag current"
+                        >
+                            {post.title}
+                        </a>
+                    </li>
+                )
+            }
+            {
                 settings?.navigation.map((item) => (
-                    <li>
-                        {Astro.url.pathname === item.url && (
-                            <span
-                                transition:name={Astro.url.pathname == item.url ? item.url : ''}
-                                class={`menu-flag ${Astro.url.pathname == item.url ? 'current' : ''}`}
-                            />
-                        )}
+                    <li transition:name={Astro.url.pathname == item.url ? item.url : ''}>
+                        {Astro.url.pathname === item.url && <span class={`menu-flag ${Astro.url.pathname == item.url ? 'current' : ''}`} />}
 
                         <a href={item.url} class={`menu-flag ${Astro.url.pathname == item.url ? 'current' : ''}`}>
                             {item.label}

@@ -4,17 +4,26 @@ import config from '../data/config';
 
 const MenuTheme = () => {
     const [theme, setTheme] = createSignal('');
-    const [themeName, setThemename] = createSignal('');
 
     onMount(() => {
         const storedTheme = localStorage.getItem('name');
         if (storedTheme) {
+            loadFont(storedTheme);
             setTheme(storedTheme);
         } else {
             setTheme(config.themes[0].desc);
             changeTheme(config.themes[0]);
         }
     });
+
+    const loadFont = (theme) => {
+        if (theme == 'yayu' || theme == 'onojyun') {
+            const link = document.createElement('link');
+            link.href = 'https://google-fonts.mirrors.sjtug.sjtu.edu.cn/css2?family=Noto+Serif+SC:wght@200..900&display=swap';
+            link.rel = 'stylesheet';
+            document.head.appendChild(link);
+        }
+    };
 
     const changeTheme = (theme) => {
         localStorage.setItem('name', theme.desc);
@@ -23,6 +32,7 @@ const MenuTheme = () => {
         document.documentElement.setAttribute('class', theme.name);
         document.getElementById('theme').checked = false;
         setTheme(theme.desc);
+        loadFont(theme.name);
     };
 
     const menuTheme = () => {
