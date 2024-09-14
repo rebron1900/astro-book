@@ -4,7 +4,7 @@ import { settings } from '../data/ghost-store';
 const { post } = Astro.props;
 ---
 
-<ul class="book-menu-nav">
+<ul class="book-menu-nav" transition:name="fdsafds">
     <li class="book-section-flat">
         <span>路线牌</span>
         <span class=""></span>
@@ -13,17 +13,13 @@ const { post } = Astro.props;
                 post && post.type === 'post' && (
                     <li transition:name={Astro.url.pathname == post.slug ? post.slug : ''}>
                         <span class={`menu-flag current ellipsis`} />
-                        <a
-                            href="javascript:void(0)"
-                            style="display: block;
-}"
-                            class="menu-flag current"
-                        >
+                        <a href="javascript:void(0)" style="display: block;" class="menu-flag current">
                             {post.title}
                         </a>
                     </li>
                 )
             }
+
             {
                 settings?.navigation.map((item) => (
                     <li transition:name={Astro.url.pathname == item.url ? item.url : ''}>

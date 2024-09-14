@@ -13,7 +13,7 @@ let og_title,
 if (post) {
     og_title = post.title;
     og_url = normalizeSlug(post.slug);
-    og_desc = post.excerpt.replace(/[\r\n]+/g, '');
+    og_desc = post.excerpt.replace(/[\r\n]+/g, '').substring(0, 100);
     og_img = encodeURI(
         `https://og.190102.xyz/api/og?title=${encodeURIComponent(og_title)}&desc=${encodeURIComponent(og_desc)}&date=${normalizeData(post?.published_at)}`
     );

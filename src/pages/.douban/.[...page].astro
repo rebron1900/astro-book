@@ -15,7 +15,7 @@ const pageDouban = pages.find((post) => post.slug == 'douban');
 export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
     const db = neodb.data;
     return paginate(db, {
-        pageSize: 50
+        pageSize: 100
     });
 }
 

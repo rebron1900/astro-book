@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import solidJs from '@astrojs/solid-js';
 import compress from 'astro-compress';
+import linkCard from 'astro-link-card';
 
 // https://astro.build/config
 export default defineConfig({
@@ -37,17 +38,9 @@ export default defineConfig({
         solidJs({
             devtools: true
         }),
-        // expressiveCode({
-        //     // You can set configuration options here
-        //     themes: ['dracula', 'github-light'],
-        //     styleOverrides: {
-        //         // You can also override styles
-        //         borderRadius: '0.5rem',
-        //         frames: {
-        //             shadowColor: '#124'
-        //         }
-        //     }
-        // }),
+        linkCard({
+            serverCache: false
+        }),
         compress({
             Image: false,
             SVG: false

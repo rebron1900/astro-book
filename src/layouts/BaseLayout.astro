@@ -25,7 +25,7 @@ const isFullWidth = post && post.tags.some((tag: Tag) => tag.slug === 'hash-page
         <main class="container flex">
             <aside class="book-menu">
                 <div class="book-menu-content" transition:animate="none">
-                    <slot name="menu" transition:name="astro-menu" />
+                    <slot name="menu" />
                 </div>
             </aside>
             <div class="book-page">

@@ -1,5 +1,6 @@
 import { getSettings, getPosts, getAllTags, getAllPages, getAllPosts, getNeodb, getFlux, getMemos, getAllAuthors } from '../utils/api';
 import { atom } from 'nanostores';
+import { minfont } from '../utils/help';
 
 const settingsStore = atom(await getSettings());
 const postsStore = atom(await getPosts());
@@ -20,3 +21,16 @@ export const neodb = neodbStore.get();
 export const flux = fluxStore.get();
 export const memos = memosStore.get();
 export const authors = authorsStore.get();
+
+export function buildFonts() {
+    const titleText = postsAll
+        .map(function (item) {
+            let tags = item.tags.map((tag) => tag.name).join(',');
+            let desc = item.excerpt != null ? item.excerpt.substring(0, 100) : '';
+            return item.title + desc + tags;
+        })
+        .join(',');
+    minfont(titleText);
+}
+
+buildFonts();
