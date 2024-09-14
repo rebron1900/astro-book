@@ -1,5 +1,5 @@
 import _ from 'lodash-es'; // 获取一个svg字符串
-import Fontmin from 'fontmin';
+// import Fontmin from 'fontmin-esm';
 export function getSvg(name: string = '', viewbox: string = '0 0 24 24', classes: string = 'book-icon'): string {
     return `
     <svg viewBox="${viewbox}" aria-hidden="true"${classes ? ` class="${classes}"` : ''}>
@@ -76,19 +76,19 @@ export function normalizeData(data: string): string | null {
     }
 }
 
-export function minfont(titleText: string) {
-    const fontmin = new Fontmin()
-        .src('src/font/SmileySans.ttf')
-        .use(
-            Fontmin.glyph({
-                text: titleText,
-                hinting: false
-            })
-        )
-        .dest('public');
+// export function minfont(titleText: string) {
+//     const fontmin = new Fontmin()
+//         .src('src/font/SmileySans.ttf')
+//         .use(
+//             Fontmin.glyph({
+//                 text: titleText,
+//                 hinting: false
+//             })
+//         )
+//         .dest('public');
 
-    fontmin.run((err, files) => {
-        if (err) throw err;
-        console.log('compress font success\n');
-    });
-}
+//     fontmin.run((err, files) => {
+//         if (err) throw err;
+//         console.log('compress font success\n');
+//     });
+// }

@@ -18,12 +18,15 @@ export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
     return tags.flatMap((tag) => {
         return paginate(tag.posts, {
             params: { slug: tag.slug },
+            props: {
+                tag
+            },
             pageSize: 10
         });
     });
 }
 
-const { page } = Astro.props;
+const { page, tag } = Astro.props;
 ---
 
 <BaseLayout>
@@ -31,7 +34,7 @@ const { page } = Astro.props;
 
     <Header slot="header" title={settings?.title} />
 
-    <Menu slot="menu" />
+    <Menu slot="menu" title={tag.name} />
 
     <List slot="content" page={page} isFeature={false} />
 
