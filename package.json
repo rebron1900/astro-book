@@ -20,7 +20,6 @@
         "artalk": "^2.9.0",
         "astro": "^4.12.2",
         "astro-compress": "^2.3.1",
-        "astro-link-card": "^1.0.20",
         "astro-remote": "^0.3.3",
         "cheerio": "^1.0.0",
         "fontmin": "^1.1.0",
