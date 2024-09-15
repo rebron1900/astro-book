@@ -172,7 +172,6 @@ ul.pagination {
     .book-menu-content {
         width: $menu-width;
         padding: $padding-16;
-        background: var(--body-background);
 
         @include fixed;
     }
@@ -424,6 +423,7 @@ body[dir='rtl'] .book-menu {
         .book-menu .book-menu-content {
             transform: translateX($menu-width);
             box-shadow: 0 0 $padding-8 rgba(0, 0, 0, 0.1);
+            background-color: var(--body-background);
         }
 
         .book-page {
