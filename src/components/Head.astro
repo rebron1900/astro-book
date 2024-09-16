@@ -86,23 +86,36 @@ if (post) {
         });
     };
 
-    document.addEventListener('DOMContentLoaded', () => {
-        changeTheme(), initZoom();
-    });
+    const initTOP = () => {
+        const scrollToTopBtn = document.getElementById('scrollToTop');
 
-    document.addEventListener('astro:after-swap', () => {
-        initZoom();
-
-        changeTheme();
-
-        // Scroll to top function
-
-        document.getElementById('scrollToTop')?.addEventListener('click', () => {
+        scrollToTopBtn?.addEventListener('click', () => {
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
             });
         });
+
+        window.onscroll = function () {
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                scrollToTopBtn.style.display = 'block';
+            } else {
+                scrollToTopBtn.style.display = 'none';
+            }
+        };
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        changeTheme(), initZoom();
+        initTOP();
+    });
+
+    document.addEventListener('astro:after-swap', () => {
+        initZoom();
+        initTOP();
+        changeTheme();
+
+        // Scroll to top function
 
         const relitu = tippy('.item-info', {
             allowHTML: true,

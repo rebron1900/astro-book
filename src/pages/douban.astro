@@ -2,7 +2,7 @@
 import { pages, settings, neodb } from '../data/ghost-store.js';
 import { doubanGroupByDate, getSvg } from '../utils/help.js';
 
-import FullLayout from '../layouts/FullLayout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/Head.astro';
 import Comments from '../components/Comments.astro';
 import Relitu from '../components/Relitu.jsx';
@@ -14,7 +14,7 @@ const pageDouban = pages.find((post) => post.slug == 'douban');
 const groupdata = doubanGroupByDate(neodb.data);
 ---
 
-<FullLayout post={pageDouban}>
+<BaseLayout post={pageDouban}>
     <Head slot="head" post={pageDouban} site={settings} title={pageDouban?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
 
     <Header slot="header" title={pageDouban.title} />
@@ -163,4 +163,4 @@ const groupdata = doubanGroupByDate(neodb.data);
     <Fragment slot="toc">
         <Top />
     </Fragment>
-</FullLayout>
+</BaseLayout>

@@ -1,24 +1,3 @@
----
-const scrollToTop = () => {
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
-};
----
-
 <div class="book-toc-top">
-    <a href="javascript:void(0)" id="scrollToTop"><strong>TOP</strong></a>
+    <strong id="scrollToTop" style="cursor:pointer;color:var(--color-link);display:none">TOP</strong>
 </div>
-
-<script is:inline>
-    // Show the button when scrolling down
-    window.addEventListener('scroll', () => {
-        const button = document.getElementById('scrollToTop');
-        if (window.scrollY > 200) {
-            button.classList.add('show');
-        } else {
-            button.classList.remove('show');
-        }
-    });
-</script>
