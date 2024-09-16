@@ -27,17 +27,21 @@ const MenuTheme = () => {
     const menuTheme = () => {
         return (
             <ul class='book-theme'>
-                <li>配色</li>
-                <li>
-                    <input type='checkbox' id='theme' class='toggle' />
-                    <label for='theme' class='flex justify-between'>
-                        <span role='button' class='flex align-center'>
-                            <span innerHTML={getSvg('theme')}></span>
-                            <span>{theme()}</span>
-                        </span>
-                    </label>
-                    <ul>
-                        <For each={config.themes}>{(theme, index) => <li onClick={[changeTheme, theme]}>{theme.desc}</li>}</For>
+                <li class='book-section-flat'>
+                    <span>配色</span>
+                    <ul class='book-collspan'>
+                        <li>
+                            <input type='checkbox' id='theme' class='toggle' />
+                            <label for='theme' class='flex justify-between'>
+                                <span role='button' class='flex align-center'>
+                                    <span innerHTML={getSvg('theme')}></span>
+                                    <span>{theme()}</span>
+                                </span>
+                            </label>
+                            <ul>
+                                <For each={config.themes}>{(theme, index) => <li onClick={[changeTheme, theme]}>{theme.desc}</li>}</For>
+                            </ul>
+                        </li>
                     </ul>
                 </li>
             </ul>

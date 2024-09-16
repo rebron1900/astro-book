@@ -370,12 +370,13 @@ body[dir='rtl'] .book-menu {
 .book-theme {
     margin-block-end: $padding-16 * 2;
 
-    & > li:first-child {
+    & > span:first-child {
         font-weight: bolder;
     }
 
-    ul {
+    ul ul {
         padding-inline-start: 1.5em;
+        cursor: pointer;
     }
 }
 
@@ -464,5 +465,41 @@ body[dir='rtl'] .book-menu {
     .book-menu .book-menu-content,
     .book-toc .book-toc-content {
         padding: $padding-16 * 2 $padding-16;
+    }
+}
+
+.full-container {
+    display: flex;
+    flex-direction: column;
+
+    .book-menu {
+        flex: 0 0 5rem;
+        z-index: 2;
+
+        .book-menu-content {
+            width: 100%;
+            height: 17rem;
+            overflow-y: visible;
+            position: relative;
+            nav {
+                display: flex;
+
+                .book-collspan {
+                    width: 10rem;
+                    float: left;
+                    display: none;
+                }
+
+                .book-section-flat {
+                    width: 5rem;
+                    text-align: right;
+                    &:hover {
+                        .book-collspan {
+                            display: block;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

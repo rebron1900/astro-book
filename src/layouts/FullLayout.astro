@@ -1,0 +1,54 @@
+---
+// import lib
+import type { Tag } from '@ts-ghost/content-api';
+import { settings } from '../data/ghost-store';
+import '../styles/book.scss';
+// ...
+const { post } = Astro.props;
+
+const isFullWidth = post && post.tags.some((tag: Tag) => tag.slug === 'hash-page-fullwidth');
+---
+
+<html lang={settings?.lang ?? 'en'} dir="ltr">
+    <head>
+        <slot name="head" />
+        <Fragment set:html={settings?.codeinjection_head} />
+
+        {/* 这里可以引入其他头部内容 */}
+    </head>
+
+    <body dir="ltr">
+        <input aria-label="menu-control" type="checkbox" class="hidden toggle" id="menu-control" />
+        <input aria-label="toc-control" type="checkbox" class="hidden toggle" id="toc-control" />
+        <main class="full-container flex">
+            <aside class="book-menu">
+                <div class="book-menu-content" transition:animate="none">
+                    <slot name="menu" />
+                </div>
+            </aside>
+            <div class="book-page">
+                <header class="book-header" transition:name="astro-header">
+                    <slot name="header" />
+                    <slot name="h-toc" />
+                </header>
+
+                <slot name="content" transition:name="astro-content" />
+
+                <footer class="book-footer">
+                    <slot name="footer" transition:name="astro-fo0ter" />
+                </footer>
+
+                <slot name="pagination" transition:name="astro-pagination" />
+                <slot name="comments" transition:name="astro-comments" />
+                <label for="menu-control" class="hidden book-menu-overlay"></label>
+            </div>
+
+            <aside class={`book-toc ${isFullWidth ? 'full-width' : ''}`}>
+                <div class="book-toc-content">
+                    <slot name="toc" transition:name="astro-toc" />
+                </div>
+            </aside>
+        </main>
+        <Fragment set:html={settings?.codeinjection_foot} />
+    </body>
+</html>
