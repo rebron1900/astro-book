@@ -125,7 +125,7 @@ export const getAllTags = async () => {
 
     const tagsWithPost = results.data.map((tag) => {
         const posts = postsAll.filter((post) => {
-            return post.primary_tag && post.primary_tag.slug === tag.slug;
+            return post.tags && post.tags.some((tagItem) => tagItem.slug === tag.slug);
         });
 
         return { ...tag, posts: posts };
