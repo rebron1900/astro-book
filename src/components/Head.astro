@@ -105,14 +105,25 @@ if (post) {
         };
     };
 
+    const initGallery = () => {
+        var gallery = document.querySelectorAll('.kg-gallery-image img');
+        gallery.forEach(function (e) {
+            var l = e.closest('.kg-gallery-image'),
+                a = e.width / e.height;
+            l.style.flex = a + ' 1 0%';
+        });
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
         changeTheme(), initZoom();
         initTOP();
+        initGallery();
     });
 
     document.addEventListener('astro:after-swap', () => {
         initZoom();
         initTOP();
+        initGallery();
         changeTheme();
 
         // Scroll to top function
