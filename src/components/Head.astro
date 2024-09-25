@@ -114,17 +114,11 @@ if (post) {
         });
     };
 
-    document.addEventListener('DOMContentLoaded', () => {
-        changeTheme(), initZoom();
-        initTOP();
-        initGallery();
-    });
-
-    document.addEventListener('astro:after-swap', () => {
+    document.addEventListener('astro:page-load', () => {
         initZoom();
         initTOP();
-        initGallery();
         changeTheme();
+        initGallery();
 
         // Scroll to top function
 
