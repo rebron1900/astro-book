@@ -108,9 +108,11 @@ if (post) {
     const initGallery = () => {
         var gallery = document.querySelectorAll('.kg-gallery-image img');
         gallery.forEach(function (e) {
-            var l = e.closest('.kg-gallery-image'),
-                a = e.width / e.height;
-            l.style.flex = a + ' 1 0%';
+            e.onload = function () {
+                var l = e.closest('.kg-gallery-image'),
+                    a = e.naturalWidth / e.naturalHeight; // 使用 naturalWidth 和 naturalHeight
+                l.style.flex = a + ' 1 0%';
+            };
         });
     };
 
