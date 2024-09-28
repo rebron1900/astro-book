@@ -908,14 +908,14 @@ h3#join-comments {
 // }
 
 span.menu-flag {
-    position: absolute;
-    background-color: var(--color-link);
-    width: 2px;
-    left: -5px;
-    height: 100%;
-    opacity: 0;
-
     &.current {
+        position: absolute;
+        background-color: var(--color-link);
+        width: 5px;
+        left: -10px;
+        height: 100%;
+        border-radius: 10em;
+        opacity: 0;
         opacity: 1;
     }
 }

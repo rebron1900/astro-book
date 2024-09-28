@@ -177,12 +177,9 @@ ul.pagination {
     }
 
     .book-menu-nav a {
-        padding-left: 0px;
-
         &.current {
             color: var(--color-link);
             font-weight: 600;
-            padding-left: 5px;
         }
     }
 
