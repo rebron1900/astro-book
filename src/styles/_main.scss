@@ -422,6 +422,10 @@ body[dir='rtl'] .book-menu {
             transform: translateX($menu-width);
             box-shadow: 0 0 $padding-8 rgba(0, 0, 0, 0.1);
             background-color: var(--body-background);
+
+            span.menu-flag.current {
+                display: none;
+            }
         }
 
         .book-page {
