@@ -56,13 +56,7 @@ if (post) {
 <link rel="icon" href="/logo.svg" />
 <link rel="canonical" href={og_url} />
 
-<script>
-    import mediumZoom from 'medium-zoom';
-    import tippy from 'tippy.js';
-
-    import 'tippy.js/dist/tippy.css';
-    import 'medium-zoom/dist/style.css';
-
+<script is:inline>
     const changeTheme = () => {
         const theme = localStorage.theme;
         if (localStorage.theme !== 'auto') {
@@ -79,6 +73,20 @@ if (post) {
         localStorage.name = localStorage.name || '自适应';
         localStorage.theme = theme || 'auto';
     };
+
+    changeTheme();
+
+    document.addEventListener('astro:page-load', () => {
+        changeTheme();
+    });
+</script>
+
+<script>
+    import mediumZoom from 'medium-zoom';
+    import tippy from 'tippy.js';
+
+    import 'tippy.js/dist/tippy.css';
+    import 'medium-zoom/dist/style.css';
 
     const initZoom = () => {
         mediumZoom('.markdown img', {
@@ -116,10 +124,30 @@ if (post) {
         });
     };
 
+    const changeTheme = () => {
+        const theme = localStorage.theme;
+        if (localStorage.theme !== 'auto') {
+            document.documentElement.classList.add(theme);
+            document.body.setAttribute('data-theme', theme);
+
+            localStorage.theme = theme;
+            localStorage.themetype = localStorage.themetype || 'light';
+        } else {
+            const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            localStorage.themetype = prefersDarkScheme ? 'dark' : 'light';
+        }
+
+        localStorage.name = localStorage.name || '自适应';
+        localStorage.theme = theme || 'auto';
+    };
+
+    document.addEventListener('astro:after-swap', () => {
+        changeTheme();
+    });
+
     document.addEventListener('astro:page-load', () => {
         initZoom();
         initTOP();
-        changeTheme();
         initGallery();
 
         // Scroll to top function
