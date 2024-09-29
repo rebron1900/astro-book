@@ -112,7 +112,24 @@ class MapHandler {
         const markerElement = this.createMarker();
         markerElement.className = 'marker';
 
-        const results = this._extractResults(feature.properties.description);
+        let results;
+
+        if (feature.properties.description) {
+            const str = feature.properties.description;
+            // 使用正则表达式匹配所有的标题、链接和图片URL
+            const regex = /\[(.*?)\]\((.*?)\)\((.*?)\)/g;
+            const matches = [...str.matchAll(regex)];
+
+            // 将匹配结果转换为对象数组
+            results = matches.map((match) => ({
+                title: match[1],
+                url: match[2],
+                img: match[3]
+            }));
+
+            results = results.length == 0 ? null : results;
+        }
+
         const popupContent = this._generatePopupContent(feature.properties.name, results);
 
         if (results) {

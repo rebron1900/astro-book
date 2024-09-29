@@ -1,13 +1,11 @@
 ---
 import { pages, settings, neodb } from '../data/ghost-store.js';
-import { doubanGroupByDate } from '../utils/help.js';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/Head.astro';
 import Comments from '../components/Comments.astro';
 import Relitu from '../components/Relitu.jsx';
 import Header from '../components/Header.astro';
-import Top from '../components/Top.astro';
 import Menu from '../components/Menu.astro';
 
 const page = pages.find((post) => post.slug == 'albums');
