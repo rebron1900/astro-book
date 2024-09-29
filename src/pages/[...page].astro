@@ -28,7 +28,7 @@ const { page } = Astro.props;
 
     <Header slot="header" title={settings?.title} />
 
-    <Menu slot="menu" />
+    <Menu slot="menu" title={page.currentPage != 1 ? `第 ${page.currentPage} 页` : ''} />
 
     <List slot="content" page={page} isFeature={false} />
 
