@@ -57,35 +57,35 @@ class MapHandler {
             maxZoom: 24
         });
 
-        let canZoom = false;
+        // let canZoom = false;
 
-        // 监听键盘按下事件
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Shift') {
-                canZoom = true;
-            }
-        });
+        // // 监听键盘按下事件
+        // window.addEventListener('keydown', (e) => {
+        //     if (e.key === 'Shift') {
+        //         canZoom = true;
+        //     }
+        // });
 
-        // 监听键盘松开事件
-        window.addEventListener('keyup', (e) => {
-            if (e.key === 'Shift') {
-                canZoom = false;
-            }
-        });
+        // // 监听键盘松开事件
+        // window.addEventListener('keyup', (e) => {
+        //     if (e.key === 'Shift') {
+        //         canZoom = false;
+        //     }
+        // });
 
-        // 监听鼠标滚轮事件
-        this.map.on('wheel', (e) => {
-            if (!canZoom) {
-                e.preventDefault(); // 阻止默认缩放行为
-            }
-        });
+        // // 监听鼠标滚轮事件
+        // this.map.on('wheel', (e) => {
+        //     if (!canZoom) {
+        //         e.preventDefault(); // 阻止默认缩放行为
+        //     }
+        // });
 
-        // 监听缩放事件
-        this.map.on('zoom', () => {
-            if (!canZoom) {
-                this.map.setZoom(this.map.getZoom()); // 如果没有按住 Shift 键，重置缩放
-            }
-        });
+        // // 监听缩放事件
+        // this.map.on('zoom', () => {
+        //     if (!canZoom) {
+        //         this.map.setZoom(this.map.getZoom()); // 如果没有按住 Shift 键，重置缩放
+        //     }
+        // });
 
         this.cluster = new Supercluster({ radius: 26, maxZoom: 24 });
 
