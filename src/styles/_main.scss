@@ -173,6 +173,9 @@ ul.pagination {
         width: $menu-width;
         padding: $padding-16;
 
+        -ms-overflow-style: none; /* 对于 IE 和 Edge */
+        scrollbar-width: none; /* 对于 Firefox */
+
         @include fixed;
     }
 
@@ -200,11 +203,17 @@ ul.pagination {
     }
 
     input.toggle + label + ul {
-        display: none;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-in-out;
     }
 
     input.toggle:checked + label + ul {
-        display: block;
+        max-height: 300px;
+    }
+
+    input.toggle:checked + label + ul > li:hover {
+        color: var(--color-hover-link);
     }
 
     input.toggle + label::after {
@@ -489,6 +498,12 @@ body[dir='rtl'] .book-menu {
                     width: 10rem;
                     float: left;
                     display: none;
+                    border: solid 1px var(--body-background);
+                    background-color: var(--body-background);
+                    border-radius: 0.25em;
+                    position: absolute;
+                    right: 0;
+                    padding: 0.25em 0.5em;
                 }
 
                 .book-section-flat {
