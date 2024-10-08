@@ -203,13 +203,11 @@ ul.pagination {
     }
 
     input.toggle + label + ul {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease-in-out;
+        display: none;
     }
 
     input.toggle:checked + label + ul {
-        max-height: 300px;
+        display: block;
     }
 
     input.toggle:checked + label + ul > li:hover {

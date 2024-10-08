@@ -110,12 +110,14 @@ const { page } = Astro.props;
                 }
             </div>
         </div>
+        <script src="https://unpkg.com/htmx.org@1.7.0"></script>
 
         <script>
-            import 'https://unpkg.com/htmx.org@2.0.2';
             import 'artalk/dist/Artalk.css';
 
             document.addEventListener('astro:page-load', () => {
+                htmx.process(document.body);
+
                 document.body.addEventListener('htmx:afterSwap', function (event) {
                     document.querySelector('.btn-more')?.remove();
                 });

@@ -940,3 +940,24 @@ span.menu-flag {
         transform: scale(1) translateY(-10px);
     }
 }
+
+@keyframes clip {
+    from {
+        clip-path: circle(0% at var(--x) var(--y));
+    }
+    to {
+        clip-path: circle(var(--r) at var(--x) var(--y));
+    }
+}
+
+// @keyframes circle-in-hesitate {
+//     0% {
+//         clip-path: circle(0% at var(--x) var(--y));
+//     }
+//     40% {
+//         clip-path: circle(40% at var(--x) var(--y));
+//     }
+//     100% {
+//         clip-path: circle(var(--r) at var(--x) var(--y));
+//     }
+// }

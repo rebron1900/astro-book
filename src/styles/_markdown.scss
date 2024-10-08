@@ -51,21 +51,21 @@
     /** 引用自一个球博客 **/
     h2 {
         font-size: 1.7rem;
-        &:before {
+        &:hover:before {
             content: 'h2';
         }
     }
 
     h3 {
         font-size: 1.4rem;
-        &:before {
+        &:hover:before {
             content: 'h3';
         }
     }
 
     h4 {
         font-size: 1.3rem;
-        &:before {
+        &:hover:before {
             content: 'h4';
         }
     }
