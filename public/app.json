@@ -4,6 +4,11 @@
         "url": "wechat.png",
         "action": "摸鱼"
     },
+    "wexin": {
+        "title": "微信",
+        "url": "wechat.png",
+        "action": "摸鱼"
+    },
     "chrome": {
         "title": "Chrome",
         "url": "chrome.png",
