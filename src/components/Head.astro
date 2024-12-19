@@ -116,11 +116,31 @@ if (post) {
     const initGallery = () => {
         var gallery = document.querySelectorAll('.kg-gallery-image img');
         gallery.forEach(function (e) {
-            var l = e.closest('.kg-gallery-image'),
-                a = e.naturalWidth / e.naturalHeight; // 使用 naturalWidth 和 naturalHeight
-            l.style.flex = a + ' 1 0%';
-        });
+            var fix = function () {
+                var l = e.closest('.kg-gallery-image'),
+                    a = e.naturalWidth / e.naturalHeight; // 使用 naturalWidth 和 naturalHeight
+                l.style.flex = a + ' 1 0%';
+            };
 
+            if (e.complete) {
+                fix();
+            } else {
+                e.addEventListener('load', fix);
+            }
+        });
+        // var gallery = document.querySelectorAll('.kg-gallery-image img');
+        // gallery.forEach(function (e) {
+        //     e.onload = function () {
+        //         var l = e.closest('.kg-gallery-image'),
+        //             a = e.naturalWidth / e.naturalHeight; // 使用 naturalWidth 和 naturalHeight
+        //         l.style.flex = a + ' 1 0%';
+        //     };
+        // });
+        // document.querySelectorAll('.kg-gallery-image img').forEach(function (e) {
+        //     var t = e.closest('.kg-gallery-image'),
+        //         a = e.width / e.height;
+        //     t.style.flex = a + ' 1 0%';
+        // });
         // !(function (e, t) {
         //     t.addEventListener('DOMContentLoaded', function () {
         //         t.querySelectorAll('.kg-gallery-image img').forEach(function (e) {
