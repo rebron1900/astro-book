@@ -34,7 +34,7 @@ const generateImageSrcset = (image: string, isLocal = false) => {
 };
 ---
 
-<img class={classNames ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />
+<img loading="lazy" class={classNames ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />
 
 <!-- 
 <Picture
