@@ -5,9 +5,13 @@ import PostMeta from './PostMeta.astro';
 import Hero from './Hero.astro';
 
 const { page } = Astro.props;
+
+const url = new URL(Astro.request.url);
+// 检查当前页面的路径是否为根路径
+const isHomePage = url.pathname === '/';
 ---
 
-{page.currentPage == 1 ? <Hero /> : ''}
+{isHomePage ? <Hero /> : ''}
 
 {
     page.data.map((post: Post) => (
