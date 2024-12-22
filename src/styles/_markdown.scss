@@ -154,9 +154,12 @@
     }
 
     hr {
-        height: $padding-1;
         border: none;
         background: var(--gray-200);
+        height: 5px;
+        width: 50px;
+        margin: 2rem 0px;
+        border-radius: var(--sb-size);
     }
 
     ul,
