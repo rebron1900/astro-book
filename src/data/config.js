@@ -146,7 +146,10 @@ const config = {
     social: [
         { name: 'github', url: 'https://github.com/rebron1900' },
         { name: 'twitter', url: 'https://x.com/Passings_z' },
-        { name: 'mastodon', url: 'https://phanpy.social/#/mast.dragon-fly.club/a/109686014103594251' }
+        { name: 'mastodon', url: 'https://phanpy.social/#/mast.dragon-fly.club/a/109686014103594251' },
+        { name: 'telegram', url: 'https://t.me/rebron1900' },
+        { name: 'instagram', url: 'https://www.instagram.com/rebron1900/' },
+        { name: 'neodb', url: 'https://neodb.social/users/1900/' }
     ]
 };
 export default config;

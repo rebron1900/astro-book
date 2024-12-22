@@ -967,14 +967,19 @@ span.menu-flag {
     margin-bottom: 2.5rem;
     color: var(--gray-700);
     font-style: italic;
-    h2 {
-        color: var(--color-link);
+
+    a {
+        text-decoration: none !important;
     }
 
     .bio {
         white-space: pre-line;
         line-height: 1.5;
         margin-bottom: 0.5rem;
+
+        p {
+            margin: 0;
+        }
     }
     .now {
         h2 {
@@ -983,7 +988,8 @@ span.menu-flag {
     }
     .social {
         display: flex;
-        transition: all 0.5;
+
+        margin-bottom: 1rem;
 
         a {
             :hover {
@@ -1003,5 +1009,27 @@ span.menu-flag {
         width: 50px;
         margin: 2rem 0px 3rem 0px;
         border-radius: var(--sb-size);
+    }
+}
+
+.icon-rotate-shake {
+    display: inline-block;
+    transition: transform 0.1s;
+}
+
+.icon-rotate-shake:hover {
+    animation: rotateShake 0.5s 1 ease-in-out forwards;
+}
+
+@keyframes rotateShake {
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(-5deg);
+    }
+    75% {
+        transform: rotate(5deg);
     }
 }
