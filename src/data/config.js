@@ -142,6 +142,11 @@ const config = {
             url: 'word.png',
             action: '编写文档中'
         }
-    }
+    },
+    social: [
+        { name: 'github', url: 'https://github.com/rebron1900' },
+        { name: 'twitter', url: 'https://x.com/Passings_z' },
+        { name: 'mastodon', url: 'https://phanpy.social/#/mast.dragon-fly.club/a/109686014103594251' }
+    ]
 };
 export default config;

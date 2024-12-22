@@ -962,3 +962,46 @@ span.menu-flag {
 //         clip-path: circle(var(--r) at var(--x) var(--y));
 //     }
 // }
+
+.hero {
+    margin-bottom: 2.5rem;
+    color: var(--gray-700);
+    font-style: italic;
+    h2 {
+        color: var(--color-link);
+    }
+
+    .bio {
+        white-space: pre-line;
+        line-height: 1.5;
+        margin-bottom: 0.5rem;
+    }
+    .now {
+        h2 {
+            margin: 0;
+        }
+    }
+    .social {
+        display: flex;
+        transition: all 0.5;
+
+        a {
+            :hover {
+                color: var(--color-hover-link);
+            }
+        }
+
+        svg {
+            color: var(--gray-700);
+
+            width: 30px;
+            height: 30px;
+        }
+    }
+    .hero-line {
+        height: 5px;
+        width: 50px;
+        margin: 2rem 0px 3rem 0px;
+        border-radius: var(--sb-size);
+    }
+}

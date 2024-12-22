@@ -1,0 +1,31 @@
+---
+import { getSvg } from '../utils/help';
+import { marked } from 'marked';
+import { authors, memos } from '../data/ghost-store';
+
+import config from '../data/config';
+
+const author = authors.authors[0];
+---
+
+<div class="markdown hero">
+    <h2>Hello! 我是 {author.name}！</h2>
+    <p class="bio">
+        {author.bio}
+    </p>
+    <p class="social">
+        {
+            config.social.map((e) => (
+                <a target="_blank" href={e.url}>
+                    <Fragment set:html={getSvg(e.name, '0 0 30 30')} />
+                </a>
+            ))
+        }
+    </p>
+    <div class="now">
+        <h2>Now</h2>
+        <div set:html={marked.parse(memos[0].content)} />
+    </div>
+
+    <hr class="hero-line" />
+</div>

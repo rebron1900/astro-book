@@ -2,9 +2,12 @@
 import type { Post } from '@ts-ghost/content-api';
 import { normalizeSlug } from '../utils/help';
 import PostMeta from './PostMeta.astro';
+import Hero from './Hero.astro';
 
 const { page } = Astro.props;
 ---
+
+{page.currentPage == 1 ? <Hero /> : ''}
 
 {
     page.data.map((post: Post) => (
