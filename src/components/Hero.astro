@@ -9,7 +9,7 @@ const author = authors.authors[0];
 ---
 
 <div class="markdown hero">
-    <h2>Hello! 我是 {author.name}！</h2>
+    <h2><a href="/about/">Hello! 我是 {author.name}！</a></h2>
     <p class="bio">
         {author.bio}
     </p>
@@ -23,7 +23,7 @@ const author = authors.authors[0];
         }
     </p>
     <div class="now">
-        <h2>Now</h2>
+        <h2><a href="/memos/">Now</a></h2>
         <div set:html={marked.parse(memos[0].content)} />
     </div>
 
