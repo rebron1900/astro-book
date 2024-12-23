@@ -1,7 +1,6 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import solidJs from '@astrojs/solid-js';
-import compress from 'astro-compress';
 
 // https://astro.build/config
 export default defineConfig({
@@ -19,10 +18,6 @@ export default defineConfig({
         sitemap(),
         solidJs({
             devtools: true
-        }),
-        compress({
-            Image: false,
-            SVG: false
         })
     ]
 });
