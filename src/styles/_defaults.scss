@@ -106,11 +106,6 @@ $hint-colors: (
     --hint-color-info: #6bf;
     --hint-color-warning: #fd6;
     --hint-color-danger: #f66;
-
-    body {
-        font-family: 'Noto Serif SC', serif;
-        word-wrap: break-word;
-    }
 }
 
 @mixin theme-yuhang {
@@ -207,11 +202,6 @@ $hint-colors: (
         a {
             text-decoration: none !important;
         }
-    }
-
-    body {
-        word-wrap: break-word;
-        font-family: 'Noto Serif SC', serif;
     }
 }
 

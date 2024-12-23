@@ -18,6 +18,11 @@ html.dark {
 html.light {
     @include theme-light;
     @include code-light;
+
+    *:not(pre) {
+        -webkit-text-stroke: 0.2px !important;
+        text-stroke: 0.2px !important;
+    }
 }
 
 html.yayu {
@@ -38,4 +43,9 @@ html.herblue {
 html.onojyun {
     @include theme-onojyun;
     @include code-light;
+
+    *:not(pre) {
+        -webkit-text-stroke: 0.2px !important;
+        text-stroke: 0.2px !important;
+    }
 }
