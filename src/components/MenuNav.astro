@@ -11,12 +11,12 @@ const { title } = Astro.props;
         <ul class="book-collspan">
             {
                 title ? (
-                    <span transition:name="menu-nav-flag" style="transform: translateY(0px);" class="menu-flag current" />
+                    <span transition:name="menu-nav-flag" style="top:0px;" class="menu-flag current" />
                 ) : (
                     settings?.navigation.map(
                         (item, index) =>
                             Astro.url.pathname === item.url && (
-                                <span transition:name="menu-nav-flag" style={` transform: translateY(${index * 30}px);`} class="menu-flag current" />
+                                <span transition:name="menu-nav-flag" style={` top:${(index + 1) * 30}px;`} class="menu-flag current" />
                             )
                     )
                 )

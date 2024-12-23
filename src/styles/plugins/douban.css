@@ -1,63 +1,62 @@
-
 .db--nav {
     padding: 30px 0 20px;
     display: flex;
     align-items: center;
-    flex-wrap: wrap
+    flex-wrap: wrap;
 }
 
 .db--navItem {
     font-size: 20px;
     cursor: pointer;
     border-bottom: 1px solid transparent;
-    transition: .5s border-color;
+    transition: 0.5s border-color;
     display: flex;
     align-items: center;
     text-transform: capitalize;
-    margin-right: 20px
+    margin-right: 20px;
 }
 
-.db--navItem.current,.db--navItem:hover {
-    border-color: inherit
+.db--navItem.current,
+.db--navItem:hover {
+    border-color: inherit;
 }
 
 .db--score svg {
     fill: #f5c518;
-    margin-right: 5px
+    margin-right: 5px;
 }
 
 .db--list {
     display: flex;
     align-items: flex-start;
-    flex-wrap: wrap
+    flex-wrap: wrap;
 }
 
 .db--image {
     width: 150px !important;
     height: 215px !important;
     object-fit: cover;
-    border-radius: 4px
+    border-radius: 4px;
 }
 
 .db--image:hover {
-    box-shadow: 0 0 10px var(--main-border-color-light)
+    box-shadow: 0 0 10px var(--main-border-color-light);
 }
 
 .db--title {
     margin-top: 2px;
     font-size: 14px;
-    line-height: 1.4
+    line-height: 1.4;
 }
 
 .db--title a:hover {
     color: var(--main-hover-color);
-    text-decoration: underline
+    text-decoration: underline;
 }
 
-
-@media(max-width: 600px) {
+@media (max-width: 600px) {
     .db--listBydate {
-        flex-direction:column
+        flex-direction: column;
     }
 }
 
@@ -69,43 +68,42 @@
     margin-right: 6px;
     margin-bottom: 10px;
     line-height: 1.4;
-    cursor: pointer
+    cursor: pointer;
 }
 
 .db--genreItem.is-active {
     background-color: var(--main-bg-color);
-    color: #fff
+    color: #fff;
 }
 
 .db--genreItem:hover {
     background-color: var(--main-hover-color);
-    color: #fff
+    color: #fff;
 }
 
 .db--genres {
     padding-bottom: 15px;
     display: flex;
-    flex-wrap: wrap
+    flex-wrap: wrap;
 }
 
-.db--genres.u-hide+.db--list {
-    padding-top: 10px
+.db--genres.u-hide + .db--list {
+    padding-top: 10px;
 }
 
 .db--score {
     display: flex;
     align-items: center;
     font-size: 14px;
-    color: var(--text-gray-lightest)
+    color: var(--text-gray-lightest);
 }
 
 .db--item {
     width: 150px;
-    margin-right: 20px;
-    margin-bottom: 20px;
-    position: relative
+    margin: 10px;
+    position: relative;
 }
-.db--icon-comment{
+.db--icon-comment {
     margin-top: 3px;
     right: 0px;
     position: absolute !important;
@@ -114,7 +112,7 @@
 .db--item__music img {
     width: 150px;
     height: 150px;
-    object-fit: cover
+    object-fit: cover;
 }
 
 .db--item .top250 {
@@ -129,22 +127,22 @@
     font-size: 12px;
     display: flex;
     margin-bottom: 2px;
-    font-weight: 900
+    font-weight: 900;
 }
 
 .db--item .top250:after {
-    content: "";
+    content: '';
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     right: 0;
     top: 0;
-    margin-right: -.2rem;
+    margin-right: -0.2rem;
     border-radius: 0 0 4px 4px;
     background: inherit;
     height: 100%;
     position: absolute;
-    width: .75rem;
-    transform: skewX(-20deg)
+    width: 0.75rem;
+    transform: skewX(-20deg);
 }
 
 .ipc-signpost {
@@ -158,33 +156,33 @@
     display: flex;
     width: 58%;
     margin-bottom: 2px;
-    font-weight: 900
+    font-weight: 900;
 }
 
 .ipc-signpost:after {
-    content: "";
+    content: '';
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     right: 0;
     top: 0;
-    margin-right: -.2rem;
+    margin-right: -0.2rem;
     border-radius: 4px;
     background: inherit;
     height: 100%;
     position: absolute;
-    width: .75rem;
-    transform: skewX(-20deg)
+    width: 0.75rem;
+    transform: skewX(-20deg);
 }
 
 .doulist-item {
     margin: 30px 0;
     color: #666;
     border: 1px solid var(--main-border-color);
-    border-radius: 4px
+    border-radius: 4px;
 }
 
 .doulist-item:hover {
-    box-shadow: 0 3px 12px var(--main-border-color-light)
+    box-shadow: 0 3px 12px var(--main-border-color-light);
 }
 
 .doulist-item .doulist-subject {
@@ -192,7 +190,7 @@
     align-items: flex-start;
     line-height: 1.6;
     padding: 12px;
-    position: relative
+    position: relative;
 }
 
 .doulist-item .doulist-subject .db--viewTime {
@@ -207,42 +205,42 @@
     font-size: 12px;
     display: flex;
     margin-bottom: 2px;
-    font-weight: 900
+    font-weight: 900;
 }
 
 .doulist-item .doulist-subject .db--viewTime:after {
-    content: "";
+    content: '';
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     left: 0;
     top: 0;
-    margin-left: -.2rem;
+    margin-left: -0.2rem;
     border-radius: 0 4px 4px 4px;
     background: inherit;
     height: 100%;
     position: absolute;
-    width: .75rem;
-    transform: skewX(20deg)
+    width: 0.75rem;
+    transform: skewX(20deg);
 }
 
 .doulist-item .doulist-subject .doulist-content {
-    flex: auto
+    flex: auto;
 }
 
 .doulist-item .doulist-subject .doulist-post {
     width: 96px;
     margin-right: 15px;
     display: flex;
-    flex: none
+    flex: none;
 }
 
 .doulist-item .doulist-subject .doulist-title {
     margin-bottom: 5px;
-    font-size: 18px
+    font-size: 18px;
 }
 
 .doulist-item .doulist-subject .doulist-title a {
-    text-decoration: none!important
+    text-decoration: none !important;
 }
 
 .doulist-item .doulist-subject .rating {
@@ -250,7 +248,7 @@
     font-size: 14px;
     line-height: 1;
     display: flex;
-    align-items: center
+    align-items: center;
 }
 
 .doulist-item .doulist-subject .rating .allstardark {
@@ -261,7 +259,7 @@
     background-repeat: repeat;
     background-image: url(../images/star.svg);
     background-size: auto 100%;
-    margin-right: 5px
+    margin-right: 5px;
 }
 
 .doulist-item .doulist-subject .rating .allstarlight {
@@ -272,18 +270,18 @@
     overflow: hidden;
     background-repeat: repeat;
     background-image: url(../images/star-fill.svg);
-    background-size: auto 100%
+    background-size: auto 100%;
 }
 
 .doulist-item .doulist-subject .abstract {
-    font-size: 14px
+    font-size: 14px;
 }
 
 .doulist-item .doulist-subject img {
-    width: 96px!important;
-    height: 96px!important;
+    width: 96px !important;
+    height: 96px !important;
     border-radius: 4px;
-    object-fit: cover
+    object-fit: cover;
 }
 
 .db--date {
@@ -293,28 +291,28 @@
     font-weight: 900;
     line-height: 1;
     margin-top: 30px;
-    margin-bottom: 10px
+    margin-bottom: 10px;
 }
 
 .db--date:before {
-    content: "";
+    content: '';
     position: absolute;
-    top: .5em;
+    top: 0.5em;
     bottom: -2px;
     left: -10px;
     width: 3.4em;
     z-index: -1;
     background: var(--main-hover-color);
-    opacity: .3;
+    opacity: 0.3;
     transform: skew(-35deg);
-    transition: opacity .2s ease;
-    border-radius: 3px 8px 10px 6px
+    transition: opacity 0.2s ease;
+    border-radius: 3px 8px 10px 6px;
 }
 
 .db--dateList {
     padding-left: 15px;
     padding-top: 5px;
-    padding-right: 15px
+    padding-right: 15px;
 }
 
 .db--card__list {
@@ -323,16 +321,16 @@
     padding: 15px 0;
     border-bottom: 1px dotted var(--main-border-color);
     font-size: 14px;
-    color: var(--text-gray-lightest)
+    color: var(--text-gray-lightest);
 }
 
 .db--card__list:last-child {
-    border-bottom: 0
+    border-bottom: 0;
 }
 
 .db--card__list .title {
     font-size: 18px;
-    margin-bottom: 5px
+    margin-bottom: 5px;
 }
 
 .db--card__list .rating {
@@ -340,7 +338,7 @@
     font-size: 14px;
     line-height: 1;
     display: flex;
-    align-items: center
+    align-items: center;
 }
 
 .db--card__list .rating .allstardark {
@@ -351,7 +349,7 @@
     background-repeat: repeat;
     background-image: url(../images/star.svg);
     background-size: auto 100%;
-    margin-right: 5px
+    margin-right: 5px;
 }
 
 .db--card__list .rating .allstarlight {
@@ -362,7 +360,7 @@
     overflow: hidden;
     background-repeat: repeat;
     background-image: url(../images/star-fill.svg);
-    background-size: auto 100%
+    background-size: auto 100%;
 }
 
 .db--card__list img {
@@ -371,7 +369,7 @@
     height: 80px;
     object-fit: cover;
     flex: none;
-    margin-right: 15px
+    margin-right: 15px;
 }
 
 .db--titleDate {
@@ -381,33 +379,32 @@
     margin-bottom: 10px;
     flex: none;
     margin-right: 15px;
-    align-items: center
+    align-items: center;
 }
 
 .db--titleDate__day {
     font-weight: 900;
-    font-size: 44px
+    font-size: 44px;
 }
 
 .db--titleDate__month {
     font-size: 14px;
     color: var(--text-gray-light);
-    font-weight: 900
+    font-weight: 900;
 }
 
 .db--list__card {
-    display: block
+    display: block;
 }
 
 .db--dateList__card {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-start
+    align-items: flex-start;
 }
 
 .db--listBydate {
     display: flex;
     align-items: flex-start;
-    margin-top: 15px
+    margin-top: 15px;
 }
-
