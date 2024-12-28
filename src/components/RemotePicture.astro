@@ -35,13 +35,3 @@ const generateImageSrcset = (image: string, isLocal = false) => {
 ---
 
 <img loading="lazy" class={classNames ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />
-
-<!-- 
-<Picture
-  class={classNames ?? ''}
-  src={src}
-  widths={widths}
-  aspectRatio={metadata.width / metadata.height}
-  sizes={sizes}
-  alt={alt ?? ''}
-/> -->

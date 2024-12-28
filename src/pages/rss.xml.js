@@ -9,7 +9,7 @@ export async function GET(context) {
         site: site,
         items: postsAll.slice(0, 30).map((item) => ({
             title: item.title,
-            description: item.html,
+            description: `${item.feature_image ? '<p><img src="' + item.feature_image + '"/> ' + item.feature_image_caption + ' </p>' : ''}${item.html}`,
             link: `/${item.slug}/`,
             pubDate: item.published_at
         }))

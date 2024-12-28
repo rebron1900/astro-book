@@ -25,8 +25,12 @@ const { post, isFeature } = Astro.props;
 
 {
     post.feature_image && isFeature && (
-        <p>
-            <RemotePicture src={post.feature_image} alt={post.feature_image_alt} />
-        </p>
+        <figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption">
+            <RemotePicture src={post.feature_image} alt={post.feature_image_caption} />
+            <figcaption>
+                <Fragment set:html={post.feature_image_caption} />
+                <Fragment set:html={post.feature_image_alt} />
+            </figcaption>
+        </figure>
     )
 }
