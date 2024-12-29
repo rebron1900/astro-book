@@ -41,6 +41,10 @@
     /** 引用自一个球博客 **/
     h2 {
         font-size: 1.7rem;
+
+        &:first-of-type {
+            margin-top: 0;
+        }
     }
 
     h3 {
