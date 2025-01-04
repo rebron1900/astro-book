@@ -42,6 +42,10 @@ const config = {
         {
             name: 'icp',
             html: "<a href='https://beian.miit.gov.cn/' target='_blank'>蜀ICP备16022135号-2</a>"
+        },
+        {
+            name: 'upyun',
+            html: "<a href='https://www.upyun.com/?utm_source=lianmeng&utm_medium=referral' target='_blank'>本站由又拍云提供云储存服务</a>"
         }
     ],
     themes: [
