@@ -1,0 +1,21 @@
+---
+import { Markdown } from 'astro-remote';
+
+const { ratio } = Astro.props;
+
+// 计算 flex-grow 的值，默认为 1
+
+const html = await Astro.slots.render('default');
+
+const test = html.split('--shortcode--');
+---
+
+<div class="book-columns flex flex-wrap">
+    {
+        test.map((html) => (
+            <div class="flex-even markdown-inner " style={`flex-grow: 1;`}>
+                <Markdown content={html} />
+            </div>
+        ))
+    }
+</div>

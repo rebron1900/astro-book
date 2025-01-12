@@ -12,7 +12,7 @@ import FullLayout from '../layouts/FullLayout.astro';
 const page = pages.find((post) => post.slug == 'map');
 ---
 
-<FullLayout post={page}>
+<BaseLayout post={page}>
     <Head slot="head" post={page} site={settings} title={page?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
 
     <Header slot="header" title={page.title} />
@@ -32,19 +32,9 @@ const page = pages.find((post) => post.slug == 'map');
         <div class="page-map">
             <div id="map" style="width: 100%; " class="footer-map"></div>
         </div>
-
-        <style>
-            .page-map {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                margin-left: calc(50% - 50vw);
-            }
-        </style>
     </article>
 
     <Comments slot="comments" />
 
     <Relitu slot="relitu" />
-</FullLayout>
+</BaseLayout>

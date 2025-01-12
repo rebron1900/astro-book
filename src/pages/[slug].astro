@@ -18,6 +18,8 @@ import Menu from '../components/Menu.astro';
 import CodeSlot from '../components/CodeSlot.astro';
 import { Markup } from 'astro-remote';
 import RemotePicture from '../components/RemotePicture.astro';
+import Columns from '../components/shortcode/Columns.astro';
+import Details from '../components/shortcode/Details.astro';
 import Footer from '../components/Footer.astro';
 
 export async function getStaticPaths() {
@@ -93,7 +95,15 @@ const tocHtml = tocGen(await post.html);
             {post.title}
         </h1>
         <PostMeta post={post} isFeature={true} />
-        {post.html && <Markup content={html} sanitize={{ allowComponents: true }} components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot }} />}
+        {
+            post.html && (
+                <Markup
+                    content={html}
+                    sanitize={{ allowComponents: true, allowCustomElements: true }}
+                    components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns }}
+                />
+            )
+        }
     </article>
 
     {post.type == 'post' && <Pagination slot="pagination" prev={prevPost} next={nextPost} />}
