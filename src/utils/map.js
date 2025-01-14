@@ -205,7 +205,7 @@ class MapHandler {
         } else {
             content += '该地点暂无游记。';
         }
-        return content;
+        return content.replace(/<br \/?>$/, '');
     }
 
     addClusterMarker(feature) {
