@@ -379,15 +379,21 @@
         .atk-send-btn {
             color: var(--body-background);
         }
-        .atk-plug-btn:hover {
-            background: var(--gray-500);
+        .atk-plug-btn {
+            &:hover {
+                background: var(--gray-500);
+            }
+
+            i {
+                color: var(--gray-700);
+            }
+
+            &.active {
+                background-color: var(--gray-500);
+            }
         }
         .atk-cancel {
             background: transparent;
-        }
-
-        .atk-plug-btn i {
-            color: var(--gray-700);
         }
     }
 
