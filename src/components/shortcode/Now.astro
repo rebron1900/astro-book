@@ -1,0 +1,9 @@
+---
+import { marked } from 'marked';
+import { memos } from '../../data/ghost-store';
+---
+
+<div class="now">
+    <h2><a href="/memos/">Now</a></h2>
+    <div set:html={marked.parse(memos[0].content)} />
+</div>

@@ -15,6 +15,9 @@ import IFrameSlot from '../components/IFrameSlot.astro';
 import PostMeta from '../components/PostMeta.astro';
 import RemotePicture from '../components/RemotePicture.astro';
 import Footer from '../components/Footer.astro';
+import Now from '../components/shortcode/Now.astro';
+import Columns from '../components/shortcode/Columns.astro';
+import Details from '../components/shortcode/Details.astro';
 
 const page = pages.find((post) => post.slug == 'about-now');
 ---
@@ -28,9 +31,14 @@ const page = pages.find((post) => post.slug == 'about-now');
     <div slot="content" class="markdown book-article">
         <h1 class="book-title">{page.title}</h1>
         <PostMeta post={page} isFeature={true} />
+
         {
             page.html && (
-                <Markup content={page.html} sanitize={{ allowComponents: true }} components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot }} />
+                <Markup
+                    content={page.html}
+                    sanitize={{ allowComponents: true, allowCustomElements: true }}
+                    components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, Now: Now }}
+                />
             )
         }
     </div>

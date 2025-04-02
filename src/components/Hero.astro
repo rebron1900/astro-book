@@ -2,6 +2,7 @@
 import { getSvg } from '../utils/help';
 import { marked } from 'marked';
 import { authors, memos } from '../data/ghost-store';
+import Now from './shortcode/Now.astro';
 
 import config from '../data/config';
 
@@ -20,10 +21,6 @@ const author = authors.authors[0];
             ))
         }
     </div>
-    <div class="now">
-        <h2><a href="/memos/">Now</a></h2>
-        <div set:html={marked.parse(memos[0].content)} />
-    </div>
-
+    <Now />
     <hr class="hero-line" />
 </div>

@@ -61,7 +61,7 @@ if (post) {
         const theme = localStorage.theme;
         if (localStorage.theme !== 'auto') {
             document.documentElement.classList.add(theme);
-            document.body.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-theme', theme);
 
             localStorage.theme = theme;
             localStorage.themetype = localStorage.themetype || 'light';
@@ -156,7 +156,7 @@ if (post) {
         const theme = localStorage.theme;
         if (localStorage.theme !== 'auto') {
             document.documentElement.classList.add(theme);
-            document.body.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-theme', theme);
 
             localStorage.theme = theme;
             localStorage.themetype = localStorage.themetype || 'light';
