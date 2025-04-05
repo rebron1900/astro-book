@@ -12,6 +12,21 @@
 
     const commentinfo = { type: 'artalk', name: "1900'Blog", server: 'https://artalk.1900.live', el: '.at-comments' };
 
+    const isExternalLink = (url: string) => {
+        // 解析传入的 URL
+        const parsedUrl = new URL(url);
+
+        // 从 config.blogURL 中提取主机名
+        const blogHostname = location.hostname;
+
+        // 检查传入的 URL 的主机名是否与 blogHostname 匹配或其子域名
+        if (parsedUrl.hostname === blogHostname || parsedUrl.hostname === 'www' + blogHostname) {
+            return true;
+        }
+
+        return false;
+    };
+
     document.addEventListener('astro:page-load', () => {
         if (!document.querySelector(commentinfo.el)) return;
         const artalk = Artalk.init({
@@ -24,6 +39,12 @@
         artalk.on('comment-inserted', function () {
             cocoMessage.insertCSS();
             cocoMessage.success('感谢你发表的想法 💖');
+        });
+
+        artalk.on('list-loaded', () => {
+            document.querySelectorAll('.atk-comment a').forEach((i) => {
+                i.href = isExternalLink(i.href) ? i.href : `/golink?target=${btoa(encodeURIComponent(i.href))}`;
+            });
         });
     });
 </script>
