@@ -1,0 +1,51 @@
+---
+import Head from '../components/Head.astro';
+import { settings } from '../data/ghost-store';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<style>
+    .not-found {
+        text-align: center;
+    }
+    .not-found h1 {
+        margin: 0.25em 0 0 0;
+        opacity: 0.25;
+        font-size: 40vmin;
+    }
+</style>
+
+<BaseLayout>
+    <Head slot="head" site={settings} title={settings?.title + ' | ' + settings?.description} />
+    <Fragment slot="content">
+        <main class="flex justify-center align-center go-lilnk">
+            <div class="markdown">
+                <h2 class="book-title">即将离开 {settings?.title} 前往</h2>
+                <blockquote class="book-hint warning">
+                    <a id="redirect-link" target="_blank" href=""></a>
+                </blockquote>
+                <div class="btn-action flex flex-wrap justify-center">
+                    <a href="javascript:window.history.back()" class="book-btn info"> 算了算了 </a>
+                    <a id="direct-link" href="" class="book-btn danger"> 点击跳转 </a>
+                </div>
+            </div>
+        </main>
+
+        <script is:inline>
+            const params = new URLSearchParams(window.location.search);
+            const encodedTarget = params.get('target');
+            const target = atob(encodedTarget); // 使用 atob 进行 Base64 解码
+
+            if (target) {
+                const decodedTarget = decodeURIComponent(target);
+
+                document.getElementById('direct-link').href = decodedTarget;
+                document.getElementById('redirect-link').textContent = '' + decodedTarget; // 在新增的元素中显示原地址
+                document.getElementById('redirect-link').href = decodedTarget;
+            } else {
+                const redirectMessageElement = document.getElementById('redirect-link');
+                redirectMessageElement.textContent = '';
+            }
+        </script>
+    </Fragment>
+</BaseLayout>

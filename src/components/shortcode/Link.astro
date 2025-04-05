@@ -1,0 +1,26 @@
+---
+const { title, classname, href } = Astro.props;
+
+import config from '../../data/config';
+
+// 判断是否是外链
+const isExternalLink = (url: string) => {
+    // 解析传入的 URL
+    const parsedUrl = new URL(url);
+
+    // 从 config.blogURL 中提取主机名
+    const blogHostname = new URL(config.blogURL).hostname;
+
+    // 检查传入的 URL 的主机名是否与 blogHostname 匹配或其子域名
+    if (parsedUrl.hostname === blogHostname || parsedUrl.hostname === 'www' + blogHostname) {
+        return true;
+    }
+
+    return false;
+};
+
+// 如果是外链，则生成新的链接
+const finalHref = isExternalLink(href) ? href : `/golink?target=${btoa(encodeURIComponent(href))}`;
+---
+
+<a href={finalHref} classname={classname} title={title}><slot /></a>

@@ -10,6 +10,13 @@ import Header from '../../components/Header.astro';
 import Top from '../../components/Top.astro';
 import Menu from '../../components/Menu.astro';
 import TocTagloop from '../../components/TocTagloop.astro';
+import { Markdown } from 'astro-remote';
+import CodeSlot from '../../components/CodeSlot.astro';
+import IFrameSlot from '../../components/IFrameSlot.astro';
+import RemotePicture from '../../components/RemotePicture.astro';
+import Columns from '../../components/shortcode/Columns.astro';
+import Details from '../../components/shortcode/Details.astro';
+import Link from '../../components/shortcode/Link.astro';
 
 const custompage = pages.find((post) => post.slug == 'memos');
 
@@ -55,7 +62,14 @@ const { page } = Astro.props;
                         <div class="atk-main">
                             <div class="atk-body">
                                 <div class="atk-content">
-                                    <div set:html={marked.parse(memo.content)} />
+                                    {memo.content && (
+                                        <Markdown
+                                            content={memo.content}
+                                            sanitize={{ allowComponents: true, allowCustomElements: true }}
+                                            components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
+                                        />
+                                    )}
+
                                     <div class="resource-wrapper">
                                         <div class="images-wrapper my-2" view-image="">
                                             <template x-for="img in item.resourceList">

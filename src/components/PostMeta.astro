@@ -2,15 +2,15 @@
 // 假设您已经在前面获取了 post 数据并将其传递给这个组件
 import type { Tag } from '@ts-ghost/content-api';
 import RemotePicture from './RemotePicture.astro';
-import { normalizeSlug, normalizeData } from '../utils/help';
+import { normalizeSlug, normalizeData, getSvg } from '../utils/help';
 const { post, isFeature } = Astro.props;
 ---
 
-<div>{normalizeData(post.published_at)}</div>
+<div class="flex align-center text-small book-post-date"><Fragment set:html={getSvg('calendar')} /><span>{normalizeData(post.published_at)}</span></div>
 
 {
     post.tags && post.tags.length > 0 && (
-        <div>
+        <div class="flex align-center text-small">
             {post.tags
                 .filter((tag) => tag.visibility === 'public') // 过滤出可见的标签
                 .map((tag, index, array) => (

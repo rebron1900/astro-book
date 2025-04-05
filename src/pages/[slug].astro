@@ -21,6 +21,9 @@ import RemotePicture from '../components/RemotePicture.astro';
 import Columns from '../components/shortcode/Columns.astro';
 import Details from '../components/shortcode/Details.astro';
 import Footer from '../components/Footer.astro';
+import HTML from 'html-parse-stringify';
+import IFrameSlot from '../components/IFrameSlot.astro';
+import Golink from './golink.astro';
 
 export async function getStaticPaths() {
     const posts = postsAll.concat(pages);
@@ -37,9 +40,6 @@ export async function getStaticPaths() {
 }
 
 const { post, prevPost, nextPost } = Astro.props;
-import IFrameSlot from '../components/IFrameSlot.astro';
-
-import HTML from 'html-parse-stringify';
 
 const postss = await getCollection('Obsidian');
 
@@ -100,7 +100,7 @@ const tocHtml = tocGen(await post.html);
                 <Markup
                     content={html}
                     sanitize={{ allowComponents: true, allowCustomElements: true }}
-                    components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns }}
+                    components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Golink }}
                 />
             )
         }

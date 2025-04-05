@@ -7,6 +7,14 @@ import Comments from '../components/Comments.astro';
 import Relitu from '../components/Relitu.jsx';
 import Header from '../components/Header.astro';
 import Menu from '../components/Menu.astro';
+import PostMeta from '../components/PostMeta.astro';
+import { Markup } from 'astro-remote';
+import CodeSlot from '../components/CodeSlot.astro';
+import IFrameSlot from '../components/IFrameSlot.astro';
+import RemotePicture from '../components/RemotePicture.astro';
+import Columns from '../components/shortcode/Columns.astro';
+import Details from '../components/shortcode/Details.astro';
+import Link from '../components/shortcode/Link.astro';
 
 const page = pages.find((post) => post.slug == 'map');
 ---
@@ -19,8 +27,17 @@ const page = pages.find((post) => post.slug == 'map');
 
     <article slot="content" class="markdown book-article">
         <h1 class="book-title">{page.title}</h1>
-        <Fragment set:html={page.html} />
+        <PostMeta post={page} isFeature={true} />
 
+        {
+            page.html && (
+                <Markup
+                    content={page.html}
+                    sanitize={{ allowComponents: true, allowCustomElements: true }}
+                    components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
+                />
+            )
+        }
         <script>
             import initMap from '../utils/map';
 
