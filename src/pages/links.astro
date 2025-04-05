@@ -43,17 +43,17 @@ const page = pages.find((post) => post.slug == 'links');
                 flux.map((item) => (
                     <div class="flex-even markdown-inner">
                         <h3 class="ellipsis">
-                            <a href={item.feed.site_url} target="_blank">
+                            <Link href={item.feed.site_url} target="_blank">
                                 {item.feed.title}
-                            </a>
+                            </Link>
                         </h3>
                         <div>
                             <span>{normalizeData(item.published_at)}</span>
                         </div>
                         <div class="ellipsis">
-                            <a href={item.url} target="_blank">
+                            <Link href={item.url} target="_blank">
                                 {item.title}
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 ))
