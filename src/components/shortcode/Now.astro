@@ -1,9 +1,20 @@
 ---
 import { marked } from 'marked';
 import { memos } from '../../data/ghost-store';
+import { Markdown } from 'astro-remote';
+import CodeSlot from '../CodeSlot.astro';
+import IFrameSlot from '../IFrameSlot.astro';
+import RemotePicture from '../RemotePicture.astro';
+import Columns from './Columns.astro';
+import Details from './Details.astro';
+import Link from './Link.astro';
 ---
 
-<div class="now">
+<div class="now bio">
     <h2><a href="/memos/">Now</a></h2>
-    <div set:html={marked.parse(memos[0].content)} />
+    <Markdown
+        content={marked.parse(memos[0].content)}
+        sanitize={{ allowComponents: true, allowCustomElements: true }}
+        components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
+    />
 </div>
