@@ -3,11 +3,9 @@ export interface Props {
     src: string;
     alt?: string;
     classNames?: string;
-    widths: number[];
-    sizes: string;
 }
 
-const { src, alt, classNames, widths, sizes } = Astro.props;
+const { src, alt, classNames } = Astro.props;
 
 const generateImageSrcset = (image: string, isLocal = false) => {
     image = encodeURI(image);

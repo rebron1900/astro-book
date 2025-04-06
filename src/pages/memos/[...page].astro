@@ -1,5 +1,6 @@
 ---
 import { pages, settings, authors, memos } from '../../data/ghost-store.js';
+import config from '../../data/config';
 import { marked } from 'marked';
 import type { GetStaticPathsOptions } from 'astro';
 
@@ -54,7 +55,7 @@ const { page } = Astro.props;
                 page.data.map((memo) => (
                     <div class="atk-comment">
                         <div class="atk-avatar">
-                            <a target="_blank" rel="noreferrer noopener nofollow" href="#">
+                            <a target="_blank" rel="noreferrer noopener nofollow" href={config.memos.siteURL + '/m/' + memo.id}>
                                 <img src={authors.authors[0].profile_image} />
                             </a>
                         </div>
@@ -69,15 +70,13 @@ const { page } = Astro.props;
                                             components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
                                         />
                                     )}
-
-                                    <div class="resource-wrapper">
-                                        <div class="images-wrapper my-2" view-image="">
-                                            <template x-for="img in item.resourceList">
-                                                <div class="memo-resource w-100">
-                                                    <img class="lazyload  medium-zoom-image" data-loaded="true" />
-                                                </div>
-                                            </template>
-                                        </div>
+                                    <style />
+                                    <div class={`image-grid image-count-${memo.resourceList.length}`} view-image="">
+                                        {memo.resourceList.map((r) => (
+                                            <div class="image-container">
+                                                <RemotePicture src={r.externalLink} alt={r.filename} classNames="image-item" />
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
@@ -131,10 +130,6 @@ const { page } = Astro.props;
 
             document.addEventListener('astro:page-load', () => {
                 htmx.process(document.body);
-
-                document.body.addEventListener('htmx:afterSwap', function (event) {
-                    document.querySelector('.btn-more')?.remove();
-                });
             });
         </script>
     </div>

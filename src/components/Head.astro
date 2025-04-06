@@ -89,8 +89,15 @@ if (post) {
     import 'medium-zoom/dist/style.css';
 
     const initZoom = () => {
-        mediumZoom('.markdown img', {
-            background: 'rgba(0,0,0,0.75)'
+        // 选择所有未初始化的图片
+        const images = document.querySelectorAll('.markdown img:not([data-zoom-initialized])');
+
+        // 应用 mediumZoom 并标记已初始化的图片
+        images.forEach((img) => {
+            mediumZoom(img, {
+                background: 'rgba(0,0,0,0.75)'
+            });
+            img.setAttribute('data-zoom-initialized', 'true'); // 标记为已初始化
         });
     };
 
@@ -187,5 +194,10 @@ if (post) {
             theme: 'auto',
             appendTo: () => document.body
         });
+    });
+
+    document.body.addEventListener('htmx:afterSwap', function (event) {
+        document.querySelector('.btn-more')?.remove();
+        initZoom();
     });
 </script>

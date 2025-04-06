@@ -57,6 +57,9 @@
 /** memos **/
 
 .page-memos {
+    .atk-content > :nth-last-child(2) {
+        margin-bottom: 0px;
+    }
     /* memos header */
     .memo-header {
         height: 19.25rem;
@@ -102,10 +105,17 @@
     .atk-content {
         border-radius: $border-radius;
         border-width: 1px;
-        padding: 0.75rem 0.75rem;
+        padding: 0.75rem 1rem;
         background-color: var(--gray-200);
         display: inline-block;
         max-width: 100%;
+
+        p,
+        ol,
+        ul,
+        blockquote {
+            margin: 7px 0px;
+        }
 
         :last-child {
             margin-bottom: 0;
@@ -116,7 +126,68 @@
         .atk-height-limit:after {
             left: 0;
         }
+
+        .image-grid {
+            display: grid;
+            gap: 5px; /* 图片之间的间距 */
+            width: 100%;
+        }
+
+        /* 1 张图片时的布局 */
+        .image-grid.image-count-1 {
+            grid-template-columns: 1fr;
+            min-width: 300px;
+
+            @media (max-width: 400px) {
+                min-width: 270px;
+            }
+        }
+
+        /* 2 张图片时的布局 */
+        .image-grid.image-count-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        /* 3 张图片时的布局 */
+        .image-grid.image-count-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        /* 4 张图片时的布局 */
+        .image-grid.image-count-4 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        /* 5-9 张图片时的布局 */
+        .image-grid.image-count-5,
+        .image-grid.image-count-6,
+        .image-grid.image-count-7,
+        .image-grid.image-count-8,
+        .image-grid.image-count-9 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .image-container {
+            position: relative;
+            width: 100%;
+            padding-top: 100%; /* 保持容器为正方形 */
+            overflow: hidden;
+        }
+
+        .image-item {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 图片填充容器，保持比例 */
+            object-position: center; /* 图片居中显示 */
+        }
     }
+}
+
+.medium-zoom-image--opened {
+    object-fit: contain;
 }
 
 .btn-more {

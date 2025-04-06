@@ -2,6 +2,7 @@ const config = {
     blogURL: 'https://1900.live',
     memos: {
         url: 'https://memos.1900.live/api/v1/memo?creatorId=101&limit=all',
+        siteURL: 'https://memos.1900.live',
         limit: 10,
         offset: 10
     },
