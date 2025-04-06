@@ -3,24 +3,33 @@ const { title, target, href } = Astro.props;
 
 import config from '../../data/config';
 
-// 判断是否是外链
 const isExternalLink = (url: string) => {
-    // 解析传入的 URL
-    const parsedUrl = new URL(url);
+    // 处理空值或非字符串情况
+    if (!url || typeof url !== 'string') return true;
 
-    // 从 config.blogURL 中提取主机名
-    const blogHostname = new URL(config.blogURL).hostname;
+    // 内部路径直接返回 false
+    if (url.startsWith('/')) return false;
 
-    // 检查传入的 URL 的主机名是否与 blogHostname 匹配或其子域名
-    if (parsedUrl.hostname === blogHostname || parsedUrl.hostname === 'www' + blogHostname) {
+    try {
+        // 使用 blogURL 作为基准解析相对路径
+        const base = config.blogURL; // 确保 config.blogURL 是完整 URL，如 'https://example.com'
+        const parsedUrl = new URL(url, base);
+        const blogHost = new URL(base).hostname;
+
+        // 标准化处理：去除 www 前缀进行比较
+        const hostname = parsedUrl.hostname.replace(/^www\./, '');
+        const blogDomain = blogHost.replace(/^www\./, '');
+
+        // 主域名匹配或子域名判断
+        return !(hostname === blogDomain || hostname.endsWith(`.${blogDomain}`));
+    } catch (e) {
+        // 特殊协议（如 mailto:、tel:）或无效 URL 视为外链
         return true;
     }
-
-    return false;
 };
 
 // 如果是外链，则生成新的链接
-const finalHref = isExternalLink(href) ? href : `/golink?target=${btoa(encodeURIComponent(href))}`;
+const finalHref = isExternalLink(href) ? `/golink?target=${btoa(encodeURIComponent(href))}` : href;
 ---
 
 <a href={finalHref} target={target} title={title}><slot /></a>
