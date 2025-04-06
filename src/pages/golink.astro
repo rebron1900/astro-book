@@ -32,20 +32,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </main>
 
         <script is:inline>
-            const params = new URLSearchParams(window.location.search);
-            const encodedTarget = params.get('target');
-            const target = atob(encodedTarget); // 使用 atob 进行 Base64 解码
+            document.addEventListener('astro:page-load', () => {
+                const params = new URLSearchParams(window.location.search);
+                const encodedTarget = params.get('target');
+                const target = atob(encodedTarget); // 使用 atob 进行 Base64 解码
 
-            if (target) {
-                const decodedTarget = decodeURIComponent(target);
+                if (target) {
+                    const decodedTarget = decodeURIComponent(target);
 
-                document.getElementById('direct-link').href = decodedTarget;
-                document.getElementById('redirect-link').textContent = '' + decodedTarget; // 在新增的元素中显示原地址
-                document.getElementById('redirect-link').href = decodedTarget;
-            } else {
-                const redirectMessageElement = document.getElementById('redirect-link');
-                redirectMessageElement.textContent = '';
-            }
+                    document.getElementById('direct-link').href = decodedTarget;
+                    document.getElementById('redirect-link').textContent = '' + decodedTarget; // 在新增的元素中显示原地址
+                    document.getElementById('redirect-link').href = decodedTarget;
+                } else {
+                    const redirectMessageElement = document.getElementById('redirect-link');
+                    redirectMessageElement.textContent = '';
+                }
+            });
         </script>
     </Fragment>
 </BaseLayout>
