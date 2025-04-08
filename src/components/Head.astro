@@ -195,7 +195,6 @@ if (post) {
             appendTo: () => document.body
         });
     });
-
     document.body.addEventListener('htmx:afterSwap', function (event) {
         document.querySelector('.btn-more')?.remove();
         initZoom();

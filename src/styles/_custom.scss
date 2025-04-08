@@ -136,11 +136,7 @@
         /* 1 张图片时的布局 */
         .image-grid.image-count-1 {
             grid-template-columns: 1fr;
-            min-width: 300px;
-
-            @media (max-width: 400px) {
-                min-width: 270px;
-            }
+            min-width: 200px;
         }
 
         /* 2 张图片时的布局 */

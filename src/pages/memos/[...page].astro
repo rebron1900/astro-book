@@ -130,6 +130,10 @@ const { page } = Astro.props;
 
             document.addEventListener('astro:page-load', () => {
                 htmx.process(document.body);
+
+                document.body.addEventListener('htmx:afterSwap', function (event) {
+                    document.querySelector('.btn-more')?.remove();
+                });
             });
         </script>
     </div>
