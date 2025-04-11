@@ -32,7 +32,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </main>
 
         <script is:inline>
-            document.addEventListener('astro:after-swap', () => {
+            const golink = () => {
                 const params = new URLSearchParams(window.location.search);
                 const encodedTarget = params.get('target');
                 const target = atob(encodedTarget); // 使用 atob 进行 Base64 解码
@@ -47,6 +47,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                     const redirectMessageElement = document.getElementById('redirect-link');
                     redirectMessageElement.textContent = '';
                 }
+            };
+
+            golink();
+
+            document.addEventListener('astro:after-swap', () => {
+                golink();
             });
         </script>
     </Fragment>
