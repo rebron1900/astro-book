@@ -84,6 +84,8 @@ if (post) {
 <script>
     import mediumZoom from 'medium-zoom';
     import tippy from 'tippy.js';
+    import 'artalk/dist/Artalk.css';
+    import htmx from 'htmx.org';
 
     import 'tippy.js/dist/tippy.css';
     import 'medium-zoom/dist/style.css';
@@ -176,6 +178,17 @@ if (post) {
         localStorage.theme = theme || 'auto';
     };
 
+    const memosEvent = () => {
+        if (location.pathname.includes('/memos')) {
+            htmx.process(document.body);
+
+            document.body.addEventListener('htmx:afterSwap', function (event) {
+                document.querySelector('.btn-more')?.remove();
+                initZoom();
+            });
+        }
+    };
+
     document.addEventListener('astro:after-swap', () => {
         changeTheme();
     });
@@ -184,6 +197,7 @@ if (post) {
         initZoom();
         initTOP();
         initGallery();
+        memosEvent();
 
         // Scroll to top function
 
@@ -194,9 +208,5 @@ if (post) {
             theme: 'auto',
             appendTo: () => document.body
         });
-    });
-    document.body.addEventListener('htmx:afterSwap', function (event) {
-        document.querySelector('.btn-more')?.remove();
-        initZoom();
     });
 </script>

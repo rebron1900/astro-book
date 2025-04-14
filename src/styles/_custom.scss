@@ -474,7 +474,7 @@
     .atk-list > .atk-list-header {
         .atk-dropdown-wrap {
             .atk-dropdown {
-                background-color: var(--body-background);
+                background-color: var(--body-background) !important;
             }
         }
     }

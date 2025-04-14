@@ -32,7 +32,7 @@ const { page } = Astro.props;
 ---
 
 <BaseLayout post={custompage}>
-    <Head slot="head" post={custompage} site={settings} title={custompage?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
+    <Head slot="head" post={custompage} site={settings} title={custompage?.title + ' | ' + settings?.title + ' - ' + settings?.description}> afas </Head>
 
     <Header slot="header" title={custompage.title} />
     <Menu slot="menu" />
@@ -123,19 +123,6 @@ const { page } = Astro.props;
                 }
             </div>
         </div>
-        <script src="https://unpkg.com/htmx.org@1.7.0"></script>
-
-        <script>
-            import 'artalk/dist/Artalk.css';
-
-            document.addEventListener('astro:page-load', () => {
-                htmx.process(document.body);
-
-                document.body.addEventListener('htmx:afterSwap', function (event) {
-                    document.querySelector('.btn-more')?.remove();
-                });
-            });
-        </script>
     </div>
 
     <Relitu slot="relitu" />
