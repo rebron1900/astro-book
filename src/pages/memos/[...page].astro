@@ -72,11 +72,23 @@ const { page } = Astro.props;
                                     )}
                                     <style />
                                     <div class={`image-grid image-count-${memo.resourceList.length}`} view-image="">
-                                        {memo.resourceList.map((r) => (
-                                            <div class="image-container">
-                                                <RemotePicture src={r.externalLink} alt={r.filename} classNames="image-item" />
-                                            </div>
-                                        ))}
+                                        {memo.resourceList.map((r) => {
+                                            if (r.type == 'image') {
+                                                return (
+                                                    <div class="image-container">
+                                                        <RemotePicture src={r.externalLink} alt={r.filename} classNames="image-item" />
+                                                    </div>
+                                                );
+                                            } else if (r.type == 'video') {
+                                                return (
+                                                    <div class="image-container">
+                                                        <video src={r.externalLink} controls width="640" height="360">
+                                                            您的浏览器不支持 HTML5 视频标签
+                                                        </video>
+                                                    </div>
+                                                );
+                                            }
+                                        })}
                                     </div>
                                 </div>
                             </div>

@@ -1,8 +1,8 @@
 const config = {
     blogURL: 'https://1900.live',
     memos: {
-        url: 'https://memos.1900.live/api/v1/memo?creatorId=101&limit=all',
-        siteURL: 'https://memos.1900.live',
+        url: 'https://m2m.996288.xyz/api/v1/memo',
+        siteURL: 'https://m2m.996288.xyz',
         limit: 10,
         offset: 10
     },
