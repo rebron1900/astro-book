@@ -60,6 +60,9 @@
     .atk-content > :nth-last-child(2) {
         margin-bottom: 0px;
     }
+    .atk-body {
+        overflow: visible !important;
+    }
     /* memos header */
     .memo-header {
         height: 19.25rem;
@@ -109,6 +112,7 @@
         background-color: var(--gray-200);
         display: inline-block;
         max-width: 100%;
+        position: relative;
 
         p,
         ol,
@@ -125,6 +129,22 @@
         }
         .atk-height-limit:after {
             left: 0;
+        }
+
+        &:hover {
+            .atk-content-footer {
+                opacity: 1;
+            }
+        }
+
+        .atk-content-footer {
+            font-size: 12px;
+            text-align: right;
+            position: absolute;
+            bottom: -21px;
+            right: 0;
+            opacity: 0;
+            transition: opacity 0.25s;
         }
 
         .image-grid {

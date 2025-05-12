@@ -58,24 +58,34 @@ export function normalizeSlug(slug: string) {
     return slug;
 }
 
-export function normalizeData(data: string): string | null {
+export function normalizeData(data: string | number): string | null {
     try {
-        const date = new Date(data);
+        let date: Date;
 
-        // 检查日期是否有效
-        if (isNaN(date.getTime())) {
-            console.error('Invalid date format:', data);
-            return null; // 或者返回一个默认值，例如 "Invalid date"
+        // 处理 Unix 时间戳（数字或字符串形式的数字）
+        if (typeof data === 'number' || /^\d+$/.test(data)) {
+            const timestamp = typeof data === 'number' ? data : parseInt(data, 10);
+            // 自动区分秒或毫秒（长度超过 12 位视为毫秒）
+            date = new Date(timestamp > 999999999999 ? timestamp : timestamp * 1000);
+        }
+        // 处理字符串日期（ISO 格式、本地格式等）
+        else {
+            date = new Date(data);
         }
 
-        const ndata = date.toISOString().split('T')[0];
-        return ndata;
+        // 检查日期有效性
+        if (isNaN(date.getTime())) {
+            console.error('Invalid date format:', data);
+            return null;
+        }
+
+        // 返回 YYYY-MM-DD 格式
+        return date.toISOString().split('T')[0];
     } catch (error) {
         console.error('Error normalizing date:', error);
-        return '1900-01-01'; // 或者返回一个默认值
+        return '1900-01-01'; // 默认值
     }
 }
-
 // export function minfont(titleText: string) {
 //     const fontmin = new Fontmin()
 //         .src('src/font/SmileySans.ttf')
