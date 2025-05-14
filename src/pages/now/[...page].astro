@@ -1,0 +1,153 @@
+---
+import { pages, settings, authors, memos } from '../../data/ghost-store.js';
+import config from '../../data/config';
+import { marked } from 'marked';
+import type { GetStaticPathsOptions } from 'astro';
+import { normalizeData } from '../../utils/help';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Head from '../../components/Head.astro';
+import Relitu from '../../components/Relitu.jsx';
+import Header from '../../components/Header.astro';
+import Top from '../../components/Top.astro';
+import Menu from '../../components/Menu.astro';
+import TocTagloop from '../../components/TocTagloop.astro';
+import { Markdown } from 'astro-remote';
+import CodeSlot from '../../components/CodeSlot.astro';
+import IFrameSlot from '../../components/IFrameSlot.astro';
+import RemotePicture from '../../components/RemotePicture.astro';
+import Columns from '../../components/shortcode/Columns.astro';
+import Details from '../../components/shortcode/Details.astro';
+import Link from '../../components/shortcode/Link.astro';
+
+const custompage = pages.find((post) => post.slug == 'now');
+
+export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
+    const db = memos;
+    return paginate(db, {
+        pageSize: 15
+    });
+}
+
+const { page } = Astro.props;
+---
+
+<BaseLayout post={custompage}>
+    <Head slot="head" post={custompage} site={settings} title={custompage?.title + ' | ' + settings?.title + ' - ' + settings?.description}> afas </Head>
+
+    <Header slot="header" title={custompage.title} />
+    <Menu slot="menu" />
+
+    <div slot="content" class="markdown book-article page-memos">
+        <div class="memo-header" style={`background-image: url(${authors.authors[0].cover_image});`}>
+            <div class="memo-info">
+                <div class="flex align-center">
+                    <span class="memo-title">{authors.authors[0].name}</span>
+                    <div class="memo-avartar">
+                        <img class="" src={authors.authors[0].profile_image} data-sizes="auto" />
+                    </div>
+                </div>
+                <div class="memo-desc">纵使生活有千般不如意，也不要自暴自弃！</div>
+            </div>
+        </div>
+
+        <div id="atk-memoslist">
+            {
+                page.data.map((memo) => (
+                    <div class="atk-comment">
+                        <div class="atk-avatar">
+                            <a target="_blank" rel="noreferrer noopener nofollow" href={config.memos.siteURL + '/m/' + memo.id}>
+                                <img src={authors.authors[0].profile_image} />
+                            </a>
+                        </div>
+
+                        <div class="atk-main">
+                            <div class="atk-body">
+                                <div class="atk-content">
+                                    {memo.content && (
+                                        <Markdown
+                                            content={memo.content}
+                                            sanitize={{ allowComponents: true, allowCustomElements: true }}
+                                            components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
+                                        />
+                                    )}
+                                    <style />
+                                    <div class={`image-grid image-count-${memo.resourceList.length}`} view-image="">
+                                        {memo.resourceList.map((r) => {
+                                            if (r.type == 'image') {
+                                                return (
+                                                    <div class="image-container">
+                                                        <RemotePicture src={r.externalLink} alt={r.filename} classNames="image-item" />
+                                                    </div>
+                                                );
+                                            } else if (r.type == 'video') {
+                                                return (
+                                                    <div class="image-container">
+                                                        <video src={r.externalLink} controls width="640" height="360">
+                                                            您的浏览器不支持 HTML5 视频标签
+                                                        </video>
+                                                    </div>
+                                                );
+                                            }
+                                        })}
+                                    </div>
+                                    <div class="atk-content-footer">
+                                        <span>
+                                            @{memo.creatorName} · by {normalizeData(memo.updatedTs)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* <div class="atk-footer">
+                                <div class="atk-actions">
+                                    <>
+                                        <span class="atk-common-action-btn">赞同 (0)</span>
+                                        <span>回复</span>
+                                        <span class="atk-common-action-btn" atk-only-admin-show="">
+                                            折叠
+                                        </span>
+                                        <span class="atk-common-action-btn" atk-only-admin-show="">
+                                            已审
+                                        </span>
+                                        <span class="atk-common-action-btn" atk-only-admin-show="">
+                                            置顶
+                                        </span>
+                                        <span class="atk-common-action-btn" atk-only-admin-show="">
+                                            编辑
+                                        </span>
+                                        <span class="atk-common-action-btn" atk-only-admin-show="">
+                                            删除
+                                        </span>
+                                    </>
+                                </div>
+                            </div> */}
+                        </div>
+                    </div>
+                ))
+            }
+            <div class="flex flex-wrap btn-more justify-center" style="padding: 3rem; gap:1.5rem">
+                {
+                    page.url.next && (
+                        <a
+                            class="loader"
+                            href="javascript:(void)"
+                            hx-trigger="revealed"
+                            hx-get={`${page.url.next}`}
+                            hx-target="#atk-memoslist"
+                            hx-swap="beforeend"
+                            hx-select="#atk-memoslist"
+                        />
+                    )
+                }
+            </div>
+        </div>
+    </div>
+
+    <Relitu slot="relitu" />
+
+    <Fragment slot="toc">
+        <Relitu />
+        <TocTagloop />
+        <Top />
+    </Fragment>
+</BaseLayout>
