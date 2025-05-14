@@ -11,7 +11,7 @@ import Link from './Link.astro';
 ---
 
 <div class="now bio">
-    <h2 class="book-title"><a href="/memos/">Now</a></h2>
+    <h2 class="book-title"><a href="/now/">Now</a></h2>
     <Markdown
         content={marked.parse(memos[0].content)}
         sanitize={{ allowComponents: true, allowCustomElements: true }}
