@@ -125,4 +125,9 @@
       <path d="M7 13.5l0 -5.5c0 0 0.5 -2 2.5 -2c2 0 2.5 2 2.5 2l0 2.5l0 -2.5c0 0 0.5 -2 2.5 -2c2 0 2.5 2 2.5 2l0 5.5"/>
     </g>
   </symbol>
+  <symbol xmlns="http://www.w3.org/2000/svg" id="strava" width="24" height="24" viewBox="0 0 24 24">
+    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+      <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/>
+    </g>
+  </symbol>
 </svg>

@@ -15,7 +15,7 @@ const author = authors.authors[0];
     <div class="social">
         {
             config.social.map((e) => (
-                <a class="icon-rotate-shake" target="_blank" href={e.url}>
+                <a class="icon-rotate-shake" target="_blank" href={e.url} rel="me noopener noreferrer">
                     <Fragment set:html={getSvg(e.name, '0 0 30 30')} />
                 </a>
             ))

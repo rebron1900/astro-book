@@ -1116,3 +1116,275 @@ span.menu-flag {
         transform: rotate(5deg);
     }
 }
+
+/** strava ***/
+.strava-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    //padding: 20px 0 10px;
+    gap: 2rem;
+
+    #totalActivities {
+        width: 215px;
+    }
+
+    .total-title {
+        font-size: 14px;
+        text-align: center;
+    }
+
+    .total-count,
+    .total-distance {
+        text-align: center;
+        color: #242428;
+    }
+
+    .total-count,
+    .total-distance {
+        font-size: 33px;
+    }
+
+    .total-label {
+        font-size: 14px;
+        text-align: center;
+    }
+
+    @keyframes growFromLeft {
+        0% {
+            width: 0;
+        }
+
+        to {
+            width: var(--bar-width);
+        }
+    }
+
+    @keyframes slideInText {
+        0% {
+            opacity: 0;
+            transform: translate(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translate(0);
+        }
+    }
+
+    @media (max-width: 650px) {
+        .container {
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #totalActivities,
+        #calendar,
+        .sports {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+    }
+
+    .calendar {
+        display: flex;
+        flex-wrap: wrap;
+        max-width: 200px;
+    }
+
+    .day-container {
+        position: relative;
+        padding: 10px;
+        text-align: center;
+        height: 30px;
+        width: 14.28%;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .calendar-week-header {
+        width: 14.28%;
+        padding: 0 0 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+    .today {
+        font-weight: 700;
+    }
+
+    .date-number {
+        position: relative;
+        font-size: 14px;
+        color: #000;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        z-index: 1;
+        white-space: nowrap;
+        border-bottom: 2px solid #242428;
+    }
+
+    .activity-indicator {
+        position: absolute;
+        background: #000;
+        border-radius: 50%;
+        transition:
+            opacity 0.5s ease,
+            transform 0.5s ease;
+        z-index: 0;
+        display: block;
+        transform: translate(-50%, -50%);
+        min-width: 2px;
+        min-height: 2px;
+        max-width: 30px;
+        max-height: 30px;
+    }
+
+    .day-container:hover .date-number {
+        opacity: 1;
+    }
+
+    .day-container:hover .activity-indicator {
+        opacity: 0;
+    }
+
+    .activity-indicator.no-activity {
+        background-color: gray;
+    }
+
+    .bar-chart {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        width: 207px;
+        margin-top: 4px;
+    }
+
+    .bar-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+        position: relative;
+    }
+
+    .bar {
+        background-color: #ebe6f2;
+        height: 16.8px;
+        transition: width 1s ease-out;
+        margin-top: 6px;
+        border: 1px solid #dfd7e9;
+        position: relative;
+    }
+
+    .cycling-kilometer {
+        font-size: 12px;
+        color: #333;
+        position: absolute;
+        right: -63px;
+        top: 50%;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+    }
+
+    .sports {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .icon-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .icon-item {
+        display: flex;
+        align-items: center;
+        margin-right: 0;
+    }
+
+    .icon-item svg {
+        width: 27px;
+        height: 27px;
+    }
+
+    .running svg {
+        width: 21px !important;
+    }
+
+    .icon-item .running_color {
+        margin-right: 10px;
+    }
+
+    .icon-item .icon-svg,
+    .running {
+        margin-left: 10px;
+    }
+
+    .icon-svg {
+        display: flex;
+        align-items: center;
+    }
+
+    .cycling-icon {
+        width: 25px;
+        height: 25px;
+    }
+
+    .road_bike_color,
+    .running_color {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .road_bike_color {
+        background: #ebe6f2;
+        border: 1px solid #dfd7e9;
+    }
+
+    .running_color {
+        background: #d5e5d3;
+        border: 1px solid #bdd6ba;
+    }
+
+    .message-box,
+    .click-message-box {
+        position: absolute;
+        left: 100%;
+        margin-left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        padding: 5px 10px;
+        border-radius: 4px;
+        white-space: nowrap;
+    }
+
+    .message-box {
+        background-color: #333;
+        color: #fff;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .message-box.show {
+        display: block;
+        opacity: 1;
+    }
+
+    .click-message-box {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease-out;
+        background-color: #333;
+        color: #fff;
+    }
+}

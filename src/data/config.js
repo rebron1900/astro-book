@@ -155,7 +155,8 @@ const config = {
         { name: 'mastodon', url: 'https://social.1900.live/@1900' },
         { name: 'telegram', url: 'https://t.me/rebron1900' },
         { name: 'instagram', url: 'https://www.instagram.com/rebron1900/' },
-        { name: 'neodb', url: 'https://neodb.social/users/1900/' }
+        { name: 'neodb', url: 'https://neodb.social/users/1900/' },
+        { name: 'strava', url: 'https://www.strava.com/athletes/100579236' }
     ]
 };
 export default config;
