@@ -2,10 +2,10 @@
 export interface Props {
     src: string;
     alt?: string;
-    classNames?: string;
+    class?: string;
 }
 
-const { src, alt, classNames } = Astro.props;
+const { src, alt, class: className } = Astro.props;
 
 const generateImageSrcset = (image: string, isLocal = false) => {
     image = encodeURI(image);
@@ -32,4 +32,4 @@ const generateImageSrcset = (image: string, isLocal = false) => {
 };
 ---
 
-<img loading="lazy" class={classNames ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />
+<img loading="lazy" class={className ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />

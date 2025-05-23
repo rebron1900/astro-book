@@ -33,23 +33,20 @@
 
 body {
     font-family:
-        'Source Han Serif CN VF',
-        'JetBrainsMono',
+        ui-sans-serif,
+        system-ui,
         -apple-system,
         BlinkMacSystemFont,
-        'Segoe UI',
+        Segoe UI,
         Roboto,
-        Ubuntu,
-        'Helvetica Neue',
-        Helvetica,
-        'PingFangSC-Regular',
-        'Hiragino Sans GB',
-        'Lantinghei SC',
-        'Microsoft Yahei',
-        'Source Han Sans CN',
-        'WenQuanYi Micro Hei',
-        SimSun,
-        sans-serif;
+        Helvetica Neue,
+        Arial,
+        Noto Sans,
+        sans-serif,
+        'Apple Color Emoji',
+        'Segoe UI Emoji',
+        Segoe UI Symbol,
+        'Noto Color Emoji';
 }
 
 code {

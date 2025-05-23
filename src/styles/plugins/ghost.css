@@ -345,6 +345,11 @@
     }
 }
 
+.kg-bookmark-card {
+    border: solid 1px var(--gray-200);
+    border-radius: var(--sb-size);
+}
+
 .kg-bookmark-card,
 .kg-bookmark-card * {
     box-sizing: border-box;
