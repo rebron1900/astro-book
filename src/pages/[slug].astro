@@ -24,6 +24,7 @@ import Footer from '../components/Footer.astro';
 import HTML from 'html-parse-stringify';
 import IFrameSlot from '../components/IFrameSlot.astro';
 import Link from '../components/shortcode/Link.astro';
+import Activitypub from '../components/Activitypub.astro';
 
 export async function getStaticPaths() {
     const posts = postsAll.concat(pages);
@@ -108,7 +109,7 @@ const tocHtml = tocGen(await post.html);
 
     {post.type == 'post' && <Pagination slot="pagination" prev={prevPost} next={nextPost} />}
 
-    <Comments slot="comments" />
+    <Comments postID={post.id} slot="comments" />
 
     <Footer slot="footer" post={post} />
 

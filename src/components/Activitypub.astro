@@ -1,0 +1,17 @@
+---
+import { getSvg } from '../utils/help';
+
+const { postID } = Astro.props;
+---
+
+<div class="social-interactions">
+    <ol class="discussion-avatar-list"></ol>
+</div>
+
+<script>
+    import loadInteractions from '../utils/acitivitypub';
+
+    document.addEventListener('astro:page-load', () => {
+        loadInteractions();
+    });
+</script>

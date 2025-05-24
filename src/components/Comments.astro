@@ -1,3 +1,16 @@
+---
+import Activitypub from './Activitypub.astro';
+const { postID } = Astro.props;
+---
+
+<div id="activitypub" data-postid={postID}>
+    <div>
+        <h3 id="join-comments">联邦互动</h3>
+        <div></div>
+    </div>
+    <Activitypub />
+</div>
+
 <div id="comments">
     <div>
         <h3 id="join-comments">加入评论</h3>
