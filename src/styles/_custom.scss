@@ -913,7 +913,7 @@ pre:hover > .copy-button {
     margin: 1rem 0;
 }
 
-h3#join-comments {
+h3.card-title {
     padding: 1rem 0;
 }
 
@@ -954,6 +954,12 @@ h3#join-comments {
 }
 .tippy-box[data-placement^='right'] > .tippy-arrow::before {
     border-right-color: var(--body-background) !important;
+}
+
+.tippy-content blockquote {
+    margin: 0;
+    border-left: solid 2px var(--gray-200);
+    padding-left: 1em;
 }
 
 .tippy-box {
@@ -1400,12 +1406,21 @@ span.menu-flag {
         margin: 20px 0;
     }
 
+    .social-note {
+        margin-bottom: 1em;
+        font-size: 0.8em;
+        padding-top: 2em;
+        font-style: italic;
+        color: var(--gray-500);
+        line-height: 1.5;
+    }
+
     .discussion-avatar-list {
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
         list-style: none;
-        padding: 0;
+        padding: 0 1em;
         margin: 0;
     }
 
