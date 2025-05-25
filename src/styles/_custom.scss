@@ -1426,6 +1426,7 @@ span.menu-flag {
         font-style: italic;
         color: var(--gray-500);
         line-height: 1.5;
+        word-break: break-all;
     }
 
     .discussion-avatar-list {
