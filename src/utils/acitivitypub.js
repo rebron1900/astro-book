@@ -26,7 +26,7 @@ export default async function initActivityPubInteractions() {
         if (data.stats.replies_count > 0 || data.stats.favourites_count > 0) {
             document.querySelector('.social-note').innerHTML =
                 `在 Mastodon 实例上搜索此 URL 来回复<br/> <code>https://social.1900.live/@1900/statuses/${data.toot_id}</code>`;
-            container.style.display = 'block';
+            container.classList.add('load');
         }
     } catch (error) {
         console.error('加载互动数据失败:', error);
