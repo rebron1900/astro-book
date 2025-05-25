@@ -3,7 +3,7 @@ import 'tippy.js/dist/tippy.css';
 import 'tippy.js/themes/light.css';
 
 // 配置常量
-const API_ENDPOINT = 'https://gotosocial.me-d1b.workers.dev/api/interactions';
+const API_ENDPOINT = 'http://api.996288.xyz/api/interactions';
 
 // 主入口函数
 export default async function initActivityPubInteractions() {
@@ -25,6 +25,8 @@ export default async function initActivityPubInteractions() {
 
         // 如果有互动数据则显示容器
         if (data.stats.replies_count > 0 || data.stats.favourites_count > 0) {
+            document.querySelector('.social-note').innerHTML =
+                `复制下方链接在联邦宇宙搜索参与互动<br/> <code>https://social.1900.live/@1900/statuses/${data.toot_id}</code>`;
             container.style.display = 'block';
         }
     } catch (error) {

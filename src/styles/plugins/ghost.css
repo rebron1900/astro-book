@@ -568,6 +568,7 @@
 
 .kg-callout-card div.kg-callout-text {
     line-height: 1.5em;
+    word-break: break-all;
 }
 
 .kg-callout-card + .kg-callout-card {
