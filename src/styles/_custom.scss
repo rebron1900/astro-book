@@ -1409,6 +1409,7 @@ span.menu-flag {
     &.load {
         opacity: 1;
         height: auto;
+        display: block;
     }
 
     .discussion-meta {
