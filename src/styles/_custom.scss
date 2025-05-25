@@ -962,6 +962,10 @@ h3.card-title {
     padding-left: 1em;
 }
 
+.tippy-content p {
+    margin: 0.3em 0;
+}
+
 .tippy-box {
     background-color: var(--body-background) !important;
     color: var(--body-font-color) !important;
