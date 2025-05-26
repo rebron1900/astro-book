@@ -1401,15 +1401,13 @@ span.menu-flag {
 
 /* 基础样式 (可根据需要调整) */
 #activitypub {
-    display: none;
-    opacity: 0;
     height: 0;
-    transition: all 0.2s;
+    opacity: 0;
 
-    &.load {
-        opacity: 1;
+    &.loaded {
         height: auto;
-        display: block;
+        opacity: 1;
+        transition: all 0.5s;
     }
 
     .discussion-meta {
