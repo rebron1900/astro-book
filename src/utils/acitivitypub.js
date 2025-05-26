@@ -25,6 +25,7 @@ export default async function initActivityPubInteractions() {
         // 如果有互动数据则显示容器
         if (data.stats.replies_count > 0 || data.stats.favourites_count > 0) {
             container.classList.add('loaded');
+            cocoMessage.success('联邦宇宙互动加载成功 🎉！');
         }
     } catch (error) {
         console.error('加载互动数据失败:', error);
