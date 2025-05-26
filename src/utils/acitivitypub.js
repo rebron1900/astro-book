@@ -24,8 +24,6 @@ export default async function initActivityPubInteractions() {
 
         // 如果有互动数据则显示容器
         if (data.stats.replies_count > 0 || data.stats.favourites_count > 0) {
-            document.querySelector('.social-note').innerHTML =
-                `在 Mastodon 实例上搜索此 URL 来回复<br/> <code>https://social.1900.live/@1900/statuses/${data.toot_id}</code>`;
             container.classList.add('loaded');
         }
     } catch (error) {

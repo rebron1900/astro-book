@@ -58,6 +58,23 @@ const html = HTML.stringify(ast);
 
     <article slot="content" class="markdown book-article">
         <Markup content={html} />
+
+        <script>
+            import { createRestAPIClient } from 'masto';
+
+            const masto = createRestAPIClient({
+                url: 'https://social.1900.live'
+            });
+
+            const app = await masto.v1.apps.create({
+                clientName: 'My app',
+                redirectUris: location.href,
+                scopes: 'read write',
+                website: 'social.1900.live'
+            });
+
+            console.log(app);
+        </script>
     </article>
 
     <Comments slot="comments" />
