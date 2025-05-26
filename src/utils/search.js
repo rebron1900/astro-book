@@ -79,6 +79,7 @@ const search = () => {
         input.required = true;
 
         if (!window.bookSearchIndex) {
+            cocoMessage.success('搜索开始初始化 🎉！');
             fetch(searchDataURL)
                 .then((pages) => pages.json())
                 .then((pages) => {
@@ -89,6 +90,7 @@ const search = () => {
         } else {
             input.required = false;
         }
+        cocoMessage.success('搜索初始化成功 🎉！');
     }
 
     function search() {
