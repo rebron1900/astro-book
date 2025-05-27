@@ -179,8 +179,12 @@ ul.pagination {
         @include fixed;
     }
 
-    .book-menu-nav a {
-        &.current {
+    .book-menu-nav {
+        .book-collspan {
+            position: relative;
+            padding-left: 0;
+        }
+        a .current {
             color: var(--color-link);
             font-weight: 600;
         }

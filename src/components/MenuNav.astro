@@ -16,7 +16,7 @@ const { title } = Astro.props;
                     settings?.navigation.map(
                         (item, index) =>
                             Astro.url.pathname === item.url && (
-                                <li transition:name="menu-nav-flag" style={` top:${(index + 1) * 30}px;`} class="menu-flag current" />
+                                <li transition:name="menu-nav-flag" style={` top:${(index + 0) * 30}px;`} class="menu-flag current" />
                             )
                     )
                 )
