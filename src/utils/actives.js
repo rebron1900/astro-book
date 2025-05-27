@@ -59,6 +59,7 @@ function onMessage(event) {
             setTimeout(function () {
                 // 重新设置icon
                 document.querySelector('.actives img').src = cdn + appList[processName].url + '!20w';
+                document.querySelector('.actives img').alt = appList[processName].title;
                 // 执行进场动画
                 activs.classList.remove('exit');
                 // 更新dom上app的信息

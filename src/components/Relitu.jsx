@@ -78,7 +78,8 @@ const DateGrid = () => {
                             return (
                                 <div class='grid-item'>
                                     <div
-                                        role='button'
+                                        role='checkbox'
+                                        aria-label={`${article.date}，共 ${article.count} 篇，共 ${article.wordcount} 字`}
                                         style={article.wordcount !== 0 ? `background-color:rgba(77, 208, 90,${article.wordcount / 5000 + 0.2})` : ''}
                                         class={`item-info ${currentStyle}`}
                                         data-tippy-content={`${article.date}，共 ${article.count} 篇，共 ${article.wordcount} 字<br />${tooltipStr}`}
