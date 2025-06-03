@@ -88,6 +88,8 @@ if (post) {
     import htmx from 'htmx.org';
     import 'medium-zoom/dist/style.css';
 
+    import '../utils/cards.min.js';
+
     const initZoom = () => {
         // 选择所有未初始化的图片
         const images = document.querySelectorAll('.markdown img:not([data-zoom-initialized])');
