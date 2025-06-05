@@ -88,7 +88,7 @@ if (post) {
     import htmx from 'htmx.org';
     import 'medium-zoom/dist/style.css';
 
-    import '../utils/cards.min.js';
+    import { initVideo, initAudio, initToggle } from '../utils/cards.min.js';
 
     const initZoom = () => {
         // 选择所有未初始化的图片
@@ -198,6 +198,9 @@ if (post) {
         initTOP();
         initGallery();
         memosEvent();
+        initVideo();
+        initAudio();
+        initToggle();
 
         // Scroll to top function
 
