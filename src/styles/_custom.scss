@@ -63,6 +63,22 @@
     }
     .atk-body {
         overflow: visible !important;
+
+        &:hover {
+            .atk-content-footer {
+                opacity: 1;
+            }
+        }
+
+        .atk-content-footer {
+            font-size: 12px;
+            text-align: right;
+            position: absolute;
+            bottom: -21px;
+            right: 0;
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
     }
     /* memos header */
     .memo-header {
@@ -132,76 +148,52 @@
             left: 0;
         }
 
-        &:hover {
-            .atk-content-footer {
-                opacity: 1;
-            }
-        }
-
-        .atk-content-footer {
-            font-size: 12px;
-            text-align: right;
-            position: absolute;
-            bottom: -21px;
-            right: 0;
-            opacity: 0;
-            transition: opacity 0.25s;
-        }
-
         .image-grid {
             display: grid;
-            gap: 5px; /* 图片之间的间距 */
+            gap: 5px;
             width: 100%;
+
+            margin-bottom: 1.5em;
         }
 
-        /* 1 张图片时的布局 */
+        .image-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1; /* 默认1:1正方形 */
+            overflow: hidden;
+        }
+
+        /* 单图时使用16:9比例更美观 */
+        .image-grid.image-count-1 .image-container {
+            aspect-ratio: auto;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        /* 布局定义保持不变 */
         .image-grid.image-count-1 {
             grid-template-columns: 1fr;
-            min-width: 200px;
-            img {
-                width: auto;
-                height: auto;
-            }
         }
-
-        /* 2 张图片时的布局 */
         .image-grid.image-count-2 {
             grid-template-columns: repeat(2, 1fr);
         }
-
-        /* 3 张图片时的布局 */
         .image-grid.image-count-3 {
             grid-template-columns: repeat(3, 1fr);
         }
-
-        /* 4 张图片时的布局 */
         .image-grid.image-count-4 {
             grid-template-columns: repeat(2, 1fr);
         }
-
-        /* 5-9 张图片时的布局 */
         .image-grid.image-count-5,
         .image-grid.image-count-6,
         .image-grid.image-count-7,
         .image-grid.image-count-8,
         .image-grid.image-count-9 {
             grid-template-columns: repeat(3, 1fr);
-        }
-
-        .image-container {
-            position: relative;
-            width: 100%;
-            overflow: hidden;
-        }
-
-        .image-item {
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* 图片填充容器，保持比例 */
-            object-position: center; /* 图片居中显示 */
-            max-height: 20rem;
         }
     }
 }

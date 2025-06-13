@@ -178,13 +178,59 @@ if (post) {
         localStorage.theme = theme || 'auto';
     };
 
+    const limitHight = () => {
+        // 获取页面上所有 .atk-body 元素
+        const atkBodies = document.querySelectorAll('.atk-content');
+
+        // 对每个元素调用 createFoldButton 函数
+        atkBodies.forEach((highlightDiv) => {
+            // 检查是否已经添加过折叠按钮
+            if (!highlightDiv.querySelector('.fold-button')) {
+                createFoldButton(highlightDiv);
+            }
+        });
+
+        // 你的原始函数
+        function createFoldButton(highlightDiv) {
+            // 检查是否已经添加过折叠按钮
+            if (highlightDiv.querySelector('.fold-button')) {
+                return; // 如果已经存在，直接返回不再添加
+            }
+
+            const button = document.createElement('div');
+            button.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="book-icon"><use xlink:href="/icons.svg#fold"></use></svg><sm>展开</sm>
+    `;
+            button.className = 'fold-button';
+            button.ariaLabel = '展开';
+
+            button.addEventListener('click', function (evn) {
+                highlightDiv.classList.toggle('limit-hight');
+                let icons = highlightDiv.classList.contains('limit-hight') ? ['/icons.svg#fold', '展开'] : ['/icons.svg#collapse', '折叠'];
+                evn.currentTarget.querySelector('svg use').setAttribute('xlink:href', icons[0]);
+                evn.currentTarget.querySelector('sm').innerText = icons[1];
+            });
+
+            if (highlightDiv.scrollHeight > 400) {
+                highlightDiv.classList.add('limit-hight');
+                addCopyButtonToDom(button, highlightDiv);
+            }
+        }
+
+        function addCopyButtonToDom(button, highlightDiv) {
+            highlightDiv.appendChild(button);
+        }
+    };
+
     const memosEvent = () => {
-        if (location.pathname.includes('/memos')) {
+        if (location.pathname.includes('/now')) {
+            limitHight();
             htmx.process(document.body);
 
             document.body.addEventListener('htmx:afterSwap', function (event) {
                 document.querySelector('.btn-more')?.remove();
                 initZoom();
+                limitHight();
             });
         }
     };
