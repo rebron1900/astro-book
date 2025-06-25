@@ -63,7 +63,7 @@
     }
     .atk-body {
         overflow: visible !important;
-        display: inline-block;
+        display: inline-block !important;
 
         &:hover {
             .atk-content-footer {
