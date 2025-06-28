@@ -46,38 +46,44 @@ function createFoldButton(highlightDiv) {
         addCopyButtonToDom(button, highlightDiv);
     }
 }
-
 async function copyCodeToClipboard(button, highlightDiv) {
     const codeToCopy = highlightDiv.querySelector('code').innerText;
     try {
-        result = await navigator.permissions.query({ name: 'clipboard-write' });
-        if (result.state == 'granted' || result.state == 'prompt') {
+        // 添加 const 声明
+        const result = await navigator.permissions.query({ name: 'clipboard-write' });
+        if (result.state === 'granted' || result.state === 'prompt') {
             await navigator.clipboard.writeText(codeToCopy);
         } else {
-            copyCodeBlockExecCommand(codeToCopy, highlightDiv);
+            await copyCodeBlockExecCommand(codeToCopy, highlightDiv);
         }
     } catch (_) {
-        copyCodeBlockExecCommand(codeToCopy, highlightDiv);
+        await copyCodeBlockExecCommand(codeToCopy, highlightDiv);
     } finally {
         codeWasCopied(button);
     }
 }
 
-function copyCodeBlockExecCommand(codeToCopy, highlightDiv) {
-    const textArea = document.createElement('textArea');
-    textArea.contentEditable = 'true';
-    textArea.readOnly = 'false';
-    textArea.className = 'copy-textarea';
-    textArea.value = codeToCopy;
-    highlightDiv.insertBefore(textArea, highlightDiv.firstChild);
-    const range = document.createRange();
-    range.selectNodeContents(textArea);
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-    textArea.setSelectionRange(0, 999999);
-    document.execCommand('copy');
-    highlightDiv.removeChild(textArea);
+async function copyCodeBlockExecCommand(codeToCopy, highlightDiv) {
+    return new Promise((resolve) => {
+        const textArea = document.createElement('textarea');
+        textArea.style.position = 'fixed'; // 防止滚动
+        textArea.style.opacity = '0';
+        textArea.value = codeToCopy;
+        document.body.appendChild(textArea);
+        textArea.select();
+
+        try {
+            const successful = document.execCommand('copy');
+            if (!successful) {
+                console.error('Copy command failed');
+            }
+        } catch (err) {
+            console.error('Copy failed:', err);
+        } finally {
+            document.body.removeChild(textArea);
+            resolve();
+        }
+    });
 }
 
 function codeWasCopied(button) {

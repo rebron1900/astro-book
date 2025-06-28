@@ -217,20 +217,6 @@ $hint-colors: (
         }
 
         code {
-            counter-reset: step;
-            counter-increment: step 0;
-            background-color: transparent;
-
-            .line:before {
-                content: counter(step);
-                counter-increment: step;
-                /* width: 2rem; */
-                margin-right: 1.5rem;
-                display: inline-block;
-                text-align: right;
-                color: rgba(115, 138, 148, 0.4);
-            }
-
             span {
                 &.highlighted {
                     margin: 0 -24px;
@@ -288,47 +274,33 @@ $hint-colors: (
         }
 
         code {
-            background-color: transparent;
+            &.diff {
+                margin: 0 -24px;
+                padding: 0 24px;
+                width: calc(100% + 48px);
+                display: inline-block;
+                transition: background-color 0.5s;
 
-            span {
-                &.highlighted {
-                    margin: 0 -24px;
-                    padding: 0 24px;
-                    width: calc(100% + 48px);
-                    display: inline-block;
-                    transition: background-color 0.5s;
-
-                    background-color: var(--gray-200);
+                &:before {
+                    position: absolute;
+                    left: 4px;
                 }
 
-                &.diff {
-                    margin: 0 -24px;
-                    padding: 0 24px;
-                    width: calc(100% + 48px);
-                    display: inline-block;
-                    transition: background-color 0.5s;
+                &.add {
+                    background-color: var(--green-soft);
 
                     &:before {
-                        position: absolute;
-                        left: 4px;
+                        content: '+';
+                        color: var(--hint-color-danger);
                     }
+                }
+                &.remove {
+                    background-color: var(--red-soft);
 
-                    &.add {
-                        background-color: var(--green-soft);
-
-                        &:before {
-                            content: '+';
-                            color: var(--hint-color-danger);
-                        }
-                    }
-                    &.remove {
-                        background-color: var(--red-soft);
-
-                        &:before {
-                            content: '-';
-                            left: 6px;
-                            color: var(--hint-color-danger);
-                        }
+                    &:before {
+                        content: '-';
+                        left: 6px;
+                        color: var(--hint-color-danger);
                     }
                 }
             }
