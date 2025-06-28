@@ -6,11 +6,21 @@ import { normalizeSlug, normalizeData, getSvg } from '../utils/help';
 const { post, isFeature } = Astro.props;
 ---
 
-<div class="flex align-center text-small book-post-date"><Fragment set:html={getSvg('calendar')} /><span>{normalizeData(post.published_at)}</span></div>
+<div class="flex align-center text-small book-post-meta">
+    <Fragment set:html={getSvg('calendar')} />
+    <span>{normalizeData(post.published_at)}</span>
+    {
+        post.reading_time > 0 &&(
+        <Fragment set:html={getSvg('read_time')} />
+        <span>{post.reading_time} min</span>
+        )
+    }
 
+</div>
 {
-    post.tags && post.tags.length > 0 && (
-        <div class="flex align-center text-small">
+    post.tags && post.tags.filter((tag) => tag.visibility === 'public').length > 0 && (
+        <div class="flex align-center text-small book-post-tags">
+            <Fragment set:html={getSvg('tags')} />
             {post.tags
                 .filter((tag) => tag.visibility === 'public') // 过滤出可见的标签
                 .map((tag, index, array) => (
@@ -22,7 +32,6 @@ const { post, isFeature } = Astro.props;
         </div>
     )
 }
-
 {
     post.feature_image && isFeature && (
         <figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption">

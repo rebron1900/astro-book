@@ -3,6 +3,8 @@
 }
 
 html {
+    --from: 100% 0 0 0;
+
     font-size: $font-size-base;
     scroll-behavior: smooth;
     touch-action: manipulation;
@@ -38,9 +40,11 @@ h5 {
 a {
     text-decoration: none;
     color: var(--color-link);
+    transition: color 0.3s;
 
     &:hover {
         color: var(--color-hover-link);
+        transition: color 0.3s;
     }
 }
 
@@ -91,6 +95,12 @@ ul.pagination {
     margin-inline-end: 0.5em;
     width: 1em;
     stroke: var(--body-background);
+}
+
+.book-copy {
+    .book-collspan {
+        font-style: italic;
+    }
 }
 
 .book-brand {
@@ -207,11 +217,15 @@ ul.pagination {
     }
 
     input.toggle + label + ul {
-        display: none;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.2s ease-in-out;
+        will-change: max-height; /* 优化动画性能 */
     }
 
     input.toggle:checked + label + ul {
-        display: block;
+        max-height: 1000px; /* 使用一个足够大的值确保内容完全展开 */
+        transition: max-height 0.2s ease-in-out; /* 延长展开时间使动画更流畅 */
     }
 
     input.toggle:checked + label + ul > li:hover {
@@ -259,15 +273,25 @@ body[dir='rtl'] .book-menu {
     padding: $padding-16;
 }
 
-.book-post {
+.book-post,
+.book-page {
     margin-bottom: $padding-16 * 3;
 
-    // .book-desc {
-    //   overflow: hidden;
-    //   display: -webkit-box;
-    //   -webkit-box-orient: vertical;
-    //   -webkit-line-clamp: 4;
-    // }
+    .book-post-meta {
+        font-style: italic;
+        font-family:
+            Snell-Bold,
+            ui-serif,
+            Georgia,
+            Cambria,
+            Times New Roman,
+            Times,
+            serif;
+
+        span {
+            margin-right: 0.8rem;
+        }
+    }
 }
 
 .book-header {
@@ -521,4 +545,25 @@ body[dir='rtl'] .book-menu {
             }
         }
     }
+}
+
+::view-transition-new(animation-theme-toggle) {
+    animation: reveal 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    clip-path: inset(0 0 0 0);
+    z-index: 99;
+}
+
+::view-transition-old(animation-theme-toggle) {
+    animation: none;
+    z-index: -1;
+}
+
+@keyframes reveal {
+    0% {
+        clip-path: inset(var(--from));
+    }
+}
+
+.no-transition {
+    view-transition-name: none;
 }

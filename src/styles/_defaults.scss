@@ -217,7 +217,20 @@ $hint-colors: (
         }
 
         code {
+            counter-reset: step;
+            counter-increment: step 0;
             background-color: transparent;
+
+            .line:before {
+                content: counter(step);
+                counter-increment: step;
+                /* width: 2rem; */
+                margin-right: 1.5rem;
+                display: inline-block;
+                text-align: right;
+                color: rgba(115, 138, 148, 0.4);
+            }
+
             span {
                 &.highlighted {
                     margin: 0 -24px;
