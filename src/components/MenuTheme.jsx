@@ -42,7 +42,6 @@ const MenuTheme = () => {
             localStorage.setItem('theme', theme.name);
             localStorage.setItem('themetype', theme.type);
             document.documentElement.setAttribute('class', theme.name);
-            document.getElementById('theme').checked = false;
             setTheme(theme.desc);
 
             const root = document.documentElement;
@@ -60,6 +59,7 @@ const MenuTheme = () => {
         themeTransition.finished.then(() => {
             document.documentElement.style.removeProperty('view-transition-name');
             document.documentElement.removeAttribute('data-theme-changing');
+            document.getElementById('theme').checked = false;
 
             // 恢复元素的transition:animate="none"属性
             if (menuContent) {
