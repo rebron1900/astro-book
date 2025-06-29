@@ -1,6 +1,8 @@
 import { getSvg } from '../utils/help';
 import { createSignal, For, onMount } from 'solid-js';
 import config from '../data/config';
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
 
 const MenuTheme = () => {
     const [theme, setTheme] = createSignal('');
@@ -13,7 +15,24 @@ const MenuTheme = () => {
             setTheme(config.themes[0].desc);
             changeTheme(config.themes[0]);
         }
+        initTheme();
     });
+
+    const initTheme = () => {
+        document.querySelectorAll('.theme-item').forEach((item) => {
+            if (item.dataset.themeinfo) {
+                tippy(item, {
+                    content: item.dataset.themeinfo,
+                    allowHTML: true,
+                    placement: 'right',
+                    interactive: true,
+                    appendTo: document.body,
+                    inlinePositioning: true,
+                    arrow: true
+                });
+            }
+        });
+    };
 
     // theme为需要切换的主题名称
     const changeTheme = (theme) => {
@@ -86,7 +105,15 @@ const MenuTheme = () => {
                                 </span>
                             </label>
                             <ul>
-                                <For each={config.themes}>{(theme, index) => <li onClick={[changeTheme, theme]}>{theme.desc}</li>}</For>
+                                <For each={config.themes}>
+                                    {(theme, index) => (
+                                        <li onClick={[changeTheme, theme]}>
+                                            <span class='theme-item' data-themeinfo={theme.info}>
+                                                {theme.desc}
+                                            </span>
+                                        </li>
+                                    )}
+                                </For>
                                 {/* <For each={config.themes}>{(theme, index) => <li onClick={(e) => changeBtn(changeTheme, theme, e)}>{theme.desc}</li>}</For> */}
                             </ul>
                         </li>
