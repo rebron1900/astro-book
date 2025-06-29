@@ -97,7 +97,6 @@
 
         counter-reset: step;
         counter-increment: step 0;
-        background-color: transparent;
 
         .line:before {
             content: counter(step);

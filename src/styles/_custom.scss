@@ -57,6 +57,11 @@
 
 .astro-code {
     white-space: pre !important;
+    position: relative;
+
+    code {
+        background-color: transparent;
+    }
 }
 
 /** memos **/
