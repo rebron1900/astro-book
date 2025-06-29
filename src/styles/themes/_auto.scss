@@ -13,11 +13,13 @@
 html.dark {
     @include theme-dark;
     @include code-dark;
+    @include gradientback;
 }
 
 html.light {
     @include theme-light;
     @include code-light;
+    @include gradientback;
 
     *:not(pre) {
         -webkit-text-stroke: 0.2px !important;
@@ -28,16 +30,19 @@ html.light {
 html.yayu {
     @include theme-yayu;
     @include code-dark;
+    @include gradientback;
 }
 
 html.yuhang {
     @include theme-yuhang;
     @include code-dark;
+    @include gradientback;
 }
 
 html.herblue {
     @include theme-herblue;
     @include code-dark;
+    @include gradientback;
 }
 
 html.onojyun {

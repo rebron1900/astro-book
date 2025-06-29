@@ -56,6 +56,22 @@ img {
     @include outline;
 }
 
+.atk-main-editor:focus-within,
+#book-search-input:focus {
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.2),
+        0 1px 2px rgba(0, 0, 0, 0.4);
+    box-shadow: 0px 0px 30px 0px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--gray-700);
+    outline: 0;
+    transition: all 0.3s ease;
+}
+
+.atk-main-editor,
+#book-search-input {
+    transition: all 0.3s ease;
+}
+
 aside nav ul {
     padding: 0;
     margin: 0;
@@ -323,7 +339,7 @@ body[dir='rtl'] .book-menu {
         width: 100%;
         padding: $padding-8;
 
-        border: 0;
+        border: 1px solid var(--gray-200);
         border-radius: $border-radius;
 
         background: var(--gray-200);

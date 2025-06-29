@@ -44,6 +44,10 @@ const MenuTheme = () => {
 
     // theme为需要切换的主题名称
     const initViewTrans = (theme) => {
+        if (document.documentElement.classList.contains('reduce')) {
+            changeTheme(theme);
+            return;
+        }
         // 因为我的侧边栏是没有启用动画效果的
         // 但是主题切换时需要启用动画效果，所以这里把原来的设置清空。
         const menuContent = document.querySelector('.book-menu-content[data-astro-transition-scope]');
