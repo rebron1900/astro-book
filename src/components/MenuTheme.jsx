@@ -15,10 +15,10 @@ const MenuTheme = () => {
             setTheme(config.themes[0].desc);
             changeTheme(config.themes[0]);
         }
-        initTheme();
+        initThemeinfo();
     });
 
-    const initTheme = () => {
+    const initThemeinfo = () => {
         document.querySelectorAll('.theme-item').forEach((item) => {
             if (item.dataset.themeinfo) {
                 tippy(item, {
@@ -34,14 +34,16 @@ const MenuTheme = () => {
         });
     };
 
-    // theme为需要切换的主题名称
     const changeTheme = (theme) => {
-        // 兼容性支持
-        if (document.documentElement.classList.contains('reduce-motion')) {
-            updateTheme();
-            return;
-        }
+        localStorage.setItem('name', theme.desc);
+        localStorage.setItem('theme', theme.name);
+        localStorage.setItem('themetype', theme.type);
+        document.documentElement.setAttribute('class', theme.name);
+        setTheme(theme.desc);
+    };
 
+    // theme为需要切换的主题名称
+    const initViewTrans = (theme) => {
         // 因为我的侧边栏是没有启用动画效果的
         // 但是主题切换时需要启用动画效果，所以这里把原来的设置清空。
         const menuContent = document.querySelector('.book-menu-content[data-astro-transition-scope]');
@@ -59,12 +61,7 @@ const MenuTheme = () => {
         // 开始执行动画并且修改主题
         const themeTransition = document.startViewTransition(() => {
             // 存储主题设置&修改页面主题
-            localStorage.setItem('name', theme.desc);
-            localStorage.setItem('theme', theme.name);
-            localStorage.setItem('themetype', theme.type);
-            document.documentElement.setAttribute('class', theme.name);
-            setTheme(theme.desc);
-
+            changeTheme(theme);
             // 切换主题时「自上而下」的效果和「自下而上」的效果轮换着来。
             const root = document.documentElement;
             const currentFrom = getComputedStyle(root).getPropertyValue('--from').trim();
@@ -107,7 +104,7 @@ const MenuTheme = () => {
                             <ul>
                                 <For each={config.themes}>
                                     {(theme, index) => (
-                                        <li onClick={[changeTheme, theme]}>
+                                        <li onClick={[initViewTrans, theme]}>
                                             <span class='theme-item' data-themeinfo={theme.info}>
                                                 {theme.desc}
                                             </span>

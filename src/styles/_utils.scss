@@ -110,7 +110,7 @@ input.toggle {
 }
 
 @mixin outline {
-    outline-style: auto;
+    outline-style: none;
     outline-color: currentColor;
     outline-color: -webkit-focus-ring-color;
 }
