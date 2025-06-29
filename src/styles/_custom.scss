@@ -64,6 +64,20 @@
     }
 }
 
+.atk-content {
+    line-height: 1.5;
+
+    .artalk code,
+    .atk-layer-wrap code {
+        padding: 0 0.25rem;
+        border-radius: 0.25rem;
+        font-size: 0.875em;
+        background-color: var(--gray-200);
+        display: inline-block;
+        counter-reset: step;
+        counter-increment: step 0;
+    }
+}
 /** memos **/
 
 .page-memos {
