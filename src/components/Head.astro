@@ -178,10 +178,14 @@ if (post) {
         localStorage.theme = theme || 'auto';
     };
 
-    const limitHight = () => {
+    const limitHight = (dom = null) => {
         // 获取页面上所有 .atk-body 元素
-        const atkBodies = document.querySelectorAll('.atk-content');
-
+        let atkBodies;
+        if (dom) {
+            atkBodies = dom.querySelectorAll('.atk-content');
+        } else {
+            atkBodies = document.querySelectorAll('.atk-content');
+        }
         // 对每个元素调用 createFoldButton 函数
         atkBodies.forEach((highlightDiv) => {
             // 检查是否已经添加过折叠按钮
@@ -227,10 +231,14 @@ if (post) {
             limitHight();
             htmx.process(document.body);
 
-            document.body.addEventListener('htmx:afterSwap', function (event) {
+            document.body.addEventListener('htmx:beforeSwap', function (event) {
                 document.querySelector('.btn-more')?.remove();
+            });
+
+            document.body.addEventListener('htmx:afterSwap', function (event) {
                 initZoom();
-                limitHight();
+                limitHight(event.detail.elt);
+ 
             });
         }
     };
