@@ -182,7 +182,9 @@ if (post) {
         // 获取页面上所有 .atk-body 元素
         let atkBodies;
         if (dom) {
-            atkBodies = dom.querySelectorAll('.atk-content');
+            if (!dom.querySelector('.fold-button')) {
+                createFoldButton(dom);
+            }
         } else {
             atkBodies = document.querySelectorAll('.atk-content');
         }
@@ -237,7 +239,27 @@ if (post) {
 
             document.body.addEventListener('htmx:afterSwap', function (event) {
                 initZoom();
-                limitHight(event.detail.elt);
+                limitHight();
+                event.detail.elt.querySelectorAll(".atk-content img").forEach((img)=>{
+                    img.onload=()=>{
+                        // 处理已加载的图片（检查 complete 属性）
+                        if (img.complete) {
+                            const parent = img.closest('.atk-content');
+                            if (parent) limitHight(parent);
+                        }
+                        
+                        // 监听未来加载的图片
+                        img.onload = function() {
+                            const parent = img.closest('.atk-content');
+                            if (parent) limitHight(parent);
+                        };
+                        
+                        // 可选：处理加载失败的情况
+                        img.onerror = function() {
+                            console.error('Image failed to load:', img.src);
+                        };
+                    }
+                })
  
             });
         }
