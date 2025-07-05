@@ -91,14 +91,14 @@ const tocHtml = tocGen(await post.html);
     <Header slot="header" title={post.title} />
 
     <Menu slot="menu" title={post.title} />
-    <article slot="content" class="markdown book-article">
+    <article slot="content" class="markdown book-article" >
         <h1 class="book-title">
             {post.title}
         </h1>
         <PostMeta post={post} isFeature={true} />
         {
             post.html && (
-                <Markup
+                <Markup transition:animate="fade"
                     content={html}
                     sanitize={{ allowComponents: true, allowCustomElements: true }}
                     components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
