@@ -29,6 +29,16 @@ const page = pages.find((post) => post.slug == 'map');
         <h1 class="book-title">{page.title}</h1>
         <PostMeta post={page} isFeature={true} />
 
+        <script>
+            import initMap from '../utils/map';
+
+            document.addEventListener('astro:page-load', () => {
+                initMap();
+            });
+        </script>
+        <div id="map" class="footer-map"></div>
+
+        
         {
             page.html && (
                 <Markup
@@ -38,14 +48,6 @@ const page = pages.find((post) => post.slug == 'map');
                 />
             )
         }
-        <script>
-            import initMap from '../utils/map';
-
-            document.addEventListener('astro:page-load', () => {
-                initMap();
-            });
-        </script>
-        <div id="map" class="footer-map"></div>
     </article>
 
     <Comments slot="comments" />
