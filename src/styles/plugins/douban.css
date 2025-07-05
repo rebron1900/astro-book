@@ -105,7 +105,10 @@
     border-radius: var(--sb-size);
     border: solid 1px transparent;
     transition: all 0.3s ease;
-    background-color: var(--gray-200);
+
+    &:hover {
+        background-color: var(--gray-200);
+    }
 }
 .db--icon-comment {
     margin-top: 3px;
