@@ -54,7 +54,7 @@ const groupdata = doubanGroupByDate(neodb.data);
             </nav>
 
             <div class="db--genres"></div>
-            <div class="db--list db--list__card" id="db--list__card">
+            <div class="db--list db--list__card " transition:animate="fade" id="db--list__card">
                 {
                     groupdata.map((post) =>
                         post.data.map((month) => (
