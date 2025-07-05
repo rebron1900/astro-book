@@ -509,9 +509,6 @@
 
     .atk-main-editor > .atk-textarea-wrap > .atk-textarea {
         background: transparent;
-        &::placeholder {
-            color: var(--gray-500);
-        }
     }
 
     .atk-list > .atk-list-header {
