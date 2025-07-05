@@ -9,23 +9,23 @@ const { title } = Astro.props;
         <span>路线牌</span>
 
         <ul class="book-collspan">
-            {
+            <!-- {
                 title ? (
                     <li transition:name="menu-nav-flag" style="top:0px;" class="menu-flag current" />
                 ) : (
                     settings?.navigation.map(
                         (item, index) =>
                             Astro.url.pathname === item.url && (
-                                <li transition:name="menu-nav-flag" style={` top:${(index + 0) * 30}px;`} class="menu-flag current" />
+                                <li transition:name="menu-nav-flag" class="menu-flag current" />
                             )
                     )
                 )
-            }
+            } -->
 
             {
                 title && (
                     <li>
-                        <a href="javascript:void(0)" style="display: block;" class="menu-flag current ellipsis">
+                        <a href="javascript:void(0)"  class="menu-flag current ellipsis">
                             {title}
                         </a>
                     </li>

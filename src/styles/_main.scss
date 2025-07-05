@@ -214,9 +214,20 @@ ul.pagination {
             position: relative;
             padding-left: 0;
         }
-        a .current {
+        a.current {
             color: var(--color-link);
             font-weight: 600;
+
+            &:before {
+                content: '';
+                display: block;
+                height: 1.2em;
+                width: 5px;
+                border-radius: var(--sb-size);
+                position: absolute;
+                background-color: var(--color-link);
+                transform: translateX(-10px);
+            }
         }
     }
 

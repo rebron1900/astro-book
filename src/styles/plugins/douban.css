@@ -112,8 +112,8 @@
 }
 .db--icon-comment {
     margin-top: 3px;
-    right: 12px;
-    position: absolute !important;
+    transform: translateX(120px);
+    position: absolute;
 }
 
 .db--item__music img {

@@ -1031,18 +1031,6 @@ h3.card-title {
 //     transition: transform 1s;
 // }
 
-li.menu-flag {
-    &.current {
-        position: absolute;
-        background-color: var(--color-link);
-        width: 5px;
-        left: -10px;
-        height: 16px;
-        border-radius: 10em;
-        margin: 0;
-    }
-}
-
 @keyframes bump {
     from {
         opacity: 0;

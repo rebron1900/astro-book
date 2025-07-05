@@ -1277,6 +1277,11 @@
   resolved "https://registry.npmmirror.com/@solid-primitives/utils/-/utils-6.2.3.tgz"
   integrity sha512-CqAwKb2T5Vi72+rhebSsqNZ9o67buYRdEJrIFzRXz3U59QqezuuxPsyzTSVCacwS5Pf109VRsgCJQoxKRoECZQ==
 
+"@sveltejs/svelte-virtual-list@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@sveltejs/svelte-virtual-list/-/svelte-virtual-list-3.0.1.tgz#3784d6426508836b4471bba8ba293430e73717d8"
+  integrity sha512-aF9TptS7NKKS7/TqpsxQBSDJ9Q0XBYzBehCeIC5DzdMEgrJZpIYao9LRLnyyo6SVodpapm2B7FE/Lj+FSA5/SQ==
+
 "@ts-ghost/content-api@^4.1.0":
   version "4.1.0"
   resolved "https://registry.npmmirror.com/@ts-ghost/content-api/-/content-api-4.1.0.tgz"

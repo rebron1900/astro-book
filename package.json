@@ -16,6 +16,7 @@
         "@mapbox/geojson-extent": "^1.0.1",
         "@mapbox/mapbox-gl-language": "^1.0.1",
         "@shikijs/transformers": "^1.17.0",
+        "@sveltejs/svelte-virtual-list": "^3.0.1",
         "@ts-ghost/content-api": "^4.1.0",
         "artalk": "^2.9.0",
         "astro": "^4.12.2",

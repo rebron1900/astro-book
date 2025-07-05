@@ -98,7 +98,7 @@ const tocHtml = tocGen(await post.html);
         <PostMeta post={post} isFeature={true} />
         {
             post.html && (
-                <Markup transition:animate="fade"
+                <Markup 
                     content={html}
                     sanitize={{ allowComponents: true, allowCustomElements: true }}
                     components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}

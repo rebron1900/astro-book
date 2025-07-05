@@ -22,7 +22,7 @@ const isFullWidth = post && post.tags.some((tag: Tag) => tag.slug === 'hash-page
         <input aria-label="toc-control" type="checkbox" class="hidden toggle" id="toc-control" />
         <main class=`container flex ${isFullWidth ? 'full-width' : ''} `>
             <aside class="book-menu">
-                <div class="book-menu-content" transition:animate="initial" >
+                <div class="book-menu-content" transition:name="book-menu" >
                     <slot name="menu" />
                 </div>
             </aside>

@@ -265,6 +265,16 @@ if (post) {
         }
     };
 
+    const doubanEvent = () =>{
+        if(location.pathname.includes('/douban')){
+            htmx.process(document.body);
+
+            document.body.addEventListener('htmx:beforeSwap', function (event) {
+                document.querySelector('.btn-more')?.remove();
+            });
+        }
+    }
+
     document.addEventListener('astro:after-swap', () => {
         changeTheme();
     });
@@ -277,6 +287,7 @@ if (post) {
         initVideo();
         initAudio();
         initToggle();
+        doubanEvent();
 
         // Scroll to top function
 
