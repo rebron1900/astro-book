@@ -99,13 +99,17 @@
 }
 
 .db--item {
-    width: 150px;
-    margin: 10px;
+    width: 170px;
+    padding: 10px;
     position: relative;
+    border-radius: var(--sb-size);
+    border: solid 1px transparent;
+    transition: all 0.3s ease;
+    background-color: var(--gray-200);
 }
 .db--icon-comment {
     margin-top: 3px;
-    right: 0px;
+    right: 12px;
     position: absolute !important;
 }
 
@@ -401,6 +405,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
+    gap: 0.5em;
 }
 
 .db--listBydate {

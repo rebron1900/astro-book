@@ -7,7 +7,7 @@ const { post } = Astro.props;
 
 <PostAction post={post} />
 
-<div class="flex flex-wrap justify-start">
+<div class="flex flex-wrap justify-start book-post-meta">
     <div>
         <a class="flex align-center" href="#" title="Last modified by" rel="noopener">
             <Fragment set:html={getSvg('calendar')} />

@@ -58,6 +58,8 @@
 .astro-code {
     white-space: pre !important;
     position: relative;
+    border: solid 1px var(--gray-200);
+    transition: all 0.3s ease;
 
     code {
         background-color: transparent;
@@ -66,6 +68,7 @@
 
 .atk-content {
     line-height: 1.5;
+    transition: all 0.3s ease;
 
     .artalk code,
     .atk-layer-wrap code {
@@ -153,6 +156,7 @@
         background-color: var(--gray-200);
         max-width: 100%;
         position: relative;
+        border: solid 1px var(--gray-200);
 
         p,
         ol,
