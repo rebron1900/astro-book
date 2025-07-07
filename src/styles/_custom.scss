@@ -666,9 +666,11 @@ pre:hover > .copy-button {
 
 .footer-map {
     height: 70vh;
-    border: 5px solid #eee;
+    border: 1px solid var(--gray-200);
     margin-top: 20px;
     margin-bottom: 20px;
+    border-radius: var(--sb-size);
+    transition: all 0.3s ease;
 }
 
 .fold-button {
