@@ -70,9 +70,12 @@
         margin-right: -$padding-16;
 
         > div {
-            margin: $padding-16 0;
-            min-width: calc($body-min-width);
-            padding: 0 $padding-16;
+            margin: 0.5rem 0.5rem;
+            min-width: 13.2rem;
+            padding: 1rem;
+            border: solid 1px var(--gray-200);
+            border-radius: var(--sb-size);
+            transition: all 0.3s ease;
         }
     }
 
