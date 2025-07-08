@@ -203,17 +203,18 @@ const groupdata = doubanGroupByDate(data);
                 };
 
                 document.addEventListener('astro:page-load', () => {
-                    tippy('.db--icon-comment', {
-                        placement: 'bottom',
-                        maxWidth: 300
-                    });
-
                     document.querySelectorAll('.db--navItem').forEach((el) => {
                         el.addEventListener('click', function (e) {
                             douban.change(e.target.dataset.type);
                             douban.active(e.currentTarget);
                         });
                     });
+                });
+                document.body.addEventListener('htmx:afterSwap', function (event) {
+                    tippy('.db--icon-comment', {
+                            placement: 'bottom',
+                            maxWidth: 300
+                        });
                 });
             </script>
 
