@@ -22,30 +22,30 @@ const isFullWidth = post && post.tags.some((tag: Tag) => tag.slug === 'hash-page
         <input aria-label="toc-control" type="checkbox" class="hidden toggle" id="toc-control" />
         <main class=`container flex ${isFullWidth ? 'full-width' : ''} `>
             <aside class="book-menu">
-                <div class="book-menu-content" transition:name="book-menu" >
+                <div class="book-menu-content"  transition:name="astro-none" >
                     <slot name="menu" />
                 </div>
             </aside>
             <div class="book-page">
-                <header class="book-header" transition:name="astro-header">
+                <header class="book-header">
                     <slot name="header" />
                     <slot name="h-toc" />
                 </header>
 
-                <slot name="content" transition:name="astro-content" />
+                <slot name="content"  />
 
                 <footer class="book-footer">
-                    <slot name="footer" transition:name="astro-fo0ter" />
+                    <slot name="footer" />
                 </footer>
 
-                <slot name="pagination" transition:name="astro-pagination" />
-                <slot name="comments" transition:name="astro-comments" />
+                <slot name="pagination" />
+                <slot name="comments"  />
                 <label for="menu-control" class="hidden book-menu-overlay"></label>
             </div>
 
             <aside class={`book-toc ${isFullWidth ? 'full-width' : ''}`}>
                 <div class="book-toc-content">
-                    <slot name="toc" transition:name="astro-toc" />
+                    <slot name="toc" />
                 </div>
             </aside>
         </main>

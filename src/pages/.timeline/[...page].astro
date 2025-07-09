@@ -1,0 +1,40 @@
+---
+import type { GetStaticPathsOptions } from 'astro';
+import { allContent,settings } from '../../data/ghost-store';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Head from '../../components/Head.astro';
+import List from '../../components/List.astro';
+import Pagination from '../../components/Pagination.astro';
+import Relitu from '../../components/Relitu';
+import TocTagloop from '../../components/TocTagloop.astro';
+import Header from '../../components/Header.astro';
+import Top from '../../components/Top.astro';
+import Menu from '../../components/Menu.astro';
+
+export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
+    return paginate(allContent, {
+        pageSize: 10
+    });
+}
+
+const { page } = Astro.props;
+---
+
+<BaseLayout>
+    <Head slot="head" site={settings} title={settings?.title + ' | ' + settings?.description} />
+
+    <Header slot="header" title={settings?.title} />
+
+    <Menu slot="menu" title={page.currentPage != 1 ? `第 ${page.currentPage} 页` : ''} />
+
+    <List slot="content" page={page} isFeature={false} />
+
+    <Pagination slot="pagination" page={page} />
+
+    <Fragment slot="toc">
+        <Relitu />
+        <TocTagloop />
+        <Top />
+    </Fragment>
+</BaseLayout>

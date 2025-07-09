@@ -1,8 +1,15 @@
 ---
 import type { Post } from '@ts-ghost/content-api';
-import { normalizeSlug } from '../utils/help';
+import { normalizeData, normalizeSlug } from '../utils/help';
 import PostMeta from './PostMeta.astro';
 import Hero from './Hero.astro';
+import { Markdown } from 'astro-remote';
+import CodeSlot from './CodeSlot.astro';
+import IFrameSlot from './IFrameSlot.astro';
+import RemotePicture from './RemotePicture.astro';
+import Columns from './shortcode/Columns.astro';
+import Details from './shortcode/Details.astro';
+import Link from './shortcode/Link.astro';
 
 const { page } = Astro.props;
 
@@ -14,13 +21,56 @@ const isHomePage = url.pathname === '/';
 {isHomePage ? <Hero /> : ''}
 
 {
-    page.data.map((post: Post) => (
-        <article class="markdown book-post">
-            <h2 class="book-title">
-                <a href={normalizeSlug(post.slug)}>{post.title}</a>
-            </h2>
-            <PostMeta post={post} />
-            <p>{post.excerpt.replace(/<[^>]+>/g, '').substring(0, 150)}...</p>
-        </article>
-    ))
+    page.data.map((post) =>
+        post.type === 'post' ? (
+            <article class="markdown book-post">
+                <h2 class="book-title">
+                    <a href={normalizeSlug(post.slug)}>{post.title}</a>
+                </h2>
+                <PostMeta post={post} />
+                <p>{post.excerpt.replace(/<[^>]+>/g, '').substring(0, 150)}...</p>
+            </article>
+        ) : (
+            <div class="page-memos markdown">
+            <div class="atk-main">
+                <div class="atk-body">
+                    <div class="atk-content">
+                        {post.content && (
+                            <Markdown
+                                content={post.content}
+                                sanitize={{ allowComponents: true, allowCustomElements: true }}
+                                components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
+                            />
+                        )}
+                        <style />
+                        <div class={`image-grid image-count-${post.resourceList.length}`} view-image="">
+                            {post.resourceList.map((r) => {
+                                if (r.type == 'image') {
+                                    return (
+                                        <div class="image-container">
+                                            <RemotePicture src={r.externalLink} alt={r.filename} classNames="image-item" />
+                                        </div>
+                                    );
+                                } else if (r.type == 'video') {
+                                    return (
+                                        <div class="image-container">
+                                            <video src={r.externalLink} controls width="640" height="360">
+                                                您的浏览器不支持 HTML5 视频标签
+                                            </video>
+                                        </div>
+                                    );
+                                }
+                            })}
+                        </div>
+                    </div>
+                    <div class="atk-content-footer">
+                        <span>
+                            @{post.creatorName} · by {normalizeData(post.updatedTs)}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        )
+    )
 }

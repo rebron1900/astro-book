@@ -65,12 +65,10 @@ export const getAllPosts = async () => {
         if (cursor.current.success) posts.push(...cursor.current.data);
     }
 
-    const postsWithType = posts.map((post) => ({
+    return posts.map((post) => ({
         ...post,
-        type: 'post' // 设置 type 字段的值
+        type: 'post' // 为 Ghost 文章添加 type 属性
     }));
-
-    return postsWithType;
 };
 
 export const getAllPages = async () => {
@@ -172,5 +170,36 @@ export async function getFlux() {
 }
 
 export async function getMemos() {
-    return fetch(config.memos.url).then((res) => res.json());
+    const memos = await fetch(config.memos.url).then((res) => res.json());
+    return memos.map((memo: any) => ({
+        ...memo,
+        type: 'memo' // 为 Memos 添加 type 属性
+    }));
+}
+
+// 整合两个数据源的函数
+export async function getAllContent() {
+    try {
+        const [posts, memos] = await Promise.all([getAllPosts(), getMemos()]);
+
+        // 按创建时间排序（假设都有 createdAt 字段）
+        return [...posts, ...memos].sort((a, b) => {
+            // 获取a的时间戳
+            const aTime =
+                a.type === 'post'
+                    ? new Date(a.created_at).getTime() // Ghost文章使用created_at
+                    : a.createdTs * 1000; // Memos使用createdTs（秒转毫秒）
+
+            // 获取b的时间戳
+            const bTime =
+                b.type === 'post'
+                    ? new Date(b.created_at).getTime() // Ghost文章使用created_at
+                    : b.createdTs * 1000; // Memos使用createdTs（秒转毫秒）
+
+            return bTime - aTime; // 降序排列（最新的在前）
+        });
+    } catch (error) {
+        console.error('获取内容失败:', error);
+        return [];
+    }
 }
