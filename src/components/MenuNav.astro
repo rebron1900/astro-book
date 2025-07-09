@@ -35,7 +35,7 @@ const { title } = Astro.props;
             {
                 settings?.navigation.map((item) => (
                     <li>
-                        <a href={item.url} class={`menu-flag ${Astro.url.pathname == item.url ? 'current' : ''}`}>
+                        <a href={item.url} class={`menu-flag ellipsis ${Astro.url.pathname == item.url ? 'current' : ''}`}>
                             {item.label}
                         </a>
                     </li>

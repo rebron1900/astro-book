@@ -32,7 +32,7 @@ const { page, tag } = Astro.props;
 
     <Header slot="header" title={settings?.title} />
 
-    <Menu slot="menu" title=`TAG：${tag.name} ${ page.currentPage > 1 ? '，第 ' + page.currentPage + '页' : ''}` />
+    <Menu slot="menu" title=` ${tag.name} 🏷 ${ page.currentPage > 1 ? '，第 ' + page.currentPage + '页' : ''}` />
 
     <List slot="content" page={page} isFeature={false} />
 
