@@ -326,7 +326,6 @@ $hint-colors: (
         background: radial-gradient(circle at 100% 0%, var(--color-link) 0%, transparent 37%);
     }
 
-    /* 左下角圆形（新增 ::before） */
     body:before {
         background: radial-gradient(circle at 0% 100%, var(--color-link) 0%, transparent 37%);
         filter: hue-rotate(45deg);
