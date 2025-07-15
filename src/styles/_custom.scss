@@ -1482,61 +1482,34 @@ h3.card-title {
     }
 }
 
-/** markdown加载动画 **/
-.markdown > * {
-    opacity: 0;
-    animation: fadeInUp 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+// ===== 可配置变量 =====
+$start-delay: 0.15s; // 第一个子项的延迟
+$step: 0.05s; // 每往后一个子项增加的延迟
+$max-items: 15; // 超过这个数量后统一用最后一个延迟
+
+// ===== Mixin：给某个容器下的子项批量生成延迟 =====
+@mixin stagger-fade($selector) {
+    #{$selector} > * {
+        opacity: 0;
+        animation: fadeInUp 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+    }
+
+    // 1 ~ $max-items 分别设置递增延迟
+    @for $i from 1 through $max-items {
+        #{$selector} > *:nth-child(#{$i}) {
+            animation-delay: $start-delay + ($i - 1) * $step;
+        }
+    }
+
+    // 超过 $max-items 的子项统一用最后一个延迟
+    #{$selector} > *:nth-child(n + #{$max-items + 1}) {
+        animation-delay: $start-delay + $max-items * $step;
+    }
 }
 
-.markdown > *:nth-child(1) {
-    animation-delay: 0.15s;
-}
-.markdown > *:nth-child(2) {
-    animation-delay: 0.2s;
-}
-.markdown > *:nth-child(3) {
-    animation-delay: 0.25s;
-}
-.markdown > *:nth-child(4) {
-    animation-delay: 0.3s;
-}
-.markdown > *:nth-child(5) {
-    animation-delay: 0.35s;
-}
-.markdown > *:nth-child(6) {
-    animation-delay: 0.4s;
-}
-.markdown > *:nth-child(7) {
-    animation-delay: 0.45s;
-}
-.markdown > *:nth-child(8) {
-    animation-delay: 0.5s;
-}
-.markdown > *:nth-child(9) {
-    animation-delay: 0.55s;
-}
-.markdown > *:nth-child(10) {
-    animation-delay: 0.6s;
-}
-.markdown > *:nth-child(11) {
-    animation-delay: 0.65s;
-}
-.markdown > *:nth-child(12) {
-    animation-delay: 0.7s;
-}
-.markdown > *:nth-child(13) {
-    animation-delay: 0.75s;
-}
-.markdown > *:nth-child(14) {
-    animation-delay: 0.8s;
-}
-.markdown > *:nth-child(15) {
-    animation-delay: 0.85s;
-}
-.markdown > *:nth-child(n + 16) {
-    animation-delay: 0.9s;
-}
-
+// ===== 调用 =====
+@include stagger-fade('.markdown');
+@include stagger-fade('.book-toc-content');
 @keyframes fadeInUp {
     from {
         opacity: 0;
