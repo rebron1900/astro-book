@@ -1481,3 +1481,69 @@ h3.card-title {
         vertical-align: middle;
     }
 }
+
+/** markdown加载动画 **/
+.markdown > * {
+    opacity: 0;
+    animation: fadeInUp 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+.markdown > *:nth-child(1) {
+    animation-delay: 0.15s;
+}
+.markdown > *:nth-child(2) {
+    animation-delay: 0.2s;
+}
+.markdown > *:nth-child(3) {
+    animation-delay: 0.25s;
+}
+.markdown > *:nth-child(4) {
+    animation-delay: 0.3s;
+}
+.markdown > *:nth-child(5) {
+    animation-delay: 0.35s;
+}
+.markdown > *:nth-child(6) {
+    animation-delay: 0.4s;
+}
+.markdown > *:nth-child(7) {
+    animation-delay: 0.45s;
+}
+.markdown > *:nth-child(8) {
+    animation-delay: 0.5s;
+}
+.markdown > *:nth-child(9) {
+    animation-delay: 0.55s;
+}
+.markdown > *:nth-child(10) {
+    animation-delay: 0.6s;
+}
+.markdown > *:nth-child(11) {
+    animation-delay: 0.65s;
+}
+.markdown > *:nth-child(12) {
+    animation-delay: 0.7s;
+}
+.markdown > *:nth-child(13) {
+    animation-delay: 0.75s;
+}
+.markdown > *:nth-child(14) {
+    animation-delay: 0.8s;
+}
+.markdown > *:nth-child(15) {
+    animation-delay: 0.85s;
+}
+.markdown > *:nth-child(n + 16) {
+    animation-delay: 0.9s;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(3rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
