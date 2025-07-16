@@ -68,7 +68,7 @@ const size = await getSize(src);
 
 {
     isCdn && size ? (
-        <Image src={src} alt="" {...attrs} srcset={generateImageSrcset(src)} width={size.width} height={size.height} />
+        <Image loading="lazy" src={src} alt="" {...attrs} srcset={generateImageSrcset(src)} width={size.width} height={size.height} />
     ) : (
         <img loading="lazy" class={className ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />
     )
