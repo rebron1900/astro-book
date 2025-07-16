@@ -32,7 +32,34 @@ const generateImageSrcset = (image: string, isLocal = false) => {
 
     return imageSrcset.join(', ');
 };
+
+// 只处理 cdn.1900.live 的图片
+const isCdn = src.startsWith('https://cdn.1900.live/');
+
+let width: number | undefined;
+let height: number | undefined;
+let useImageComponent = false;
+
+if (isCdn) {
+    try {
+        const jsonUrl = encodeURI(src) + '!exif';
+        const res = await fetch(jsonUrl, { method: 'GET' });
+        if (res.ok) {
+            const meta = await res.json();
+            width = meta.width;
+            height = meta.height;
+            useImageComponent = true;
+        }
+    } catch {
+        useImageComponent = false
+    }
+}
 ---
 
-<img loading="lazy" class={className ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />
-<!-- <Image src={src} alt="" {...attrs} srcset={generateImageSrcset(src)} inferSize onerror={"this.src='http://iph.href.lu/600x400?text=%E5%9B%BE%E7%89%87%E4%B8%A2%E5%A4%B1&fg=666666&bg=cccccc'"} /> -->
+{
+    useImageComponent && width && height ? (
+        <Image src={src} alt="" {...attrs} srcset={generateImageSrcset(src)} inferSize />
+    ) : (
+        <img loading="lazy" class={className ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />
+    )
+}

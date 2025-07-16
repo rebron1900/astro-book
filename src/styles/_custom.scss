@@ -1508,8 +1508,10 @@ $max-items: 15; // 超过这个数量后统一用最后一个延迟
 }
 
 // ===== 调用 =====
+@include stagger-fade('.book-page');
 @include stagger-fade('.markdown');
-@include stagger-fade('.book-toc-content');
+@include stagger-fade('.toc-relitu,.book-toc-content');
+
 @keyframes fadeInUp {
     from {
         opacity: 0;
