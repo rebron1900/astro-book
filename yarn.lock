@@ -1914,6 +1914,13 @@ astro-compress@^2.3.1:
     svgo "4.0.0-rc.0"
     terser "5.31.3"
 
+astro-lqip@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/astro-lqip/-/astro-lqip-1.2.1.tgz#cf7ff02ac68348e939f9a7fc4acaf4f8045b6532"
+  integrity sha512-i3joKa8dJTeiLPXwWIQsExR2R6Dp6qCyYjUwnPsp34ntAU+dYKYM+YHH4HMdtN4CyQBrZQDEHVdCPCjIS/CpvQ==
+  dependencies:
+    plaiceholder "3.0.0"
+
 astro-og-canvas@^0.7.0:
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/astro-og-canvas/-/astro-og-canvas-0.7.0.tgz#eb27e2d93912c645e48902e18cb6c438979d7c5e"
@@ -4841,6 +4848,11 @@ pkg-dir@^4.2.0:
   integrity sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==
   dependencies:
     find-up "^4.0.0"
+
+plaiceholder@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/plaiceholder/-/plaiceholder-3.0.0.tgz#bd0a3ea0613523e4b8a8239ab7566432880d7fc3"
+  integrity sha512-jwHxxHPnr1BwRzPCeZgEK2BMsEy2327sWynw3qb6XC/oGgGDUTPtR8pFxFQmNArhMBwhkUbUr5OPhhIJpCa8eQ==
 
 possible-typed-array-names@^1.0.0:
   version "1.0.0"
