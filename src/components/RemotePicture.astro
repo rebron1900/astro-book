@@ -2,10 +2,10 @@
 import { Image } from 'astro:assets';
 
 export interface Props {
-  src: string;
-  alt?: string;
-  class?: string;
-  [k: string]: any;
+    src: string;
+    alt?: string;
+    class?: string;
+    [k: string]: any;
 }
 
 const { src, alt, class: className, ...rest } = Astro.props;
@@ -17,54 +17,53 @@ const encode = (s: string) => encodeURI(s);
 type Size = { width: number; height: number };
 
 async function getSize(raw: string): Promise<Size | undefined> {
-  /* 1) cdn.1900.live */
-  if (raw.startsWith('https://cdn.1900.live/')) {
-    try {
-      const meta = await fetch(`${encode(raw)}!exif`).then(r => r.json());
-      return { width: meta.width, height: meta.height };
-    } catch {
-      /* ignore */
+    /* 1) cdn.1900.live */
+    if (raw.startsWith('https://cdn.1900.live/')) {
+        try {
+            const meta = await fetch(`${encode(raw)}!exif`).then((r) => r.json());
+            return { width: meta.width, height: meta.height };
+        } catch {
+            /* ignore */
+        }
     }
-  }
 
-  /* 2) unsplash.com */
-  if (raw.includes('unsplash.com')) {
-    const url = new URL(raw);
-    const w = Number(url.searchParams.get('w'));
-    const h = w*2;
+    /* 2) unsplash.com */
+    if (raw.includes('unsplash.com')) {
+        const url = new URL(raw);
+        const w = Number(url.searchParams.get('w'));
+        const h = w * 2;
 
-    if (w) {
-
-        return { width: w, height: h };
+        if (w) {
+            return { width: w, height: h };
+        }
     }
-  }
 
-  /* 3) 其它域名：拿不到尺寸，返回 undefined */
-  return undefined;
+    /* 3) 其它域名：拿不到尺寸，返回 undefined */
+    return undefined;
 }
 
 /* ---------- 2. 生成 srcset ---------- */
 function buildSrcset(raw: string, widths: number[]) {
-  const list: string[] = [];
+    const list: string[] = [];
 
-  /* cdn.1900.live */
-  if (raw.startsWith('https://cdn.1900.live/')) {
-    widths.forEach(w => list.push(`${raw}!${w}w ${w}w`));
-    return list.join(', ');
-  }
+    /* cdn.1900.live */
+    if (raw.startsWith('https://cdn.1900.live/')) {
+        widths.forEach((w) => list.push(`${raw}!${w}w ${w}w`));
+        return list.join(', ');
+    }
 
-  /* unsplash.com */
-  if (raw.includes('unsplash.com')) {
-    widths.forEach(w => {
-      const url = new URL(raw);
-      url.searchParams.set('w', String(w));
-      list.push(`${url.toString()} ${w}w`);
-    });
-    return list.join(', ');
-  }
+    /* unsplash.com */
+    if (raw.includes('unsplash.com')) {
+        widths.forEach((w) => {
+            const url = new URL(raw);
+            url.searchParams.set('w', String(w));
+            list.push(`${url.toString()} ${w}w`);
+        });
+        return list.join(', ');
+    }
 
-  /* 其它域名：只返回原图 */
-  return raw;
+    /* 其它域名：只返回原图 */
+    return raw;
 }
 
 /* ---------- 3. 组件逻辑 ---------- */
@@ -75,76 +74,70 @@ const srcset = buildSrcset(src, widths);
 /* 占位图（仅 cdn） */
 let tiny = '';
 if (src.startsWith('https://cdn.1900.live/')) {
-  tiny = `${encode(src)}!20w`;
+    tiny = `${encode(src)}!20w`;
 } else if (src.includes('unsplash.com')) {
-  // 1 px 占位图，Unsplash 会自动返回最小尺寸
-  const url = new URL(src);
-  url.searchParams.set('w', '20');
-  tiny = url.toString();
+    // 1 px 占位图，Unsplash 会自动返回最小尺寸
+    const url = new URL(src);
+    url.searchParams.set('w', '20');
+    tiny = url.toString();
 }
 const lqipStyle = tiny ? `--lqip-background:url(${tiny})` : '';
 ---
 
-<picture
-  class:list={['lqip-wrap', className]}
-  style={lqipStyle}
-
->
-  {
-    size ? (
-      <Image
-        src={src}
-        alt={alt ?? ''}
-        width={size.width}
-        height={size.height}
-        srcset={srcset}
-        loading="lazy"
-        decoding="async"
-        onload="this.parentElement.style.setProperty('--z-index',1);this.parentElement.style.setProperty('--opacity',0)"
-
-        {...rest}
-      />
-    ) : (
-      <img
-        src={encode(src)}
-        srcset={srcset}
-        alt={alt ?? ''}
-        loading="lazy"
-        decoding="async"
-        onload="this.parentElement.style.setProperty('--z-index',1);this.parentElement.style.setProperty('--opacity',0)"
-
-        {...rest}
-      />
-    )
-  }
+<picture class:list={['lqip-wrap', className]} style={lqipStyle}>
+    {
+        size ? (
+            <Image
+                src={src}
+                alt={alt ?? ''}
+                width={size.width}
+                height={size.height}
+                srcset={srcset}
+                loading="lazy"
+                decoding="async"
+                onload="this.parentElement.style.setProperty('--z-index',1);this.parentElement.style.setProperty('--opacity',0)"
+                {...rest}
+            />
+        ) : (
+            <img
+                src={encode(src)}
+                srcset={srcset}
+                alt={alt ?? ''}
+                loading="lazy"
+                decoding="async"
+                onload="this.parentElement.style.setProperty('--z-index',1);this.parentElement.style.setProperty('--opacity',0)"
+                {...rest}
+            />
+        )
+    }
 </picture>
 
 <style is:inline>
-  picture {
-    --opacity: 1;
-    --z-index: 0;
-    position: relative;
-    display: inline-block;
-  }
+    picture {
+        --opacity: 1;
+        --z-index: 0;
+        position: relative;
+        display: inline-block;
+    }
 
-  picture::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    transition: opacity 0.6s;
-    opacity: var(--opacity);
-    z-index: var(--z-index);
-    background: var(--lqip-background);
-    background-size: cover;
-    background-position: 50% 50%;
-    filter: blur(8px);
-  }
+    picture::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        transition: opacity 0.6s;
+        opacity: var(--opacity);
+        z-index: var(--z-index);
+        background: var(--lqip-background);
+        background-size: cover;
+        background-position: 50% 50%;
+        filter: blur(8px);
+    }
 
-  picture img {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    height: auto;
-  }
+    picture img {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        height: auto;
+    }
 </style>
