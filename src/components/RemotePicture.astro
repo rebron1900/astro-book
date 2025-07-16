@@ -2,64 +2,111 @@
 import { Image } from 'astro:assets';
 
 export interface Props {
-    src: string;
-    alt?: string;
-    class?: string;
+  src: string;
+  alt?: string;
+  class?: string;
+  [k: string]: any;
 }
 
-const { src, alt, class: className, ...attrs } = Astro.props;
+const { src, alt, class: className, ...rest } = Astro.props;
 
-const generateImageSrcset = (image: string, isLocal = false) => {
-    image = encodeURI(image);
-    let imageSrcset = [];
-    const imageWidths = [400, 600, 800, 1000, 1200, 1400, 1600, 1800];
-
-    if (image.match(import.meta.env.CND_URL)) {
-        // If image is local, determine the width of the image and then generate
-        // markup for images at sizes smaller than the image
-        imageWidths.forEach((width) => {
-            let img = image.endsWith('.gif') == true ? image : `${image}!${width}w ${width}w`;
-            imageSrcset.push(img);
-        });
-    } else if (image.match('unsplash.com')) {
-        imageWidths.forEach((width) => {
-            const updatedUrl = image.replace(/(w=)[^\&]+/, '$1' + width);
-            imageSrcset.push(`${updatedUrl} ${width}w`);
-        });
-    } else {
-        imageSrcset.push(image);
-    }
-
-    return imageSrcset.join(', ');
+/* ---------- 工具函数 ---------- */
+const encode = (s: string) => encodeURI(s);
+const generateSrcset = (raw: string) => {
+  const widths = [400, 600, 800, 1000, 1200, 1400, 1600, 1800];
+  const list: string[] = [];
+  if (raw.startsWith('https://cdn.1900.live/')) {
+    widths.forEach(w => list.push(`${raw}!${w}w ${w}w`));
+  } else if (raw.includes('unsplash.com')) {
+    widths.forEach(w => list.push(raw.replace(/(w=)[^\&]+/, '$1' + w) + ` ${w}w`));
+  } else {
+    list.push(raw);
+  }
+  return list.join(', ');
 };
 
-// 只处理 cdn.1900.live 的图片
+/* ---------- 拿尺寸 ---------- */
 const isCdn = src.startsWith('https://cdn.1900.live/');
-
 let width: number | undefined;
 let height: number | undefined;
-let useImageComponent = false;
+let useAstroImage = false;
 
 if (isCdn) {
-    try {
-        const jsonUrl = encodeURI(src) + '!exif';
-        const res = await fetch(jsonUrl, { method: 'GET' });
-        if (res.ok) {
-            const meta = await res.json();
-            width = meta.width;
-            height = meta.height;
-            useImageComponent = true;
-        }
-    } catch {
-        useImageComponent = false
-    }
+  try {
+    const meta = await fetch(encode(src) + '!exif').then(r => r.json());
+    width  = meta.width;
+    height = meta.height;
+    useAstroImage = true;
+  } catch {}
 }
+
+/* ---------- 占位图 ---------- */
+const tiny = isCdn ? encode(src) + '!20w' : '';
+const lqipStyle = tiny ? `--lqip-background:url(${tiny})` : '';
 ---
 
 {
-    useImageComponent && width && height ? (
-        <Image src={src} alt="" {...attrs} srcset={generateImageSrcset(src)} inferSize />
-    ) : (
-        <img loading="lazy" class={className ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />
-    )
+  useAstroImage && width && height ? (
+    <picture
+      class:list={['lqip-wrap', className]}
+      style={lqipStyle}
+    >
+      <Image
+        src={src}
+        alt={alt ?? ''}
+        width={width}
+        height={height}
+        srcset={generateSrcset(src)}
+        loading="lazy"
+        decoding="async"
+        onload="this.parentElement.style.setProperty('--z-index',1),this.parentElement.style.setProperty('--opacity',0)"
+        {...rest}
+      />
+    </picture>
+  ) : (
+    <picture
+      class:list={['lqip-wrap', className]}
+      style={lqipStyle}
+    >
+      <img
+        src={encode(src)}
+        srcset={generateSrcset(src)}
+        alt={alt ?? ''}
+        loading="lazy"
+        decoding="async"
+        onload="this.parentElement.style.setProperty('--z-index',1),this.parentElement.style.setProperty('--opacity',0)"
+        {...rest}
+      />
+    </picture>
+  )
 }
+
+<style is:inline>
+  .lqip-wrap {
+    --opacity: 1;
+    --z-index: 0;
+    position: relative;
+    display: inline-block;
+  }
+
+  .lqip-wrap::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transition: opacity 0.6s;
+    opacity: var(--opacity);
+    z-index: var(--z-index);
+    background: var(--lqip-background);
+    background-size: cover;
+    background-position: 50% 50%;
+    filter: blur(8px) scale(1.05); /* 轻微放大避免边缘黑线 */
+  }
+
+  .lqip-wrap img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: auto;
+  }
+</style>
