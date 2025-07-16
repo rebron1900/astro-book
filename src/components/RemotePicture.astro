@@ -1,11 +1,38 @@
 ---
 import { Image } from 'astro:assets';
-import { fade } from 'astro:transitions';
 
 export interface Props {
     src: string;
     alt?: string;
     class?: string;
+}
+const encode = (s: string) => encodeURI(s);
+type Size = { width: number; height: number };
+
+async function getSize(raw: string): Promise<Size | undefined> {
+    /* 1) cdn.1900.live */
+    if (raw.startsWith('https://cdn.1900.live/')) {
+        try {
+            const meta = await fetch(`${encode(raw)}!exif`).then((r) => r.json());
+            return { width: meta.width, height: meta.height };
+        } catch {
+            /* ignore */
+        }
+    }
+
+    /* 2) unsplash.com */
+    if (raw.includes('unsplash.com')) {
+        const url = new URL(raw);
+        const w = Number(url.searchParams.get('w'));
+        const h = w * 2;
+
+        if (w) {
+            return { width: w, height: h };
+        }
+    }
+
+    /* 3) 其它域名：拿不到尺寸，返回 undefined */
+    return undefined;
 }
 
 const { src, alt, class: className, ...attrs } = Astro.props;
@@ -36,11 +63,12 @@ const generateImageSrcset = (image: string, isLocal = false) => {
 
 // 只处理 cdn.1900.live 的图片
 const isCdn = src.startsWith('https://cdn.1900.live/') || src.match('unsplash.com') ? true : false;
+const size = await getSize(src);
 ---
 
 {
-    isCdn ? (
-        <Image src={src} alt="" {...attrs} srcset={generateImageSrcset(src)} inferSize />
+    isCdn && size ? (
+        <Image src={src} alt="" {...attrs} srcset={generateImageSrcset(src)} width={size.width} height={size.height} />
     ) : (
         <img loading="lazy" class={className ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />
     )
