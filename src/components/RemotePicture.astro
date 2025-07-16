@@ -32,7 +32,9 @@ async function getSize(raw: string): Promise<Size | undefined> {
     const url = new URL(raw);
     const w = Number(url.searchParams.get('w'));
     const h = w*2;
+
     if (w) {
+
         return { width: w, height: h };
     }
   }
@@ -86,6 +88,7 @@ const lqipStyle = tiny ? `--lqip-background:url(${tiny})` : '';
 <picture
   class:list={['lqip-wrap', className]}
   style={lqipStyle}
+
 >
   {
     size ? (
@@ -98,6 +101,7 @@ const lqipStyle = tiny ? `--lqip-background:url(${tiny})` : '';
         loading="lazy"
         decoding="async"
         onload="this.parentElement.style.setProperty('--z-index',1);this.parentElement.style.setProperty('--opacity',0)"
+
         {...rest}
       />
     ) : (
@@ -108,6 +112,7 @@ const lqipStyle = tiny ? `--lqip-background:url(${tiny})` : '';
         loading="lazy"
         decoding="async"
         onload="this.parentElement.style.setProperty('--z-index',1);this.parentElement.style.setProperty('--opacity',0)"
+
         {...rest}
       />
     )
@@ -115,14 +120,14 @@ const lqipStyle = tiny ? `--lqip-background:url(${tiny})` : '';
 </picture>
 
 <style is:inline>
-  .lqip-wrap {
+  picture {
     --opacity: 1;
     --z-index: 0;
     position: relative;
     display: inline-block;
   }
 
-  .lqip-wrap::after {
+  picture::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -133,10 +138,10 @@ const lqipStyle = tiny ? `--lqip-background:url(${tiny})` : '';
     background: var(--lqip-background);
     background-size: cover;
     background-position: 50% 50%;
-    filter: blur(8px) scale(1.05);
+    filter: blur(8px);
   }
 
-  .lqip-wrap img {
+  picture img {
     position: relative;
     z-index: 1;
     width: 100%;
