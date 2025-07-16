@@ -10,76 +10,109 @@ export interface Props {
 
 const { src, alt, class: className, ...rest } = Astro.props;
 
-/* ---------- 工具函数 ---------- */
+/* ---------- 工具 ---------- */
 const encode = (s: string) => encodeURI(s);
-const generateSrcset = (raw: string) => {
-  const widths = [400, 600, 800, 1000, 1200, 1400, 1600, 1800];
-  const list: string[] = [];
+
+/* ---------- 1. 统一拿尺寸 ---------- */
+type Size = { width: number; height: number };
+
+async function getSize(raw: string): Promise<Size | undefined> {
+  /* 1) cdn.1900.live */
   if (raw.startsWith('https://cdn.1900.live/')) {
-    widths.forEach(w => list.push(`${raw}!${w}w ${w}w`));
-  } else if (raw.includes('unsplash.com')) {
-    widths.forEach(w => list.push(raw.replace(/(w=)[^\&]+/, '$1' + w) + ` ${w}w`));
-  } else {
-    list.push(raw);
+    try {
+      const meta = await fetch(`${encode(raw)}!exif`).then(r => r.json());
+      return { width: meta.width, height: meta.height };
+    } catch {
+      /* ignore */
+    }
   }
-  return list.join(', ');
-};
 
-/* ---------- 拿尺寸 ---------- */
-const isCdn = src.startsWith('https://cdn.1900.live/');
-let width: number | undefined;
-let height: number | undefined;
-let useAstroImage = false;
+  /* 2) unsplash.com */
+  if (raw.includes('unsplash.com')) {
+    const url = new URL(raw);
+    const w = Number(url.searchParams.get('w'));
+    const h = w*2;
+    if (w) {
+        return { width: w, height: h };
+    }
+  }
 
-if (isCdn) {
-  try {
-    const meta = await fetch(encode(src) + '!exif').then(r => r.json());
-    width  = meta.width;
-    height = meta.height;
-    useAstroImage = true;
-  } catch {}
+  /* 3) 其它域名：拿不到尺寸，返回 undefined */
+  return undefined;
 }
 
-/* ---------- 占位图 ---------- */
-const tiny = isCdn ? encode(src) + '!20w' : '';
+/* ---------- 2. 生成 srcset ---------- */
+function buildSrcset(raw: string, widths: number[]) {
+  const list: string[] = [];
+
+  /* cdn.1900.live */
+  if (raw.startsWith('https://cdn.1900.live/')) {
+    widths.forEach(w => list.push(`${raw}!${w}w ${w}w`));
+    return list.join(', ');
+  }
+
+  /* unsplash.com */
+  if (raw.includes('unsplash.com')) {
+    widths.forEach(w => {
+      const url = new URL(raw);
+      url.searchParams.set('w', String(w));
+      list.push(`${url.toString()} ${w}w`);
+    });
+    return list.join(', ');
+  }
+
+  /* 其它域名：只返回原图 */
+  return raw;
+}
+
+/* ---------- 3. 组件逻辑 ---------- */
+const widths = [400, 600, 800, 1000, 1200, 1400, 1600, 1800];
+const size = await getSize(src);
+const srcset = buildSrcset(src, widths);
+
+/* 占位图（仅 cdn） */
+let tiny = '';
+if (src.startsWith('https://cdn.1900.live/')) {
+  tiny = `${encode(src)}!20w`;
+} else if (src.includes('unsplash.com')) {
+  // 1 px 占位图，Unsplash 会自动返回最小尺寸
+  const url = new URL(src);
+  url.searchParams.set('w', '20');
+  tiny = url.toString();
+}
 const lqipStyle = tiny ? `--lqip-background:url(${tiny})` : '';
 ---
 
-{
-  useAstroImage && width && height ? (
-    <picture
-      class:list={['lqip-wrap', className]}
-      style={lqipStyle}
-    >
+<picture
+  class:list={['lqip-wrap', className]}
+  style={lqipStyle}
+>
+  {
+    size ? (
       <Image
         src={src}
         alt={alt ?? ''}
-        width={width}
-        height={height}
-        srcset={generateSrcset(src)}
+        width={size.width}
+        height={size.height}
+        srcset={srcset}
         loading="lazy"
         decoding="async"
-        onload="this.parentElement.style.setProperty('--z-index',1),this.parentElement.style.setProperty('--opacity',0)"
+        onload="this.parentElement.style.setProperty('--z-index',1);this.parentElement.style.setProperty('--opacity',0)"
         {...rest}
       />
-    </picture>
-  ) : (
-    <picture
-      class:list={['lqip-wrap', className]}
-      style={lqipStyle}
-    >
+    ) : (
       <img
         src={encode(src)}
-        srcset={generateSrcset(src)}
+        srcset={srcset}
         alt={alt ?? ''}
         loading="lazy"
         decoding="async"
-        onload="this.parentElement.style.setProperty('--z-index',1),this.parentElement.style.setProperty('--opacity',0)"
+        onload="this.parentElement.style.setProperty('--z-index',1);this.parentElement.style.setProperty('--opacity',0)"
         {...rest}
       />
-    </picture>
-  )
-}
+    )
+  }
+</picture>
 
 <style is:inline>
   .lqip-wrap {
@@ -100,7 +133,7 @@ const lqipStyle = tiny ? `--lqip-background:url(${tiny})` : '';
     background: var(--lqip-background);
     background-size: cover;
     background-position: 50% 50%;
-    filter: blur(8px) scale(1.05); /* 轻微放大避免边缘黑线 */
+    filter: blur(8px) scale(1.05);
   }
 
   .lqip-wrap img {
