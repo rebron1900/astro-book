@@ -57,36 +57,6 @@ class MapHandler {
             maxZoom: 24
         });
 
-        // let canZoom = false;
-
-        // // 监听键盘按下事件
-        // window.addEventListener('keydown', (e) => {
-        //     if (e.key === 'Shift') {
-        //         canZoom = true;
-        //     }
-        // });
-
-        // // 监听键盘松开事件
-        // window.addEventListener('keyup', (e) => {
-        //     if (e.key === 'Shift') {
-        //         canZoom = false;
-        //     }
-        // });
-
-        // // 监听鼠标滚轮事件
-        // this.map.on('wheel', (e) => {
-        //     if (!canZoom) {
-        //         e.preventDefault(); // 阻止默认缩放行为
-        //     }
-        // });
-
-        // // 监听缩放事件
-        // this.map.on('zoom', () => {
-        //     if (!canZoom) {
-        //         this.map.setZoom(this.map.getZoom()); // 如果没有按住 Shift 键，重置缩放
-        //     }
-        // });
-
         this.cluster = new Supercluster({ radius: 26, maxZoom: 24 });
 
         this._addControls();
@@ -211,11 +181,14 @@ class MapHandler {
     addClusterMarker(feature) {
         const clusterMarker = this.createMarker();
         clusterMarker.className = 'marker cluster';
-        clusterMarker.dataset.cardinality = Math.min(9, feature.properties.point_count);
+        clusterMarker.dataset.cardinality = Math.min(99, feature.properties.point_count);
 
         clusterMarker.addEventListener('click', (event) => this.clusterDidClick(event, feature));
 
-        const leaves = this.cluster.getLeaves(feature.properties.cluster_id);
+        const leaves = this.cluster.getLeaves(
+            feature.properties.cluster_id,
+            Infinity // limit：想取多少就写多少，Infinity 表示全部
+        );
         const names = `<strong>包含了 ${clusterMarker.dataset.cardinality} 个地点</strong><br />` + leaves.map((leaf) => leaf.properties.name).join(', ');
 
         this.tippyInstances.push(

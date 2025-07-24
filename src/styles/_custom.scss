@@ -848,7 +848,7 @@ pre:hover > .copy-button {
     cursor: pointer;
     transition:
         width 0.2s ease-out,
-        height 0.2s ease-out;
+        height 0.2s ease-out !important;
     border: 2px solid #fff;
 }
 
