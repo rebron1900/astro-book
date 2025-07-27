@@ -226,6 +226,27 @@ if (post) {
         function addCopyButtonToDom(button, highlightDiv) {
             highlightDiv.appendChild(button);
         }
+
+        document.querySelectorAll('.atk-content img').forEach((img) => {
+            img.onload = () => {
+                // 处理已加载的图片（检查 complete 属性）
+                if (img.complete) {
+                    const parent = img.closest('.atk-content');
+                    if (parent) limitHight(parent);
+                }
+
+                // 监听未来加载的图片
+                img.onload = function () {
+                    const parent = img.closest('.atk-content');
+                    if (parent) limitHight(parent);
+                };
+
+                // 可选：处理加载失败的情况
+                img.onerror = function () {
+                    console.error('Image failed to load:', img.src);
+                };
+            };
+        });
     };
 
     const memosEvent = () => {
@@ -246,26 +267,6 @@ if (post) {
                     maxWidth: 'none',
                     theme: 'auto',
                     appendTo: () => document.body
-                });
-                event.detail.elt.querySelectorAll('.atk-content img').forEach((img) => {
-                    img.onload = () => {
-                        // 处理已加载的图片（检查 complete 属性）
-                        if (img.complete) {
-                            const parent = img.closest('.atk-content');
-                            if (parent) limitHight(parent);
-                        }
-
-                        // 监听未来加载的图片
-                        img.onload = function () {
-                            const parent = img.closest('.atk-content');
-                            if (parent) limitHight(parent);
-                        };
-
-                        // 可选：处理加载失败的情况
-                        img.onerror = function () {
-                            console.error('Image failed to load:', img.src);
-                        };
-                    };
                 });
             });
         }
