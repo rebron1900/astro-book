@@ -29,7 +29,7 @@ const page = {
     created_at: album.createdAt.toISOString(),
     updated_at: album.updatedAt.toISOString(),
     feature_image: album.coverImages[0]?.url || null,
-    tags: [],
+    tag: album.tag,
     authors: []
 };
 ---
@@ -44,6 +44,7 @@ const page = {
         <h1 class="book-title">
             {album.name}
         </h1>
+        <blockquote>{page.tag.description}</blockquote>
         <hr />
         <Masonry
             breakpointCols={{

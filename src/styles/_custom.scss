@@ -1561,6 +1561,7 @@ $max-items: 15; // 超过这个数量后统一用最后一个延迟
 @include stagger-fade('.toc-relitu,.book-toc-content');
 @include stagger-fade('#comments');
 @include stagger-fade('.atk-comment');
+@include stagger-fade('.astro-masonry-grid');
 
 @keyframes fadeInUp {
     from {
