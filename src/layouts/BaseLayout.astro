@@ -4,9 +4,9 @@ import type { Tag } from '@ts-ghost/content-api';
 import { settings } from '../data/ghost-store';
 import '../styles/book.scss';
 // ...
-const { post } = Astro.props;
+const { post, slug } = Astro.props;
 
-const isFullWidth = post && post.tags.some((tag: Tag) => tag.slug === 'hash-page-fullwidth');
+const isFullWidth = post && (post.slug?.includes('albums') || post.tags?.some((tag: Tag) => tag.slug === 'hash-page-fullwidth'));
 ---
 
 <html lang={settings?.lang ?? 'en'} dir="ltr">
@@ -22,7 +22,7 @@ const isFullWidth = post && post.tags.some((tag: Tag) => tag.slug === 'hash-page
         <input aria-label="toc-control" type="checkbox" class="hidden toggle" id="toc-control" />
         <main class=`container flex ${isFullWidth ? 'full-width' : ''} `>
             <aside class="book-menu">
-                <div class="book-menu-content"  transition:name="astro-none" >
+                <div class="book-menu-content" transition:name="astro-none">
                     <slot name="menu" />
                 </div>
             </aside>
@@ -32,14 +32,14 @@ const isFullWidth = post && post.tags.some((tag: Tag) => tag.slug === 'hash-page
                     <slot name="h-toc" />
                 </header>
 
-                <slot name="content"  />
+                <slot name="content" />
 
                 <footer class="book-footer">
                     <slot name="footer" />
                 </footer>
 
                 <slot name="pagination" />
-                <slot name="comments"  />
+                <slot name="comments" />
                 <label for="menu-control" class="hidden book-menu-overlay"></label>
             </div>
 

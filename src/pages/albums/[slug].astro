@@ -1,0 +1,69 @@
+---
+import { extractAlbumsFromPosts } from '../../utils/albums';
+import { settings } from '../../data/ghost-store.js';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Head from '../../components/Head.astro';
+import Comments from '../../components/Comments.astro';
+import Relitu from '../../components/Relitu.jsx';
+import Header from '../../components/Header.astro';
+import Menu from '../../components/Menu.astro';
+import RemotePicture from '../../components/RemotePicture.astro';
+import { Masonry } from 'astro-masonry';
+
+export function getStaticPaths() {
+    const albums = extractAlbumsFromPosts();
+    return albums.map((album) => ({
+        params: { slug: album.slug },
+        props: { album, slug: album.slug }
+    }));
+}
+
+const { album } = Astro.props;
+
+const page = {
+    title: `${album.name} - 相册`,
+    slug: `albums/${album.slug}`,
+    html: '',
+    excerpt: `${album.name} 相册，包含 ${album.images.length} 张图片`,
+    created_at: album.createdAt.toISOString(),
+    updated_at: album.updatedAt.toISOString(),
+    feature_image: album.coverImages[0]?.url || null,
+    tags: [],
+    authors: []
+};
+---
+
+<BaseLayout post={page}>
+    <Head slot="head" post={page} site={settings} title={`${album.name} | ${settings?.title} - 相册`} />
+
+    <Header slot="header" title={`${album.name} 相册`} />
+    <Menu slot="menu" />
+
+    <article slot="content" class="markdown book-article">
+        <h1 class="book-title">
+            {album.name}
+        </h1>
+        <hr />
+        <Masonry
+            breakpointCols={{
+                default: 6,
+                1100: 3,
+                700: 3,
+                500: 2
+            }}
+        >
+            {
+                album.images.map((image, index) => (
+                    <div>
+                        <RemotePicture src={image.url} alt={image.alt || `${album.name} 图片 ${index + 1}`} />
+                    </div>
+                ))
+            }
+        </Masonry>
+    </article>
+
+    <Comments slot="comments" />
+
+    <Relitu slot="relitu" />
+</BaseLayout>

@@ -1,0 +1,135 @@
+---
+export interface Props {
+    album: {
+        name: string;
+        slug: string;
+        coverImages: Array<{
+            url: string;
+            alt?: string;
+        }>;
+        postCount: number;
+        imageCount: number;
+    };
+}
+
+const { album } = Astro.props;
+const { name, slug, coverImages, postCount, imageCount } = album;
+---
+
+<div class="album-card">
+    <div class="album-images">
+        {
+            coverImages.map((image, index) => (
+                <div
+                    class={`album-image image-${index + 1}`}
+                    style={{
+                        'z-index': 3 - index,
+                        transform: `translateX(${index * 4}px) translateY(${index * 4}px) `
+                    }}
+                >
+                    <img src={image.url} alt={image.alt || `${name} 相册图片 ${index + 1}`} loading="lazy" />
+                </div>
+            ))
+        }
+
+        {
+            coverImages.length === 0 && (
+                <div class="album-image image-1 no-images">
+                    <div class="no-images-placeholder">📸</div>
+                </div>
+            )
+        }
+    </div>
+
+    <div class="album-info">
+        <div class="album-title ellipsis"><a href={slug}>{name}</a></div>
+        <div class="album-stats">
+            {imageCount} 张图片 · {postCount} 篇文章
+        </div>
+    </div>
+</div>
+
+<style>
+    .album-card {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        background: var(--color-bg-secondary);
+        border-radius: 12px;
+        padding: 0.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .album-images {
+        position: relative;
+        min-height: 200px;
+        min-width: 150px;
+        perspective: 1000px;
+    }
+
+    .album-image {
+        position: absolute;
+        width: 85%;
+        height: 85%;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s ease;
+        transform-origin: center;
+    }
+
+    .album-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .album-card:hover .album-image {
+        transform: translateX(0) translateY(0) rotate(0deg) scale(1.1) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .album-card:hover .image-2 {
+        transform: translateX(20px) translateY(10px) rotate(10deg) !important;
+    }
+
+    .album-card:hover .image-3 {
+        transform: translateX(-20px) translateY(10px) rotate(-10deg) !important;
+    }
+
+    .no-images {
+        background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px dashed #ccc;
+    }
+
+    .no-images-placeholder {
+        font-size: 3rem;
+        opacity: 0.5;
+    }
+
+    .album-info {
+        margin-top: 2px;
+        font-size: 14px;
+        line-height: 1.4;
+        text-align: center;
+    }
+
+    @media (max-width: 768px) {
+        .album-card {
+            padding: 1rem;
+        }
+
+        .album-images {
+            height: 150px;
+        }
+
+        .album-name {
+            font-size: 1.1rem;
+        }
+    }
+</style>

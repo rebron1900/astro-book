@@ -1,0 +1,108 @@
+---
+import { pages, settings } from '../../data/ghost-store.js';
+import { extractAlbumsFromPosts } from '../../utils/albums';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Head from '../../components/Head.astro';
+import Comments from '../../components/Comments.astro';
+import Relitu from '../../components/Relitu.jsx';
+import Header from '../../components/Header.astro';
+import Menu from '../../components/Menu.astro';
+import PostMeta from '../../components/PostMeta.astro';
+import { Markup } from 'astro-remote';
+import CodeSlot from '../../components/CodeSlot.astro';
+import IFrameSlot from '../../components/IFrameSlot.astro';
+import RemotePicture from '../../components/RemotePicture.astro';
+import Columns from '../../components/shortcode/Columns.astro';
+import Details from '../../components/shortcode/Details.astro';
+import Link from '../../components/shortcode/Link.astro';
+import AlbumCard from '../../components/AlbumCard.astro';
+
+const page = pages.find((post) => post.slug == 'albums');
+const albums = extractAlbumsFromPosts();
+---
+
+<BaseLayout post={page}>
+    <Head slot="head" post={page} site={settings} title={page?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
+
+    <Header slot="header" title={page.title} />
+    <Menu slot="menu" />
+
+    <article slot="content" class="markdown book-article">
+        <h1 class="book-title">{page.title}</h1>
+        <PostMeta post={page} isFeature={true} />
+        {
+            page.html && (
+                <Markup
+                    content={page.html}
+                    sanitize={{ allowComponents: true, allowCustomElements: true }}
+                    components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
+                />
+            )
+        }
+
+        {
+            albums.length > 0 ? (
+                <div class="albums-grid">
+                    {albums.map((album) => (
+                        <AlbumCard
+                            album={{
+                                name: album.name,
+                                slug: album.slug,
+                                coverImages: album.coverImages.slice(0, 3),
+                                postCount: album.postCount,
+                                imageCount: album.images.length
+                            }}
+                        />
+                    ))}
+                </div>
+            ) : (
+                <div class="no-albums">
+                    <p>暂无相册内容</p>
+                    <p class="hint">请为文章添加以 "相册-" 开头的标签来创建相册</p>
+                </div>
+            )
+        }
+    </article>
+
+    <Comments slot="comments" />
+
+    <Relitu slot="relitu" />
+</BaseLayout>
+
+<style>
+    .albums-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+
+    .albums-grid > * {
+        flex: 1 1 300px;
+        max-width: 350px;
+    }
+
+    .no-albums {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--color-text-secondary);
+    }
+
+    .no-albums .hint {
+        font-size: 0.875rem;
+        opacity: 0.7;
+        margin-top: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .albums-grid {
+            gap: 1rem;
+        }
+
+        .albums-grid > * {
+            flex: 1 1 100%;
+            max-width: none;
+        }
+    }
+</style>
