@@ -50,23 +50,10 @@ const { name, slug, coverImages, postCount, imageCount } = album;
 </div>
 
 <style>
-    .album-card {
-        display: block;
-        text-decoration: none;
-        color: inherit;
-        background: var(--color-bg-secondary);
-        border-radius: 12px;
-        padding: 0.5rem;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        position: relative;
-    }
-
     .album-images {
         position: relative;
         min-height: 200px;
-        min-width: 150px;
-        perspective: 1000px;
+        min-width: 145px;
     }
 
     .album-image {
@@ -92,11 +79,11 @@ const { name, slug, coverImages, postCount, imageCount } = album;
     }
 
     .album-card:hover .image-2 {
-        transform: translateX(20px) translateY(10px) rotate(10deg) !important;
+        transform: translateX(10px) translateY(10px) rotate(5deg) !important;
     }
 
     .album-card:hover .image-3 {
-        transform: translateX(-20px) translateY(10px) rotate(-10deg) !important;
+        transform: translateX(-10px) translateY(10px) rotate(-5deg) !important;
     }
 
     .no-images {
