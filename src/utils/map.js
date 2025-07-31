@@ -42,6 +42,7 @@ class MapHandler {
         this.markers = [];
         this.tippyInstances = [];
         this.key = key;
+        this.allFeatures = []; // 存储所有原始特征
         this._createMap();
     }
 
@@ -67,11 +68,13 @@ class MapHandler {
         this.map.addControl(new MapboxLanguage({ defaultLanguage: 'zh-Hans' }));
         this.map.addControl(new mapboxgl.NavigationControl({ showCompass: false }));
         this.map.addControl(new ControlButton({ className: 'mapbox-gl-draw_polygon', title: '返回' }), 'top-right');
+        this.map.addControl(new FilterControl(this), 'bottom-right');
     }
 
     _setupMapEvents() {
         this.map.on('load', () => {
             if (this.data) {
+                this.allFeatures = [...this.data.features]; // 保存原始数据
                 this.cluster.load(this.data.features);
                 this.clusterData = this._getClusterData(3);
                 this.updateMarkers();
@@ -80,9 +83,15 @@ class MapHandler {
         });
 
         this.map.on('zoom', () => {
-            const zoomLevel = Math.floor(this.map.getZoom());
-            this.clusterData = this._getClusterData(zoomLevel);
-            this.updateMarkers();
+            // 在缩放时，如果有过滤器激活，则使用当前过滤器
+            const filterControl = this.map._controls.find((control) => control instanceof FilterControl);
+            if (filterControl) {
+                this.updateMarkersWithFilters(filterControl.activeFilters);
+            } else {
+                const zoomLevel = Math.floor(this.map.getZoom());
+                this.clusterData = this._getClusterData(zoomLevel);
+                this.updateMarkers();
+            }
         });
     }
 
@@ -102,6 +111,57 @@ class MapHandler {
         this.clusterData.features.forEach((feature) => {
             feature.properties.cluster ? this.addClusterMarker(feature) : this.addPhotoMarker(feature);
         });
+    }
+
+    updateMarkersWithFilters(filters) {
+        this.markers.forEach((marker) => marker.remove());
+        this.tippyInstances.forEach((instance) => instance.destroy());
+        this.markers = [];
+        this.tippyInstances = [];
+
+        // 根据过滤条件重新处理数据
+        let filteredFeatures = [...this.allFeatures];
+
+        // 过滤有文章的标记
+        if (!filters.withPost) {
+            filteredFeatures = filteredFeatures.filter((feature) => {
+                return !this._hasAssociatedPost(feature.properties.description);
+            });
+        }
+
+        // 过滤无文章的标记
+        if (!filters.withoutPost) {
+            filteredFeatures = filteredFeatures.filter((feature) => {
+                return this._hasAssociatedPost(feature.properties.description);
+            });
+        }
+
+        // 重新聚类
+        this.cluster.load(filteredFeatures);
+        const zoomLevel = Math.floor(this.map.getZoom());
+        this.clusterData = this._getClusterData(zoomLevel);
+
+        // 显示或隐藏聚合标记
+        this.clusterData.features.forEach((feature) => {
+            if (feature.properties.cluster) {
+                if (filters.cluster) {
+                    this.addClusterMarker(feature);
+                }
+            } else {
+                const hasPost = this._hasAssociatedPost(feature.properties.description);
+                if ((hasPost && filters.withPost) || (!hasPost && filters.withoutPost)) {
+                    this.addPhotoMarker(feature);
+                }
+            }
+        });
+    }
+
+    _hasAssociatedPost(description) {
+        if (!description) return false;
+
+        const regex = /\[(.*?)\]\((.*?)\)\((.*?)\)/g;
+        const matches = [...description.matchAll(regex)];
+        return matches.length > 0;
     }
 
     createMarker() {
@@ -225,6 +285,61 @@ class MapHandler {
         this.map.fitBounds(geojsonExtent(leaves), {
             padding: 0.32 * this.map.getContainer().offsetHeight
         });
+    }
+}
+
+// 定义 FilterControl 类
+class FilterControl {
+    constructor(mapHandler) {
+        this.mapHandler = mapHandler;
+        this.activeFilters = {
+            cluster: true,
+            withPost: true,
+            withoutPost: true
+        };
+    }
+
+    onAdd(map) {
+        this._container = document.createElement('div');
+        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group filter-control';
+
+        // 创建三个过滤按钮
+        //this._createFilterButton('🔴', '聚合标记，悬浮可查看地点清单', 'cluster');
+        this._createFilterButton('🟢', '有关联文章的标记', 'withPost');
+        this._createFilterButton('🔵', '无关联文章的标记', 'withoutPost');
+
+        return this._container;
+    }
+
+    _createFilterButton(emoji, title, filterKey) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.title = title;
+        button.className = 'filter-btn';
+        button.dataset.filter = filterKey;
+        button.innerHTML = emoji;
+
+        button.addEventListener('click', () => {
+            this.toggleFilter(filterKey, button);
+        });
+
+        this._container.appendChild(button);
+    }
+
+    toggleFilter(filterKey, button) {
+        this.activeFilters[filterKey] = !this.activeFilters[filterKey];
+
+        if (this.activeFilters[filterKey]) {
+            button.classList.remove('active');
+        } else {
+            button.classList.add('active');
+        }
+
+        this.mapHandler.updateMarkersWithFilters(this.activeFilters);
+    }
+
+    onRemove() {
+        this._container.parentNode.removeChild(this._container);
     }
 }
 
