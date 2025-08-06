@@ -1,5 +1,5 @@
 ---
-import { extractAlbumsFromPosts } from '../../utils/albums';
+import { extractAlbumsFromPosts, getSolarTermGroups } from '../../utils/albums';
 import { settings } from '../../data/ghost-store.js';
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
@@ -32,6 +32,8 @@ const page = {
     tag: album.tag,
     authors: []
 };
+
+const solarTermGroups = getSolarTermGroups(album);
 ---
 
 <BaseLayout post={page}>
@@ -39,32 +41,127 @@ const page = {
 
     <Header slot="header" title={`${album.name} 相册`} />
     <Menu slot="menu" />
-
     <article slot="content" class="markdown book-article">
-        <h1 class="book-title">
-            {album.name}
-        </h1>
+        <h1 class="book-title">{album.name}</h1>
         <blockquote>{page.tag.description}</blockquote>
         <hr />
-        <Masonry
-            breakpointCols={{
-                default: 4,
-                1024: 3,
-                768: 2,
-                500: 1
-            }}
-        >
-            {
-                album.images.map((image, index) => (
-                    <div>
-                        <RemotePicture src={image.url} alt={image.alt || `${album.name} 图片 ${index + 1}`} />
-                    </div>
-                ))
-            }
-        </Masonry>
+
+        {
+            solarTermGroups.length > 0 ? (
+                <div class="solar-term-groups">
+                    {solarTermGroups.map((group) => (
+                        <div class="solar-term-group">
+                            <h2 class="solar-term-title">{group.term}</h2>
+                            <p class="solar-term-count">共 {group.images.length} 张图片</p>
+                            <Masonry
+                                breakpointCols={{
+                                    default: 4,
+                                    1024: 3,
+                                    768: 2,
+                                    500: 1
+                                }}
+                            >
+                                {group.images
+                                    .map((image, index) => {
+                                        const post = group.posts.find((p) => p.html && (p.html.includes(image.url) || p.feature_image === image.url));
+                                        const date = post ? new Date(post.created_at) : new Date();
+                                        return {
+                                            image,
+                                            post,
+                                            date,
+                                            index
+                                        };
+                                    })
+                                    .sort((a, b) => b.date.getTime() - a.date.getTime())
+                                    .map(({ image, date, index }) => (
+                                        <div class="photo-card">
+                                            <div class="photo-image-container">
+                                                <RemotePicture src={image.url} alt={image.alt || `${group.term} 图片 ${index + 1}`} class="photo-image" />
+                                            </div>
+                                            <div class="photo-date">
+                                                {date.getFullYear()}年{String(date.getMonth() + 1).padStart(2, '0')}月{String(date.getDate()).padStart(2, '0')}
+                                                日
+                                            </div>
+                                        </div>
+                                    ))}
+                            </Masonry>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div>
+                    <Masonry
+                        breakpointCols={{
+                            default: 4,
+                            1024: 3,
+                            768: 2,
+                            500: 1
+                        }}
+                    >
+                        {album.images.map((image, index) => (
+                            <div>
+                                <RemotePicture src={image.url} alt={image.alt || `${album.name} 图片 ${index + 1}`} />
+                            </div>
+                        ))}
+                    </Masonry>
+                </div>
+            )
+        }
     </article>
 
     <Comments slot="comments" />
 
     <Relitu slot="relitu" />
 </BaseLayout>
+
+<style>
+    .solar-term-groups .photo-card {
+        margin-bottom: 1rem;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.2s ease;
+    }
+
+    .solar-term-groups .photo-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .solar-term-groups .photo-image-container {
+        position: relative;
+        width: 100%;
+        height: 0;
+        padding-bottom: 150%; /* 4:3 宽高比 */
+        overflow: hidden;
+    }
+
+    .solar-term-groups .photo-image-container :global(img) {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .solar-term-groups .photo-date {
+        display: block;
+        padding: 0.5rem;
+        text-align: center;
+        font-size: 0.875rem;
+        color: #666;
+        background: #f9f9f9;
+        border-top: 1px solid #eee;
+    }
+
+    @media (max-width: 768px) {
+        .solar-term-groups .photo-image-container {
+            padding-bottom: 150%; /* 3:2 宽高比在移动设备上 */
+        }
+
+        .solar-term-groups .photo-date {
+            font-size: 0.75rem;
+            padding: 0.375rem;
+        }
+    }
+</style>

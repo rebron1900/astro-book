@@ -118,3 +118,84 @@ export function getAlbumBySlug(slug: string) {
     const albums = extractAlbumsFromPosts();
     return albums.find((album) => album.slug === slug);
 }
+
+export function getSolarTermGroups(album: any) {
+    // 1. 24 节气的固定顺序
+    const SOLAR_TERMS = [
+        '立春',
+        '雨水',
+        '惊蛰',
+        '春分',
+        '清明',
+        '谷雨',
+        '立夏',
+        '小满',
+        '芒种',
+        '夏至',
+        '小暑',
+        '大暑',
+        '立秋',
+        '处暑',
+        '白露',
+        '秋分',
+        '寒露',
+        '霜降',
+        '立冬',
+        '小雪',
+        '大雪',
+        '冬至',
+        '小寒',
+        '大寒'
+    ];
+
+    // 2. 根据文章标题是否包含节气名进行分组
+    const grouped: any = {};
+    const processedUrls = new Set(); // 用于去重图片URL
+
+    // 3. 遍历相册中的所有文章，根据文章标题进行分组
+    album.posts.forEach((post: any) => {
+        // 找到文章标题中包含的所有节气
+        const matchedTerms = SOLAR_TERMS.filter((term) => post.title && post.title.includes(term));
+
+        // 如果匹配到多个节气，选择第一个匹配的
+        const matchedTerm = matchedTerms.length > 0 ? matchedTerms[0] : null;
+
+        if (matchedTerm) {
+            // 找到这篇文章中的所有图片
+            const postImages = extractImagesFromPost(post);
+
+            // 过滤掉重复的图片URL
+            const uniqueImages = postImages.filter((image: AlbumImage) => {
+                if (processedUrls.has(image.url)) {
+                    return false;
+                }
+                processedUrls.add(image.url);
+                return true;
+            });
+
+            // 如果有新的不重复图片，才添加到分组
+            if (uniqueImages.length > 0) {
+                if (!grouped[matchedTerm]) {
+                    grouped[matchedTerm] = {
+                        term: matchedTerm,
+                        images: [],
+                        posts: []
+                    };
+                }
+
+                grouped[matchedTerm].images.push(...uniqueImages);
+                grouped[matchedTerm].posts.push(post);
+            }
+        }
+    });
+
+    // 4. 按 24 节气顺序生成最终数组
+    const solarTermGroups = SOLAR_TERMS.map((term) => ({
+        term,
+        images: grouped[term]?.images || [],
+        posts: grouped[term]?.posts || [],
+        count: grouped[term]?.images.length || 0
+    })).filter((group) => group.images.length > 0); // 只显示有图片的节气组
+
+    return solarTermGroups;
+}
