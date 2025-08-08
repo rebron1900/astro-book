@@ -148,12 +148,14 @@ export function getSolarTermGroups(album: any) {
         '大寒'
     ];
 
-    // 2. 根据文章标题是否包含节气名进行分组
-    const grouped: any = {};
+    // 2. 先按年份分组，再在每个年份内按节气分组
+    const yearlyGroups: any = {};
     const processedUrls = new Set(); // 用于去重图片URL
 
-    // 3. 遍历相册中的所有文章，根据文章标题进行分组
+    // 3. 遍历相册中的所有文章，按年份和节气分组
     album.posts.forEach((post: any) => {
+        const year = new Date(post.created_at).getFullYear();
+
         // 找到文章标题中包含的所有节气
         const matchedTerms = SOLAR_TERMS.filter((term) => post.title && post.title.includes(term));
 
@@ -161,6 +163,11 @@ export function getSolarTermGroups(album: any) {
         const matchedTerm = matchedTerms.length > 0 ? matchedTerms[0] : null;
 
         if (matchedTerm) {
+            // 初始化年份分组
+            if (!yearlyGroups[year]) {
+                yearlyGroups[year] = {};
+            }
+
             // 找到这篇文章中的所有图片
             const postImages = extractImagesFromPost(post);
 
@@ -175,27 +182,39 @@ export function getSolarTermGroups(album: any) {
 
             // 如果有新的不重复图片，才添加到分组
             if (uniqueImages.length > 0) {
-                if (!grouped[matchedTerm]) {
-                    grouped[matchedTerm] = {
+                if (!yearlyGroups[year][matchedTerm]) {
+                    yearlyGroups[year][matchedTerm] = {
                         term: matchedTerm,
                         images: [],
                         posts: []
                     };
                 }
 
-                grouped[matchedTerm].images.push(...uniqueImages);
-                grouped[matchedTerm].posts.push(post);
+                yearlyGroups[year][matchedTerm].images.push(uniqueImages[0]);
+                yearlyGroups[year][matchedTerm].posts.push(post);
             }
         }
     });
 
-    // 4. 按 24 节气顺序生成最终数组
-    const solarTermGroups = SOLAR_TERMS.map((term) => ({
-        term,
-        images: grouped[term]?.images || [],
-        posts: grouped[term]?.posts || [],
-        count: grouped[term]?.images.length || 0
-    })).filter((group) => group.images.length > 0); // 只显示有图片的节气组
+    // 4. 为每个年份生成完整的24节气数据，包括缺失的节气
+    const yearlySolarTermGroups: any[] = [];
 
-    return solarTermGroups;
+    // 按年份降序排序
+    const sortedYears = Object.keys(yearlyGroups).sort((a, b) => Number(b) - Number(a));
+
+    sortedYears.forEach((year) => {
+        const yearData = {
+            year: Number(year),
+            terms: SOLAR_TERMS.map((term) => ({
+                term,
+                images: yearlyGroups[year][term]?.images || [],
+                posts: yearlyGroups[year][term]?.posts || [],
+                count: yearlyGroups[year][term]?.images.length || 0,
+                hasContent: yearlyGroups[year][term]?.images.length > 0 || false
+            }))
+        };
+        yearlySolarTermGroups.push(yearData);
+    });
+
+    return yearlySolarTermGroups;
 }

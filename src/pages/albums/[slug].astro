@@ -33,7 +33,7 @@ const page = {
     authors: []
 };
 
-const solarTermGroups = getSolarTermGroups(album);
+const yearlySolarTermGroups = getSolarTermGroups(album);
 ---
 
 <BaseLayout post={page}>
@@ -47,44 +47,62 @@ const solarTermGroups = getSolarTermGroups(album);
         <hr />
 
         {
-            solarTermGroups.length > 0 ? (
+            yearlySolarTermGroups.length > 0 ? (
                 <div class="solar-term-groups">
-                    {solarTermGroups.map((group) => (
-                        <div class="solar-term-group">
-                            <h2 class="solar-term-title">{group.term}</h2>
-                            <p class="solar-term-count">共 {group.images.length} 张图片</p>
-                            <Masonry
-                                breakpointCols={{
-                                    default: 4,
-                                    1024: 3,
-                                    768: 2,
-                                    500: 1
-                                }}
-                            >
-                                {group.images
-                                    .map((image, index) => {
-                                        const post = group.posts.find((p) => p.html && (p.html.includes(image.url) || p.feature_image === image.url));
-                                        const date = post ? new Date(post.created_at) : new Date();
-                                        return {
-                                            image,
-                                            post,
-                                            date,
-                                            index
-                                        };
-                                    })
-                                    .sort((a, b) => b.date.getTime() - a.date.getTime())
-                                    .map(({ image, date, index }) => (
-                                        <div class="photo-card">
-                                            <div class="photo-image-container">
-                                                <RemotePicture src={image.url} alt={image.alt || `${group.term} 图片 ${index + 1}`} class="photo-image" />
-                                            </div>
-                                            <div class="photo-date">
-                                                {date.getFullYear()}年{String(date.getMonth() + 1).padStart(2, '0')}月{String(date.getDate()).padStart(2, '0')}
-                                                日
-                                            </div>
+                    {yearlySolarTermGroups.map((yearGroup) => (
+                        <div class="year-group">
+                            <h2 class="year-title">{yearGroup.year}年</h2>
+                            <hr />
+                            <div class="year-terms">
+                                <Masonry
+                                    breakpointCols={{
+                                        default: 6,
+                                        1024: 4,
+                                        768: 2,
+                                        500: 1
+                                    }}
+                                >
+                                    {yearGroup.terms.map((group) => (
+                                        <div class="solar-term-group">
+                                            {group.hasContent == true ? (
+                                                group.images
+                                                    .map((image, index) => {
+                                                        const post = group.posts.find(
+                                                            (p) => p.html && (p.html.includes(image.url) || p.feature_image === image.url)
+                                                        );
+                                                        const date = post ? new Date(post.created_at) : new Date();
+                                                        return {
+                                                            image,
+                                                            post,
+                                                            date,
+                                                            index
+                                                        };
+                                                    })
+                                                    .sort((a, b) => b.date.getTime() - a.date.getTime())
+                                                    .map(({ image, date, index }) => (
+                                                        <div class="photo-card">
+                                                            <div class="photo-image-container">
+                                                                <RemotePicture
+                                                                    src={image.url}
+                                                                    alt={image.alt || `${group.term} 图片 ${index + 1}`}
+                                                                    class="photo-image"
+                                                                />
+                                                            </div>
+                                                            <div class="photo-date">
+                                                                {String(date.getMonth() + 1).padStart(2, '0')}月 / {group.term}
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                            ) : (
+                                                <div class="photo-card">
+                                                    <div class="photo-image-container no-image" data-info="缺失" />
+                                                    <div class="photo-date">00 / {group.term}</div>
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
-                            </Masonry>
+                                </Masonry>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -116,13 +134,25 @@ const solarTermGroups = getSolarTermGroups(album);
 
 <style>
     .solar-term-groups .photo-card {
-        margin-bottom: 1rem;
-        background: #fff;
         border-radius: 8px;
         overflow: hidden;
         transition: transform 0.2s ease;
     }
+    .photo-image-container.no-image {
+        background-color: var(--gray-200);
 
+        &::after {
+            content: attr(data-info);
+            position: absolute;
+            display: flex;
+            width: 100%;
+            text-align: center;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-500);
+        }
+    }
     .solar-term-groups .photo-card:hover {
         transform: translateY(-2px);
     }
@@ -150,8 +180,36 @@ const solarTermGroups = getSolarTermGroups(album);
         text-align: center;
         font-size: 0.875rem;
         color: #666;
+    }
+
+    .year-group {
+        margin-bottom: 3rem;
+    }
+
+    .solar-term-empty {
+        text-align: center;
+        padding: 2rem 1rem;
         background: #f9f9f9;
-        border-top: 1px solid #eee;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+
+    .solar-term-empty .empty-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        opacity: 0.5;
+    }
+
+    .solar-term-empty .empty-text {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #666;
+        margin-bottom: 0.25rem;
+    }
+
+    .solar-term-empty .empty-subtext {
+        font-size: 0.8rem;
+        color: #999;
     }
 
     @media (max-width: 768px) {
