@@ -1,5 +1,6 @@
 import tippy from 'tippy.js';
 import 'tippy.js/themes/light.css';
+import { normalizeData } from '../utils/help';
 
 // 配置常量
 const API_ENDPOINT = 'https://api.996288.xyz/api/interactions';
@@ -9,13 +10,11 @@ export default async function initActivityPubInteractions() {
     try {
         const container = document.querySelector('#activitypub');
         if (!container) {
-            console.error('未找到#activitypub元素');
             return;
         }
 
         const postId = container.dataset.postid;
         if (!postId) {
-            console.error('缺少data-postid属性');
             return;
         }
 
@@ -78,13 +77,14 @@ function renderAllInteractions(data, container) {
                 delay: [100, 0],
                 content: '加载中...',
                 onShow(instance) {
-                    instance.setContent(user.content);
+                    instance.setContent(`${user.content} <hr /><div class="text-right"><em>${normalizeData(user.created_at)}</em></div>`);
                 }
             });
         } else {
             // 点赞工具提示
             tippy(img, {
-                content: '💖',
+                allowHTML: true,
+                content: `💖`,
                 delay: [100, 0]
             });
         }
