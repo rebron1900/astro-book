@@ -1,5 +1,5 @@
 ---
-const { title, target, href } = Astro.props;
+const { title, target, href, class: className } = Astro.props;
 
 import config from '../../data/config';
 
@@ -32,4 +32,4 @@ const isExternalLink = (url: string) => {
 const finalHref = isExternalLink(href) ? `/golink?target=${btoa(encodeURIComponent(href))}` : href;
 ---
 
-<a href={finalHref} target={target} title={title}><slot /></a>
+<a href={finalHref} class={className} target={target} title={title}><slot /></a>
