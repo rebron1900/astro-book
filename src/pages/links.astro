@@ -42,7 +42,8 @@ const page = pages.find((post) => post.slug == 'links');
             {
                 flux.map((item) => (
                     <div class="flex-even markdown-inner">
-                        <h3 class="ellipsis book-title">
+                        <h3 class="ellipsis book-title flex">
+                            <img loading="lazy" style="width: 1.5em;margin-right: 0.3em;" src={'https://favicon.splitbee.io/?url=' + item.feed.site_url} />
                             <Link href={item.feed.site_url} target="_blank">
                                 {item.feed.title}
                             </Link>

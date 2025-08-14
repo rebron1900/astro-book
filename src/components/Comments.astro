@@ -32,21 +32,18 @@ const { postID } = Astro.props;
 
     const commentinfo = { type: 'artalk', name: "1900'Blog", server: 'https://artalk.1900.live', el: '.at-comments' };
 
-    const isExternalLink = (url: string) => {
-        // 解析传入的 URL
-        const parsedUrl = new URL(url);
+    const isExternalLink = (url: string): boolean => {
+        try {
+            const parsedUrl = new URL(url); // 可能抛异常
+            const blogHostname = location.hostname; // 当前站点的主机名
 
-        // 从 config.blogURL 中提取主机名
-        const blogHostname = location.hostname;
-
-        // 检查传入的 URL 的主机名是否与 blogHostname 匹配或其子域名
-        if (parsedUrl.hostname === blogHostname || parsedUrl.hostname === 'www' + blogHostname) {
-            return true;
+            // 判断是否为站内链接（含 www 子域）
+            return parsedUrl.hostname === blogHostname || parsedUrl.hostname === `www.${blogHostname}`;
+        } catch {
+            // 解析失败 → 不是合法 URL，直接返回 false
+            return false;
         }
-
-        return false;
     };
-
     document.addEventListener('astro:page-load', () => {
         if (!document.querySelector(commentinfo.el)) return;
         const artalk = Artalk.init({
