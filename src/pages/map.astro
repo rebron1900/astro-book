@@ -15,6 +15,7 @@ import RemotePicture from '../components/RemotePicture.astro';
 import Columns from '../components/shortcode/Columns.astro';
 import Details from '../components/shortcode/Details.astro';
 import Link from '../components/shortcode/Link.astro';
+import OGCard from '../components/shortcode/OGCard.astro';
 
 const page = pages.find((post) => post.slug == 'map');
 ---
@@ -38,13 +39,12 @@ const page = pages.find((post) => post.slug == 'map');
         </script>
         <div id="map" class="footer-map"></div>
 
-        
         {
             page.html && (
                 <Markup
                     content={page.html}
                     sanitize={{ allowComponents: true, allowCustomElements: true }}
-                    components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
+                    components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link, ogcard: OGCard }}
                 />
             )
         }
