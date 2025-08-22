@@ -1,76 +1,87 @@
 ---
 // OGCard.astro
-// 用法：<OGCard href="https://neodb.social/movie/xxx" />
+// 用法 1：<OGCard href="https://neodb.social/movie/xxx" />
+// 用法 2：<OGCard text="xxx https://neodb.social/movie/yyy zzz" />
 import { parse } from 'node-html-parser';
 
 export interface Props {
-    href: string;
+    href?: string;
+    text?: string;
 }
 
-const { href } = Astro.props;
+const { href, text } = Astro.props;
 
-/* 1. 白名单正则：4 种链接 */
-const ALLOWED_REGEX = /^(https?:\/\/)?(www\.)?(neodb\.social\/(tv\/season|movie|book)\/[\w\-]+|github\.com\/[^\/]+\/[^\/]+|bilibili\.com\/video\/[\w\-]+\/?)$/i;
+/* 1. 白名单正则（与原来一致） */
+const ALLOWED_REGEX =
+    /https?:\/\/(?:www\.)?(?:neodb\.social\/(?:tv\/season|movie|book)\/[\w\-]+|github\.com\/[^\/\s]+\/[^\/\s]+|bilibili\.com\/video\/[\w\-]+(?:\/?))/gi;
 
-if (!ALLOWED_REGEX.test(href)) return null;
+/* 提取 + 清洗 + 去重 */
+let links: string[] = [];
+if (href) {
+    links = [href.trim()];
+} else if (text) {
+    links = [
+        ...new Set(
+            (text.match(ALLOWED_REGEX) ?? []).map(
+                (u) => u.replace(/[.,;:!?'"`<>\]]+$/, '') // 去掉行尾常见标点/括号/尖括号
+            )
+        )
+    ];
+}
 
-/* 2. 根据域名决定如何取元数据 */
-let og: {
-    title?: string;
-    description?: string;
-    image?: string;
-    siteName?: string;
-} = {};
+if (!links.length) return null;
 
-try {
-    const url = new URL(href);
-    const html = await fetch(href, {
-        headers: { 'User-Agent': 'Astro-OGCard/1.0' }
-    }).then((r) => r.text());
-
-    /* 2.1 通用解析器：从 <meta property="og:*"> 拿数据 */
-    function getMeta(prop: string): string {
+/* 3. 通用解析器（复用原逻辑，抽成函数） */
+async function fetchOG(url: string) {
+    try {
+        const html = await fetch(url, {
+            headers: { 'User-Agent': 'Astro-OGCard/1.0' }
+        }).then((r) => r.text());
         const root = parse(html);
 
-        // 1) 先找 og:xxx
-        const og = root.querySelector(`meta[property="og:${prop}"]`);
-        if (og) return og.getAttribute('content') ?? '';
+        const getMeta = (prop: string) => {
+            const og = root.querySelector(`meta[property="og:${prop}"]`);
+            if (og) return og.getAttribute('content') ?? '';
 
-        // 2) 如果是 description，再兜底 <meta name="description">
-        if (prop === 'description') {
-            const fallback = root.querySelector('meta[name="description"]');
-            return fallback?.getAttribute('content') ?? '';
+            if (prop === 'description') {
+                const fallback = root.querySelector('meta[name="description"]');
+                return fallback?.getAttribute('content') ?? '';
+            }
+            return '';
+        };
+
+        const title = getMeta('title') || getMeta('site_name') || new URL(url).hostname;
+        const description = getMeta('description');
+        let image = getMeta('image');
+        if (url.includes('bilibili.com')) {
+            image = 'https://images.weserv.nl/?url=' + image.replace('@100w_100h', '@500w_500h');
         }
+        const siteName = getMeta('site_name') || new URL(url).hostname;
 
-        return '';
+        return { title, description, image, siteName, url };
+    } catch {
+        return null;
     }
-
-    /* 2.3 其余站点（NeoDB / GitHub）直接走通用解析 */
-    og.title = getMeta('title') || getMeta('site_name') || url.hostname;
-    og.description = getMeta('description');
-    og.image = href.includes('bilibili.com') ? 'https://images.weserv.nl/?url=' + getMeta('image').replace('@100w_100h', '@500w_500h') : getMeta('image');
-    og.siteName = getMeta('site_name') || url.hostname;
-} catch {
-    return null;
 }
 
-if (!og.title) return null;
+/* 4. 并发抓取所有链接的元数据 */
+const cards = (await Promise.all(links.map(fetchOG))).filter(Boolean);
+if (!cards.length) return null;
 ---
 
-<a href={href} target="_blank" rel="noopener noreferrer" class="og-card">
-    {
-        og.image && (
-            <div class="og-image">
-                <img src={og.image} alt={og.title} loading="lazy" />
+<!-- 5. 渲染卡片列表 -->{
+    cards.map((og) => (
+        <a href={og.url} target="_blank" rel="noopener noreferrer" class="og-card">
+            {og.image && (
+                <div class="og-image">
+                    <img src={og.image} alt={og.title} loading="lazy" />
+                </div>
+            )}
+            <div class="og-body">
+                <p class="og-title">{og.title}</p>
+                {og.description && <p class="og-desc">{og.description}</p>}
+                <p class="og-site">{og.siteName}</p>
             </div>
-        )
-    }
-
-    <div class="og-body">
-        <p class="og-title">{og.title}</p>
-        {og.description && <p class="og-desc">{og.description}</p>}
-        <p class="og-site">{og.siteName}</p>
-    </div>
-</a>
-
-<style></style>
+        </a>
+    ))
+}

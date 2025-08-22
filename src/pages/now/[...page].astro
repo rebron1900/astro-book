@@ -1,7 +1,6 @@
 ---
 import { pages, settings, authors, memos } from '../../data/ghost-store.js';
 import config from '../../data/config';
-import { marked } from 'marked';
 import type { GetStaticPathsOptions } from 'astro';
 import { normalizeData } from '../../utils/help';
 
@@ -19,6 +18,7 @@ import RemotePicture from '../../components/RemotePicture.astro';
 import Columns from '../../components/shortcode/Columns.astro';
 import Details from '../../components/shortcode/Details.astro';
 import Link from '../../components/shortcode/Link.astro';
+import OGCard from '../../components/shortcode/OGCard.astro';
 
 const custompage = pages.find((post) => post.slug == 'now');
 
@@ -68,10 +68,19 @@ const { page } = Astro.props;
                                         <Markdown
                                             content={memo.content}
                                             sanitize={{ allowComponents: true, allowCustomElements: true }}
-                                            components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
+                                            components={{
+                                                pre: CodeSlot,
+                                                img: RemotePicture,
+                                                iframe: IFrameSlot,
+                                                details: Details,
+                                                columns: Columns,
+                                                a: Link,
+                                                ogcard: OGCard
+                                            }}
                                         />
                                     )}
-                                    <style />
+                                    <OGCard text={memo.content} />
+
                                     <div class={`image-grid image-count-${memo.resourceList.length}`} view-image="">
                                         {memo.resourceList.map((r) => {
                                             if (r.type == 'image') {
