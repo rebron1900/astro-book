@@ -48,13 +48,14 @@ const page = pages.find((post) => post.slug == 'links');
                                 {item.feed.title}
                             </Link>
                         </h3>
-                        <div>
-                            <span>{normalizeData(item.published_at)}</span>
-                        </div>
+
                         <div class="ellipsis">
                             <Link href={item.url} class="ellipsis" target="_blank">
                                 {item.title}
                             </Link>
+                        </div>
+                        <div>
+                            <span>{normalizeData(item.published_at)}</span>
                         </div>
                     </div>
                 ))

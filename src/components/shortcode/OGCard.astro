@@ -1,7 +1,7 @@
 ---
 // OGCard.astro
 // 用法 1：<OGCard href="https://neodb.social/movie/xxx" />
-// 用法 2：<OGCard text="xxx https://neodb.social/movie/yyy zzz" />
+// 用法 2：<OGCard text="xxx RE：https://social.1900.live/@1900 yyy" />
 import { parse } from 'node-html-parser';
 
 export interface Props {
@@ -11,27 +11,30 @@ export interface Props {
 
 const { href, text } = Astro.props;
 
-/* 1. 白名单正则（与原来一致） */
+/* 1. 白名单正则：原有站点 + ActivityPub 嘟文格式 */
+/* 1. 白名单正则：原规则 + 联邦实例 4 种形态 */
+/* 修正后的白名单正则 */
 const ALLOWED_REGEX =
-    /https?:\/\/(?:www\.)?(?:neodb\.social\/(?:tv\/season|movie|book)\/[\w\-]+|github\.com\/[^\/\s]+\/[^\/\s]+|bilibili\.com\/video\/[\w\-]+(?:\/?))/gi;
+    /https?:\/\/(?:www\.)?(?:neodb\.social\/(?:tv\/season|movie|book)\/[\w\-]+|github\.com\/[^\/\s]+\/[^\/\s]+|bilibili\.com\/video\/[\w\-]+(?:\/?)|[^\/\s]+\.[^\/\s]+\/@?[^\/\s]+\/(?:statuses?|s)\/[\w\-]+|[^\/\s]+\.[^\/\s]+\/@[^\/\s]+\/[\w\-]+)/gi;
 
-/* 提取 + 清洗 + 去重 */
+/* 2. 提取 + 清洗 + 去重 + 去掉固定前缀 RE： */
 let links: string[] = [];
 if (href) {
     links = [href.trim()];
 } else if (text) {
     links = [
         ...new Set(
-            (text.match(ALLOWED_REGEX) ?? []).map(
-                (u) => u.replace(/[.,;:!?'"`<>\]]+$/, '') // 去掉行尾常见标点/括号/尖括号
-            )
+            (text.match(ALLOWED_REGEX) ?? [])
+                .map((u) => u.replace(/^RE：/i, '')) // 去掉前缀
+                .map((u) => u.replace(/[.,;:!?'"`<>\]]+$/, '')) // 去掉行尾干扰符
         )
     ];
 }
 
 if (!links.length) return null;
 
-/* 3. 通用解析器（复用原逻辑，抽成函数） */
+/* 3. 通用解析器（只改取图部分） */
+/* 3. 通用解析器（仅替换取图逻辑） */
 async function fetchOG(url: string) {
     try {
         const html = await fetch(url, {
@@ -39,24 +42,27 @@ async function fetchOG(url: string) {
         }).then((r) => r.text());
         const root = parse(html);
 
-        const getMeta = (prop: string) => {
-            const og = root.querySelector(`meta[property="og:${prop}"]`);
-            if (og) return og.getAttribute('content') ?? '';
+        const getMeta = (prop: string) => root.querySelector(`meta[property="${prop}"]`)?.getAttribute('content') ?? '';
 
-            if (prop === 'description') {
-                const fallback = root.querySelector('meta[name="description"]');
-                return fallback?.getAttribute('content') ?? '';
-            }
-            return '';
-        };
+        const title = getMeta('og:title') || getMeta('og:site_name') || new URL(url).hostname;
+        const description = getMeta('og:description') || getMeta('description');
 
-        const title = getMeta('title') || getMeta('site_name') || new URL(url).hostname;
-        const description = getMeta('description');
-        let image = getMeta('image');
+        let image = '';
+
+        /* 2. 如果 Gravatar 404 或没有 profile:username，再回退 */
+        if (!image) {
+            image = getMeta('og:image') || root.querySelector('.account__avatar')?.getAttribute('src') || '';
+        }
+
+        /* 3. 针对 bilibili 的特殊处理保持不变 */
         if (url.includes('bilibili.com')) {
             image = 'https://images.weserv.nl/?url=' + image.replace('@100w_100h', '@500w_500h');
         }
-        const siteName = getMeta('site_name') || new URL(url).hostname;
+
+        let siteName = getMeta('og:site_name') || new URL(url).hostname;
+        if (/\/@[^\/]+\/(?:statuses?|s)?\/[\w\-]+/.test(url)) {
+            siteName = `${new URL(url).hostname} (Fediverse)`;
+        }
 
         return { title, description, image, siteName, url };
     } catch {
