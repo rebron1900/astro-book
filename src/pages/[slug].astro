@@ -21,10 +21,10 @@ import RemotePicture from '../components/RemotePicture.astro';
 import Columns from '../components/shortcode/Columns.astro';
 import Details from '../components/shortcode/Details.astro';
 import Footer from '../components/Footer.astro';
-import HTML from 'html-parse-stringify';
+import { parse } from 'node-html-parser';
 import IFrameSlot from '../components/IFrameSlot.astro';
 import Link from '../components/shortcode/Link.astro';
-import Activitypub from '../components/Activitypub.astro';
+import OGCard from '../components/shortcode/OGCard.astro';
 
 export async function getStaticPaths() {
     const posts = postsAll.concat(pages);
@@ -44,43 +44,43 @@ const { post, prevPost, nextPost } = Astro.props;
 
 const postss = await getCollection('Obsidian');
 
-var ast = HTML.parse(post?.html);
-let fatherList = '';
-function findTextNodes(node, text) {
-    let result = [];
-    fatherList += text;
+// var ast = parse(post?.html);
+// let fatherList = '';
+// function findTextNodes(node, text) {
+//     let result = [];
+//     fatherList += text;
 
-    // 检查当前节点
-    if (node.type === 'text' && node.content.includes('[[') && !fatherList.endsWith('code')) {
-        let _reLink = /\[\[(([\/\-\.\*\$\:\#]|\w|\s|[^\x00-\xff])*)\|?(([\/\-\.\*\$]|\w|\s|[^\x00-\xff])*)\]\]/g;
-        node.content = node.content.replace(_reLink, (val) => {
-            val = val.replace('[[', '').replace(']]', '');
-            const filteredPosts = postss.filter((post) => post.data.title == val);
-            val = filteredPosts.length != 0 ? `<a href='/garden/${filteredPosts[0].slug}'>${filteredPosts[0].data.title}</a>` : val;
-            return val;
-        });
+//     // 检查当前节点
+//     if (node.type === 'text' && node.content.includes('[[') && !fatherList.endsWith('code')) {
+//         let _reLink = /\[\[(([\/\-\.\*\$\:\#]|\w|\s|[^\x00-\xff])*)\|?(([\/\-\.\*\$]|\w|\s|[^\x00-\xff])*)\]\]/g;
+//         node.content = node.content.replace(_reLink, (val) => {
+//             val = val.replace('[[', '').replace(']]', '');
+//             const filteredPosts = postss.filter((post) => post.data.title == val);
+//             val = filteredPosts.length != 0 ? `<a href='/garden/${filteredPosts[0].slug}'>${filteredPosts[0].data.title}</a>` : val;
+//             return val;
+//         });
 
-        result.push(node);
-        fatherList = '';
-    }
+//         result.push(node);
+//         fatherList = '';
+//     }
 
-    // 如果有子节点，递归遍历
-    if (node.children) {
-        node.children.forEach((child) => {
-            result = result.concat(findTextNodes(child, node.name));
-        });
-    }
+//     // 如果有子节点，递归遍历
+//     if (node.children) {
+//         node.children.forEach((child) => {
+//             result = result.concat(findTextNodes(child, node.name));
+//         });
+//     }
 
-    return result;
-}
-ast.forEach((node) => {
-    if (node.name != 'pre' || node.name != 'code') {
-        findTextNodes(node, node.name);
-    }
-    let fatherList = '';
-});
+//     return result;
+// }
+// ast.forEach((node) => {
+//     if (node.name != 'pre' || node.name != 'code') {
+//         findTextNodes(node, node.name);
+//     }
+//     let fatherList = '';
+// });
 
-const html = HTML.stringify(ast);
+// const html = HTML.stringify(ast);
 
 const tocHtml = tocGen(await post.html);
 ---
@@ -91,17 +91,17 @@ const tocHtml = tocGen(await post.html);
     <Header slot="header" title={post.title} />
 
     <Menu slot="menu" title=`${post.title}📄` />
-    <article slot="content" class="markdown book-article" >
+    <article slot="content" class="markdown book-article">
         <h1 class="book-title">
             {post.title}
         </h1>
         <PostMeta post={post} isFeature={true} />
         {
             post.html && (
-                <Markup 
-                    content={html}
+                <Markup
+                    content={post?.html}
                     sanitize={{ allowComponents: true, allowCustomElements: true }}
-                    components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
+                    components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link, ogcard: OGCard }}
                 />
             )
         }

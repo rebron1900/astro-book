@@ -3,6 +3,7 @@
 // 用法 1：<OGCard href="https://neodb.social/movie/xxx" />
 // 用法 2：<OGCard text="xxx RE：https://social.1900.live/@1900 yyy" />
 import { parse } from 'node-html-parser';
+import { getCachedOG, setCachedOG } from '../../utils/og-cache.js';
 
 export interface Props {
     href?: string;
@@ -33,9 +34,14 @@ if (href) {
 
 if (!links.length) return null;
 
-/* 3. 通用解析器（只改取图部分） */
-/* 3. 通用解析器（仅替换取图逻辑） */
+/* 3. 通用解析器（带缓存） */
 async function fetchOG(url: string) {
+    // 先检查缓存
+    const cached = getCachedOG(url);
+    if (cached) {
+        return cached;
+    }
+
     try {
         const html = await fetch(url, {
             headers: { 'User-Agent': 'Astro-OGCard/1.0' }
@@ -64,7 +70,12 @@ async function fetchOG(url: string) {
             siteName = `${new URL(url).hostname} (Fediverse)`;
         }
 
-        return { title, description, image, siteName, url };
+        const ogData = { title, description, image, siteName, url };
+        
+        // 保存到缓存
+        setCachedOG(url, ogData);
+        
+        return ogData;
     } catch {
         return null;
     }

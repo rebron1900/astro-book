@@ -1,19 +1,18 @@
 ---
 import { Code } from 'astro:components';
 import { transformerNotationDiff, transformerNotationHighlight } from '@shikijs/transformers';
-
-import * as cheerio from 'cheerio';
+import { parseHTML } from 'linkedom'; // 1. 引入 linkedom
 
 const html = await Astro.slots.render('default');
-const $ = cheerio.load(html);
 
-// 选择第一个 <code> 标签
-const codetag = $('code').first();
+// 2. 用 linkedom 解析
+const { document } = parseHTML(html);
 
-const code = codetag.text(); // 获取 <code> 标签中的文本内容
-const checkLang = codetag.attr('class') ? codetag.attr('class').slice(9) : undefined;
-
-const lang = checkLang ? checkLang : 'plaintext';
+// 3. 取第一个 <code> 标签
+const codeEl = document.querySelector('code');
+const code = codeEl ? codeEl.textContent : '';
+const langRaw = codeEl?.className?.replace(/^language-/, '') || '';
+const lang = langRaw || 'plaintext';
 ---
 
 <Code
@@ -24,6 +23,7 @@ const lang = checkLang ? checkLang : 'plaintext';
     defaultColor={false}
     transformers={[transformerNotationDiff(), transformerNotationHighlight()]}
 />
+
 <script>
     import { initCopyButton } from '../utils/code';
     initCopyButton();

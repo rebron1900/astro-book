@@ -1,54 +1,43 @@
-import * as cheerio from 'cheerio';
+import { parseHTML } from 'linkedom';
 
 function tocGen(html) {
-    if (!html) return;
+    if (!html) return '';
 
-    const $ = cheerio.load(html);
-    let tocStr = '<ul>';
-    let currentH2 = null;
-    let currentH3 = null;
+    const { document } = parseHTML(html);
 
-    let els = $('h2, h3, h4');
+    // 只查一次
+    const headers = [...document.querySelectorAll('h2,h3,h4')].map((el) => ({
+        level: Number(el.tagName.slice(1)),
+        id: el.id || '',
+        text: el.textContent.trim()
+    }));
 
-    if (els.length == 0) {
-        return;
-    }
+    if (!headers.length) return '';
 
-    $('h2, h3, h4').each((i, el) => {
-        const tagName = $(el).prop('tagName');
-        const id = $(el).attr('id');
-        const title = $(el).text();
+    // 下面逻辑完全沿用你原来的 buf/stack 写法
+    const stack = [];
+    const buf = ['<ul>'];
 
-        if (tagName === 'H2') {
-            if (currentH2) {
-                if (currentH3) {
-                    tocStr += '</ul></li>';
-                    currentH3 = null;
-                }
-                tocStr += '</ul></li>';
-            }
-            tocStr += `<li><a href="#${id}">${title}</a><ul>`;
-            currentH2 = id;
-        } else if (tagName === 'H3') {
-            if (currentH3) {
-                tocStr += '</ul></li>';
-            }
-            tocStr += `<li><a href="#${id}">${title}</a><ul>`;
-            currentH3 = id;
-        } else if (tagName === 'H4') {
-            tocStr += `<li><a href="#${id}">${title}</a></li>`;
+    headers.forEach(({ level, id, text }) => {
+        while (stack.length && stack.at(-1) >= level) {
+            buf.push('</ul></li>');
+            stack.pop();
+        }
+        buf.push(`<li><a href="#${id}">${text}</a>`);
+        if (level < 4) {
+            buf.push('<ul>');
+            stack.push(level);
+        } else {
+            buf.push('</li>');
         }
     });
 
-    if (currentH3) {
-        tocStr += '</ul></li>';
+    while (stack.length) {
+        buf.push('</ul></li>');
+        stack.pop();
     }
-    if (currentH2) {
-        tocStr += '</ul></li>';
-    }
-    tocStr += '</ul>';
-
-    return tocStr;
+    buf.push('</ul>');
+    return buf.join('');
 }
 
 export default tocGen;

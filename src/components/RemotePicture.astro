@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets';
+import imageCache from '../utils/image-cache.js';
 
 export interface Props {
     src: string;
@@ -10,29 +11,42 @@ const encode = (s: string) => encodeURI(s);
 type Size = { width: number; height: number };
 
 async function getSize(raw: string): Promise<Size | undefined> {
+    const cacheKey = `size_${raw}`;
+
+    // 检查缓存
+    if (imageCache.has(cacheKey)) {
+        return imageCache.get(cacheKey);
+    }
+
+    let result: Size | undefined;
+
     /* 1) cdn.1900.live */
     if (raw.startsWith('https://cdn.1900.live/')) {
         try {
             const meta = await fetch(`${encode(raw)}!exif`).then((r) => r.json());
-            return { width: meta.width, height: meta.height };
+            result = { width: meta.width, height: meta.height };
         } catch {
-            /* ignore */
+            result = undefined;
         }
-    }
+    } else if (raw.includes('unsplash.com')) {
 
     /* 2) unsplash.com */
-    if (raw.includes('unsplash.com')) {
         const url = new URL(raw);
         const w = Number(url.searchParams.get('w'));
         const h = w * 2;
 
         if (w) {
-            return { width: w, height: h };
+            result = { width: w, height: h };
         }
-    }
+    } else {
 
     /* 3) 其它域名：拿不到尺寸，返回 undefined */
-    return undefined;
+        result = undefined;
+    }
+
+    // 缓存结果
+    imageCache.set(cacheKey, result);
+    return result;
 }
 
 const { src, alt, class: className, ...attrs } = Astro.props;
@@ -68,7 +82,7 @@ const size = await getSize(src);
 
 {
     isCdn && size ? (
-        <Image loading="lazy" src={encodeURI(src)} alt="" {...attrs} srcset={generateImageSrcset(src)} width={size.width} height={size.height} />
+        <img loading="lazy" src={encodeURI(src)} alt="" {...attrs} srcset={generateImageSrcset(src)} width={size.width} height={size.height} />
     ) : (
         <img loading="lazy" class={className ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />
     )
