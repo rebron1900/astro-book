@@ -1,6 +1,5 @@
 ---
-import { pages, postsAll, settings } from '../data/ghost-store.js';
-import { getCollection, getEntry } from 'astro:content';
+import { pages, postsAll, settings } from '../utils/ghost-store.js';
 
 import tocGen from '../utils/toc.js';
 
@@ -41,8 +40,6 @@ export async function getStaticPaths() {
 }
 
 const { post, prevPost, nextPost } = Astro.props;
-
-const postss = await getCollection('Obsidian');
 
 // var ast = parse(post?.html);
 // let fatherList = '';

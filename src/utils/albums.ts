@@ -1,4 +1,4 @@
-import { postsAll } from '../data/ghost-store.js';
+import { postsAll } from './ghost-store.js';
 
 export interface AlbumImage {
     url: string;

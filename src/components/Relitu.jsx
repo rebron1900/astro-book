@@ -1,5 +1,5 @@
 // src/components/DateGrid.jsx
-import { postsAll } from '../data/ghost-store';
+import { postsAll } from '../utils/ghost-store';
 import { normalizeSlug, normalizeData } from '../utils/help';
 
 function parseDate(str) {

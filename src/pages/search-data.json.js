@@ -1,4 +1,4 @@
-import { postsAll } from '../data/ghost-store.ts';
+import { postsAll } from '../utils/ghost-store.ts';
 import { normalizeSlug, normalizeData } from '../utils/help.ts';
 
 export async function GET(context) {

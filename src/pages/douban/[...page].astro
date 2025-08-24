@@ -1,5 +1,5 @@
 ---
-import { pages, settings, neodb } from '../../data/ghost-store.js';
+import { pages, settings, neodb } from '../../utils/ghost-store.js';
 import { doubanGroupByDate, getSvg } from '../../utils/help.js';
 import type { GetStaticPathsOptions } from 'astro';
 
@@ -22,34 +22,38 @@ import Link from '../../components/shortcode/Link.astro';
 const pageDouban = pages.find((post) => post.slug == 'douban');
 
 export async function getStaticPaths() {
-  const db = neodb.data;
-  const totalItems = db.length;
-  
-  // 第一页：固定50条
-  const page1 = db.slice(0, 30);
-  // 第二页：剩余所有数据（如果总数>50）
-  const page2 = db.slice(30);
+    const db = neodb.data;
+    const totalItems = db.length;
 
-  return [
-    // 第一页
-    {
-      params: { page: undefined  },
-      props: {
-        data: page1,
-        currentPage: 1,
-        lastPage: page2.length > 0 ? 2 : 1, // 只有一页时lastPage=1
-      },
-    },
-    // 第二页（如果有剩余数据）
-    ...(page2.length > 0 ? [{
-      params: { page: '2' },
-      props: {
-        data: page2,
-        currentPage: 2,
-        lastPage: 2,
-      },
-    }] : []),
-  ];
+    // 第一页：固定50条
+    const page1 = db.slice(0, 30);
+    // 第二页：剩余所有数据（如果总数>50）
+    const page2 = db.slice(30);
+
+    return [
+        // 第一页
+        {
+            params: { page: undefined },
+            props: {
+                data: page1,
+                currentPage: 1,
+                lastPage: page2.length > 0 ? 2 : 1 // 只有一页时lastPage=1
+            }
+        },
+        // 第二页（如果有剩余数据）
+        ...(page2.length > 0
+            ? [
+                  {
+                      params: { page: '2' },
+                      props: {
+                          data: page2,
+                          currentPage: 2,
+                          lastPage: 2
+                      }
+                  }
+              ]
+            : [])
+    ];
 }
 
 // 从 props 获取数据
@@ -89,16 +93,16 @@ const groupdata = doubanGroupByDate(data);
             </nav>
 
             <div class="db--genres"></div>
-            <div class="db--list db--list__card " id="db--list__card">
+            <div class="db--list db--list__card" id="db--list__card">
                 {
                     groupdata.map((post) =>
                         post.data.map((month) => (
-                            <div class="db--listBydate" >
+                            <div class="db--listBydate">
                                 <div class="db--titleDate">
                                     <div class="db--titleDate__day">{month.month}</div>
                                     <div class="db--titleDate__month">{post.year}</div>
                                 </div>
-                                <div class="db--dateList__card" >
+                                <div class="db--dateList__card">
                                     {month.data &&
                                         month.data.map((monthdata) => (
                                             <div class="db--item" data-itemtype={monthdata.type}>
@@ -211,15 +215,15 @@ const groupdata = doubanGroupByDate(data);
                     });
 
                     tippy('.db--icon-comment', {
-                            placement: 'bottom',
-                            maxWidth: 300
-                        });
+                        placement: 'bottom',
+                        maxWidth: 300
+                    });
                 });
                 document.body.addEventListener('htmx:afterSwap', function (event) {
                     tippy('.db--icon-comment', {
-                            placement: 'bottom',
-                            maxWidth: 300
-                        });
+                        placement: 'bottom',
+                        maxWidth: 300
+                    });
                 });
             </script>
 
