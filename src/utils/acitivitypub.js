@@ -78,7 +78,7 @@ function renderAllInteractions(data, container) {
                 content: '加载中...',
                 onShow(instance) {
                     instance.setContent(
-                        `${user.content} <hr /><div class="text-right">by ${user.author.name} <em>${normalizeData(user.created_at)}</em></div>`
+                        `${user.content} <hr style="border: solid 1px var(--gray-200);" /><div class="text-right">by ${user.author.name} <em>${normalizeData(user.created_at)}</em></div>`
                     );
                 }
             });
