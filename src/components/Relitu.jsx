@@ -52,7 +52,7 @@ function dateBuild(data, today) {
 
 const DateGrid = () => {
     const today = new Date();
-    const builtData = dateBuild(postsAll, today);
+    const builtData = dateBuild(postsAll.slice(0, 70), today);
 
     const columns = () => {
         const cols = [];
