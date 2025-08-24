@@ -19,12 +19,13 @@ jobs:
               run: env
 
             - name: Checkout code
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
 
             - name: Set up Node.js
-              uses: actions/setup-node@v2
+              uses: actions/setup-node@v4
               with:
                   node-version: '18'
+                  cache: 'yarn'
 
             - name: Run Script
               # 设置环境变量
@@ -33,6 +34,18 @@ jobs:
               # 先将环境变量内容输出到文件，然后执行脚本
               run: |
                   echo "$CONFIG_FILE" > ./.env
+
+            - name: Cache node modules
+              uses: actions/cache@v4
+              with:
+                path: |
+                  ~/.yarn/cache
+                  ~/.npm
+                  node_modules
+                  **/node_modules
+                key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', '**/package-lock.json') }}
+                restore-keys: |
+                  ${{ runner.os }}-node-
 
             - name: Install dependencies
               run: yarn add sharp --ignore-engines  && yarn install
