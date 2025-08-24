@@ -77,14 +77,16 @@ function renderAllInteractions(data, container) {
                 delay: [100, 0],
                 content: '加载中...',
                 onShow(instance) {
-                    instance.setContent(`${user.content} <hr /><div class="text-right"><em>${normalizeData(user.created_at)}</em></div>`);
+                    instance.setContent(
+                        `${user.content} <hr /><div class="text-right">by ${user.author.name} <em>${normalizeData(user.created_at)}</em></div>`
+                    );
                 }
             });
         } else {
             // 点赞工具提示
             tippy(img, {
                 allowHTML: true,
-                content: `💖`,
+                content: `by ${user.name} 💖`,
                 delay: [100, 0]
             });
         }
