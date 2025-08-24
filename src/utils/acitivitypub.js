@@ -81,6 +81,7 @@ function renderAllInteractions(data, container) {
                         `${user.content} <hr style="border: solid 1px var(--gray-200);" /><div class="text-right">by ${user.author.name} <em>${normalizeData(user.created_at)}</em></div>`
                     );
                 }
+                //测试
             });
         } else {
             // 点赞工具提示
