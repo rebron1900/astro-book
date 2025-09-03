@@ -28,8 +28,12 @@ const isExternalLink = (url: string) => {
     }
 };
 
+function utoa(str: string) {
+    return btoa(unescape(encodeURIComponent(str)));
+}
+
 // 如果是外链，则生成新的链接
-const finalHref = isExternalLink(href) ? `/golink?target=${btoa(encodeURIComponent(href))}` : href;
+const finalHref = isExternalLink(href) ? `/golink?target=${utoa(href)}` : href;
 ---
 
 <a href={finalHref} class={className} target={target} title={title}><slot /></a>

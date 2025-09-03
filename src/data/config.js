@@ -7,7 +7,7 @@ const config = {
         offset: 10
     },
     apiUrl: 'https://api.1900.live',
-    customPage: ['archives', 'memos', 'links', 'douban', 'albums', 'map'],
+    customPage: ['archives', 'memos', 'links', 'douban', 'albums', 'map', 'strava'],
 
     //配置合集信息
     taxonomy: [
