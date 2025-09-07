@@ -1,6 +1,5 @@
 ---
 import { Code } from 'astro:components';
-import { transformerNotationDiff, transformerNotationHighlight } from '@shikijs/transformers';
 import { parseHTML } from 'linkedom'; // 1. 引入 linkedom
 
 const html = await Astro.slots.render('default');
@@ -15,14 +14,7 @@ const langRaw = codeEl?.className?.replace(/^language-/, '') || '';
 const lang = langRaw || 'plaintext';
 ---
 
-<Code
-    wrap={true}
-    code={code}
-    lang={lang}
-    themes={{ dark: 'vitesse-dark', light: 'vitesse-light' }}
-    defaultColor={false}
-    transformers={[transformerNotationDiff(), transformerNotationHighlight()]}
-/>
+<Code wrap={true} code={code} lang={lang} themes={{ dark: 'vitesse-dark', light: 'vitesse-light' }} defaultColor={false} />
 
 <script>
     import { initCopyButton } from '../utils/code';

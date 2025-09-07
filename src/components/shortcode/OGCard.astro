@@ -18,19 +18,19 @@ function isAllowed(raw: string): boolean {
         const u = new URL(raw);
 
         /* 1. neodb：允许中间任意段，只要出现 /movie/xxx 等即可 */
-        if (u.hostname === 'neodb.social') {
+        if (u.hostname.includes('neodb.social')) {
             // 允许任意前缀，只要出现 /(tv|movie|book)/<id>
             // id 段允许除 / ? # 以外的所有字符
             return /\/(?:tv|movie|book)\/[^/?#]+(?:[/?#]|$)/.test(u.pathname + u.search + u.hash);
         }
         /* 2. github */
-        if (u.hostname === 'github.com') {
+        if (u.hostname.includes('github.com')) {
             const [, owner, repo] = u.pathname.split('/');
             return !!(owner && repo && !owner.includes('/') && !repo.includes('/'));
         }
 
         /* 3. bilibili */
-        if (u.hostname === 'bilibili.com' && u.pathname.startsWith('/video/')) {
+        if (u.hostname.includes('bilibili.com') && u.pathname.startsWith('/video/')) {
             const bvid = u.pathname.split('/')[2];
             return !!(bvid && /^[\w-]+$/.test(bvid));
         }
