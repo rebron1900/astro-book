@@ -7,17 +7,15 @@ on:
             - update
     schedule:
         - cron: '0 */3 * * *'
-    push: # 添加 push 事件触发器
+    push:
         branches:
-            - main # 你可以根据需要指定分支
+            - main
+
 jobs:
     build:
         runs-on: ubuntu-latest
 
         steps:
-            - name: Install dependencies
-              run: env
-
             - name: Checkout code
               uses: actions/checkout@v4
 
@@ -27,32 +25,49 @@ jobs:
                   node-version: '18'
                   cache: 'yarn'
 
-            - name: Run Script
-              # 设置环境变量
-              env:
-                  CONFIG_FILE: ${{ secrets.CONFIG_FILE }}
-              # 先将环境变量内容输出到文件，然后执行脚本
-              run: |
-                  echo "$CONFIG_FILE" > ./.env
+            # 1️⃣ 恢复缓存文件
+            - name: Restore image/og cache
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      src/data/image-meta.json
+                      src/data/og-cache.json
+                  key: astro-cache-${{ github.sha }}
+                  restore-keys: |
+                      astro-cache-${{ github.ref_name }}-
+                      astro-cache-
 
+            # 2️⃣ 恢复 node_modules 缓存
             - name: Cache node modules
               uses: actions/cache@v4
               with:
-                path: |
-                  ~/.yarn/cache
-                  ~/.npm
-                  node_modules
-                  **/node_modules
-                key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', '**/package-lock.json') }}
-                restore-keys: |
-                  ${{ runner.os }}-node-
+                  path: |
+                      ~/.yarn/cache
+                      ~/.npm
+                      node_modules
+                      **/node_modules
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', '**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-
 
+            # 3️⃣ 安装依赖
             - name: Install dependencies
-              run: yarn add sharp --ignore-engines  && yarn install
+              run: |
+                  yarn add sharp --ignore-engines
+                  yarn install
 
+            # 4️⃣ 写入配置文件
+            - name: Write config file
+              env:
+                  CONFIG_FILE: ${{ secrets.CONFIG_FILE }}
+              run: |
+                  echo "$CONFIG_FILE" > ./.env
+
+            # 5️⃣ 构建项目
             - name: Build Astro project
               run: yarn build
 
+            # 6️⃣ 部署到 VPS
             - name: Deploy to VPS
               env:
                   VPS_HOST: ${{ secrets.VPS_HOST }}
