@@ -8,14 +8,26 @@ export interface Props {
 }
 const encode = (s: string) => encodeURI(s);
 type Size = { width: number; height: number };
+const TTL = 7 * 24 * 60 * 60 * 1000; // 24h
 
 async function getSize(raw: string): Promise<Size | undefined> {
     const cacheKey = `size_${raw}`;
+    const errorCacheKey = `error_${raw}`;
 
-    // 检查缓存
+    // 检查缓存 - 如果有错误缓存且未过期，直接返回undefined避免重复请求
+    if (await imageCache.has(errorCacheKey)) {
+        const errorData = await imageCache.get(errorCacheKey);
+        if (errorData && errorData.timestamp && Date.now() - errorData.timestamp < TTL) {
+            // 1小时内不再重试失败的请求
+            return undefined;
+        }
+    }
+
+    // 检查正常缓存
     if (await imageCache.has(cacheKey)) {
         return await imageCache.get(cacheKey);
     }
+
     let result: Size | undefined;
 
     /* 1) cdn.1900.live */
@@ -23,8 +35,17 @@ async function getSize(raw: string): Promise<Size | undefined> {
         try {
             const meta = await fetch(`${encode(raw)}!exif`).then((r) => r.json());
             result = { width: meta.width, height: meta.height };
-        } catch {
+            // 清除错误缓存（如果存在）
+            if (await imageCache.has(errorCacheKey)) {
+                imageCache.set(errorCacheKey, null);
+            }
+        } catch (error) {
             result = undefined;
+            // 缓存错误信息，避免重复请求
+            imageCache.set(errorCacheKey, {
+                timestamp: Date.now(),
+                error: error.message || 'Unknown error'
+            });
         }
     } else if (raw.includes('unsplash.com')) {
         /* 2) unsplash.com */

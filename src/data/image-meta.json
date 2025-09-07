@@ -9326,5 +9326,9 @@
   "size_https://cdn.1900.live/assets/2025/09/7514f1e6015894a66a76b132d0ebb4a1e.webp": {
     "width": 1080,
     "height": 810
+  },
+  "error_https://cdn.1900.live/typora/%E7%AC%AC%E4%BA%94%E8%AF%BE.gif": {
+    "timestamp": 1757232423784,
+    "error": "Unexpected token '<', \"<html>\r\n<h\"... is not valid JSON"
   }
 }
