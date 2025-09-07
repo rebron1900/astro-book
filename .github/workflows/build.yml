@@ -56,12 +56,13 @@ jobs:
                   yarn add sharp --ignore-engines
                   yarn install
 
-            # 4️⃣ 写入配置文件
-            - name: Write config file
+            - name: Dump all Repository Variables to .env
               env:
-                  CONFIG_FILE: ${{ secrets.CONFIG_FILE }}
+                  GH_TOKEN: ${{ github.token }} # 默认就有
               run: |
-                  echo "$CONFIG_FILE" > ./.env
+                  gh variable list --json name,value \
+                  --jq '.[] | "\(.name)=\(.value)"' \
+                  > .env
 
             # 5️⃣ 构建项目
             - name: Build Astro project
