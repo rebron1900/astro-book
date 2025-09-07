@@ -98,7 +98,7 @@ const tocHtml = tocGen(await post.html);
                 <Markup
                     content={post?.html}
                     sanitize={{ allowComponents: true, allowCustomElements: true }}
-                    components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link, ogcard: OGCard }}
+                    components={{ pre: CodeSlot, iframe: IFrameSlot, details: Details, columns: Columns, a: Link, ogcard: OGCard }}
                 />
             )
         }
