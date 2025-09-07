@@ -56,14 +56,6 @@ jobs:
                   yarn add sharp --ignore-engines
                   yarn install
 
-            - name: Dump all Repository Variables to .env
-              env:
-                  GH_TOKEN: ${{ github.token }} # 默认就有
-              run: |
-                  gh variable list --json name,value \
-                  --jq '.[] | "\(.name)=\(.value)"' \
-                  > .env
-
             # 5️⃣ 构建项目
             - name: Build Astro project
               run: yarn build
