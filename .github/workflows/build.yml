@@ -25,17 +25,18 @@ jobs:
                   node-version: '18'
                   cache: 'yarn'
 
-            # 1️⃣ 恢复缓存文件
+            # 1️⃣ 恢复缓存文件 (已修正)
             - name: Restore image/og cache
               uses: actions/cache@v4
               with:
                   path: |
                       src/data/image-meta.json
                       src/data/og-cache.json
-                  key: astro-cache-${{ github.sha }}
+                  # key 使用分支名+SHA，确保每次运行的key都不同，以便在内容更新后能成功保存新缓存
+                  key: astro-cache-${{ github.ref_name }}-${{ github.sha }}
+                  # restore-keys 使用分支名作为前缀，用于恢复该分支下最新的可用缓存
                   restore-keys: |
                       astro-cache-${{ github.ref_name }}-
-                      astro-cache-
 
             # 2️⃣ 恢复 node_modules 缓存
             - name: Cache node modules
