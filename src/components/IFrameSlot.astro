@@ -1,9 +1,0 @@
----
-const { src, allowfullscreen, height, width, title, autoplay } = Astro.props;
-
-const modisrc = autoplay && `${src}&autoplay=${autoplay}`;
----
-
-<div class="aspect-ratio">
-    <iframe src={modisrc} data-src={modisrc} height={height} width={width} title={title} class="allowfullscreen" allowfullscreen={allowfullscreen}></iframe>
-</div>

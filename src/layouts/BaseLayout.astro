@@ -1,54 +1,90 @@
 ---
-// import lib
-import type { Tag } from '@ts-ghost/content-api';
-import { settings } from '../data/ghost-store';
-import '../styles/book.scss';
-// ...
-const { post } = Astro.props;
-
-const isFullWidth = post && post.tags.some((tag: Tag) => tag.slug === 'hash-page-fullwidth');
+import "@styles/global.css";
 ---
 
-<html lang={settings?.lang ?? 'en'} dir="ltr">
+<!doctype html>
+<html>
     <head>
-        <slot name="head" />
-        <Fragment set:html={settings?.codeinjection_head} />
-
-        {/* 这里可以引入其他头部内容 */}
+        <!-- {{ partial "docs/html-head" . }}
+            {{ partial "docs/inject/head" . }} -->
     </head>
+    <!-- lang="{{ default .Site.Language.Lang .Site.LanguageCode  }}" dir="{{ default "ltr" .Site.Language.LanguageDirection }}" -->
 
-    <body dir="ltr">
-        <input aria-label="menu-control" type="checkbox" class="hidden toggle" id="menu-control" />
-        <input aria-label="toc-control" type="checkbox" class="hidden toggle" id="toc-control" />
-        <main class=`container flex ${isFullWidth ? 'full-width' : ''} `>
+    <body>
+        <input type="checkbox" class="hidden toggle" id="menu-control" />
+        <input type="checkbox" class="hidden toggle" id="toc-control" />
+        <main class="container flex">
             <aside class="book-menu">
-                <div class="book-menu-content"  transition:name="astro-none" >
-                    <slot name="menu" />
+                <div class="book-menu-content">
+                    <!-- {{ template "menu" . }} Left menu Content -->
                 </div>
             </aside>
+
             <div class="book-page">
                 <header class="book-header">
-                    <slot name="header" />
-                    <slot name="h-toc" />
+                    <!-- {{ template "header" . }} Mobile layout header -->
                 </header>
 
-                <slot name="content"  />
+                <!-- {{ partial "docs/inject/content-before" . }}
+      {{ template "main" . }} 
+      {{ partial "docs/inject/content-after" . }} -->
 
                 <footer class="book-footer">
-                    <slot name="footer" />
+                    <!-- {{ template "footer" . }} 
+        {{ partial "docs/inject/footer" . }} -->
                 </footer>
 
-                <slot name="pagination" />
-                <slot name="comments"  />
-                <label for="menu-control" class="hidden book-menu-overlay"></label>
+                <!-- {{ template "comments" . }}  -->
+
+                <label for="menu-control" class="hidden book-menu-overlay"
+                ></label>
             </div>
 
-            <aside class={`book-toc ${isFullWidth ? 'full-width' : ''}`}>
-                <div class="book-toc-content">
-                    <slot name="toc" />
-                </div>
-            </aside>
+            <!-- {{ if default true (default .Site.Params.BookToC .Params.BookToC) }}
+    <aside class="book-toc">
+      <div class="book-toc-content">
+        {{ template "toc" . }} 
+      </div>
+    </aside>
+    {{ end }} -->
         </main>
-        <Fragment set:html={settings?.codeinjection_foot} />
+        <!-- 
+  {{ partial "docs/inject/body" . }} -->
     </body>
 </html>
+<!-- 
+{{ define "menu" }}
+  {{ partial "docs/menu" . }}
+{{ end }}
+
+{{ define "header" }}
+  {{ partial "docs/header" . }}
+
+  {{ if default true (default .Site.Params.BookToC .Params.BookToC) }}
+  <aside class="hidden clearfix">
+    {{ template "toc" . }}
+  </aside>
+  {{ end }}
+{{ end }}
+
+{{ define "footer" }}
+  {{ partial "docs/footer" . }}
+{{ end }}
+
+{{ define "comments" }}
+  {{ if and .Content (default true (default .Site.Params.BookComments .Params.BookComments)) }}
+  <div class="book-comments">
+    {{- partial "docs/comments" . -}}
+  </div>
+  {{ end }}
+{{ end }}
+
+{{ define "main" }}
+  <article class="markdown book-article">
+    {{- .Content -}}
+  </article>
+{{ end }}
+
+{{ define "toc" }}
+  {{ partial "docs/toc" . }}
+{{ end }} -->

@@ -1,5 +1,5 @@
 {
-    "name": "dante-astro-theme",
+    "name": "astro-book",
     "type": "module",
     "version": "0.0.1",
     "scripts": {
@@ -10,42 +10,20 @@
         "astro": "astro"
     },
     "dependencies": {
-        "@astrojs/rss": "4.0.12",
-        "@astrojs/sitemap": "3.4.1",
-        "@astrojs/solid-js": "5.1.0",
-        "@mapbox/geojson-extent": "^1.0.1",
-        "@mapbox/mapbox-gl-language": "^1.0.1",
-        "@shikijs/transformers": "^1.17.0",
-        "@sveltejs/svelte-virtual-list": "^3.0.1",
-        "@ts-ghost/content-api": "^4.1.0",
-        "artalk": "^2.9.0",
-        "astro": "5.11.0",
-        "astro-compress": "^2.3.1",
-        "astro-og-canvas": "^0.7.0",
-        "astro-remote": "^0.3.4",
-        "cheerio": "^1.0.0",
-        "fuse.js": "^7.0.0",
-        "html-parse-stringify": "^3.0.1",
-        "htmx.org": "^1.9.12",
-        "mapbox-gl": "^3.6.0",
-        "marked": "^14.1.2",
-        "masto": "^7.1.0",
-        "medium-zoom": "^1.1.0",
-        "nanostores": "^0.11.3",
-        "solid-js": "^1.8.22",
-        "supercluster": "^8.0.1",
-        "tippy.js": "^6.3.7"
+        "@astrojs/react": "^4.3.1",
+        "@heroui/react": "^2.8.4",
+        "@tailwindcss/vite": "^4.1.13",
+        "@types/react": "^19.1.13",
+        "@types/react-dom": "^19.1.9",
+        "astro": "^5.13.10",
+        "framer-motion": "^12.23.18",
+        "react": "^19.1.1",
+        "react-dom": "^19.1.1",
+        "tailwindcss": "^4.1.13"
     },
-    "devDependencies": {
-        "@types/lodash": "^4.17.7",
-        "@types/lodash-es": "^4.17.12",
-        "@types/probe-image-size": "^7.2.5",
-        "loadsh": "^0.0.4",
-        "lodash-es": "^4.17.21",
-        "prettier": "^3.3.2",
-        "sass": "^1.78.0",
-        "solid-devtools": "^0.30.1",
-        "typescript": "^5.5.4"
-    },
-    "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+    "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
+    "main": "index.js",
+    "repository": "git@github.com:rebron1900/astro-book.git",
+    "author": "rebron1900 <me@1900.live>",
+    "license": "MIT"
 }
