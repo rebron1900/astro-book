@@ -43,19 +43,23 @@ const page = pages.find((post) => post.slug == 'links');
                 flux.map((item) => (
                     <div class="flex-even markdown-inner">
                         <h3 class="book-title flex">
-                            <img loading="lazy" style="width: 1.5em;margin-right: 0.3em;" src={'https://favicon.splitbee.io/?url=' + item.feed.site_url} />
-                            <Link href={item.feed.site_url} class="ellipsis" target="_blank">
-                                {item.feed.title}
+                            <img
+                                loading="lazy"
+                                style="width: 1.5em;margin-right: 0.3em;"
+                                src={'https://favicon.splitbee.io/?url=' + (item.feed?.site_url || '')}
+                            />
+                            <Link href={item.feed?.site_url || '#'} class="ellipsis" target="_blank">
+                                {item.feed?.title || 'Unknown Feed'}
                             </Link>
                         </h3>
 
                         <div class="ellipsis">
-                            <Link href={item.url} class="ellipsis" target="_blank">
-                                {item.title}
+                            <Link href={item.url || item.link || '#'} class="ellipsis" target="_blank">
+                                {item.title || 'Untitled'}
                             </Link>
                         </div>
                         <div>
-                            <span>{normalizeData(item.published_at)}</span>
+                            <span>{normalizeData(item.published_at || item.created_at || item.date)}</span>
                         </div>
                     </div>
                 ))

@@ -9910,5 +9910,13 @@
   "error_https://cdn.1900.live/wp-content/uploads/2018/04/header.png": {
     "timestamp": 1757233202609,
     "error": "Unexpected token '<', \"<html>\r\n<h\"... is not valid JSON"
+  },
+  "size_https://cdn.1900.live/assets/2025/09/23retouch_2025092312051761.jpg": {
+    "width": 2000,
+    "height": 2667
+  },
+  "size_https://cdn.1900.live/assets/2025/09/11IMG_20250531_163142_compressed.jpeg": {
+    "width": 1707,
+    "height": 1280
   }
 }
