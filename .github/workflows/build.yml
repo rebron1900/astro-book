@@ -28,15 +28,31 @@ jobs:
             # 1️⃣ 恢复缓存文件 (已修正)
             - name: Restore image/og cache
               uses: actions/cache@v4
+              id: cache-restore
               with:
                   path: |
                       src/data/image-meta.json
                       src/data/og-cache.json
-                  # key 使用分支名+SHA，确保每次运行的key都不同，以便在内容更新后能成功保存新缓存
-                  key: astro-cache-${{ github.ref_name }}-${{ github.sha }}
-                  # restore-keys 使用分支名作为前缀，用于恢复该分支下最新的可用缓存
+                  # key 使用文件内容哈希，确保文件变化时更新缓存
+                  key: astro-cache-${{ hashFiles('src/data/image-meta.json', 'src/data/og-cache.json') }}
+                  # restore-keys 使用通用前缀，用于恢复最新缓存
                   restore-keys: |
-                      astro-cache-${{ github.ref_name }}-
+                      astro-cache-
+
+            # 1️⃣⸣ 验证缓存状态
+            - name: Check cache status
+              run: |
+                  echo "Cache hit: ${{ steps.cache-restore.outputs.cache-hit }}"
+                  if [ -f "src/data/image-meta.json" ]; then
+                    echo "✓ image-meta.json exists ($(wc -l < src/data/image-meta.json) lines)"
+                  else
+                    echo "✗ image-meta.json not found"
+                  fi
+                  if [ -f "src/data/og-cache.json" ]; then
+                    echo "✓ og-cache.json exists ($(wc -l < src/data/og-cache.json) lines)"
+                  else
+                    echo "✗ og-cache.json not found"
+                  fi
 
             # 2️⃣ 恢复 node_modules 缓存
             - name: Cache node modules
