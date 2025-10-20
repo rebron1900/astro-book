@@ -5,6 +5,10 @@
     flex-wrap: wrap;
 }
 
+[data-itemtype='tv'] .db--score {
+    text-transform: uppercase;
+}
+
 .db--navItem {
     font-size: 20px;
     cursor: pointer;
