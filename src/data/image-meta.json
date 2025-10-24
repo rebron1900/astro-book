@@ -9918,5 +9918,17 @@
   "size_https://cdn.1900.live/assets/2025/09/11IMG_20250531_163142_compressed.jpeg": {
     "width": 1707,
     "height": 1280
+  },
+  "size_https://cdn.1900.live/assets/2025/10/9retouch_2025100909022665.jpg": {
+    "width": 2000,
+    "height": 2667
+  },
+  "size_https://cdn.1900.live/assets/2025/10/24retouch_2025102314292841.jpg": {
+    "width": 2000,
+    "height": 2667
+  },
+  "size_https://images.unsplash.com/photo-1634898560182-f920ee8e0fd5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTc3M3wwfDF8c2VhcmNofDF8fCVFNiVBMSU4MiVFOCU4QSVCMSVFNiVBMCU5MXxlbnwwfHx8fDE3NTkwMzI1MzV8MA&ixlib=rb-4.1.0&q=80&w=2000": {
+    "width": 2000,
+    "height": 4000
   }
 }

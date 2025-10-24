@@ -115,7 +115,6 @@ ul.pagination {
     height: 1em;
     margin-inline-end: 0.5em;
     width: 1em;
-    stroke: var(--body-background);
 }
 
 .book-copy {
@@ -143,6 +142,8 @@ ul.pagination {
         font-style: italic;
         font-weight: bolder;
         svg {
+            stroke: var(--body-background);
+            fill: var(--color-hover-link);
             margin-left: 5px;
         }
     }

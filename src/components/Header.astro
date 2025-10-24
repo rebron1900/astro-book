@@ -9,7 +9,7 @@ const { title } = Astro.props;
         <Fragment set:html={getSvg('menu')} />
     </label>
 
-    <strong> {title} </strong>
+    <strong class="ellipsis"> {title} </strong>
 
     <label for="toc-control">
         <!-- 这里是 toc 图标的 SVG 内容 -->
