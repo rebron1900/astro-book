@@ -111,7 +111,6 @@ ul.pagination {
 
 .book-icon {
     fill: var(--body-font-color);
-    color: var(--body-font-color);
     height: 1em;
     margin-inline-end: 0.5em;
     width: 1em;
@@ -142,9 +141,9 @@ ul.pagination {
         font-style: italic;
         font-weight: bolder;
         svg {
-            stroke: var(--body-background);
-            fill: var(--color-hover-link);
             margin-left: 5px;
+            width: 20px;
+            fill: var(--color-hover-link);
         }
     }
 
