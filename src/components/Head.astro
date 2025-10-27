@@ -115,9 +115,9 @@ if (post) {
 
         window.onscroll = function () {
             if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-                scrollToTopBtn.style.display = 'block';
+                scrollToTopBtn.style.opacity = '1';
             } else {
-                scrollToTopBtn.style.display = 'none';
+                scrollToTopBtn.style.opacity = '0';
             }
         };
     };
