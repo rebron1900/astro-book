@@ -9930,5 +9930,13 @@
   "size_https://images.unsplash.com/photo-1634898560182-f920ee8e0fd5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTc3M3wwfDF8c2VhcmNofDF8fCVFNiVBMSU4MiVFOCU4QSVCMSVFNiVBMCU5MXxlbnwwfHx8fDE3NTkwMzI1MzV8MA&ixlib=rb-4.1.0&q=80&w=2000": {
     "width": 2000,
     "height": 4000
+  },
+  "size_https://images.unsplash.com/photo-1758535557144-c4da07dd5939?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTc3M3wwfDF8YWxsfDM4fHx8fHx8fHwxNzU4ODg0NTM1fA&ixlib=rb-4.1.0&q=80&w=2000": {
+    "width": 2000,
+    "height": 4000
+  },
+  "size_https://cdn.1900.live/assets/2025/09/16IMG_20250914_185825_compressed.jpeg": {
+    "width": 1707,
+    "height": 1280
   }
 }

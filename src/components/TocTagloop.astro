@@ -9,17 +9,21 @@ import { normalizeSlug } from '../utils/help';
             <strong>Tags</strong>
             <ul>
                 {
-                    tags.map(
-                        (item: any) =>
-                            item.visibility == 'public' &&
-                            item.count.posts >= 3 && (
-                                <li class="flex justify-between">
-                                    <a href={`/tag${normalizeSlug(item.slug)}`}>#{item.name}</a>
-                                    <span>{item.count.posts}</span>
-                                </li>
-                            )
-                    )
+                    tags
+                        .filter((item: any) => item.visibility === 'public' && item.count.posts >= 3)
+                        .sort((a: any, b: any) => b.count.posts - a.count.posts)
+                        .slice(0, 15)
+                        .map((item: any) => (
+                            <li class="flex justify-between">
+                                <a href={`/tag${normalizeSlug(item.slug)}`}>#{item.name}</a>
+                                <span>{item.count.posts}</span>
+                            </li>
+                        ))
                 }
+                <li class="flex justify-between">
+                    <a href="/tags/" class="text-sm text-blue-600 hover:text-blue-800 underline">#More..</a>
+                    <span>→</span>
+                </li>
             </ul>
         </li>
     </ul>
