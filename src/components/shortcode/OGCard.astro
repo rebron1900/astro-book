@@ -92,9 +92,7 @@ async function fetchOG(url: string) {
         }
 
         /* 3. 针对 bilibili 的特殊处理保持不变 */
-        if (url.includes('bilibili.com')) {
-            image = 'https://images.weserv.nl/?url=' + image.replace('@100w_100h', '@500w_500h');
-        }
+        image = 'https://images.weserv.nl/?url=' + image.replace('@100w_100h', '@500w_500h');
 
         let siteName = getMeta('og:site_name') || new URL(url).hostname;
         if (/\/@[^\/]+\/(?:statuses?|s)?\/[\w\-]+/.test(url)) {
