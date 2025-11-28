@@ -1617,6 +1617,9 @@ $max-items: 15; // 超过这个数量后统一用最后一个延迟
     }
     .og-image img {
         object-fit: cover;
+        width: 80px;
+        height: 90px;
+        object-position: top;
     }
 
     p {
@@ -1667,4 +1670,15 @@ $max-items: 15; // 超过这个数量后统一用最后一个延迟
             aspect-ratio: 16 / 9;
         }
     }
+}
+
+.bislight {
+    background-size: cover;
+    background-position: center center;
+    filter: blur(12px);
+    opacity: 0.4;
+    position: absolute;
+    z-index: -1;
+    margin-top: 0;
+    scale: 1;
 }

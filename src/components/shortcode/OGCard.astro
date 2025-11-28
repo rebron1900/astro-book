@@ -126,6 +126,7 @@ if (!cards.length) return null;
         <a href={og.url} target="_blank" rel="noopener noreferrer" class="og-card">
             {og.image && (
                 <div class="og-image">
+                    <div class="og-image bislight" style={'background-image: url(' + og.image + ');'} />
                     <img src={og.image} alt={og.title} loading="lazy" />
                 </div>
             )}
