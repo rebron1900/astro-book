@@ -24,3 +24,7 @@ pnpm-debug.log*
 
 hugo-book
 *.liquid
+
+
+image-meta.json
+og-cache.json

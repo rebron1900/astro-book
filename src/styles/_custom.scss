@@ -1682,3 +1682,21 @@ $max-items: 15; // 超过这个数量后统一用最后一个延迟
     margin-top: 0;
     scale: 1;
 }
+
+@keyframes breathe {
+    0% {
+        transform: scale(1.1);
+    }
+    50% {
+        transform: scale(0.8);
+    }
+    100% {
+        transform: scale(1.1);
+    }
+}
+
+.site-logo {
+    .bislight {
+        animation: breathe 4s ease-in-out infinite;
+    }
+}
