@@ -21,6 +21,8 @@ import { settings as site } from '../utils/ghost-store';
         {
             site.icon && (
                 <div class="flex site-logo">
+                    <div class="og-image bislight" style={'filter: blur(8px);height: 1.8em;width: 1.8em;background-image: url(/logo.svg);opacity: 1;'} />
+
                     <img src="/logo.svg" alt="Logo" alt={site.title} title={site.title} data-tippy-content={`${site.title} | ${site.description}`} />
                     <div class="actives">
                         <img
