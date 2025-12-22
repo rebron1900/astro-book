@@ -33,9 +33,7 @@ jobs:
                   path: |
                       src/data/image-meta.json
                       src/data/og-cache.json
-                  # key 使用文件内容哈希，确保文件变化时更新缓存
-                  key: astro-cache-${{ hashFiles('src/data/image-meta.json', 'src/data/og-cache.json') }}
-                  # restore-keys 使用通用前缀，用于恢复最新缓存
+                  key: astro-cache-v1 # 固定字符串即可
                   restore-keys: |
                       astro-cache-
 
