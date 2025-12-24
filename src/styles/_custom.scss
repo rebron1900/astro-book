@@ -890,18 +890,25 @@ pre:hover > .copy-button {
 
 .marker {
     background: linear-gradient(180deg, #cf6609, #cc0000);
+    border-radius: 50%;
     box-shadow:
         0 16px 60px 0 rgba(0, 0, 0, 0.08),
         0 6px 12px 0 rgba(0, 0, 0, 0.1);
     background-size: cover;
     width: 18px;
     height: 18px;
-    border-radius: 50%;
     cursor: pointer;
     transition:
         width 0.2s ease-out,
         height 0.2s ease-out !important;
     border: 2px solid #fff;
+}
+
+.img-post.marker {
+    background: transparent;
+    width: 30px;
+    height: 30px;
+    border-radius: 20% !important;
 }
 
 .no-post.marker {
@@ -910,21 +917,22 @@ pre:hover > .copy-button {
 
 .marker:before {
     position: absolute;
-    border-radius: 100%;
     content: '';
     width: 100%;
     height: 100%;
     background-image: var(--photo);
-    background-position: 50%;
+    background-position: 20%;
     background-size: cover;
     -webkit-transition: opacity 0.5s ease-out;
     transition: opacity 0.5s ease-out;
-    opacity: 0;
+    opacity: 1;
+    border-radius: 20%;
 }
 .marker:hover {
     width: 64px;
     height: 64px;
     z-index: 100;
+    border-radius: 40%;
 }
 .marker:hover:before {
     opacity: 1;
@@ -1061,9 +1069,6 @@ h3.card-title {
     margin: 1rem 0;
 }
 
-.img-post.marker {
-    background: linear-gradient(180deg, #2df4a3, #024603);
-}
 /* HTML: <div class="loader"></div> */
 .loader {
     width: 20px;
