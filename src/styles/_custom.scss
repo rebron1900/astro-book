@@ -908,7 +908,17 @@ pre:hover > .copy-button {
     background: transparent;
     width: 30px;
     height: 30px;
-    border-radius: 20% !important;
+    border-radius: 30%;
+}
+
+.img-post.marker {
+    &:before {
+        border-radius: 30%;
+    }
+
+    &:hover {
+        border-radius: 30%;
+    }
 }
 
 .no-post.marker {
@@ -926,13 +936,12 @@ pre:hover > .copy-button {
     -webkit-transition: opacity 0.5s ease-out;
     transition: opacity 0.5s ease-out;
     opacity: 1;
-    border-radius: 20%;
+    border-radius: 50%;
 }
 .marker:hover {
     width: 64px;
     height: 64px;
     z-index: 100;
-    border-radius: 40%;
 }
 .marker:hover:before {
     opacity: 1;
