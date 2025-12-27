@@ -122,6 +122,56 @@ if (post) {
         };
     };
 
+    const initToc = () => {
+        const links = document.querySelectorAll('.book-toc-content a');
+        if (!links) {
+            return;
+        }
+
+        const headings = [];
+        const offset = 80;
+
+        links.forEach((a) => {
+            const id = a.getAttribute('href').slice(1);
+            const el = document.getElementById(id);
+            if (el) headings.push({ el, link: a });
+        });
+
+        /* 新增：一次性清空所有高亮 */
+        function clearAllActive() {
+            links.forEach((a) => {
+                a.classList.remove('active');
+                // 把所在 <li> 也清掉
+                a.closest('li')?.classList.remove('active');
+            });
+        }
+
+        const io = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((en) => {
+                    const map = headings.find((m) => m.el === en.target);
+                    if (!map) return;
+
+                    if (en.isIntersecting) {
+                        // 进入视口：加粗自己 + 所有祖先 <li>
+                        clearAllActive(); // 先清掉旧的
+                        map.link.classList.add('active');
+                        let li = map.link.closest('li');
+                        while (li) {
+                            li.classList.add('active');
+                            li = li.parentElement?.closest('li'); // 继续向上找嵌套的 <li>
+                        }
+                    }
+                });
+            },
+            {
+                rootMargin: `-${offset}px 0px -60% 0px`
+            }
+        );
+
+        headings.forEach((m) => io.observe(m.el));
+    };
+
     const initGallery = () => {
         var gallery = document.querySelectorAll('.kg-gallery-image img');
         gallery.forEach(function (e) {
@@ -295,6 +345,7 @@ if (post) {
         initAudio();
         initToggle();
         doubanEvent();
+        initToc();
 
         // Scroll to top function
 

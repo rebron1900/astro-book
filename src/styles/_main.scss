@@ -432,6 +432,33 @@ body[dir='rtl'] .book-menu {
         padding: $padding-16;
 
         @include fixed;
+        a::before {
+            content: '';
+            transition: opacity 1s;
+            opacity: 0;
+        }
+
+        a.active {
+            font-weight: bold;
+            color: var(--color-link);
+
+            &::before {
+                content: '';
+                display: block;
+                height: 1.2em;
+                width: 5px;
+                border-radius: var(--sb-size);
+                position: absolute;
+                background-color: var(--color-link);
+                transform: translateX(-10px);
+                opacity: 1;
+            }
+        }
+        li.active > a {
+            font-weight: bold;
+            color: var(--color-link);
+        }
+        /* 如果想让整条父级也变色 */
     }
 
     svg {
