@@ -96,3 +96,5 @@ jobs:
                   chmod 600 ~/.ssh/id_rsa
                   echo "StrictHostKeyChecking no" >> ~/.ssh/config
                   rsync -avz --delete -e "ssh -p $VPS_PORT" dist/ $VPS_USER@$VPS_HOST:/var/11ty-data
+            - name: Deploy to EdgeOne Pages
+              run: npx edgeone pages deploy /dist -n astro-book -t ${{ secrets.EDGE_TOKEN }}

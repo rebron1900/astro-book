@@ -160,7 +160,8 @@ const config = {
         { name: 'telegram', title: '我的TG频道', url: 'https://t.me/rebron1900' },
         { name: 'instagram', title: '我的Instagram', url: 'https://www.instagram.com/rebron1900/' },
         { name: 'neodb', title: '我的Neodb', url: 'https://neodb.social/users/1900/' },
-        { name: 'strava', title: '我的Strava运动记录', url: 'https://www.strava.com/athletes/100579236' }
+        { name: 'strava', title: '我的Strava运动记录', url: 'https://www.strava.com/athletes/100579236' },
+        { name: 'unsplash', title: '我的Unsplash', url: 'https://unsplash.com/@rebron1900' }
     ]
 };
 export default config;
