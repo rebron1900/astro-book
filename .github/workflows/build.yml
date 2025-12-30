@@ -25,7 +25,13 @@ jobs:
                   node-version: '18'
                   cache: 'yarn'
 
-            # 1️⃣ 恢复缓存（只恢复，不写入工作区）
+            # 0️⃣⸣ 强制清空工作区里的缓存文件，确保“以缓存为准”
+            - name: Wipe local cache files
+              run: |
+                  rm -f src/data/image-meta.json src/data/og-cache.json
+                  echo "✅ 已删除本地缓存文件，保证使用 Actions 缓存或重新生成"
+
+            # 1️⃣ 恢复缓存
             - name: Restore image/og cache
               uses: actions/cache@v4
               id: cache-restore
@@ -34,16 +40,10 @@ jobs:
                       src/data/image-meta.json
                       src/data/og-cache.json
                   # 滚动 key：每次都会生成新的缓存实体
-                  key: astro-cache-${{ github.run_id }}
+                  key: astro-cache-${{ github.run_id }}`
                   # 回退用，仍能命中上一次缓存
                   restore-keys: |
                       astro-cache-
-
-            # 1️⃣⸣ 强制清空工作区里的缓存文件，确保“以缓存为准”
-            - name: Wipe local cache files
-              run: |
-                  rm -f src/data/image-meta.json src/data/og-cache.json
-                  echo "✅ 已删除本地缓存文件，保证使用 Actions 缓存或重新生成"
 
             # 2️⃣ 恢复 node_modules 缓存
             - name: Cache node modules
@@ -94,4 +94,4 @@ jobs:
               run: npm install -g edgeone
 
             - name: Deploy to EdgeOne Pages
-              run: npx edgeone pages deploy /dist -n astro-book -t ${{ secrets.EDGE_TOKEN }}
+              run: npx edgeone pages deploy ./dist -n astro-book -t ${{ secrets.EDGE_TOKEN }}
