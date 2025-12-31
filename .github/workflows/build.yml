@@ -95,5 +95,5 @@ jobs:
 
             - name: 打包并部署到edgeone
               run: |
-                  zip -r dist.zip ./dist
+                  zip -r dist.zip ./dist/*
                   npx edgeone pages deploy dist.zip -n astro-book -t ${{ secrets.EDGE_TOKEN }}
