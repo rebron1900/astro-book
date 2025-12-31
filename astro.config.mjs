@@ -6,9 +6,6 @@ import { execSync } from 'node:child_process';
 // https://astro.build/config
 export default defineConfig({
     site: 'https://1900.live',
-    redirects: {
-        '/rss': '/rss.xml'
-    },
     markdown: {
         shikiConfig: {
             theme: 'dracula',

@@ -1,0 +1,39 @@
+{
+    "redirects": [
+        {
+            "source": "/rss",
+            "destination": "/rss.xml",
+            "statusCode": 301
+        },
+        {
+            "source": "/rss/",
+            "destination": "/rss.xml",
+            "statusCode": 301
+        },
+        {
+            "source": "/ghost/*",
+            "destination": "https://cms.1900.live/ghost/:splat",
+            "statusCode": 301
+        },
+        {
+            "source": "/*/:edit/edit",
+            "destination": "https://cms.1900.live/:splat/edit",
+            "statusCode": 301
+        },
+        {
+            "source": "/.well-known/webfinger",
+            "destination": "https://social.1900.live/.well-known/webfinger",
+            "statusCode": 301
+        },
+        {
+            "source": "/.well-known/host-meta",
+            "destination": "https://social.1900.live/.well-known/host-meta",
+            "statusCode": 301
+        },
+        {
+            "source": "/.well-known/nodeinfo",
+            "destination": "https://social.1900.live/.well-known/nodeinfo",
+            "statusCode": 301
+        }
+    ]
+}
