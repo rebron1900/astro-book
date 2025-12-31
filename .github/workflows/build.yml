@@ -93,5 +93,7 @@ jobs:
             - name: 安装 edgeone CLI
               run: npm install -g edgeone
 
-            - name: Deploy to EdgeOne Pages
-              run: npx edgeone pages deploy ./dist -n astro-book -t ${{ secrets.EDGE_TOKEN }}
+            - name: 打包并部署到edgeone
+              run: |
+                  zip -r dist.zip ./dist
+                  npx edgeone pages deploy dist.zip -n astro-book -t ${{ secrets.EDGE_TOKEN }}
