@@ -27,7 +27,7 @@ const config = {
     footer: [
         {
             name: 'rss',
-            html: "<a href='https://github.com/rebron1900' target='_blank'>Github</a> / <a href='https://1900.live/rss/'  target='_blank'>Rss</a>"
+            html: "<a href='https://github.com/rebron1900' target='_blank'>Github</a> / <a href='/rss'  target='_blank'>Rss</a>"
         },
         {
             name: 'power',
