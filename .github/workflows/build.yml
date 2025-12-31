@@ -95,4 +95,4 @@ jobs:
 
             - name: 打包并部署到edgeone
               run: |
-                  npx edgeone pages deploy ./dist -n astro-book -t ${{ secrets.EDGE_TOKEN }} -e edgeone.json
+                  npx edgeone pages deploy ./dist -n astro-book -t ${{ secrets.EDGE_TOKEN }}
