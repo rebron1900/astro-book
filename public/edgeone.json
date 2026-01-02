@@ -11,12 +11,17 @@
             "statusCode": 301
         },
         {
+            "source": "/ghost/",
+            "destination": "https://cms.1900.live/ghost",
+            "statusCode": 301
+        },
+        {
             "source": "/ghost/*",
             "destination": "https://cms.1900.live/ghost/:splat",
             "statusCode": 301
         },
         {
-            "source": "/*/:edit/edit",
+            "source": "/*/edit",
             "destination": "https://cms.1900.live/:splat/edit",
             "statusCode": 301
         },
