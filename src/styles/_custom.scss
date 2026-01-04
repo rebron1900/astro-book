@@ -1490,11 +1490,7 @@ h3.card-title {
 
 /* 基础样式 (可根据需要调整) */
 #activitypub {
-    height: 0;
-    opacity: 0;
-
     &.loaded {
-        height: auto;
         opacity: 1;
         transition: all 0.5s;
     }
@@ -1509,7 +1505,6 @@ h3.card-title {
     .social-note {
         margin-bottom: 1em;
         font-size: 0.8em;
-        padding-top: 2em;
         font-style: italic;
         color: var(--gray-500);
         line-height: 1.5;
@@ -1523,6 +1518,7 @@ h3.card-title {
         list-style: none;
         padding: 0 1em;
         margin: 0;
+        padding-bottom: 2em;
     }
 
     .discussion-avatar-list li {

@@ -26,8 +26,11 @@ export default async function initActivityPubInteractions() {
             container.classList.add('loaded');
             document.querySelector('.social-note code').textContent += data.toot_id;
             cocoMessage.success('联邦宇宙互动加载成功 🎉！');
+        } else {
+            document.querySelector('.discussion-avatar-list').remove();
         }
     } catch (error) {
+        document.querySelector('.discussion-avatar-list').remove();
         console.error('加载互动数据失败:', error);
     }
 }
