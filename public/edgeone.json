@@ -1,6 +1,11 @@
 {
     "redirects": [
         {
+            "source": "/**",
+            "destination": "/:splat/",
+            "statusCode": 301
+        },
+        {
             "source": "/rss",
             "destination": "/rss.xml",
             "statusCode": 301
