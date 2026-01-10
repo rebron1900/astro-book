@@ -6,7 +6,6 @@ import { execSync } from 'node:child_process';
 // https://astro.build/config
 export default defineConfig({
     site: 'https://1900.live',
-    trailingSlash: 'always', // 关键行
     markdown: {
         shikiConfig: {
             theme: 'dracula',
