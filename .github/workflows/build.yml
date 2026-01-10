@@ -90,17 +90,14 @@ jobs:
                   echo "StrictHostKeyChecking no" >> ~/.ssh/config
                   rsync -avz --delete -e "ssh -p $VPS_PORT" dist/ $VPS_USER@$VPS_HOST:/var/11ty-data
 
-            - name: 安装 edgeone CLI
-              run: npm install -g edgeone
-              
+            # - name: 安装 edgeone CLI
+            #   run: npm install -g edgeone
+
             # - name: 打包 dist 为 zip
             #   run: |
             #     # 确保 zip 已安装（Ubuntu 自带，如缺失可 apt-get install -y zip）
             #     zip -r dist.zip ./dist
-                
-            - name: 打包并部署到edgeone
-              run: |
-                  npx edgeone pages deploy ./dist -n astro-book -t ${{ secrets.EDGE_TOKEN }}
 
-
-
+            # - name: 打包并部署到edgeone
+            #   run: |
+            #       npx edgeone pages deploy ./dist -n astro-book -t ${{ secrets.EDGE_TOKEN }}
