@@ -107,7 +107,7 @@
     padding: 10px;
     position: relative;
     border-radius: var(--sb-size);
-    border: solid 1px transparent;
+    border: solid 1px var(--gray-200);
     transition: all 0.3s ease;
     background-color: var(--gray-100);
 
