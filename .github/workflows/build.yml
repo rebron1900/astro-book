@@ -93,6 +93,14 @@ jobs:
             - name: 安装 edgeone CLI
               run: npm install -g edgeone
 
+            - name: 创建部署压缩包
+              run: |
+                cd dist
+                # 使用 zip 递归压缩所有文件
+                zip -r ./dist.zip ./dist/*
+                cd ..
+                
             - name: 打包并部署到edgeone
               run: |
-                  npx edgeone pages deploy ./dist -n astro-book -t ${{ secrets.EDGE_TOKEN }}
+                  npx edgeone pages deploy ./dist.zip -n astro-book -t ${{ secrets.EDGE_TOKEN }}
+
