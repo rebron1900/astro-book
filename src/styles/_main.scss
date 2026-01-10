@@ -144,6 +144,7 @@ ul.pagination {
             margin-left: 5px;
             width: 20px;
             fill: var(--color-hover-link);
+            stroke: var(--body-background);
         }
     }
 
@@ -321,6 +322,11 @@ body[dir='rtl'] .book-menu {
             Times New Roman,
             Times,
             serif;
+
+        div {
+            display: flex;
+            align-items: center;
+        }
 
         span {
             margin-right: 0.8rem;

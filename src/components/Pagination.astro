@@ -1,5 +1,6 @@
 ---
 import { getSvg, normalizeSlug } from '../utils/help';
+import { ArrowLeft, ArrowRight } from '@lucide/astro';
 
 const { page, prev, next } = Astro.props;
 
@@ -18,7 +19,7 @@ if (!page) {
     {
         post.prev && (
             <a href={normalizeSlug(post.prev.slug)} aria-label="Read previous page" class="flex align-center float-left">
-                <Fragment set:html={getSvg('backward')} />
+                <ArrowLeft class="book-icon" />
                 <span>{post.prev.title}</span>
             </a>
         )
@@ -28,7 +29,7 @@ if (!page) {
         post.next && (
             <a href={normalizeSlug(post.next.slug)} aria-label="Read next page" class="flex align-center float-right">
                 <span>{post.next.title}</span>
-                <Fragment set:html={getSvg('forward')} />
+                <ArrowRight class="book-icon" />
             </a>
         )
     }

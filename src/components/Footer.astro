@@ -1,5 +1,6 @@
 ---
 import PostAction from '../components/PostAction.astro';
+import { Calendar, Heart, View } from '@lucide/astro';
 
 import { getSvg, normalizeData } from '../utils/help';
 const { post } = Astro.props;
@@ -9,23 +10,22 @@ const { post } = Astro.props;
 
 <div class="flex flex-wrap justify-start book-post-meta">
     <div>
+        <Calendar class="book-icon" />
         <a class="flex align-center" href="#" title="Last modified by" rel="noopener">
-            <Fragment set:html={getSvg('calendar')} />
-
             <span>{normalizeData(post.published_at)}</span>
         </a>
     </div>
 
     <div>
+        <Heart class="book-icon" />
         <a class="flex align-center" href="#" title="Likes" rel="noopener">
-            <Fragment set:html={getSvg('like')} />
             <span class="post_likes"></span>
         </a>
     </div>
 
     <div>
+        <View class="book-icon" />
         <a class="flex align-center" href="#" title="Views" rel="noopener">
-            <Fragment set:html={getSvg('views')} />
             <span class="post_views"></span>
         </a>
     </div>

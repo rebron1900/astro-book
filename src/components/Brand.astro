@@ -1,5 +1,6 @@
 ---
 import { getSvg } from '../utils/help';
+import { BadgeCheck } from '@lucide/astro';
 
 import { settings as site } from '../utils/ghost-store';
 ---
@@ -35,7 +36,7 @@ import { settings as site } from '../utils/ghost-store';
             )
         }
         <div class="flex flex-direction" aria-label=`${site.title} | ${site.description }`>
-            <span class="site-title flex align-center">{site.title}<Fragment set:html={getSvg('check')} /></span>
+            <span class="site-title flex align-center">{site.title}<BadgeCheck class="book-icon" /></span>
             <span class="site-description ellipsis">{site.description}</span>
         </div>
     </a>

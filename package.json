@@ -13,6 +13,7 @@
         "@astrojs/rss": "4.0.12",
         "@astrojs/sitemap": "3.4.1",
         "@astrojs/solid-js": "5.1.0",
+        "@lucide/astro": "^0.562.0",
         "@mapbox/geojson-extent": "^1.0.1",
         "@mapbox/mapbox-gl-language": "^1.0.1",
         "@shikijs/transformers": "^1.17.0",

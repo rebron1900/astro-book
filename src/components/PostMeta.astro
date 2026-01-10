@@ -3,15 +3,17 @@
 import type { Tag } from '@ts-ghost/content-api';
 import RemotePicture from './RemotePicture.astro';
 import { normalizeSlug, normalizeData, getSvg } from '../utils/help';
+import {Calendar,BookOpenCheck,Tags} from "@lucide/astro";
 const { post, isFeature } = Astro.props;
 ---
 
 <div class="flex align-center text-small book-post-meta">
-    <Fragment set:html={getSvg('calendar')} />
+    <Calendar class='book-icon' />
+
     <span>{normalizeData(post.published_at)}</span>
     {
         post.reading_time > 0 &&(
-        <Fragment set:html={getSvg('read_time')} />
+            <BookOpenCheck class='book-icon' />
         <span>{post.reading_time} min</span>
         )
     }
@@ -20,7 +22,7 @@ const { post, isFeature } = Astro.props;
 {
     post.tags && post.tags.filter((tag) => tag.visibility === 'public').length > 0 && (
         <div class="flex align-center text-small book-post-tags">
-            <Fragment set:html={getSvg('tags')} />
+            <Tags class='book-icon'  />
             {post.tags
                 .filter((tag) => tag.visibility === 'public') // 过滤出可见的标签
                 .map((tag, index, array) => (

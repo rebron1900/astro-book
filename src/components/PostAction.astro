@@ -1,5 +1,7 @@
 ---
 import { getSvg } from '../utils/help';
+import { Heart } from '@lucide/astro';
+
 import config from '../data/config';
 
 const { post } = Astro.props;
@@ -7,7 +9,7 @@ const { post } = Astro.props;
 
 <div class="post_action flex flex-wrap justify-center">
     <div class="post_like" data-postid={post.id} data-apiurl={config.apiUrl}>
-        <Fragment set:html={getSvg('like')} />
+        <Heart class="book-icon" />
 
         <div class="post_like_desc">「 觉得本文不错？点个赞把！... 」</div>
     </div>
