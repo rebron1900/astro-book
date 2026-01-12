@@ -15,7 +15,7 @@ import RemotePicture from '../components/RemotePicture.astro';
 import Columns from '../components/shortcode/Columns.astro';
 import Details from '../components/shortcode/Details.astro';
 import Link from '../components/shortcode/Link.astro';
-import { UsersRound } from '@lucide/astro';
+import { DoorOpen } from '@lucide/astro';
 
 const page = pages.find((post) => post.slug == 'links');
 ---
@@ -27,7 +27,7 @@ const page = pages.find((post) => post.slug == 'links');
     <Menu slot="menu" />
 
     <article slot="content" class="markdown book-article">
-        <h1 class="book-title"><UsersRound /> {page.title}</h1>
+        <h1 class="book-title"><DoorOpen /> {page.title}</h1>
 
         {
             page.html && (
