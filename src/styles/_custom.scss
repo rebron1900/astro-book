@@ -348,6 +348,17 @@
             text-shadow: 0 0 0.75px var(--color-hover-link);
         }
     }
+
+    .lucide {
+        width: 2em;
+        height: 2em;
+        stroke-width: 2.5;
+        vertical-align: bottom;
+    }
+
+    .lucide * {
+        vector-effect: non-scaling-stroke;
+    }
 }
 
 // html::view-transition-group(.book-title) {

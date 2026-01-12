@@ -1,18 +1,18 @@
 ---
-import { getSvg } from '../utils/help';
+import { TableOfContents, Menu } from '@lucide/astro';
 
 const { title } = Astro.props;
 ---
 
 <div class="flex align-center justify-between">
     <label for="menu-control">
-        <Fragment set:html={getSvg('menu')} />
+        <Menu class="book-icon" />
     </label>
 
     <strong class="ellipsis"> {title} </strong>
 
     <label for="toc-control">
         <!-- 这里是 toc 图标的 SVG 内容 -->
-        <Fragment set:html={getSvg('toc')} />
+        <TableOfContents class="book-icon" />
     </label>
 </div>

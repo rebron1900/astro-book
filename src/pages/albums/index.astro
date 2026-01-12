@@ -17,6 +17,7 @@ import Columns from '../../components/shortcode/Columns.astro';
 import Details from '../../components/shortcode/Details.astro';
 import Link from '../../components/shortcode/Link.astro';
 import AlbumCard from '../../components/AlbumCard.astro';
+import { Images } from '@lucide/astro';
 
 const page = pages.find((post) => post.slug == 'albums');
 const albums = extractAlbumsFromPosts();
@@ -29,8 +30,7 @@ const albums = extractAlbumsFromPosts();
     <Menu slot="menu" />
 
     <article slot="content" class="markdown book-article">
-        <h1 class="book-title">{page.title}</h1>
-        <PostMeta post={page} isFeature={true} />
+        <h1 class="book-title"><Images /> {page.title}</h1>
         {
             page.html && (
                 <Markup

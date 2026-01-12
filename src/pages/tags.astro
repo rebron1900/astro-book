@@ -21,6 +21,7 @@ import Details from '../components/shortcode/Details.astro';
 import Link from '../components/shortcode/Link.astro';
 import OGCard from '../components/shortcode/OGCard.astro';
 import { normalizeSlug } from '../utils/help';
+import { Tags as ITags } from '@lucide/astro';
 
 const page = pages.find((post) => post.slug == 'tags');
 ---
@@ -32,9 +33,8 @@ const page = pages.find((post) => post.slug == 'tags');
     <Menu slot="menu" />
 
     <div slot="content" class="markdown book-article">
-        <h1 class="book-title">{page.title}</h1>
-        <PostMeta post={page} isFeature={true} />
-
+        <h1 class="book-title"><ITags /> {page.title}</h1>
+        <p></p>
         {
             page.html && (
                 <Markup

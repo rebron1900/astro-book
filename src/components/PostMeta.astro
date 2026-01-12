@@ -1,8 +1,7 @@
 ---
 // 假设您已经在前面获取了 post 数据并将其传递给这个组件
-import type { Tag } from '@ts-ghost/content-api';
 import RemotePicture from './RemotePicture.astro';
-import { normalizeSlug, normalizeData, getSvg } from '../utils/help';
+import { normalizeSlug, normalizeData } from '../utils/help';
 import {Calendar,BookOpenCheck,Tags} from "@lucide/astro";
 const { post, isFeature } = Astro.props;
 ---

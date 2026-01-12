@@ -16,6 +16,7 @@ import Columns from '../components/shortcode/Columns.astro';
 import Details from '../components/shortcode/Details.astro';
 import Link from '../components/shortcode/Link.astro';
 import OGCard from '../components/shortcode/OGCard.astro';
+import { TentTree } from '@lucide/astro';
 
 const page = pages.find((post) => post.slug == 'map');
 ---
@@ -27,9 +28,8 @@ const page = pages.find((post) => post.slug == 'map');
     <Menu slot="menu" />
 
     <article slot="content" class="markdown book-article">
-        <h1 class="book-title">{page.title}</h1>
-        <PostMeta post={page} isFeature={true} />
-
+        <h1 class="book-title"><TentTree /> {page.title}</h1>
+        <p></p>
         <script>
             import initMap from '../utils/map';
 

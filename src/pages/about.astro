@@ -20,6 +20,7 @@ import Columns from '../components/shortcode/Columns.astro';
 import Details from '../components/shortcode/Details.astro';
 import Link from '../components/shortcode/Link.astro';
 import OGCard from '../components/shortcode/OGCard.astro';
+import { AtSign } from '@lucide/astro';
 
 const page = pages.find((post) => post.slug == 'about-now');
 ---
@@ -31,8 +32,18 @@ const page = pages.find((post) => post.slug == 'about-now');
     <Menu slot="menu" />
 
     <div slot="content" class="markdown book-article">
-        <h1 class="book-title">{page.title}</h1>
-        <PostMeta post={page} isFeature={true} />
+        <h1 class="book-title"><AtSign /> {page.title}</h1>
+        {
+            page.feature_image && true && (
+                <figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption">
+                    <RemotePicture src={page.feature_image} alt={page.feature_image_caption} />
+                    <figcaption>
+                        <Fragment set:html={page.feature_image_caption} />
+                        <Fragment set:html={page.feature_image_alt} />
+                    </figcaption>
+                </figure>
+            )
+        }
 
         {
             page.html && (
