@@ -2,6 +2,7 @@
 import { getSvg } from '../utils/help';
 import { marked } from 'marked';
 import { authors } from '../utils/ghost-store';
+import { Sprout } from '@lucide/astro';
 
 import Now from './shortcode/Now.astro';
 
@@ -11,7 +12,7 @@ const author = authors.authors[0];
 ---
 
 <div class="markdown hero">
-    <h2 class="book-title"><a href="/about/">Hello，我是 {author.name}！</a></h2>
+    <h2 class="book-title"><a href="/about/">Hello，我是 {author.name}！<Sprout /></a></h2>
     <div class="bio" set:html={marked.parse(author.bio)} />
     <div class="social">
         {
