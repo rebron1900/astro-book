@@ -1685,12 +1685,9 @@ $max-items: 15; // 超过这个数量后统一用最后一个延迟
         margin: 0;
     }
 }
-/* 移动端：图片在上，文字在下 */
 @media (max-width: 480px) {
     .og-card {
-        flex-direction: column;
         .og-image {
-            width: 100%;
             height: auto;
             aspect-ratio: 16 / 9;
         }
