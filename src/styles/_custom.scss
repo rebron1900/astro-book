@@ -1630,6 +1630,11 @@ $max-items: 15; // 超过这个数量后统一用最后一个延迟
         box-shadow: 0px 0px 30px 0px rgba(0, 0, 0, 0.1);
         border: 1px solid var(--gray-700);
         transition: all 0.3s ease;
+
+        .bislight {
+            opacity: 0.8;
+            transition: all 0.5s;
+        }
     }
 
     .og-image {
@@ -1638,13 +1643,6 @@ $max-items: 15; // 超过这个数量后统一用最后一个延迟
         height: 90px;
         overflow: hidden;
         border-radius: 0.375rem;
-
-        &:hover {
-            .bislight {
-                opacity: 0.8;
-                transition: all 0.5s;
-            }
-        }
     }
     .og-image img {
         object-fit: cover;
