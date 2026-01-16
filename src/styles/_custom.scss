@@ -1638,6 +1638,13 @@ $max-items: 15; // 超过这个数量后统一用最后一个延迟
         height: 90px;
         overflow: hidden;
         border-radius: 0.375rem;
+
+        &:hover {
+            .bislight {
+                opacity: 0.8;
+                transition: all 0.5s;
+            }
+        }
     }
     .og-image img {
         object-fit: cover;
@@ -1703,6 +1710,7 @@ $max-items: 15; // 超过这个数量后统一用最后一个延迟
     z-index: -1;
     margin-top: 0;
     scale: 1;
+    transition: all 0.5s;
 }
 
 @keyframes breathe {

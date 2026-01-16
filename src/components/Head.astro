@@ -92,7 +92,7 @@ if (post) {
 
     const initZoom = () => {
         // 选择所有未初始化的图片
-        const images = document.querySelectorAll('.markdown img:not([data-zoom-initialized])');
+        const images = document.querySelectorAll('.markdown img:not(.og-card img):not([data-zoom-initialized])');
 
         // 应用 mediumZoom 并标记已初始化的图片
         images.forEach((img) => {
