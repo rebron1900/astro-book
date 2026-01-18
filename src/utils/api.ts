@@ -132,8 +132,26 @@ export const getAllTags = async () => {
     return tagsWithPost;
 };
 
+// lib/neodb.ts  (或其他 utils)
 export const getNeodb = async () => {
-    return fetch(neodbURL).then((res) => res.json());
+    try {
+        const res = await fetch(neodbURL, {
+            headers: { Accept: 'application/json' }
+        });
+
+        // 1. 网络/非 200 → 直接降级
+        if (!res.ok) {
+            console.warn('[NeoDB] 接口异常:', res.status, res.statusText);
+            return { books: [] }; // 降级空数据
+        }
+
+        // 2. 解析失败 → 同样降级
+        const data = await res.json();
+        return data;
+    } catch (err: any) {
+        console.error('[NeoDB] 解析/网络错误:', err.message);
+        return { books: [] }; // 兜底，程序不中断
+    }
 };
 
 export async function getFlux() {
