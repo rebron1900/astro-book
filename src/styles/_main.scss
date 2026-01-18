@@ -136,11 +136,13 @@ ul.pagination {
         width: 180px;
         font-size: 12px;
         color: var(--gray-700);
+        font-style: italic;
     }
     .site-title {
         font-style: italic;
         font-weight: bolder;
-        svg {
+
+        te svg {
             margin-left: 5px;
             width: 20px;
             fill: var(--color-hover-link);

@@ -34,7 +34,7 @@ import { settings as site } from '../utils/ghost-store';
             )
         }
         <div class="flex flex-direction" aria-label=`${site.title} | ${site.description }`>
-            <span class="site-title flex align-center">{site.title}<BadgeCheck class="book-icon" /></span>
+            <span class="site-title flex align-center ellipsis">{site.title}<BadgeCheck class="book-icon" /></span>
             <span class="site-description ellipsis">{site.description}</span>
         </div>
     </a>
