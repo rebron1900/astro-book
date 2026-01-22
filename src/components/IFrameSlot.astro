@@ -1,9 +1,11 @@
 ---
-const { src, allowfullscreen, height, width, title, autoplay } = Astro.props;
+const { src, allowfullscreen, height, width, title, autoplay = 0 } = Astro.props;
 
-const modisrc = autoplay && `${src}&autoplay=${autoplay}`;
+const url = new URL(src.startsWith('//') ? `https:${src}` : src);
+url.searchParams.set('autoplay', autoplay);
 ---
 
 <div class="aspect-ratio">
-    <iframe src={modisrc} data-src={modisrc} height={height} width={width} title={title} class="allowfullscreen" allowfullscreen={allowfullscreen}></iframe>
+    <iframe src={url.toString()} data-src={url.toString()} height={height} width={width} title={title} class="allowfullscreen" allowfullscreen={allowfullscreen}
+    ></iframe>
 </div>
