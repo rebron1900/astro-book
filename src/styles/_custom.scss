@@ -1090,6 +1090,21 @@ h3.card-title {
 
 .aspect-ratio {
     margin: 1rem 0;
+
+    &:hover {
+        iframe,
+        video {
+            border: solid 1px var(--gray-500);
+            transition: all 0.5s;
+        }
+    }
+
+    iframe,
+    video {
+        border: solid 1px var(--gray-200);
+        border-radius: var(--sb-size);
+        transition: all 0.5s;
+    }
 }
 
 /* HTML: <div class="loader"></div> */
