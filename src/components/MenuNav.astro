@@ -11,28 +11,15 @@ const ICON_MAP = {
     '🏠': HouseHeart,
     '🚩': MessageCircleHeart,
     '📖': Sparkles,
-    '🕵️‍♂️': Sprout,
+    '😎': Sprout, // ← 这里一定要“复制粘贴”
     '🚧': Images,
     '👣': TentTree,
     '🪴': Flower2,
     '📦': Archive,
     '📌': Tags,
-    '🧑‍🤝‍🧑': DoorOpen
-    /* 想加图标继续往下写即可 */
+    '🧑‍🤝‍🧑': DoorOpen // 同样复制粘贴
 };
 
-/*
- 首页 🏠
-左邻右舍 🧑‍🤝‍🧑
-Now 🚩
- 书影音游 📖
-关于 🕵️‍♂️
-影集 🚧
-足迹 👣
-好奇心花园🪴
-归档 📦
-Tags 📌
-*/
 const nav = settings?.navigation ?? [];
 
 const menus = nav.map((rawItem) => {
@@ -74,7 +61,7 @@ const menus = nav.map((rawItem) => {
                     <li>
                         {/* prettier-ignore */}
                         <a href={item.url} class={`menu-flag ellipsis ${Astro.url.pathname == item.url ? 'current' : ''}`}>
-                            {Icon && <Icon class="book-icon" />}{CleanLabel}
+                            {Icon && <Icon class="book-icon" />}{CleanLabel || item.label}
                         </a>
                     </li>
                 ))
