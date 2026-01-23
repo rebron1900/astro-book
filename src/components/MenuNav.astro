@@ -1,7 +1,56 @@
 ---
 import { settings } from '../utils/ghost-store';
+import { StickyNote, HouseHeart, MessageCircleHeart, Sparkles, Sprout, Images, TentTree, Archive, Tags, Flower2, DoorOpen } from '@lucide/astro';
 
 const { title } = Astro.props;
+
+const EMOJI_SEQ = /(\p{RI}\p{RI}|\p{Emoji}(\p{Emoji_Modifier}|\u200D\p{Emoji})*)$/u;
+
+const ICON_MAP = {
+    '📄': StickyNote,
+    '🏠': HouseHeart,
+    '🚩': MessageCircleHeart,
+    '📖': Sparkles,
+    '🕵️‍♂️': Sprout,
+    '🚧': Images,
+    '👣': TentTree,
+    '🪴': Flower2,
+    '📦': Archive,
+    '📌': Tags,
+    '🧑‍🤝‍🧑': DoorOpen
+    /* 想加图标继续往下写即可 */
+};
+
+/*
+ 首页 🏠
+左邻右舍 🧑‍🤝‍🧑
+Now 🚩
+ 书影音游 📖
+关于 🕵️‍♂️
+影集 🚧
+足迹 👣
+好奇心花园🪴
+归档 📦
+Tags 📌
+*/
+const nav = settings?.navigation ?? [];
+
+const menus = nav.map((rawItem) => {
+    // 先准备返回骨架
+    const node: { icon?: any; item: typeof rawItem; cleanLabel?: any } = { item: rawItem };
+
+    // 尝试摘 emoji
+    const emojiMatch = rawItem.label.match(EMOJI_SEQ);
+    if (emojiMatch) {
+        const emoji = emojiMatch[1];
+        const Comp = ICON_MAP[emoji];
+        if (Comp) {
+            node.icon = Comp; // 只在新结构里放图标
+            node.cleanLabel = rawItem.label.replace(EMOJI_SEQ, '').trim();
+        }
+    }
+    return node;
+});
 ---
 
 <ul class="book-menu-nav">
@@ -12,18 +61,20 @@ const { title } = Astro.props;
             {
                 title && (
                     <li>
+                        {/* prettier-ignore */}
                         <a href="javascript:void(0)" class="menu-flag current ellipsis">
-                            {title}
+                            <StickyNote class="book-icon" />{title}
                         </a>
                     </li>
                 )
             }
 
             {
-                settings?.navigation.map((item) => (
+                menus.map(({ icon: Icon, item, cleanLabel: CleanLabel }) => (
                     <li>
+                        {/* prettier-ignore */}
                         <a href={item.url} class={`menu-flag ellipsis ${Astro.url.pathname == item.url ? 'current' : ''}`}>
-                            {item.label}
+                            {Icon && <Icon class="book-icon" />}{CleanLabel}
                         </a>
                     </li>
                 ))

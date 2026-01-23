@@ -244,6 +244,12 @@ ul.pagination {
         word-wrap: break-word;
         color: inherit;
 
+        svg {
+            width: 1.2em;
+            height: 1.2em;
+            vertical-align: text-top;
+        }
+
         &:hover {
             color: var(--color-hover-link);
             text-shadow: 0 0 0.75px var(--color-hover-link);
