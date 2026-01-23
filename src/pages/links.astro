@@ -51,7 +51,11 @@ const page = pages.find((post) => post.slug == 'links');
                                         ');' || ''
                                 }
                             /> */}
-                            <img loading="lazy" style="width: 1.5em;margin-right: 0.3em;" src={'https://icon.horse/icon/' + (item.feed?.site_url || '')} />
+                            <img
+                                loading="lazy"
+                                style="width: 1.5em;margin-right: 0.3em;"
+                                src={'https://favicons.seadfeng.workers.dev/' + (item.feed?.site_url + '.ico' || '')}
+                            />
                             <Link href={item.feed?.site_url || '#'} class="ellipsis" target="_blank">
                                 {item.feed?.title || 'Unknown Feed'}
                             </Link>
