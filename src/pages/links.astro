@@ -51,11 +51,7 @@ const page = pages.find((post) => post.slug == 'links');
                                         ');' || ''
                                 }
                             /> */}
-                            <img
-                                loading="lazy"
-                                style="width: 1.5em;margin-right: 0.3em;"
-                                src={'https://favicon.splitbee.io/?url=' + (item.feed?.site_url || '')}
-                            />
+                            <img loading="lazy" style="width: 1.5em;margin-right: 0.3em;" src={'https://icon.horse/icon/' + (item.feed?.site_url || '')} />
                             <Link href={item.feed?.site_url || '#'} class="ellipsis" target="_blank">
                                 {item.feed?.title || 'Unknown Feed'}
                             </Link>
