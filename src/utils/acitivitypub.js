@@ -15,6 +15,7 @@ export default async function initActivityPubInteractions() {
 
         const postId = container.dataset.postid;
         if (!postId) {
+            document.querySelector('#activitypub').remove();
             return;
         }
 

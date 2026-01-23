@@ -18,7 +18,7 @@ import RemotePicture from '../../components/RemotePicture.astro';
 import Columns from '../../components/shortcode/Columns.astro';
 import Details from '../../components/shortcode/Details.astro';
 import Link from '../../components/shortcode/Link.astro';
-import { Sparkles } from '@lucide/astro';
+import { Sparkles, MessageSquareMore } from '@lucide/astro';
 
 const pageDouban = pages.find((post) => post.slug == 'douban');
 
@@ -110,7 +110,7 @@ const groupdata = doubanGroupByDate(data);
                                             <div class="db--item" data-itemtype={monthdata.item.category}>
                                                 {monthdata.comment_text && (
                                                     <span class="db--icon-comment" data-tippy-content={monthdata.comment_text}>
-                                                        <Fragment set:html={getSvg('comment')} />
+                                                        <MessageSquareMore size={16} />
                                                     </span>
                                                 )}
                                                 <div>

@@ -117,8 +117,12 @@
 }
 .db--icon-comment {
     margin-top: 3px;
-    transform: translateX(120px);
+    transform: translate(125px, 3px);
     position: absolute;
+    line-height: 1;
+    svg {
+        fill: var(--body-background);
+    }
 }
 
 .db--item__music img {
