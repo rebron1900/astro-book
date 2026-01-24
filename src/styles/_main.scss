@@ -539,6 +539,10 @@ body[dir='rtl'] .book-menu {
         z-index: 1;
     }
 
+    .book-menu .book-menu-content {
+        background-color: var(--body-background);
+    }
+
     .book-toc {
         display: none;
     }
