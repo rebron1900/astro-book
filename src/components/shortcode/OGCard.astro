@@ -108,8 +108,7 @@ async function fetchOG(url: string) {
                         const parsed = JSON.parse(raw);
                         // 简单校验：必须是对象且带 @context / @type
                         if (parsed && typeof parsed === 'object' && parsed['@context'] && parsed['@type']) {
-                            const ratingValue = parsed.aggregateRating?.ratingValue ?? 0;
-                            starCount = Math.min(5, Math.max(0, Math.round((ratingValue / 10) * 5 * 2) / 2));
+                            starCount = parsed.aggregateRating?.ratingValue ?? 0;
                         }
                     }
                 }
@@ -155,8 +154,13 @@ if (!cards.length) return null;
                 <p class="og-title">{og.title}</p>
                 {og.description && <p class="og-desc">{og.description}</p>}
                 <p class="db--score og-site">
-                    <Star class="book-icon" />
-                    {og.starCount == 0 ? '无评分' : og.starCount} · {og.siteName}
+                    {og.url.includes('neodb.social') && (
+                        <>
+                            <Star class="book-icon" />
+                            {og.starCount == 0 ? '无评分' : og.starCount} · 
+                        </>
+                    )}
+                    {og.siteName}
                 </p>
             </div>
         </a>
