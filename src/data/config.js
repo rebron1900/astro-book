@@ -86,6 +86,12 @@ const config = {
             info: '<a  href="https://onojyun.com/" target="_blank">💖来自莫比乌斯，一位文字工作者！</a>'
         },
         {
+            name: 'dbushell',
+            desc: '香草绿',
+            type: 'dark',
+            info: '<a  href="https://dbushell.com/" target="_blank">💖来自dbushell！</a>'
+        },
+        {
             name: 'auto',
             desc: '自适应',
             type: 'auto'

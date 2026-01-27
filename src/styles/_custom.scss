@@ -342,7 +342,6 @@
 
     a {
         text-decoration: auto;
-
         &:hover {
             color: var(--color-hover-link);
             text-shadow: 0 0 0.75px var(--color-hover-link);
@@ -1208,7 +1207,6 @@ h3.card-title {
 
         svg {
             color: var(--gray-700);
-
             width: 30px;
             height: 30px;
         }

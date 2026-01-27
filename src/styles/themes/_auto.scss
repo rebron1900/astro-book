@@ -54,3 +54,9 @@ html.onojyun {
         text-stroke: 0.2px !important;
     }
 }
+
+html.dbushell {
+    @include theme-dbushell;
+    @include code-dark;
+    @include gradientback;
+}

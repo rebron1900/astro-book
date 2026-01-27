@@ -156,6 +156,30 @@ $hint-colors: (
     --hint-color-danger: #f66;
 }
 
+@mixin theme-dbushell {
+    --gray-100: rgba(255, 255, 255, 0.1);
+    --gray-200: rgba(255, 255, 255, 0.2);
+    --gray-500: rgba(255, 255, 255, 0.5);
+    --gray-700: rgba(255, 255, 255, 0.7);
+
+    --red-soft: rgba(244, 63, 94, 0.16);
+    --green-soft: rgba(16, 185, 129, 0.16);
+
+    --color-link: #98e6c8;
+    --color-visited-link: #ff617b;
+    --color-hover-link: #ff617b;
+
+    --body-background: #363030;
+    --body-font-color: #fdf9ef;
+
+    --btn-color: red;
+    --btn-bg: blue;
+
+    --hint-color-info: #6bf;
+    --hint-color-warning: #fd6;
+    --hint-color-danger: #f66;
+}
+
 @mixin theme-onojyun {
     --gray-100: rgba(69, 73, 81, 0.1);
     --gray-200: rgba(69, 73, 81, 0.2);
