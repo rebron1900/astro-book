@@ -146,6 +146,10 @@
             }
         }
     }
+
+    .og-card {
+        margin-top: 0;
+    }
     .atk-comment {
         .atk-avatar img {
             width: 40px;
@@ -1644,6 +1648,11 @@ $max-items: 15; // 超过这个数量后统一用最后一个延迟
         border: 1px solid var(--gray-700);
         transition: all 0.3s ease;
 
+        img {
+            filter: brightness(1.2);
+            transition: all 0.3s ease;
+        }
+
         .bislight {
             opacity: 0.8;
             transition: all 0.5s;
@@ -1662,6 +1671,7 @@ $max-items: 15; // 超过这个数量后统一用最后一个延迟
         width: 80px;
         height: 90px;
         object-position: top;
+        transition: all 0.3s ease;
     }
 
     p {

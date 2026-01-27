@@ -21,7 +21,7 @@ function isAllowed(raw: string): boolean {
         if (u.hostname.includes('neodb.social')) {
             // 允许任意前缀，只要出现 /(tv|movie|book)/<id>
             // id 段允许除 / ? # 以外的所有字符
-            return /\/(?:tv|movie|book)\/[^/?#]+(?:[/?#]|$)/.test(u.pathname + u.search + u.hash);
+            return /\/(?:tv|movie|book|game|podcast)\/[^/?#]+(?:[/?#]|$)/.test(u.pathname + u.search + u.hash);
         }
         /* 2. github */
         if (u.hostname.includes('github.com')) {
@@ -96,8 +96,27 @@ async function fetchOG(url: string) {
             image = 'https://images.weserv.nl/?url=' + image.replace('@100w_100h', '@500w_500h');
         }
 
+        let ext: Record<string, any> = {}; // 准备塞进 ogData.ext
         if (url.includes('neodb.social')) {
-            image = 'https://images.weserv.nl/?url=' + image;
+            try {
+                // html 已经取过了，直接复用 root
+                const scriptTag = root.querySelector('script[type="application/ld+json"]');
+                if (scriptTag) {
+                    const raw = scriptTag.text.trim();
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        // 简单校验：必须是对象且带 @context / @type
+                        if (parsed && typeof parsed === 'object' && parsed['@context'] && parsed['@type']) {
+                            ext = parsed;
+                        }
+                    }
+                }
+            } catch {
+                /* 忽略解析失败，ext 保持 {} */
+            }
+
+            // 图片代理保持原逻辑
+            image = 'https://images.weserv.nl/?url=' + (ext.image || image);
         }
 
         let siteName = getMeta('og:site_name') || new URL(url).hostname;
@@ -105,7 +124,7 @@ async function fetchOG(url: string) {
             siteName = `${new URL(url).hostname} (Fediverse)`;
         }
 
-        const ogData = { title, description, image, siteName, url };
+        const ogData = { title, description, image, siteName, url, ext };
 
         // 保存到缓存
         setCachedOG(url, ogData);
