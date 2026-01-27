@@ -39,11 +39,7 @@ jobs:
                   path: |
                       src/data/image-meta.json
                       src/data/og-cache.json
-                  # 滚动 key：每次都会生成新的缓存实体
-                  key: astro-cache-${{ github.run_id }}`
-                  # 回退用，仍能命中上一次缓存
-                  restore-keys: |
-                      astro-cache-
+                  key: astro-cache-single
 
             # 2️⃣ 恢复 node_modules 缓存
             - name: Cache node modules
