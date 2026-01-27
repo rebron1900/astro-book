@@ -28,6 +28,7 @@
 .db--score svg {
     fill: #f5c518;
     margin-right: 5px;
+    stroke: transparent;
 }
 
 .db--list {
