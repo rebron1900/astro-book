@@ -46,7 +46,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             const golink = () => {
                 /* ---------- 1. 只允许自家域名发起的跳转 ---------- */
                 const ref = document.referrer;
-                if (!ref || !new URL(ref).hostname.endsWith('1900.live')) {
+                if (!ref || !new URL(ref).hostname.endsWith('.1900.live')) {
                     // 来源不对 -> 直接回首页（或 404）
                     location.replace('/');
                     return;
