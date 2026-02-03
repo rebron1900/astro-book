@@ -44,43 +44,27 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         <script is:inline>
             const golink = () => {
-                /* ---------- 1. 只允许自家域名发起的跳转 ---------- */
-                const ref = document.referrer;
-                if (!ref || !new URL(ref).hostname.endsWith('.1900.live')) {
-                    // 来源不对 -> 直接回首页（或 404）
-                    location.replace('/');
-                    return;
-                }
-
-                /* ---------- 2. 解析参数 ---------- */
                 const params = new URLSearchParams(window.location.search);
                 const encodedTarget = params.get('target');
-                if (!encodedTarget) {
-                    // 没传参数也赶走
-                    location.replace('/');
-                    return;
+                const target = atob(encodedTarget); // 使用 atob 进行 Base64 解码
+
+                if (target) {
+                    const decodedTarget = decodeURIComponent(target);
+
+                    document.getElementById('direct-link').href = decodedTarget;
+                    document.getElementById('redirect-link').textContent = '' + decodedTarget; // 在新增的元素中显示原地址
+                    document.getElementById('redirect-link').href = decodedTarget;
+                } else {
+                    const redirectMessageElement = document.getElementById('redirect-link');
+                    redirectMessageElement.textContent = '';
                 }
-
-                /* ---------- 3. base64 解码 ---------- */
-                let target;
-                try {
-                    target = atob(encodedTarget);
-                } catch {
-                    location.replace('/'); // 解码失败
-                    return;
-                }
-
-                /* ---------- 4. 解码 URI 组件并回显 ---------- */
-                const decodedTarget = decodeURIComponent(target);
-
-                document.getElementById('direct-link').href = decodedTarget;
-                document.getElementById('redirect-link').textContent = decodedTarget;
-                document.getElementById('redirect-link').href = decodedTarget;
             };
 
-            /* ---------- 5. Astro 路由切换后重新执行 ---------- */
             golink();
-            document.addEventListener('astro:after-swap', golink);
+
+            document.addEventListener('astro:after-swap', () => {
+                golink();
+            });
         </script>
     </Fragment>
 </BaseLayout>
