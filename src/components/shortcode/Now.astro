@@ -18,4 +18,31 @@ import Strava from './Strava.astro';
         sanitize={{ allowComponents: true, allowCustomElements: true }}
         components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
     />
+
+    <!-- 隐藏的请求元素，不替换任何内容 -->
+    <div id="rank-request" hx-get="https://divine-cell-831a.me-d1b.workers.dev/" hx-trigger="load" hx-swap="none"></div>
+
+    <script>
+        document.addEventListener('htmx:afterRequest', function (event) {
+            // 获取响应内容
+            const response = event.detail.xhr.response;
+            try {
+                const data = JSON.parse(response);
+                if (data.success && data.myRank) {
+                    const hours = parseFloat((data.myRank.totalDuration / 3600).toFixed(2));
+
+                    // 在 .now .bio ul 最后插入 li
+                    const ul = document.querySelector('.now.bio ul');
+                    if (ul) {
+                        ul.insertAdjacentHTML(
+                            'beforeend',
+                            `<li>最近在练习吉他中，已累计练习 <strong class="rank-hours">${hours}</strong> 小时，继续加油！</li>`
+                        );
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        });
+    </script>
 </div>
