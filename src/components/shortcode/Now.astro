@@ -2,6 +2,7 @@
 import { marked } from 'marked';
 import { memos } from '../../utils/ghost-store';
 import { Markdown } from 'astro-remote';
+
 import CodeSlot from '../CodeSlot.astro';
 import IFrameSlot from '../IFrameSlot.astro';
 import RemotePicture from '../RemotePicture.astro';
@@ -9,40 +10,37 @@ import Columns from './Columns.astro';
 import Details from './Details.astro';
 import Link from './Link.astro';
 import Strava from './Strava.astro';
+
+// 在服务端获取数据
+let rankData = null;
+try {
+    const response = await fetch('https://divine-cell-831a.me-d1b.workers.dev/');
+    rankData = await response.json();
+} catch (e) {
+    console.error('Failed to fetch rank data:', e);
+}
+
+// 获取吉他练习时长
+const hours = rankData?.myRank ? (rankData.myRank.totalDuration / 3600).toFixed(2) : 0;
+
+let content = memos[0].content;
+
+if (hours > 0) {
+    const newItem = `<li>最近在练习吉他 🎸 中，本月已累计练习 <strong>${hours}</strong> 小时，继续加油！</li>`;
+    const lastUlIndex = content.lastIndexOf('</ul>');
+    if (lastUlIndex !== -1) {
+        content = content.slice(0, lastUlIndex) + newItem + content.slice(lastUlIndex);
+    }
+}
+
+// 在 content 中添加列表项
 ---
 
 <div class="now bio">
     <h2 class="book-title"><a href="/now/">Now</a></h2>
     <Markdown
-        content={marked.parse(memos[0].content)}
+        content={marked.parse(content)}
         sanitize={{ allowComponents: true, allowCustomElements: true }}
         components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
     />
-
-    <!-- 隐藏的请求元素，不替换任何内容 -->
-    <div id="rank-request" hx-get="https://divine-cell-831a.me-d1b.workers.dev/" hx-trigger="load" hx-swap="none"></div>
-
-    <script>
-        document.addEventListener('htmx:afterRequest', function (event) {
-            // 获取响应内容
-            const response = event.detail.xhr.response;
-            try {
-                const data = JSON.parse(response);
-                if (data.success && data.myRank) {
-                    const hours = parseFloat((data.myRank.totalDuration / 3600).toFixed(2));
-
-                    // 在 .now .bio ul 最后插入 li
-                    const ul = document.querySelector('.now.bio ul');
-                    if (ul) {
-                        ul.insertAdjacentHTML(
-                            'beforeend',
-                            `<li>最近在练习吉他中，已累计练习 <strong class="rank-hours">${hours}</strong> 小时，继续加油！</li>`
-                        );
-                    }
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        });
-    </script>
 </div>
