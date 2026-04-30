@@ -3,7 +3,7 @@ import 'tippy.js/themes/light.css';
 import { normalizeData } from '../utils/help';
 
 // 配置常量
-const API_ENDPOINT = 'https://api.996288.xyz/api/interactions';
+const API_ENDPOINT = 'https://hapi.190102.xyz:4433/blog/interactions';
 
 // 主入口函数
 export default async function initActivityPubInteractions() {
