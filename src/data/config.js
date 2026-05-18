@@ -6,7 +6,7 @@ const config = {
         limit: 10,
         offset: 10
     },
-    apiUrl: 'https://api.1900.live',
+    apiUrl: 'https://hapi.190102.xyz:4433/blog',
     customPage: ['archives', 'memos', 'links', 'douban', 'albums', 'map', 'strava', 'tags'],
 
     //配置合集信息

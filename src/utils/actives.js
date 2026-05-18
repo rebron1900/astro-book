@@ -4,7 +4,7 @@
 
 // 定义正式环境的url
 const cdn = 'https://cdn.1900.live/apps/';
-const wsUrl = 'wss://api.1900.live/actives_ws';
+const wsUrl = 'wss://hapi.190102.xyz:4433/ws/pc-status';
 const appListUrl = 'https://1900.live/app.json';
 
 // app白名单
