@@ -157,7 +157,12 @@ const config = {
             title: 'Word',
             url: 'word.png',
             action: '编写文档中'
-        }
+        },
+        hermes: {
+            title: 'Hermes',
+            url: 'word.png',
+            action: '正在和H小姐头脑风暴中...'
+
     },
     social: [
         { name: 'github', title: '我的Github', url: 'https://github.com/rebron1900' },
