@@ -162,7 +162,7 @@ const config = {
             title: 'Hermes',
             url: 'word.png',
             action: '正在和H小姐头脑风暴中...'
-
+        }
     },
     social: [
         { name: 'github', title: '我的Github', url: 'https://github.com/rebron1900' },
@@ -175,4 +175,5 @@ const config = {
         { name: 'unsplash', title: '我的Unsplash', url: 'https://unsplash.com/@rebron1900' }
     ]
 };
+
 export default config;
