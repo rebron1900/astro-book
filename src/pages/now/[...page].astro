@@ -1,8 +1,8 @@
 ---
-import { pages, settings, authors, memos } from '../../utils/ghost-store.js';
-import config from '../../data/config';
+import { pages, settings, authors, memos } from '../../api/store';
+import config from '../../config';
 import type { GetStaticPathsOptions } from 'astro';
-import { normalizeData } from '../../utils/help';
+import { normalizeData } from '../../lib/utils/help';
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Head from '../../components/Head.astro';

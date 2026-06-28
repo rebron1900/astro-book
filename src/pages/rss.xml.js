@@ -1,5 +1,5 @@
 import rss from '@astrojs/rss';
-import { settings, postsAll } from '../utils/ghost-store.ts';
+import { settings, postsAll } from '../api/store';
 
 const site = import.meta.env.SITE;
 export async function GET(context) {

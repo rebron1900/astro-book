@@ -1,6 +1,6 @@
-import { getSvg } from '../utils/help';
+import { getSvg } from '../lib/utils/help';
 import { createSignal, For, onMount } from 'solid-js';
-import config from '../data/config';
+import config from '../config';
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 

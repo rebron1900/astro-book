@@ -1,7 +1,7 @@
 ---
 const { title, target, href, class: className } = Astro.props;
 
-import config from '../../data/config';
+import config from '../../config';
 
 const isExternalLink = (url: string) => {
     // 处理空值或非字符串情况

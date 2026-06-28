@@ -1,6 +1,6 @@
 // MyMap.astro
 import { createSignal, onMount } from 'solid-js';
-import initMap from '../utils/map';
+import initMap from '../lib/map';
 
 const MyMap = () => {
     const [url, setURL] = createSignal('');

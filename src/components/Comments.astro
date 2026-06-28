@@ -27,8 +27,8 @@ const { postID } = Astro.props;
 <script>
     import 'artalk/dist/Artalk.css';
     import Artalk from 'artalk';
-    import cocoMessage from '../utils/coco-message';
-    import loadInteractions from '../utils/acitivitypub';
+    import cocoMessage from '../lib/coco-message';
+    import loadInteractions from '../lib/activitypub';
 
     const commentinfo = { type: 'artalk', name: "1900'Blog", server: 'https://artalk.1900.live', el: '.at-comments' };
 

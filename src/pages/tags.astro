@@ -1,5 +1,5 @@
 ---
-import { tags, pages, settings } from '../utils/ghost-store';
+import { tags, pages, settings } from '../api/store';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/Head.astro';
@@ -20,7 +20,7 @@ import Columns from '../components/shortcode/Columns.astro';
 import Details from '../components/shortcode/Details.astro';
 import Link from '../components/shortcode/Link.astro';
 import OGCard from '../components/shortcode/OGCard.astro';
-import { normalizeSlug } from '../utils/help';
+import { normalizeSlug } from '../lib/utils/help';
 import { Tags as ITags } from '@lucide/astro';
 
 const page = pages.find((post) => post.slug == 'tags');

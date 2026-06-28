@@ -1,6 +1,6 @@
 ---
-import { pages, settings, neodb } from '../utils/ghost-store.js';
-import { doubanGroupByDate } from '../utils/help.js';
+import { pages, settings, neodb } from '../api/store';
+import { doubanGroupByDate } from '../lib/utils/help';
 
 import RemotePicture from '../components/RemotePicture.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -12,7 +12,7 @@ import TocTagloop from '../components/TocTagloop.astro';
 import Header from '../components/Header.astro';
 import Top from '../components/Top.astro';
 import Menu from '../components/Menu.astro';
-import initMap from '../utils/map';
+import initMap from '../lib/map';
 import { Markup } from 'astro-remote';
 
 const page = pages.find((post) => post.slug == 'map');

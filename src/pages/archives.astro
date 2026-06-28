@@ -1,7 +1,7 @@
 ---
-import { postsAll, pages, settings } from '../utils/ghost-store';
+import { postsAll, pages, settings } from '../api/store';
 
-import { groupByDate, normalizeData, normalizeSlug } from '../utils/help';
+import { groupByDate, normalizeData, normalizeSlug } from '../lib/utils/help';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/Head.astro';
 import Comments from '../components/Comments.astro';

@@ -1,5 +1,5 @@
 ---
-import { pages, settings, neodb } from '../utils/ghost-store.js';
+import { pages, settings, neodb } from '../api/store';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/Head.astro';
@@ -31,7 +31,7 @@ const page = pages.find((post) => post.slug == 'map');
         <h1 class="book-title"><TentTree /> {page.title}</h1>
         <p></p>
         <script>
-            import initMap from '../utils/map';
+            import initMap from '../lib/map';
 
             document.addEventListener('astro:page-load', () => {
                 initMap();

@@ -1,7 +1,7 @@
 ---
-import { pages, postsAll, settings } from '../../utils/ghost-store.js';
+import { pages, postsAll, settings } from '../../api/store';
 import { getCollection, getEntry } from 'astro:content';
-import tocGen from '../../utils/toc.js';
+import tocGen from '../../lib/toc';
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PostMeta from '../../components/PostMeta.astro';

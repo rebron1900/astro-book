@@ -1,5 +1,5 @@
-import { postsAll } from '../utils/ghost-store.ts';
-import { normalizeSlug, normalizeData } from '../utils/help.ts';
+import { postsAll } from '../api/store';
+import { normalizeSlug, normalizeData } from '../lib/utils/help';
 
 export async function GET(context) {
     const postsdata = postsAll.map((item, index) => ({

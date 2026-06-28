@@ -17,7 +17,7 @@ const lang = langRaw || 'plaintext';
 <Code wrap={true} code={code} lang={lang} themes={{ dark: 'vitesse-dark', light: 'vitesse-light' }} defaultColor={false} />
 
 <script>
-    import { initCopyButton } from '../utils/code';
+    import { initCopyButton } from '../lib/code';
     initCopyButton();
     document.addEventListener('astro:after-swap', () => {
         initCopyButton();
