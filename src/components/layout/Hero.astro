@@ -1,12 +1,12 @@
 ---
-import { getSvg } from '../lib/utils/help';
+import { getSvg } from '../../lib/utils/help';
 import { marked } from 'marked';
-import { authors } from '../api/store';
+import { authors } from '../../api/store';
 import { Sprout } from '@lucide/astro';
 
-import Now from './shortcode/Now.astro';
+import Now from '../shortcode/Now.astro';
 
-import config from '../config';
+import config from '../../config';
 
 const author = authors.authors[0];
 ---

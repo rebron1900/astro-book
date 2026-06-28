@@ -3,14 +3,14 @@ import type { GetStaticPathsOptions } from 'astro';
 import { postsAll, settings } from '../api/store';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Head from '../components/Head.astro';
-import List from '../components/List.astro';
-import Pagination from '../components/Pagination.astro';
-import Relitu from '../components/Relitu';
-import TocTagloop from '../components/TocTagloop.astro';
-import Header from '../components/Header.astro';
-import Top from '../components/Top.astro';
-import Menu from '../components/Menu.astro';
+import Head from '../components/islands/Head.astro';
+import List from '../components/islands/List.astro';
+import Pagination from '../components/ui/Pagination.astro';
+import Relitu from '../components/islands/Relitu';
+import TocTagloop from '../components/islands/TocTagloop.astro';
+import Header from '../components/layout/Header.astro';
+import Top from '../components/ui/Top.astro';
+import Menu from '../components/layout/Menu.astro';
 
 export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
     return paginate(postsAll, {

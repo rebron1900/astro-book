@@ -2,16 +2,16 @@
 import { pages, settings, neodb } from '../api/store';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Head from '../components/Head.astro';
-import Comments from '../components/Comments.astro';
-import Relitu from '../components/Relitu.jsx';
-import Header from '../components/Header.astro';
-import Menu from '../components/Menu.astro';
-import PostMeta from '../components/PostMeta.astro';
+import Head from '../components/islands/Head.astro';
+import Comments from '../components/islands/Comments.astro';
+import Relitu from '../components/islands/Relitu.jsx';
+import Header from '../components/layout/Header.astro';
+import Menu from '../components/layout/Menu.astro';
+import PostMeta from '../components/ui/PostMeta.astro';
 import { Markup } from 'astro-remote';
-import CodeSlot from '../components/CodeSlot.astro';
-import IFrameSlot from '../components/IFrameSlot.astro';
-import RemotePicture from '../components/RemotePicture.astro';
+import CodeSlot from '../components/islands/CodeSlot.astro';
+import IFrameSlot from '../components/ui/IFrameSlot.astro';
+import RemotePicture from '../components/ui/RemotePicture.astro';
 import Columns from '../components/shortcode/Columns.astro';
 import Details from '../components/shortcode/Details.astro';
 import Link from '../components/shortcode/Link.astro';

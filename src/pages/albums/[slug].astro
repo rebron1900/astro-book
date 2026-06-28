@@ -3,12 +3,12 @@ import { extractAlbumsFromPosts, getSolarTermGroups } from '../../lib/albums';
 import { settings } from '../../api/store';
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Head from '../../components/Head.astro';
-import Comments from '../../components/Comments.astro';
-import Relitu from '../../components/Relitu.jsx';
-import Header from '../../components/Header.astro';
-import Menu from '../../components/Menu.astro';
-import RemotePicture from '../../components/RemotePicture.astro';
+import Head from '../../components/islands/Head.astro';
+import Comments from '../../components/islands/Comments.astro';
+import Relitu from '../../components/islands/Relitu.jsx';
+import Header from '../../components/layout/Header.astro';
+import Menu from '../../components/layout/Menu.astro';
+import RemotePicture from '../../components/ui/RemotePicture.astro';
 import { Masonry } from 'astro-masonry';
 
 export function getStaticPaths() {

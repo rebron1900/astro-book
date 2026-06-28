@@ -1,11 +1,11 @@
 ---
 import { BadgeCheck } from '@lucide/astro';
-import { settings as site } from '../api/store';
+import { settings as site } from '../../api/store';
 ---
 
 <h2 class="book-brand">
     <script>
-        import initWebSocket from '../api/actives';
+        import initWebSocket from '../../api/actives';
         import tippy from 'tippy.js';
 
         document.addEventListener('astro:page-load', () => {

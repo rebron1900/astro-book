@@ -1,6 +1,6 @@
 // src/components/DateGrid.jsx
-import { postsAll } from '../api/store';
-import { normalizeSlug, normalizeData } from '../lib/utils/help';
+import { postsAll } from '../../api/store';
+import { normalizeSlug, normalizeData } from '../../lib/utils/help';
 
 function parseDate(str) {
     return new Date(str);
