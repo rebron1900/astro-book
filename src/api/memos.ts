@@ -1,16 +1,11 @@
 import config from '../config';
-import type { DataSource } from './types';
-
-export interface Memo {
-    [key: string]: unknown;
-    type: string;
-}
+import type { DataSource, Memo } from './types';
 
 export async function getMemos(): Promise<Memo[]> {
-    const memos = await fetch(config.memos.url).then((res) => res.json());
-    return memos.map((memo: any) => ({
+    const memos = (await fetch(config.memos.url).then((res) => res.json())) as Memo[];
+    return memos.map((memo) => ({
         ...memo,
-        type: 'memo' // 为 Memos 添加 type 属性
+        type: 'memo'
     }));
 }
 

@@ -1,9 +1,9 @@
-import type { DataSource } from './types';
+import type { DataSource, FluxEntry, FluxFeed } from './types';
 
 const fluxURL = import.meta.env.FLUX_URL;
 const fluxKey = import.meta.env.FLUX_KEY;
 
-export async function getFlux() {
+export async function getFlux(): Promise<FluxEntry[]> {
     try {
         // 第一步：获取所有feeds
         const feedsResponse = await fetch(`${fluxURL}/categories/4/feeds`, {
@@ -18,10 +18,10 @@ export async function getFlux() {
         }
 
         const feedsData = await feedsResponse.json();
-        const feeds = feedsData.feeds || feedsData;
+        const feeds: FluxFeed[] = feedsData.feeds || feedsData;
 
         // 第二步：获取每个feed的最新文章
-        const feedPromises = feeds.map(async (feed) => {
+        const feedPromises = feeds.map(async (feed): Promise<FluxEntry | null> => {
             try {
                 // 使用limit=1和order参数直接获取最新一条数据
                 const entriesResponse = await fetch(`${fluxURL}/feeds/${feed.id}/entries?limit=1&order=published_at&direction=desc`, {
@@ -69,7 +69,7 @@ export async function getFlux() {
         const results = await Promise.all(feedPromises);
 
         // 过滤掉null值（只返回有文章的feed）
-        const validEntries = results.filter((entry) => entry !== null);
+        const validEntries = results.filter((entry): entry is FluxEntry => entry !== null);
 
         // 按更新时间排序（最新的在前）
         validEntries.sort((a, b) => {
@@ -85,7 +85,7 @@ export async function getFlux() {
     }
 }
 
-export const fluxSource: DataSource = {
+export const fluxSource: DataSource<FluxEntry[]> = {
     name: 'flux',
     fetch: getFlux
 };

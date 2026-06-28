@@ -3,3 +3,50 @@ export interface DataSource<T = unknown> {
     fetch(): Promise<T>;
     transform?(raw: unknown): T;
 }
+
+/** Memos 微博客条目（按实际 API 响应字段） */
+export interface Memo {
+    type: string;
+    content: string;
+    createdTs: number;
+    updatedTs: number;
+    creatorName: string;
+    resourceList: Array<{
+        type: string;
+        filename: string;
+        externalLink: string;
+    }>;
+    [key: string]: unknown;
+}
+
+/** Flux RSS 单条聚合结果 */
+export interface FluxEntry {
+    feed_id: string;
+    feed: FluxFeed;
+    update_timestamp: number;
+    title?: string;
+    url?: string;
+    content?: string;
+    published_at?: string;
+    created_at?: string;
+    [key: string]: unknown;
+}
+
+export interface FluxFeed {
+    id: string;
+    site_url: string;
+    title?: string;
+    [key: string]: unknown;
+}
+
+/** NeoDB 书影条目（响应为对象数组） */
+export interface NeoDBItem {
+    uuid: string;
+    url: string;
+    api_url: string;
+    category: string;
+    parent_uuid: string | null;
+    display_title: string;
+    external_resources: Array<{ url: string }>;
+    [key: string]: unknown;
+}
