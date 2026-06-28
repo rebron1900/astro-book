@@ -24,7 +24,7 @@ const nav = settings?.navigation ?? [];
 
 const menus = nav.map((rawItem) => {
     // 先准备返回骨架
-    const node: { icon?: any; item: typeof rawItem; cleanLabel?: any } = { item: rawItem };
+    const node: { icon?: typeof StickyNote; item: typeof rawItem; cleanLabel?: string } = { item: rawItem };
 
     // 尝试摘 emoji
     const emojiMatch = rawItem.label.match(EMOJI_SEQ);

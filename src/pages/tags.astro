@@ -1,5 +1,6 @@
 ---
 import { tags, pages, settings } from '../api/store';
+import type { Tag } from '@ts-ghost/content-api';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/islands/Head.astro';
@@ -57,9 +58,9 @@ const page = pages.find((post) => post.slug == 'tags');
         <div class="book-columns flex flex-wrap">
             {
                 tags
-                    .filter((item: any) => item.visibility === 'public')
-                    .sort((a: any, b: any) => b.count.posts - a.count.posts)
-                    .map((item: any) => (
+                    .filter((item: Tag) => item.visibility === 'public')
+                    .sort((a: Tag, b: Tag) => b.count.posts - a.count.posts)
+                    .map((item: Tag) => (
                         <div class="flex-even markdown-inner">
                             {' '}
                             <a href={`/tag${normalizeSlug(item.slug)}`}>#{item.name}</a>

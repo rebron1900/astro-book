@@ -1,6 +1,7 @@
 ---
 import { tags } from '../../api/store';
 import { normalizeSlug } from '../../lib/utils/help';
+import type { Tag } from '@ts-ghost/content-api';
 ---
 
 <nav>
@@ -10,10 +11,10 @@ import { normalizeSlug } from '../../lib/utils/help';
             <ul>
                 {
                     tags
-                        .filter((item: any) => item.visibility === 'public' && item.count.posts >= 3)
-                        .sort((a: any, b: any) => b.count.posts - a.count.posts)
+                        .filter((item: Tag) => item.visibility === 'public' && item.count.posts >= 3)
+                        .sort((a: Tag, b: Tag) => b.count.posts - a.count.posts)
                         .slice(0, 15)
-                        .map((item: any) => (
+                        .map((item: Tag) => (
                             <li class="flex justify-between">
                                 <a href={`/tag${normalizeSlug(item.slug)}`}>#{item.name}</a>
                                 <span>{item.count.posts}</span>

@@ -1,4 +1,5 @@
 import { postsAll } from '../api/store';
+import type { Post, Tag } from '@ts-ghost/content-api';
 
 export interface AlbumImage {
     url: string;
@@ -12,8 +13,8 @@ export interface Album {
     images: AlbumImage[];
     coverImages: AlbumImage[];
     postCount: number;
-    posts: any[];
-    tag: any;
+    posts: Post[];
+    tag: Tag;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -74,7 +75,7 @@ export function extractAlbumsFromPosts() {
     return Array.from(albums.values()).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 }
 
-function extractImagesFromPost(post: any): AlbumImage[] {
+function extractImagesFromPost(post: Post): AlbumImage[] {
     const images: AlbumImage[] = [];
 
     // 从文章内容中提取图片
@@ -119,7 +120,7 @@ export function getAlbumBySlug(slug: string) {
     return albums.find((album) => album.slug === slug);
 }
 
-export function getSolarTermGroups(album: any) {
+export function getSolarTermGroups(album: Album) {
     // 1. 24 节气的固定顺序
     const SOLAR_TERMS = [
         '立春',
@@ -149,11 +150,11 @@ export function getSolarTermGroups(album: any) {
     ];
 
     // 2. 先按年份分组，再在每个年份内按节气分组
-    const yearlyGroups: any = {};
-    const processedUrls = new Set(); // 用于去重图片URL
+    const yearlyGroups: Record<number, Record<string, { term: string; images: AlbumImage[]; posts: Post[] }>> = {};
+    const processedUrls = new Set<string>(); // 用于去重图片URL
 
     // 3. 遍历相册中的所有文章，按年份和节气分组
-    album.posts.forEach((post: any) => {
+    album.posts.forEach((post) => {
         const year = new Date(post.created_at).getFullYear();
 
         // 找到文章标题中包含的所有节气
@@ -197,7 +198,7 @@ export function getSolarTermGroups(album: any) {
     });
 
     // 4. 为每个年份生成完整的24节气数据，包括缺失的节气
-    const yearlySolarTermGroups: any[] = [];
+    const yearlySolarTermGroups: Array<{ term: string; images: AlbumImage[]; posts: Post[] }> = [];
 
     // 按年份降序排序
     const sortedYears = Object.keys(yearlyGroups).sort((a, b) => Number(b) - Number(a));
