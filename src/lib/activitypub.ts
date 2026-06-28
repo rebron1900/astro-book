@@ -1,6 +1,6 @@
 import tippy from 'tippy.js';
 import 'tippy.js/themes/light.css';
-import { normalizeData } from '../utils/help';
+import { normalizeData } from './utils/help';
 
 // 配置常量
 const API_ENDPOINT = 'https://hapi.190102.xyz:4433/blog/interactions';
