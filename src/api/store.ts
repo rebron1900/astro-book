@@ -1,6 +1,5 @@
 import { getSettings, getPosts, getAllTags, getAllPages, getAllPosts, getNeodb, getFlux, getMemos, getAllAuthors, getAllContent } from './index';
 import { atom } from 'nanostores';
-// import { minfont } from '../utils/help';
 
 const settingsStore = atom(await getSettings());
 const postsStore = atom(await getPosts());
