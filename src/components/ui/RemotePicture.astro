@@ -73,7 +73,7 @@ const generateImageSrcset = (image: string, isLocal = false) => {
     let imageSrcset = [];
     const imageWidths = [400, 600, 800, 1000, 1200, 1400, 1600, 1800];
 
-    if (image.match(import.meta.env.CND_URL)) {
+    if (image.match(import.meta.env.CDN_URL)) {
         // If image is local, determine the width of the image and then generate
         // markup for images at sizes smaller than the image
         imageWidths.forEach((width) => {

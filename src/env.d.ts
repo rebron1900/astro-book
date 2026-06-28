@@ -6,7 +6,12 @@ interface ImportMetaEnv {
     readonly NEODB_URL: string;
     readonly FLUX_URL: string;
     readonly FLUX_KEY: string;
-    readonly CND_URL: string;
+    readonly CDN_URL: string;
     readonly MAP_URL: string;
     readonly MAP_KEY: string;
+    readonly SITE: string;
+}
+
+interface ImportMeta {
+    readonly env: ImportMetaEnv;
 }
