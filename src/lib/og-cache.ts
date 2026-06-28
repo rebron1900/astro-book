@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 
 // 缓存文件路径
-const CACHE_DIR = path.join(process.cwd(), 'src', 'data');
+const CACHE_DIR = path.join(process.cwd(), 'cache');
 const CACHE_FILE = path.join(CACHE_DIR, 'og-cache.json');
 
 // 缓存有效期（毫秒） - 7天

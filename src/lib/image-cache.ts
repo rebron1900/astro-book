@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-const CACHE_FILE = path.join(process.cwd(), 'src', 'data', 'image-meta.json');
+const CACHE_FILE = path.join(process.cwd(), 'cache', 'image-meta.json');
 
 class ImageCache {
     constructor() {
