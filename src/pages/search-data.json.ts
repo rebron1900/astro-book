@@ -1,7 +1,8 @@
+import type { APIContext } from 'astro';
 import { postsAll } from '../api/store';
 import { normalizeSlug, normalizeData } from '../lib/utils/help';
 
-export async function GET(context) {
+export async function GET(context: APIContext) {
     const postsdata = postsAll.map((item, index) => ({
         id: index,
         href: normalizeSlug(item.slug),

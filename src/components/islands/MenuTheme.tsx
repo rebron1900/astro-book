@@ -1,6 +1,6 @@
 import { getSvg } from '../../lib/utils/help';
 import { createSignal, For, onMount } from 'solid-js';
-import config from '../../config';
+import config, { type ThemeConfig } from '../../config';
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 
@@ -34,7 +34,7 @@ const MenuTheme = () => {
         });
     };
 
-    const changeTheme = (theme) => {
+    const changeTheme = (theme: ThemeConfig) => {
         localStorage.setItem('name', theme.desc);
         localStorage.setItem('theme', theme.name);
         localStorage.setItem('themetype', theme.type);
@@ -43,7 +43,7 @@ const MenuTheme = () => {
     };
 
     // theme为需要切换的主题名称
-    const initViewTrans = (theme) => {
+    const initViewTrans = (theme: ThemeConfig) => {
         if (document.documentElement.classList.contains('reduce')) {
             changeTheme(theme);
             return;

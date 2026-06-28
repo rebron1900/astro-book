@@ -1,8 +1,9 @@
 import rss from '@astrojs/rss';
+import type { APIContext } from 'astro';
 import { settings, postsAll } from '../api/store';
 
 const site = import.meta.env.SITE;
-export async function GET(context) {
+export async function GET(context: APIContext) {
     return rss({
         title: settings.title,
         description: settings.description,

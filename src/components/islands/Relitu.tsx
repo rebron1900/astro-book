@@ -1,12 +1,13 @@
 // src/components/DateGrid.jsx
 import { postsAll } from '../../api/store';
+import type { ExPost } from '../../api/ghost';
 import { normalizeSlug, normalizeData } from '../../lib/utils/help';
 
-function parseDate(str) {
+function parseDate(str: string) {
     return new Date(str);
 }
 
-function getThisSunday(date) {
+function getThisSunday(date: Date) {
     const dayOfWeek = date.getDay();
     const daysToSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
     const thisSunday = new Date(date);
@@ -14,17 +15,19 @@ function getThisSunday(date) {
     return thisSunday;
 }
 
-const calculateTextLength = (htmlString) => {
+const calculateTextLength = (htmlString: string) => {
     // 使用正则表达式去除 HTML 标签
     const textContent = htmlString.replace(/<[^>]*>/g, '');
     return textContent.trim().length; // 返回文字数量
 };
 
-function dateBuild(data, today) {
-    const dateCounts = {};
+function dateBuild(data: ExPost[], today: Date) {
+    const dateCounts: Record<string, number> = {};
     data.forEach((item) => {
         const dateStr = normalizeData(item.published_at);
-        dateCounts[dateStr] = (dateCounts[dateStr] || 0) + 1;
+        if (dateStr) {
+            dateCounts[dateStr] = (dateCounts[dateStr] || 0) + 1;
+        }
     });
 
     const result = [];

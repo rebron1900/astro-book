@@ -1,10 +1,28 @@
 // src/components/StravaRelitu.jsx
 
-function parseDate(str) {
+interface StravaActivity {
+    name: string;
+    distance: number;
+    moving_time: string | number;
+    type: string;
+    start_date_local: string;
+    run_id: string | number;
+}
+
+interface StravaActivityDetail {
+    name: string;
+    distance: number;
+    moving_time: number;
+    type: string;
+    start_date: string;
+    id: string | number;
+}
+
+function parseDate(str: string) {
     return new Date(str);
 }
 
-function getThisSunday(date) {
+function getThisSunday(date: Date) {
     const dayOfWeek = date.getDay();
     const daysToSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
     const thisSunday = new Date(date);
@@ -12,9 +30,9 @@ function getThisSunday(date) {
     return thisSunday;
 }
 
-function dateBuild(activities, today) {
-    const activityCounts = {};
-    const activityDetails = {};
+function dateBuild(activities: StravaActivity[], today: Date) {
+    const activityCounts: Record<string, number> = {};
+    const activityDetails: Record<string, StravaActivityDetail[]> = {};
 
     activities.forEach((activity) => {
         // Handle both ISO format (2024-03-12T07:05:55) and space format (2024-03-12 07:05:55)
@@ -73,7 +91,7 @@ function dateBuild(activities, today) {
     return result;
 }
 
-const DateGrid = ({ activities = [] }) => {
+const DateGrid = ({ activities = [] }: { activities?: StravaActivity[] }) => {
     const today = new Date();
     const builtData = dateBuild(activities, today);
 
@@ -88,14 +106,14 @@ const DateGrid = ({ activities = [] }) => {
         return cols;
     };
 
-    const formatDistance = (meters) => {
+    const formatDistance = (meters: number) => {
         if (meters < 1000) {
             return `${Math.round(meters)}m`;
         }
         return `${(meters / 1000).toFixed(1)}km`;
     };
 
-    const formatDuration = (seconds) => {
+    const formatDuration = (seconds: number) => {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
         if (hours > 0) {
