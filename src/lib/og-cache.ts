@@ -6,6 +6,13 @@
 import fs from 'fs';
 import path from 'path';
 
+interface OGCacheEntry {
+    data: unknown;
+    timestamp: number;
+}
+
+type OGCache = Record<string, OGCacheEntry>;
+
 // 缓存文件路径
 const CACHE_DIR = path.join(process.cwd(), 'cache');
 const CACHE_FILE = path.join(CACHE_DIR, 'og-cache.json');
@@ -21,14 +28,14 @@ function ensureCacheDir() {
 }
 
 // 读取缓存
-function readCache() {
+function readCache(): OGCache {
     try {
         ensureCacheDir();
         if (!fs.existsSync(CACHE_FILE)) {
             return {};
         }
         const data = fs.readFileSync(CACHE_FILE, 'utf8');
-        return JSON.parse(data);
+        return JSON.parse(data) as OGCache;
     } catch (error) {
         console.error('读取OG缓存失败:', error);
         return {};
@@ -36,7 +43,7 @@ function readCache() {
 }
 
 // 写入缓存
-function writeCache(cache) {
+function writeCache(cache: OGCache) {
     try {
         ensureCacheDir();
         fs.writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2), 'utf8');
@@ -46,14 +53,14 @@ function writeCache(cache) {
 }
 
 // 获取缓存的OG信息
-export function getCachedOG(url) {
+export function getCachedOG(url: string) {
     const cache = readCache();
     const cached = cache[url];
-    
+
     if (!cached) {
         return null;
     }
-    
+
     // 检查缓存是否过期
     const now = Date.now();
     if (now - cached.timestamp > CACHE_TTL) {
@@ -62,12 +69,12 @@ export function getCachedOG(url) {
         writeCache(cache);
         return null;
     }
-    
+
     return cached.data;
 }
 
 // 设置OG信息到缓存
-export function setCachedOG(url, data) {
+export function setCachedOG(url: string, data: unknown) {
     const cache = readCache();
     cache[url] = {
         data,
@@ -81,14 +88,14 @@ export function cleanupCache() {
     const cache = readCache();
     const now = Date.now();
     let hasChanges = false;
-    
+
     for (const [url, entry] of Object.entries(cache)) {
         if (now - entry.timestamp > CACHE_TTL) {
             delete cache[url];
             hasChanges = true;
         }
     }
-    
+
     if (hasChanges) {
         writeCache(cache);
     }
@@ -98,12 +105,12 @@ export function cleanupCache() {
 export function getCacheStats() {
     const cache = readCache();
     const now = Date.now();
-    
+
     let total = 0;
     let valid = 0;
     let expired = 0;
-    
-    for (const [url, entry] of Object.entries(cache)) {
+
+    for (const entry of Object.values(cache)) {
         total++;
         if (now - entry.timestamp <= CACHE_TTL) {
             valid++;
@@ -111,7 +118,7 @@ export function getCacheStats() {
             expired++;
         }
     }
-    
+
     return {
         total,
         valid,

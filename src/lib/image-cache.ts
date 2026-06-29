@@ -4,6 +4,10 @@ import path from 'path';
 const CACHE_FILE = path.join(process.cwd(), 'cache', 'image-meta.json');
 
 class ImageCache {
+    private cache: Map<string, unknown>;
+    private loaded: boolean;
+    private saveTimeout: NodeJS.Timeout | null;
+
     constructor() {
         this.cache = new Map();
         this.loaded = false; // 节流或防抖变量
@@ -18,7 +22,7 @@ class ImageCache {
             this.cache = new Map(Object.entries(parsed));
         } catch (error) {
             // 文件不存在是正常情况，可以忽略
-            if (error.code !== 'ENOENT') {
+            if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
                 console.warn('Failed to load image cache:', error);
             }
         }
@@ -39,18 +43,18 @@ class ImageCache {
         }, 1000); // 1秒内没有新的写入操作才保存
     }
 
-    async get(key) {
+    async get(key: string) {
         await this.load();
         return this.cache.get(key);
     }
 
-    async set(key, value) {
+    async set(key: string, value: unknown) {
         await this.load();
         this.cache.set(key, value);
         this.save(); // 触发防抖保存
     }
 
-    async has(key) {
+    async has(key: string) {
         await this.load();
         return this.cache.has(key);
     }

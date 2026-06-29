@@ -39,7 +39,20 @@ export interface FluxFeed {
     [key: string]: unknown;
 }
 
-/** NeoDB 书影条目（响应为对象数组） */
+/** NeoDB 书影条目（标记数据，来自 doumark-action 输出） */
+export interface NeoDBMark {
+    shelf: string;
+    visibility: string;
+    title: string;
+    comment_text: string;
+    rating_grade: number;
+    type: string;
+    item: NeoDBItem;
+    created_time: string;
+    [key: string]: unknown;
+}
+
+/** NeoDB 书影作品本体 */
 export interface NeoDBItem {
     uuid: string;
     url: string;
@@ -48,5 +61,14 @@ export interface NeoDBItem {
     parent_uuid: string | null;
     display_title: string;
     external_resources: Array<{ url: string }>;
+    id?: string;
+    title?: string;
+    cover_image_url?: string;
+    [key: string]: unknown;
+}
+
+/** NeoDB 标记接口响应（{ data: NeoDBMark[] }） */
+export interface NeoDBResponse {
+    data: NeoDBMark[];
     [key: string]: unknown;
 }

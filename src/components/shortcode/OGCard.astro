@@ -11,6 +11,15 @@ export interface Props {
     text?: string;
 }
 
+interface OGData {
+    title: string;
+    description: string;
+    image: string;
+    siteName: string;
+    url: string;
+    starCount: number;
+}
+
 const { href, text } = Astro.props;
 
 /* 1. 手写白名单规则（代替正则） */
@@ -67,11 +76,11 @@ if (href) {
 if (!links.length) return null;
 
 /* 3. 通用解析器（带缓存） */
-async function fetchOG(url: string) {
+async function fetchOG(url: string): Promise<OGData | null> {
     // 先检查缓存
     const cached = getCachedOG(url);
     if (cached) {
-        return cached;
+        return cached as OGData;
     }
 
     try {
@@ -105,7 +114,7 @@ async function fetchOG(url: string) {
                 if (scriptTag) {
                     const raw = scriptTag.text.trim();
                     if (raw) {
-                        const parsed = JSON.parse(raw);
+                        const parsed = JSON.parse(raw) as { '@context'?: unknown; '@type'?: unknown; aggregateRating?: { ratingValue?: number } };
                         // 简单校验：必须是对象且带 @context / @type
                         if (parsed && typeof parsed === 'object' && parsed['@context'] && parsed['@type']) {
                             starCount = parsed.aggregateRating?.ratingValue ?? 0;
@@ -137,7 +146,7 @@ async function fetchOG(url: string) {
 }
 
 /* 4. 并发抓取所有链接的元数据 */
-const cards = (await Promise.all(links.map(fetchOG))).filter(Boolean);
+const cards = (await Promise.all(links.map(fetchOG))).filter((og): og is OGData => og !== null);
 if (!cards.length) return null;
 ---
 

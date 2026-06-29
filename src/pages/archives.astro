@@ -13,7 +13,6 @@ import Menu from '../components/layout/Menu.astro';
 import { Markup } from 'astro-remote';
 import CodeSlot from '../components/islands/CodeSlot.astro';
 import IFrameSlot from '../components/ui/IFrameSlot.astro';
-import PostMeta from '../components/ui/PostMeta.astro';
 import RemotePicture from '../components/ui/RemotePicture.astro';
 import Columns from '../components/shortcode/Columns.astro';
 import Details from '../components/shortcode/Details.astro';
@@ -27,14 +26,14 @@ const groupdata = groupByDate(postsAll);
 <BaseLayout>
     <Head slot="head" post={page} site={settings} title={page?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
 
-    <Header slot="header" title={page.title} />
+    <Header slot="header" title={page?.title} />
     <Menu slot="menu" />
 
     <div slot="content" class="markdown book-article">
-        <h1 class="book-title"><Package /> {page.title}</h1>
+        <h1 class="book-title"><Package /> {page?.title}</h1>
         <p></p>
         {
-            page.html && (
+            page?.html && (
                 <Markup
                     content={page.html}
                     sanitize={{ allowComponents: true, allowCustomElements: true }}
@@ -45,17 +44,17 @@ const groupdata = groupByDate(postsAll);
         <div>
             {
                 groupdata.map((post) => (
-                    <div key={post.year}>
+                    <div>
                         <h2>{post.year}</h2>
                         {post.data.map((month) => (
-                            <div key={month.month}>
+                            <div>
                                 <h3 id={`${post.year}-${month.month}`}>
-                                    {month.month.toLocaleString('default', { month: 'long' })} / {month.month}
+                                    {month.month} / {month.month}
                                 </h3>
                                 {month.data && month.data.length > 0 && (
                                     <ul>
                                         {month.data.map((monthdata) => (
-                                            <li key={monthdata.slug}>
+                                            <li>
                                                 <div>
                                                     <a href={normalizeSlug(monthdata.slug)}>{monthdata.title}</a>
                                                     <span class="float-right">{normalizeData(monthdata.published_at)}号</span>

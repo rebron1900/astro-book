@@ -1,5 +1,5 @@
 ---
-import { pages, settings, neodb } from '../api/store';
+import { pages, settings } from '../api/store';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/islands/Head.astro';
@@ -19,6 +19,10 @@ import OGCard from '../components/shortcode/OGCard.astro';
 import StravaRelitu from '../components/islands/StravaRelitu.jsx';
 
 const page = pages.find((post) => post.slug == 'strava');
+
+if (!page) {
+    throw new Error('strava page not found');
+}
 
 // Fetch running activities from GitHub
 const activitiesUrl = 'https://raw.githubusercontent.com/rebron1900/running_page/2aa7902357e6212c61e13a3e7d143d50487d8fc8/src/static/activities.json';

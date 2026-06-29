@@ -13,7 +13,6 @@ import Menu from '../components/layout/Menu.astro';
 import { Markup } from 'astro-remote';
 import CodeSlot from '../components/islands/CodeSlot.astro';
 import IFrameSlot from '../components/ui/IFrameSlot.astro';
-import PostMeta from '../components/ui/PostMeta.astro';
 import RemotePicture from '../components/ui/RemotePicture.astro';
 import Footer from '../components/layout/Footer.astro';
 import Now from '../components/shortcode/Now.astro';
@@ -30,14 +29,14 @@ const page = pages.find((post) => post.slug == 'tags');
 <BaseLayout>
     <Head slot="head" post={page} site={settings} title={page?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
 
-    <Header slot="header" title={page.title} />
+    <Header slot="header" title={page?.title} />
     <Menu slot="menu" />
 
     <div slot="content" class="markdown book-article">
-        <h1 class="book-title"><ITags /> {page.title}</h1>
+        <h1 class="book-title"><ITags /> {page?.title}</h1>
         <p></p>
         {
-            page.html && (
+            page?.html && (
                 <Markup
                     content={page.html}
                     sanitize={{ allowComponents: true, allowCustomElements: true }}
@@ -59,12 +58,12 @@ const page = pages.find((post) => post.slug == 'tags');
             {
                 tags
                     .filter((item: Tag) => item.visibility === 'public')
-                    .sort((a: Tag, b: Tag) => b.count.posts - a.count.posts)
+                    .sort((a: Tag, b: Tag) => (b.count?.posts ?? 0) - (a.count?.posts ?? 0))
                     .map((item: Tag) => (
                         <div class="flex-even markdown-inner">
                             {' '}
                             <a href={`/tag${normalizeSlug(item.slug)}`}>#{item.name}</a>
-                            <sup>{item.count.posts}</sup>
+                            <sup>{item.count?.posts ?? 0}</sup>
                         </div>
                     ))
             }

@@ -8,7 +8,6 @@ import Comments from '../../components/islands/Comments.astro';
 import Relitu from '../../components/islands/Relitu.jsx';
 import Header from '../../components/layout/Header.astro';
 import Menu from '../../components/layout/Menu.astro';
-import PostMeta from '../../components/ui/PostMeta.astro';
 import { Markup } from 'astro-remote';
 import CodeSlot from '../../components/islands/CodeSlot.astro';
 import IFrameSlot from '../../components/ui/IFrameSlot.astro';
@@ -21,6 +20,10 @@ import { Images } from '@lucide/astro';
 
 const page = pages.find((post) => post.slug == 'albums');
 const albums = extractAlbumsFromPosts();
+
+if (!page) {
+    throw new Error('albums page not found');
+}
 ---
 
 <BaseLayout post={page}>

@@ -18,10 +18,6 @@ interface StravaActivityDetail {
     id: string | number;
 }
 
-function parseDate(str: string) {
-    return new Date(str);
-}
-
 function getThisSunday(date: Date) {
     const dayOfWeek = date.getDay();
     const daysToSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
@@ -127,8 +123,7 @@ const DateGrid = ({ activities = [] }: { activities?: StravaActivity[] }) => {
             <strong>运动热力图</strong>
             <div id='relitu-container' class='relitu-container'>
                 {columns().map((column, colIndex) => (
-                    <div class='grid-column' key={colIndex}>
-                        {column.map((day, index) => {
+                    <div class='grid-column'>{column.map((day, index) => {
                             const currentStyle = day.date === new Date().toISOString().split('T')[0] ? 'current-item' : '';
 
                             const tooltipActivities = day.activities
@@ -149,7 +144,7 @@ const DateGrid = ({ activities = [] }: { activities?: StravaActivity[] }) => {
                             }
 
                             return (
-                                <div class='grid-item' key={index}>
+                                <div class='grid-item'>
                                     <div
                                         role='button'
                                         title={`${day.date}，${day.count} 次运动`}

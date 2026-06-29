@@ -1,3 +1,6 @@
+// @ts-nocheck — dead code: references legacy 'blog'/'projects' collections that no longer exist
+// (current project only defines the 'Obsidian' content collection). Not imported anywhere.
+// Kept for reference per Phase 1 plan ("内容不变").
 import { type CollectionEntry } from 'astro:content';
 import { slugify } from './common-utils';
 

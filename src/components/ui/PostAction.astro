@@ -19,77 +19,77 @@ const { post } = Astro.props;
 
     document.addEventListener('astro:page-load', () => {
         cocoMessage.insertCSS();
-        if (document.querySelector('.post_like')) {
-            let post_id = document.querySelector('.post_like').dataset.postid;
-            let apiUrl = document.querySelector('.post_like').dataset.apiurl;
+        const likeNode = document.querySelector<HTMLElement>('.post_like');
+        if (likeNode) {
+            const post_id = likeNode.dataset.postid ?? '';
+            const apiUrl = likeNode.dataset.apiurl ?? '';
 
             const postAction = {
-                like: (post_id, apiUrl) => {
+                like: (post_id: string, apiUrl: string) => {
                     var likelist = localStorage.getItem('lieklist') || '';
-                    var likeButton = document.querySelector('.post_like');
-                    var likeText = document.querySelector('.post_likes');
-                    var mail = JSON.parse(localStorage.getItem('ArtalkUser')) != null ? JSON.parse(localStorage.getItem('ArtalkUser')).mail : '';
+                    var likeButton = document.querySelector<HTMLElement>('.post_like');
+                    var likeText = document.querySelector<HTMLElement>('.post_likes');
 
                     if (likelist.indexOf(post_id + ',') != -1) {
                         cocoMessage.success('你已经点过赞了 ❤️');
-                        likeButton.classList.add('active');
+                        likeButton?.classList.add('active');
                     } else {
                         fetch(`${apiUrl}/action?type=like&post_id=${post_id}`, { method: 'post' })
                             .then((res) => {
                                 return res.json();
                             })
-                            .then((data) => {
+                            .then((data: { likes: number }) => {
                                 cocoMessage.success('点赞成功，谢谢你的 ❤️');
                                 localStorage.setItem('lieklist', likelist + post_id + ',');
-                                likeButton.classList.add('active');
-                                likeText.innerText = data.likes;
+                                likeButton?.classList.add('active');
+                                if (likeText) likeText.innerText = String(data.likes);
                             })
                             .catch((error) => {
                                 console.error('There was a problem with the fetch operation:', error);
                             });
                     }
                 },
-                initLike: (post_id, apiUrl) => {
+                initLike: (post_id: string, apiUrl: string) => {
                     var likelist = localStorage.getItem('lieklist') || '';
-                    var likeButton = document.querySelector('.post_like');
-                    var likeText = document.querySelector('.post_likes');
+                    var likeButton = document.querySelector<HTMLElement>('.post_like');
+                    var likeText = document.querySelector<HTMLElement>('.post_likes');
                     if (likelist.indexOf(post_id + ',') != -1) {
-                        likeButton.classList.add('active');
+                        likeButton?.classList.add('active');
                     }
                     fetch(`${apiUrl}/action?type=like&post_id=${post_id}`)
                         .then((res) => {
                             return res.json();
                         })
-                        .then((data) => {
+                        .then((data: { likes?: number }) => {
                             if (data.likes) {
-                                likeButton.dataset.like = data.likes;
-                                likeText.innerText = data.likes;
+                                if (likeButton) likeButton.dataset.like = String(data.likes);
+                                if (likeText) likeText.innerText = String(data.likes);
                             } else {
-                                likeButton.dataset.like = 0;
-                                likeText.innerText = 0;
+                                if (likeButton) likeButton.dataset.like = '0';
+                                if (likeText) likeText.innerText = '0';
                             }
                         })
                         .catch((error) => {
-                            likeButton.dataset.like = 0;
-                            likeText.innerText = 0;
+                            if (likeButton) likeButton.dataset.like = '0';
+                            if (likeText) likeText.innerText = '0';
                             console.error('There was a problem with the fetch operation:', error);
                         });
                     return true;
                 },
-                initViews: (post_id, apiUrl) => {
+                initViews: (post_id: string, apiUrl: string) => {
                     var viewlist = localStorage.getItem('viewlist') || '';
-                    var viewText = document.querySelector('.post_views');
+                    var viewText = document.querySelector<HTMLElement>('.post_views');
 
                     if (viewlist.indexOf(post_id + ',') != -1) {
                         fetch(`${apiUrl}/action?type=view&post_id=${post_id}`)
                             .then((res) => {
                                 return res.json();
                             })
-                            .then((data) => {
+                            .then((data: { Views?: number }) => {
                                 if (data.Views) {
-                                    viewText.innerText = data.Views;
+                                    if (viewText) viewText.innerText = String(data.Views);
                                 } else {
-                                    viewText.innerText = 0;
+                                    if (viewText) viewText.innerText = '0';
                                 }
                             });
                     } else {
@@ -97,12 +97,12 @@ const { post } = Astro.props;
                             .then((res) => {
                                 return res.json();
                             })
-                            .then((data) => {
+                            .then((data: { Views: number }) => {
                                 localStorage.setItem('viewlist', viewlist + post_id + ',');
-                                viewText.innerText = data.Views;
+                                if (viewText) viewText.innerText = String(data.Views);
                             })
                             .catch((error) => {
-                                viewText.innerText = 0;
+                                if (viewText) viewText.innerText = '0';
                                 console.error('There was a problem with the fetch operation:', error);
                             });
                     }
@@ -113,7 +113,7 @@ const { post } = Astro.props;
 
             postAction.initLike(post_id, apiUrl);
             postAction.initViews(post_id, apiUrl);
-            document.querySelector('.post_like').addEventListener('click', () => {
+            likeNode.addEventListener('click', () => {
                 postAction.like(post_id, apiUrl);
             });
         }

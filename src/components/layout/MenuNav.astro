@@ -6,7 +6,7 @@ const { title } = Astro.props;
 
 const EMOJI_SEQ = /(\p{RI}\p{RI}|\p{Emoji}(\p{Emoji_Modifier}|\u200D\p{Emoji})*)$/u;
 
-const ICON_MAP = {
+const ICON_MAP: Record<string, typeof StickyNote> = {
     '📄': StickyNote,
     '🏠': HouseHeart,
     '🚩': MessageCircleHeart,

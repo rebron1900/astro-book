@@ -13,7 +13,7 @@ const author = authors.authors[0];
 
 <div class="markdown hero">
     <h2 class="book-title"><a href="/about/">Hello，我是 {author.name}！<Sprout /></a></h2>
-    <div class="bio" set:html={marked.parse(author.bio)} />
+    <div class="bio" set:html={marked.parse(author.bio ?? '')} />
     <div class="social">
         {
             config.social.map((e) => (

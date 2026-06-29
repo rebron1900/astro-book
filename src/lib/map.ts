@@ -2,19 +2,48 @@ import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js';
 import MapboxLanguage from '@mapbox/mapbox-gl-language';
 import Supercluster from 'supercluster';
 import geojsonExtent from '@mapbox/geojson-extent/geojson-extent';
-import tippy from 'tippy.js';
+import tippy, { type Instance } from 'tippy.js';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
 import 'tippy.js/themes/light.css';
 
+interface GeoFeature {
+    properties: {
+        cluster?: boolean;
+        cluster_id?: number;
+        point_count?: number;
+        name?: string;
+        description?: string;
+    };
+    geometry: {
+        coordinates: [number, number];
+    };
+}
+
+interface GeoFeatureCollection {
+    type: string;
+    features: GeoFeature[];
+}
+
+interface PopupResult {
+    title: string;
+    url: string;
+    img: string;
+}
+
 // 定义 ControlButton 类
 class ControlButton {
-    constructor({ className = '', title = '' }) {
+    _className: string;
+    _title: string;
+    _btn!: HTMLButtonElement;
+    _container!: HTMLDivElement;
+
+    constructor({ className = '', title = '' }: { className?: string; title?: string }) {
         this._className = className;
         this._title = title;
     }
 
-    onAdd(map) {
+    onAdd(map: mapboxgl.Map) {
         this._btn = document.createElement('button');
         this._btn.className = `mapboxgl-ctrl-icon ${this._className}`;
         this._btn.type = 'button';
@@ -30,15 +59,23 @@ class ControlButton {
     }
 
     onRemove() {
-        this._container.parentNode.removeChild(this._container);
-        this._map = undefined;
+        this._container.parentNode?.removeChild(this._container);
     }
 }
 
 class MapHandler {
-    constructor({ data = [], key = '' }) {
+    data: GeoFeatureCollection;
+    clusterData: GeoFeatureCollection;
+    markers: mapboxgl.Marker[];
+    tippyInstances: Instance[];
+    key: string;
+    allFeatures: GeoFeature[];
+    map!: mapboxgl.Map;
+    cluster!: InstanceType<typeof Supercluster>;
+
+    constructor({ data, key }: { data: GeoFeatureCollection; key: string }) {
         this.data = data;
-        this.clusterData = [];
+        this.clusterData = { type: 'FeatureCollection', features: [] };
         this.markers = [];
         this.tippyInstances = [];
         this.key = key;
@@ -78,7 +115,7 @@ class MapHandler {
                 this.cluster.load(this.data.features);
                 this.clusterData = this._getClusterData(3);
                 this.updateMarkers();
-                document.querySelector('#map').classList.add('is-loaded');
+                document.querySelector('#map')?.classList.add('is-loaded');
             }
         });
 
@@ -95,10 +132,10 @@ class MapHandler {
         });
     }
 
-    _getClusterData(zoomLevel) {
+    _getClusterData(zoomLevel: number): GeoFeatureCollection {
         return {
             type: 'FeatureCollection',
-            features: this.cluster.getClusters([-180, -90, 180, 90], zoomLevel)
+            features: this.cluster.getClusters([-180, -90, 180, 90], zoomLevel) as GeoFeature[]
         };
     }
 
@@ -113,7 +150,7 @@ class MapHandler {
         });
     }
 
-    updateMarkersWithFilters(filters) {
+    updateMarkersWithFilters(filters: { cluster: boolean; withPost: boolean; withoutPost: boolean }) {
         this.markers.forEach((marker) => marker.remove());
         this.tippyInstances.forEach((instance) => instance.destroy());
         this.markers = [];
@@ -156,7 +193,7 @@ class MapHandler {
         });
     }
 
-    _hasAssociatedPost(description) {
+    _hasAssociatedPost(description: string | undefined): boolean {
         if (!description) return false;
 
         const regex = /\[(.*?)\]\((.*?)\)\((.*?)\)/g;
@@ -164,15 +201,15 @@ class MapHandler {
         return matches.length > 0;
     }
 
-    createMarker() {
+    createMarker(): HTMLDivElement {
         return document.createElement('div');
     }
 
-    addPhotoMarker(feature) {
+    addPhotoMarker(feature: GeoFeature) {
         const markerElement = this.createMarker();
         markerElement.className = 'marker';
 
-        let results;
+        let results: PopupResult[] | null = null;
 
         if (feature.properties.description) {
             const str = feature.properties.description;
@@ -213,10 +250,10 @@ class MapHandler {
         this.addMarkerToMap(markerElement, feature.geometry.coordinates);
     }
 
-    _extractResults(description) {
+    _extractResults(description: string | undefined): PopupResult[] | null {
         if (!description) return null;
 
-        const regex = /$$(.*?)$$$(.*?)$$(.*?)$/g;
+        const regex = /\[(.*?)\]\((.*?)\)\((.*?)\)/g;
         const matches = [...description.matchAll(regex)];
 
         return matches.map((match) => ({
@@ -226,7 +263,7 @@ class MapHandler {
         }));
     }
 
-    _generatePopupContent(name, results) {
+    _generatePopupContent(name: string | undefined, results: PopupResult[] | null): string {
         let content = `<strong>${name}</strong><br />`;
         if (results) {
             results.forEach((item) => {
@@ -238,17 +275,17 @@ class MapHandler {
         return content.replace(/<br \/?>$/, '');
     }
 
-    addClusterMarker(feature) {
+    addClusterMarker(feature: GeoFeature) {
         const clusterMarker = this.createMarker();
         clusterMarker.className = 'marker cluster';
-        clusterMarker.dataset.cardinality = Math.min(99, feature.properties.point_count);
+        clusterMarker.dataset.cardinality = String(Math.min(99, feature.properties.point_count ?? 0));
 
         clusterMarker.addEventListener('click', (event) => this.clusterDidClick(event, feature));
 
         const leaves = this.cluster.getLeaves(
-            feature.properties.cluster_id,
+            feature.properties.cluster_id!,
             Infinity // limit：想取多少就写多少，Infinity 表示全部
-        );
+        ) as GeoFeature[];
         const names = `<strong>包含了 ${clusterMarker.dataset.cardinality} 个地点</strong><br />` + leaves.map((leaf) => leaf.properties.name).join(', ');
 
         this.tippyInstances.push(
@@ -265,24 +302,24 @@ class MapHandler {
         this.addClusterToMap(clusterMarker, feature.geometry.coordinates);
     }
 
-    addClusterToMap(markerElement, coordinates) {
+    addClusterToMap(markerElement: HTMLDivElement, coordinates: [number, number]) {
         const marker = new mapboxgl.Marker(markerElement).setLngLat(coordinates).addTo(this.map);
         this.markers.push(marker);
         return marker;
     }
 
-    addMarkerToMap(markerElement, coordinates) {
+    addMarkerToMap(markerElement: HTMLDivElement, coordinates: [number, number]) {
         const marker = new mapboxgl.Marker(markerElement).setLngLat(coordinates).addTo(this.map);
         this.markers.push(marker);
         return marker;
     }
 
-    clusterDidClick(event, feature) {
-        const leaves = {
+    clusterDidClick(event: MouseEvent, feature: GeoFeature) {
+        const leaves: GeoFeatureCollection = {
             type: 'FeatureCollection',
-            features: this.cluster.getLeaves(feature.properties.cluster_id)
+            features: this.cluster.getLeaves(feature.properties.cluster_id!) as GeoFeature[]
         };
-        this.map.fitBounds(geojsonExtent(leaves), {
+        this.map.fitBounds(geojsonExtent(leaves) as mapboxgl.LngLatBoundsLike, {
             padding: 0.32 * this.map.getContainer().offsetHeight
         });
     }
@@ -290,7 +327,11 @@ class MapHandler {
 
 // 定义 FilterControl 类
 class FilterControl {
-    constructor(mapHandler) {
+    mapHandler: MapHandler;
+    activeFilters: { cluster: boolean; withPost: boolean; withoutPost: boolean };
+    _container!: HTMLDivElement;
+
+    constructor(mapHandler: MapHandler) {
         this.mapHandler = mapHandler;
         this.activeFilters = {
             cluster: true,
@@ -299,7 +340,7 @@ class FilterControl {
         };
     }
 
-    onAdd(map) {
+    onAdd(map: mapboxgl.Map) {
         this._container = document.createElement('div');
         this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group filter-control';
 
@@ -311,7 +352,7 @@ class FilterControl {
         return this._container;
     }
 
-    _createFilterButton(emoji, title, filterKey) {
+    _createFilterButton(emoji: string, title: string, filterKey: 'cluster' | 'withPost' | 'withoutPost') {
         const button = document.createElement('button');
         button.type = 'button';
         button.title = title;
@@ -326,7 +367,7 @@ class FilterControl {
         this._container.appendChild(button);
     }
 
-    toggleFilter(filterKey, button) {
+    toggleFilter(filterKey: 'cluster' | 'withPost' | 'withoutPost', button: HTMLButtonElement) {
         this.activeFilters[filterKey] = !this.activeFilters[filterKey];
 
         if (this.activeFilters[filterKey]) {
@@ -339,11 +380,11 @@ class FilterControl {
     }
 
     onRemove() {
-        this._container.parentNode.removeChild(this._container);
+        this._container.parentNode?.removeChild(this._container);
     }
 }
 
-export default function initMap(url, key) {
+export default function initMap(url: string, key: string) {
     url = 'https://ghproxy.net/https://raw.githubusercontent.com/rebron1900/doumark-action/master/data/geojson.json?short_path=832ba66';
     key = 'pk.eyJ1IjoiZmF0ZXNpbmdlciIsImEiOiJjanc4bXFocG8wMXM1NDNxanB0MG5sa2ZpIn0.HqA5Q8Y4Jp1s3_TQ-sqVoQ';
 
@@ -351,8 +392,8 @@ export default function initMap(url, key) {
     if (mapContainer) {
         fetch(url)
             .then((response) => response.json())
-            .then((data) => {
-                window.mapboxi = new MapHandler({ data, key });
+            .then((data: GeoFeatureCollection) => {
+                (window as unknown as { mapboxi: MapHandler }).mapboxi = new MapHandler({ data, key });
             });
     }
 }

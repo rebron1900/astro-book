@@ -11,13 +11,13 @@ import type { Tag } from '@ts-ghost/content-api';
             <ul>
                 {
                     tags
-                        .filter((item: Tag) => item.visibility === 'public' && item.count.posts >= 3)
-                        .sort((a: Tag, b: Tag) => b.count.posts - a.count.posts)
+                        .filter((item: Tag) => item.visibility === 'public' && (item.count?.posts ?? 0) >= 3)
+                        .sort((a: Tag, b: Tag) => (b.count?.posts ?? 0) - (a.count?.posts ?? 0))
                         .slice(0, 15)
                         .map((item: Tag) => (
                             <li class="flex justify-between">
                                 <a href={`/tag${normalizeSlug(item.slug)}`}>#{item.name}</a>
-                                <span>{item.count.posts}</span>
+                                <span>{item.count?.posts ?? 0}</span>
                             </li>
                         ))
                 }

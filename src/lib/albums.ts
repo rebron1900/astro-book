@@ -44,7 +44,7 @@ export function extractAlbumsFromPosts() {
                     posts: [],
                     tag: tag,
                     createdAt: new Date(post.created_at),
-                    updatedAt: new Date(post.updated_at)
+                    updatedAt: new Date(post.updated_at ?? post.created_at)
                 });
             }
 
@@ -57,11 +57,12 @@ export function extractAlbumsFromPosts() {
             // 更新相册信息
             album.postCount++;
             album.posts.push(post);
-            album.updatedAt = new Date(post.updated_at);
+            album.updatedAt = new Date(post.updated_at ?? post.created_at);
 
             // 如果创建时间更早，更新创建时间
-            if (new Date(post.created_at) < album.createdAt) {
-                album.createdAt = new Date(post.created_at);
+            const postCreated = new Date(post.created_at);
+            if (postCreated < album.createdAt) {
+                album.createdAt = postCreated;
             }
         });
     });
@@ -150,7 +151,7 @@ export function getSolarTermGroups(album: Album) {
     ];
 
     // 2. 先按年份分组，再在每个年份内按节气分组
-    const yearlyGroups: Record<number, Record<string, { term: string; images: AlbumImage[]; posts: Post[] }>> = {};
+    const yearlyGroups: Record<string, Record<string, { term: string; images: AlbumImage[]; posts: Post[] }>> = {};
     const processedUrls = new Set<string>(); // 用于去重图片URL
 
     // 3. 遍历相册中的所有文章，按年份和节气分组
@@ -198,7 +199,7 @@ export function getSolarTermGroups(album: Album) {
     });
 
     // 4. 为每个年份生成完整的24节气数据，包括缺失的节气
-    const yearlySolarTermGroups: Array<{ term: string; images: AlbumImage[]; posts: Post[] }> = [];
+    const yearlySolarTermGroups: Array<{ year: number; terms: Array<{ term: string; images: AlbumImage[]; posts: Post[]; count: number; hasContent: boolean }> }> = [];
 
     // 按年份降序排序
     const sortedYears = Object.keys(yearlyGroups).sort((a, b) => Number(b) - Number(a));

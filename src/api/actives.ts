@@ -7,18 +7,28 @@ const cdn = 'https://cdn.1900.live/apps/';
 const wsUrl = 'wss://hapi.190102.xyz:4433/ws/pc-status';
 const appListUrl = 'https://1900.live/app.json';
 
+interface AppItem {
+    url: string;
+    title: string;
+    action?: string;
+}
+
+interface ActiveMessage {
+    process: string;
+}
+
 // app白名单
-let appList = {};
+let appList: Record<string, AppItem> = {};
 // 保存WebSocket实例的变量
-let ws2;
-let activesTippy = null;
+let ws2: WebSocket | null = null;
+let activesTippy: Array<{ setContent: (content: string) => void }> | null = null;
 
 // 初始化WebSocket连接
-export default function initWebSocket(actives) {
+export default function initWebSocket(actives: Array<{ setContent: (content: string) => void }>) {
     activesTippy = actives;
     if (!ws2) {
         fetch(appListUrl).then((rep) => {
-            rep.json().then((data) => {
+            rep.json().then((data: Record<string, AppItem>) => {
                 ws2 = new WebSocket(wsUrl);
                 // 初始化app列表
                 appList = data;
@@ -33,17 +43,18 @@ export default function initWebSocket(actives) {
 }
 
 // 连接成功的处理函数
-function onOpen(event) {
+function onOpen(_event: Event) {
     // console.log("WebSocket connection opened:", event);
     // 可以在这里发送消息等操作
 }
 
 // 接收到消息的处理函数
-function onMessage(event) {
+function onMessage(event: MessageEvent) {
     // 接受服务端下发的程序数据
-    var data = JSON.parse(event.data);
+    var data: ActiveMessage = JSON.parse(event.data);
     // 获取页面上actives dom元素
-    var activs = document.querySelector('.actives');
+    const activs = document.querySelector<HTMLElement>('.actives');
+    if (!activs) return;
     // 之后用来判断的进程名称统一小写，方便比对
     const processName = data.process.toLowerCase();
 
@@ -58,15 +69,18 @@ function onMessage(event) {
             // 0.5s后执行更新操作
             setTimeout(function () {
                 // 重新设置icon
-                document.querySelector('.actives img').src = cdn + appList[processName].url + '!20w';
-                document.querySelector('.actives img').alt = appList[processName].title;
+                const img = document.querySelector<HTMLImageElement>('.actives img');
+                if (img) {
+                    img.src = cdn + appList[processName].url + '!20w';
+                    img.alt = appList[processName].title;
+                }
                 // 执行进场动画
                 activs.classList.remove('exit');
                 // 更新dom上app的信息
                 activs.dataset.app = processName;
                 // 这里我用Tippy.js做鼠标悬浮提示，更新悬浮提示内容
-                activesTippy.forEach(function (e) {
-                    e.setContent('@1900 在使用 ' + appList[processName].title + ' ' + appList[processName].action);
+                activesTippy?.forEach(function (e) {
+                    e.setContent('@1900 在使用 ' + appList[processName].title + ' ' + (appList[processName].action ?? ''));
                 });
             }, 500);
         });
@@ -77,14 +91,14 @@ function onMessage(event) {
 }
 
 // 连接关闭的处理函数
-function onClose(event) {
+function onClose(_event: CloseEvent) {
     // 尝试重新连接
-    document.querySelector('.actives').classList.add('exit');
-    setTimeout(initWebSocket, 5000); // 5秒后尝试重新连接
+    document.querySelector('.actives')?.classList.add('exit');
+    setTimeout(() => initWebSocket(activesTippy ?? []), 5000); // 5秒后尝试重新连接
 }
 
 // 连接错误的处理函数
-function onError(event) {
+function onError(_event: Event) {
     // 尝试重新连接
-    document.querySelector('.actives').classList.add('exit');
+    document.querySelector('.actives')?.classList.add('exit');
 }

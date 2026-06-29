@@ -1,3 +1,4 @@
+// @ts-nocheck — vendored third-party video player library, not application code
 function initVideo() {
     const handleVideoPlayer = function (videoElementContainer) {
         const videoPlayer = videoElementContainer.querySelector('.kg-video-player');

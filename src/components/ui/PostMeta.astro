@@ -3,6 +3,12 @@
 import RemotePicture from './RemotePicture.astro';
 import { normalizeSlug, normalizeData } from '../../lib/utils/help';
 import {Calendar,BookOpenCheck,Tags} from "@lucide/astro";
+import type { Post, Tag } from '@ts-ghost/content-api';
+
+interface Props {
+    post: Post;
+    isFeature?: boolean;
+}
 const { post, isFeature } = Astro.props;
 ---
 
@@ -19,13 +25,13 @@ const { post, isFeature } = Astro.props;
 
 </div>
 {
-    post.tags && post.tags.filter((tag) => tag.visibility === 'public').length > 0 && (
+    post.tags && post.tags.filter((tag: Tag) => tag.visibility === 'public').length > 0 && (
         <div class="flex align-center text-small book-post-tags">
             <Tags class='book-icon'  />
             {post.tags
-                .filter((tag) => tag.visibility === 'public') // 过滤出可见的标签
-                .map((tag, index, array) => (
-                    <span key={tag.slug}>
+                .filter((tag: Tag) => tag.visibility === 'public') // 过滤出可见的标签
+                .map((tag: Tag, index: number, array: Tag[]) => (
+                    <span>
                         <a href={`/tag${normalizeSlug(tag.slug)}`}>#{tag.name}</a>
                         {index < array.length - 1 && ', '} {/* 只有在不是最后一个元素时才添加逗号 */}
                     </span>
@@ -36,7 +42,7 @@ const { post, isFeature } = Astro.props;
 {
     post.feature_image && isFeature && (
         <figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption">
-            <RemotePicture src={post.feature_image} alt={post.feature_image_caption} />
+            <RemotePicture src={post.feature_image} alt={post.feature_image_caption ?? undefined} />
             <figcaption>
                 <Fragment set:html={post.feature_image_caption} />
                 <Fragment set:html={post.feature_image_alt} />

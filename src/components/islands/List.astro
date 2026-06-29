@@ -1,5 +1,6 @@
 ---
-import type { Post } from '@ts-ghost/content-api';
+import type { ExPost } from '../../api/ghost';
+import type { Memo } from '../../api/types';
 import { normalizeData, normalizeSlug } from '../../lib/utils/help';
 import PostMeta from '../ui/PostMeta.astro';
 import Hero from '../layout/Hero.astro';
@@ -11,7 +12,7 @@ import Columns from '../shortcode/Columns.astro';
 import Details from '../shortcode/Details.astro';
 import Link from '../shortcode/Link.astro';
 
-const { page } = Astro.props;
+const { page } = Astro.props as { page: { data: (ExPost | Memo)[] } };
 
 const url = new URL(Astro.request.url);
 // 检查当前页面的路径是否为根路径
@@ -22,15 +23,7 @@ const isHomePage = url.pathname === '/';
 
 {
     page.data.map((post) =>
-        post.type === 'post' ? (
-            <article class="markdown book-post">
-                <h2 class="book-title">
-                    <a href={normalizeSlug(post.slug)}>{post.title}</a>
-                </h2>
-                <PostMeta post={post} />
-                <p>{post.excerpt.replace(/<[^>]+>/g, '').substring(0, 150)}...</p>
-            </article>
-        ) : (
+        'createdTs' in post ? (
             <div class="page-memos markdown">
             <div class="atk-main">
                 <div class="atk-body">
@@ -68,9 +61,18 @@ const isHomePage = url.pathname === '/';
                             @{post.creatorName} · by {normalizeData(post.updatedTs)}
                         </span>
                     </div>
+                    <!-- <span>浏览 {post.viewCount}</span> -->
                 </div>
             </div>
         </div>
+        ) : (
+            <article class="markdown book-post">
+                <h2 class="book-title">
+                    <a href={normalizeSlug(post.slug)}>{post.title}</a>
+                </h2>
+                <PostMeta post={post} />
+                <p>{post.excerpt.replace(/<[^>]+>/g, '').substring(0, 150)}...</p>
+            </article>
         )
     )
 }

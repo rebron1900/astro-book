@@ -1,31 +1,33 @@
 ---
-import { pages, settings, neodb } from '../api/store';
-import { doubanGroupByDate } from '../lib/utils/help';
+import { pages, settings } from '../api/store';
 
-import RemotePicture from '../components/ui/RemotePicture.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/islands/Head.astro';
 import Comments from '../components/islands/Comments.astro';
-import Toc from '../components/islands/Toc.astro';
 import Relitu from '../components/islands/Relitu.jsx';
-import TocTagloop from '../components/islands/TocTagloop.astro';
 import Header from '../components/layout/Header.astro';
-import Top from '../components/ui/Top.astro';
 import Menu from '../components/layout/Menu.astro';
-import initMap from '../lib/map';
 import { Markup } from 'astro-remote';
 
 const page = pages.find((post) => post.slug == 'map');
 
 import HTML from 'html-parse-stringify';
-var ast = HTML.parse(page?.html);
+
+interface AstNode {
+    type?: string;
+    content?: string;
+    name?: string;
+    children?: AstNode[];
+}
+
+var ast = HTML.parse(page?.html ?? '') as AstNode[];
 let fatherList = '';
-function findTextNodes(node, text) {
-    let result = [];
+function findTextNodes(node: AstNode, text: string): AstNode[] {
+    let result: AstNode[] = [];
     fatherList += text;
 
     // 检查当前节点
-    if (node.type === 'text' && node.content.startsWith('[[') && !fatherList.endsWith('precode')) {
+    if (node.type === 'text' && node.content?.startsWith('[[') && !fatherList.endsWith('precode')) {
         node.content = node.content.replace('[[', '<a>test').replace(']]', '</a>');
         result.push(node);
     }
@@ -33,18 +35,15 @@ function findTextNodes(node, text) {
     // 如果有子节点，递归遍历
     if (node.children) {
         node.children.forEach((child) => {
-            result = result.concat(findTextNodes(child, node.name));
+            result = result.concat(findTextNodes(child, node.name ?? ''));
         });
     }
 
     return result;
 }
 
-const result = [];
-
 ast.forEach((node) => {
-    const temp = findTextNodes(node, node.name);
-    let fatherList = '';
+    findTextNodes(node, node.name ?? '');
 });
 
 const html = HTML.stringify(ast);
@@ -53,7 +52,7 @@ const html = HTML.stringify(ast);
 <BaseLayout post={page}>
     <Head slot="head" post={page} site={settings} title={page?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
 
-    <Header slot="header" title={page.title} />
+    <Header slot="header" title={page?.title} />
     <Menu slot="menu" />
 
     <article slot="content" class="markdown book-article">

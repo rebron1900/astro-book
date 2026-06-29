@@ -3,23 +3,23 @@ import { ViewTransitions } from 'astro:transitions';
 import { settings } from '../../api/store';
 import { normalizeSlug, normalizeData } from '../../lib/utils/help';
 
-const { post, title, url } = Astro.props;
+const { post, title } = Astro.props;
 
-let og_title,
-    og_desc,
-    og_url,
-    og_img = '';
+let og_title: string,
+    og_desc: string,
+    og_url: string,
+    og_img: string;
 
 if (post) {
     og_title = post.title;
     og_url = normalizeSlug(post.slug);
-    og_desc = post.excerpt.replace(/[\r\n]+/g, '').substring(0, 100);
+    og_desc = (post.excerpt ?? '').replace(/[\r\n]+/g, '').substring(0, 100);
     og_img = encodeURI(
         `https://og.190102.xyz/api/og?title=${encodeURIComponent(og_title)}&desc=${encodeURIComponent(og_desc)}&date=${normalizeData(post?.published_at)}`
     );
 } else {
-    og_title = settings?.title;
-    og_desc = settings?.description.replace(/[\r\n]+/g, '');
+    og_title = settings?.title ?? '';
+    og_desc = (settings?.description ?? '').replace(/[\r\n]+/g, '');
     og_url = import.meta.env.SITE;
     og_img = `https://og.190102.xyz/api/og?title=${encodeURIComponent(og_title)}&desc=${encodeURIComponent(og_desc)}&date=1900-01-01`;
 }
@@ -92,7 +92,7 @@ if (post) {
 
     const initZoom = () => {
         // 选择所有未初始化的图片
-        const images = document.querySelectorAll('.markdown img:not(.og-card img):not([data-zoom-initialized])');
+        const images = document.querySelectorAll<HTMLImageElement>('.markdown img:not(.og-card img):not([data-zoom-initialized])');
 
         // 应用 mediumZoom 并标记已初始化的图片
         images.forEach((img) => {
@@ -115,24 +115,24 @@ if (post) {
 
         window.onscroll = function () {
             if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-                scrollToTopBtn.style.opacity = '1';
+                if (scrollToTopBtn) scrollToTopBtn.style.opacity = '1';
             } else {
-                scrollToTopBtn.style.opacity = '0';
+                if (scrollToTopBtn) scrollToTopBtn.style.opacity = '0';
             }
         };
     };
 
     const initToc = () => {
-        const links = document.querySelectorAll('.book-toc-content a');
+        const links = document.querySelectorAll<HTMLAnchorElement>('.book-toc-content a');
         if (!links) {
             return;
         }
 
-        const headings = [];
+        const headings: Array<{ el: HTMLElement; link: HTMLAnchorElement }> = [];
         const offset = 80;
 
         links.forEach((a) => {
-            const id = a.getAttribute('href').slice(1);
+            const id = a.getAttribute('href')?.slice(1) ?? '';
             const el = document.getElementById(id);
             if (el) headings.push({ el, link: a });
         });
@@ -159,7 +159,7 @@ if (post) {
                         let li = map.link.closest('li');
                         while (li) {
                             li.classList.add('active');
-                            li = li.parentElement?.closest('li'); // 继续向上找嵌套的 <li>
+                            li = li.parentElement?.closest('li') ?? null; // 继续向上找嵌套的 <li>
                         }
                     }
                 });
@@ -173,12 +173,12 @@ if (post) {
     };
 
     const initGallery = () => {
-        var gallery = document.querySelectorAll('.kg-gallery-image img');
+        var gallery = document.querySelectorAll<HTMLImageElement>('.kg-gallery-image img');
         gallery.forEach(function (e) {
             var fix = function () {
-                var l = e.closest('.kg-gallery-image'),
+                var l = e.closest<HTMLElement>('.kg-gallery-image'),
                     a = e.naturalWidth / e.naturalHeight; // 使用 naturalWidth 和 naturalHeight
-                l.style.flex = a + ' 1 0%';
+                if (l) l.style.flex = a + ' 1 0%';
             };
 
             if (e.complete) {
@@ -187,28 +187,6 @@ if (post) {
                 e.addEventListener('load', fix);
             }
         });
-        // var gallery = document.querySelectorAll('.kg-gallery-image img');
-        // gallery.forEach(function (e) {
-        //     e.onload = function () {
-        //         var l = e.closest('.kg-gallery-image'),
-        //             a = e.naturalWidth / e.naturalHeight; // 使用 naturalWidth 和 naturalHeight
-        //         l.style.flex = a + ' 1 0%';
-        //     };
-        // });
-        // document.querySelectorAll('.kg-gallery-image img').forEach(function (e) {
-        //     var t = e.closest('.kg-gallery-image'),
-        //         a = e.width / e.height;
-        //     t.style.flex = a + ' 1 0%';
-        // });
-        // !(function (e, t) {
-        //     t.addEventListener('DOMContentLoaded', function () {
-        //         t.querySelectorAll('.kg-gallery-image img').forEach(function (e) {
-        //             var t = e.closest('.kg-gallery-image'),
-        //                 a = e.attributes.width.value / e.attributes.height.value;
-        //             t.style.flex = a + ' 1 0%';
-        //         });
-        //     });
-        // })(window, document);
     };
 
     const changeTheme = () => {
@@ -228,9 +206,9 @@ if (post) {
         localStorage.theme = theme || 'auto';
     };
 
-    const limitHight = (dom = null) => {
+    const limitHight = (dom: HTMLElement | null = null) => {
         // 获取页面上所有 .atk-body 元素
-        let atkBodies;
+        let atkBodies: NodeListOf<Element> | undefined;
         if (dom) {
             if (!dom.querySelector('.fold-button')) {
                 createFoldButton(dom);
@@ -239,15 +217,15 @@ if (post) {
             atkBodies = document.querySelectorAll('.atk-content');
         }
         // 对每个元素调用 createFoldButton 函数
-        atkBodies.forEach((highlightDiv) => {
+        atkBodies?.forEach((highlightDiv) => {
             // 检查是否已经添加过折叠按钮
             if (!highlightDiv.querySelector('.fold-button')) {
-                createFoldButton(highlightDiv);
+                createFoldButton(highlightDiv as HTMLElement);
             }
         });
 
         // 你的原始函数
-        function createFoldButton(highlightDiv) {
+        function createFoldButton(highlightDiv: HTMLElement) {
             // 检查是否已经添加过折叠按钮
             if (highlightDiv.querySelector('.fold-button')) {
                 return; // 如果已经存在，直接返回不再添加
@@ -263,8 +241,10 @@ if (post) {
             button.addEventListener('click', function (evn) {
                 highlightDiv.classList.toggle('limit-hight');
                 let icons = highlightDiv.classList.contains('limit-hight') ? ['/icons.svg#fold', '展开'] : ['/icons.svg#collapse', '折叠'];
-                evn.currentTarget.querySelector('svg use').setAttribute('xlink:href', icons[0]);
-                evn.currentTarget.querySelector('sm').innerText = icons[1];
+                const target = evn.currentTarget as HTMLElement;
+                target.querySelector('svg use')?.setAttribute('xlink:href', icons[0]);
+                const sm = target.querySelector<HTMLElement>('sm');
+                if (sm) sm.innerText = icons[1];
             });
 
             if (highlightDiv.scrollHeight > 400) {
@@ -273,22 +253,22 @@ if (post) {
             }
         }
 
-        function addCopyButtonToDom(button, highlightDiv) {
+        function addCopyButtonToDom(button: HTMLDivElement, highlightDiv: HTMLElement) {
             highlightDiv.appendChild(button);
         }
 
-        document.querySelectorAll('.atk-content img').forEach((img) => {
+        document.querySelectorAll<HTMLImageElement>('.atk-content img').forEach((img) => {
             img.onload = () => {
                 // 处理已加载的图片（检查 complete 属性）
                 if (img.complete) {
                     const parent = img.closest('.atk-content');
-                    if (parent) limitHight(parent);
+                    if (parent) limitHight(parent as HTMLElement);
                 }
 
                 // 监听未来加载的图片
                 img.onload = function () {
                     const parent = img.closest('.atk-content');
-                    if (parent) limitHight(parent);
+                    if (parent) limitHight(parent as HTMLElement);
                 };
 
                 // 可选：处理加载失败的情况
@@ -304,11 +284,11 @@ if (post) {
             limitHight();
             htmx.process(document.body);
 
-            document.body.addEventListener('htmx:beforeSwap', function (event) {
+            document.body.addEventListener('htmx:beforeSwap', function () {
                 document.querySelector('.btn-more')?.remove();
             });
 
-            document.body.addEventListener('htmx:afterSwap', function (event) {
+            document.body.addEventListener('htmx:afterSwap', function () {
                 initZoom();
                 limitHight();
                 tippy('.item-info', {
@@ -326,7 +306,7 @@ if (post) {
         if (location.pathname.includes('/douban')) {
             htmx.process(document.body);
 
-            document.body.addEventListener('htmx:beforeSwap', function (event) {
+            document.body.addEventListener('htmx:beforeSwap', function () {
                 document.querySelector('.btn-more')?.remove();
             });
         }
@@ -349,7 +329,7 @@ if (post) {
 
         // Scroll to top function
 
-        const relitu = tippy('.item-tippy', {
+        tippy('.item-tippy', {
             allowHTML: true,
             interactive: true,
             maxWidth: 'none',

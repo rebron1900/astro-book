@@ -13,19 +13,14 @@ export async function getAllContent() {
     try {
         const [posts, memos] = await Promise.all([getAllPosts(), getMemos()]);
 
-        // 按创建时间排序（假设都有 createdAt 字段）
+        // 按创建时间排序
         return [...posts, ...memos].sort((a, b) => {
-            // 获取a的时间戳
+            // Memo 有 createdTs（秒），Post 有 created_at（ISO 字符串）
+            // 用 `in` 收窄联合类型：仅 Memo 含 createdTs
             const aTime =
-                a.type === 'post'
-                    ? new Date(a.created_at).getTime() // Ghost文章使用created_at
-                    : a.createdTs * 1000; // Memos使用createdTs（秒转毫秒）
-
-            // 获取b的时间戳
+                'createdTs' in a ? a.createdTs * 1000 : new Date(a.created_at).getTime();
             const bTime =
-                b.type === 'post'
-                    ? new Date(b.created_at).getTime() // Ghost文章使用created_at
-                    : b.createdTs * 1000; // Memos使用createdTs（秒转毫秒）
+                'createdTs' in b ? b.createdTs * 1000 : new Date(b.created_at).getTime();
 
             return bTime - aTime; // 降序排列（最新的在前）
         });

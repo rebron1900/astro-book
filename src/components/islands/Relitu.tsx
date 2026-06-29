@@ -3,10 +3,6 @@ import { postsAll } from '../../api/store';
 import type { ExPost } from '../../api/ghost';
 import { normalizeSlug, normalizeData } from '../../lib/utils/help';
 
-function parseDate(str: string) {
-    return new Date(str);
-}
-
 function getThisSunday(date: Date) {
     const dayOfWeek = date.getDay();
     const daysToSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
@@ -73,7 +69,7 @@ const DateGrid = () => {
             <strong>热力图</strong>
             <div id='relitu-container' class='relitu-container'>
                 {columns().map((column, colIndex) => (
-                    <div class='grid-column' key={colIndex}>
+                    <div class='grid-column'>
                         {column.map((article, index) => {
                             const tooltipStr = article.data.map((item) => `- <a href='${normalizeSlug(item.slug)}'>${item.title}</a></br>`).join(' ');
                             const currentStyle = article.date === new Date().toISOString().split('T')[0] ? 'current-item' : '';
@@ -86,7 +82,6 @@ const DateGrid = () => {
                                         class={`item-info ${currentStyle} ${article.count > 0 ? 'item-tippy' : ''}`}
                                         data-tippy-content={`${article.date}，共 ${article.count} 篇，共 ${article.wordcount} 字<br />${tooltipStr}`}
                                         data-date={article.date}
-                                        key={index}
                                     ></div>
                                 </div>
                             );

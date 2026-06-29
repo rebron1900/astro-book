@@ -61,7 +61,7 @@ const { postID } = Astro.props;
         });
 
         artalk.on('list-loaded', () => {
-            document.querySelectorAll('.atk-comment a').forEach((i) => {
+            document.querySelectorAll<HTMLAnchorElement>('.atk-comment a').forEach((i) => {
                 i.href = isExternalLink(i.href) ? i.href : `/golink?target=${btoa(encodeURIComponent(i.href))}`;
             });
         });

@@ -1,3 +1,4 @@
+// @ts-nocheck — vendored third-party message library (UMD), not application code
 'use strict';
 
 function _typeof(obj) {

@@ -3,7 +3,10 @@ import type { APIContext } from 'astro';
 import { settings, postsAll } from '../api/store';
 
 const site = import.meta.env.SITE;
-export async function GET(context: APIContext) {
+export async function GET(_context: APIContext) {
+    if (!settings) {
+        return new Response('settings not available', { status: 503 });
+    }
     return rss({
         title: settings.title,
         description: settings.description,
@@ -12,7 +15,7 @@ export async function GET(context: APIContext) {
             title: item.title,
             description: `${item.feature_image ? '<p><img src="' + item.feature_image + '"/> ' + item.feature_image_caption + ' </p>' : ''}${item.html}`,
             link: `/${item.slug}/`,
-            pubDate: item.published_at
+            pubDate: item.published_at ? new Date(item.published_at) : undefined
         }))
     });
 }

@@ -22,6 +22,10 @@ import OGCard from '../../components/shortcode/OGCard.astro';
 
 const custompage = pages.find((post) => post.slug == 'now');
 
+if (!custompage) {
+    throw new Error('now page not found');
+}
+
 export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
     const db = memos;
     return paginate(db, {

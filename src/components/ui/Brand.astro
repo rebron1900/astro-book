@@ -1,6 +1,9 @@
 ---
 import { BadgeCheck } from '@lucide/astro';
-import { settings as site } from '../../api/store';
+import { settings } from '../../api/store';
+
+// settings 来自 Ghost，构建期必定存在；此处断言非空以简化模板访问
+const site = settings!;
 ---
 
 <h2 class="book-brand">

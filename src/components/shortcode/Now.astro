@@ -21,7 +21,7 @@ try {
 }
 
 // 获取吉他练习时长
-const hours = rankData?.myRank ? (rankData.myRank.totalDuration / 3600).toFixed(2) : 0;
+    const hours: number = rankData?.myRank ? Number((rankData.myRank.totalDuration / 3600).toFixed(2)) : 0;
 
 let content = memos[0].content;
 
@@ -39,7 +39,7 @@ if (hours > 0) {
 <div class="now bio">
     <h2 class="book-title"><a href="/now/">Now</a></h2>
     <Markdown
-        content={marked.parse(content)}
+        content={marked.parse(content) as string}
         sanitize={{ allowComponents: true, allowCustomElements: true }}
         components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
     />

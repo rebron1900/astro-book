@@ -9,9 +9,9 @@ const { document } = parseHTML(html);
 
 // 3. 取第一个 <code> 标签
 const codeEl = document.querySelector('code');
-const code = codeEl ? codeEl.textContent : '';
+const code = codeEl?.textContent ?? '';
 const langRaw = codeEl?.className?.replace(/^language-/, '') || '';
-const lang = langRaw || 'plaintext';
+const lang = (langRaw || 'plaintext') as never;
 ---
 
 <Code wrap={true} code={code} lang={lang} themes={{ dark: 'vitesse-dark', light: 'vitesse-light' }} defaultColor={false} />

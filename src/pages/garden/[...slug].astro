@@ -1,22 +1,14 @@
 ---
-import { pages, postsAll, settings } from '../../api/store';
-import { getCollection, getEntry } from 'astro:content';
-import tocGen from '../../lib/toc';
+import { settings } from '../../api/store';
+import { getCollection } from 'astro:content';
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostMeta from '../../components/ui/PostMeta.astro';
 import Head from '../../components/islands/Head.astro';
-import Pagination from '../../components/ui/Pagination.astro';
 import Comments from '../../components/islands/Comments.astro';
-import Toc from '../../components/islands/Toc.astro';
 import Relitu from '../../components/islands/Relitu.jsx';
-import TocTagloop from '../../components/islands/TocTagloop.astro';
 import Header from '../../components/layout/Header.astro';
 import Top from '../../components/ui/Top.astro';
 import Menu from '../../components/layout/Menu.astro';
-import CodeSlot from '../../components/islands/CodeSlot.astro';
-import { Markup } from 'astro-remote';
-import RemotePicture from '../../components/ui/RemotePicture.astro';
 import Footer from '../../components/layout/Footer.astro';
 
 export async function getStaticPaths() {
@@ -32,19 +24,19 @@ export async function getStaticPaths() {
     }));
 }
 
-const { post, prevPost, nextPost } = Astro.props;
-const { Content, headings } = await post.render();
+const { post } = Astro.props;
+const { Content } = await post.render();
 ---
 
 <BaseLayout>
-    <Head slot="head" site={settings} title={post?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
+    <Head slot="head" site={settings} title={post.data.title + ' | ' + settings?.title + ' - ' + settings?.description} />
 
-    <Header slot="header" title={post.title} />
+    <Header slot="header" title={post.data.title} />
 
     <Menu slot="menu" />
     <article slot="content" class="markdown book-article">
         <h1 class="book-title">
-            {post.title}
+            {post.data.title}
         </h1>
         <Content />
     </article>

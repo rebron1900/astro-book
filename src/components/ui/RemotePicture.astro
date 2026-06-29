@@ -5,6 +5,7 @@ export interface Props {
     src: string;
     alt?: string;
     class?: string;
+    classNames?: string;
 }
 const encode = (s: string) => encodeURI(s);
 type Size = { width: number; height: number };
@@ -14,9 +15,14 @@ async function getSize(raw: string): Promise<Size | undefined> {
     const cacheKey = `size_${raw}`;
     const errorCacheKey = `error_${raw}`;
 
+    interface ErrorCacheEntry {
+        timestamp: number;
+        error?: string;
+    }
+
     // 检查缓存 - 如果有错误缓存且未过期，直接返回undefined避免重复请求
     if (await imageCache.has(errorCacheKey)) {
-        const errorData = await imageCache.get(errorCacheKey);
+        const errorData = (await imageCache.get(errorCacheKey)) as ErrorCacheEntry | undefined;
         if (errorData && errorData.timestamp && Date.now() - errorData.timestamp < TTL) {
             // 1小时内不再重试失败的请求
             return undefined;
@@ -25,7 +31,7 @@ async function getSize(raw: string): Promise<Size | undefined> {
 
     // 检查正常缓存
     if (await imageCache.has(cacheKey)) {
-        return await imageCache.get(cacheKey);
+        return (await imageCache.get(cacheKey)) as Size | undefined;
     }
 
     let result: Size | undefined;
@@ -44,7 +50,7 @@ async function getSize(raw: string): Promise<Size | undefined> {
             // 缓存错误信息，避免重复请求
             imageCache.set(errorCacheKey, {
                 timestamp: Date.now(),
-                error: error.message || 'Unknown error'
+                error: (error as Error)?.message || 'Unknown error'
             });
         }
     } else if (raw.includes('unsplash.com')) {
@@ -66,9 +72,10 @@ async function getSize(raw: string): Promise<Size | undefined> {
     return result;
 }
 
-const { src, alt, class: className, ...attrs } = Astro.props;
+const { src, alt, class: className, classNames, ...attrs } = Astro.props;
+const resolvedClass = className ?? classNames;
 
-const generateImageSrcset = (image: string, isLocal = false) => {
+const generateImageSrcset = (image: string) => {
     image = encodeURI(image);
     let imageSrcset = [];
     const imageWidths = [400, 600, 800, 1000, 1200, 1400, 1600, 1800];
@@ -101,6 +108,6 @@ const size = await getSize(src);
     isCdn && size ? (
         <img loading="lazy" src={encodeURI(src)} alt="" {...attrs} srcset={generateImageSrcset(src)} width={size.width} height={size.height} />
     ) : (
-        <img loading="lazy" class={className ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />
+        <img loading="lazy" class={resolvedClass ?? ''} src={encodeURI(src)} srcset={generateImageSrcset(src)} alt={alt ?? ''} />
     )
 }

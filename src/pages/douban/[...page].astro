@@ -1,7 +1,6 @@
 ---
 import { pages, settings, neodb } from '../../api/store';
-import { doubanGroupByDate, getSvg } from '../../lib/utils/help';
-import type { GetStaticPathsOptions } from 'astro';
+import { doubanGroupByDate } from '../../lib/utils/help';
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Head from '../../components/islands/Head.astro';
@@ -10,7 +9,6 @@ import Header from '../../components/layout/Header.astro';
 import Top from '../../components/ui/Top.astro';
 import Menu from '../../components/layout/Menu.astro';
 import Comments from '../../components/islands/Comments.astro';
-import PostMeta from '../../components/ui/PostMeta.astro';
 import Markup from 'astro-remote/lib/Markup.astro';
 import CodeSlot from '../../components/islands/CodeSlot.astro';
 import IFrameSlot from '../../components/ui/IFrameSlot.astro';
@@ -24,7 +22,6 @@ const pageDouban = pages.find((post) => post.slug == 'douban');
 
 export async function getStaticPaths() {
     const db = neodb.data;
-    const totalItems = db.length;
 
     // 第一页：固定50条
     const page1 = db.slice(0, 30);
@@ -58,23 +55,23 @@ export async function getStaticPaths() {
 }
 
 // 从 props 获取数据
-const { data, currentPage, lastPage } = Astro.props;
+const { data, lastPage } = Astro.props;
 const groupdata = doubanGroupByDate(data);
 ---
 
 <BaseLayout post={pageDouban}>
     <Head slot="head" post={pageDouban} site={settings} title={pageDouban?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
 
-    <Header slot="header" title={pageDouban.title} />
+    <Header slot="header" title={pageDouban?.title} />
     <Menu slot="menu" />
 
     <article slot="content" class="markdown book-article">
         <h1 class="book-title">
             <Sparkles />
-            {pageDouban.title}
+            {pageDouban?.title}
         </h1>
         {
-            pageDouban.html && (
+            pageDouban?.html && (
                 <Markup
                     content={pageDouban.html}
                     sanitize={{ allowComponents: true, allowCustomElements: true }}
@@ -161,9 +158,9 @@ const groupdata = doubanGroupByDate(data);
                 import 'https://unpkg.com/htmx.org@2.0.2';
                 import tippy from 'tippy.js';
                 const douban = {
-                    change: function (type) {
+                    change: function (type: string) {
                         // 选择所有具有data-itemtype属性的元素
-                        const elements = document.querySelectorAll('[data-itemtype]');
+                        const elements = document.querySelectorAll<HTMLElement>('[data-itemtype]');
 
                         // 遍历这些元素
                         elements.forEach(function (el) {
@@ -183,12 +180,12 @@ const groupdata = doubanGroupByDate(data);
                         this.hidden();
                     },
                     hidden: function () {
-                        const cardElements = document.querySelectorAll('.db--listBydate');
+                        const cardElements = document.querySelectorAll<HTMLElement>('.db--listBydate');
 
                         cardElements.forEach(function (card) {
                             // 检查db--dateList__card类下的子元素是否全部被隐藏
                             let allHidden = true;
-                            card.querySelectorAll('.db--item').forEach(function (dateListCard) {
+                            card.querySelectorAll<HTMLElement>('.db--item').forEach(function (dateListCard) {
                                 // 如果存在任何未隐藏的子元素，则将allHidden设置为false
                                 if (dateListCard.style.display !== 'none') {
                                     allHidden = false;
@@ -202,8 +199,8 @@ const groupdata = doubanGroupByDate(data);
                             }
                         });
                     },
-                    active: function (el) {
-                        document.querySelectorAll('.db--navItem').forEach(function (item) {
+                    active: function (el: HTMLElement) {
+                        document.querySelectorAll<HTMLElement>('.db--navItem').forEach(function (item) {
                             item.classList.remove('current');
                         });
                         el.classList.add('current');
@@ -211,10 +208,11 @@ const groupdata = doubanGroupByDate(data);
                 };
 
                 document.addEventListener('astro:page-load', () => {
-                    document.querySelectorAll('.db--navItem').forEach((el) => {
+                    document.querySelectorAll<HTMLElement>('.db--navItem').forEach((el) => {
                         el.addEventListener('click', function (e) {
-                            douban.change(e.target.dataset.type);
-                            douban.active(e.currentTarget);
+                            const target = e.target as HTMLElement;
+                            douban.change(target.dataset.type ?? '');
+                            douban.active(e.currentTarget as HTMLElement);
                         });
                     });
 
@@ -223,7 +221,7 @@ const groupdata = doubanGroupByDate(data);
                         maxWidth: 300
                     });
                 });
-                document.body.addEventListener('htmx:afterSwap', function (event) {
+                document.body.addEventListener('htmx:afterSwap', function () {
                     tippy('.db--icon-comment', {
                         placement: 'bottom',
                         maxWidth: 300
