@@ -82,233 +82,15 @@ if (post) {
 </script>
 
 <script>
-    import mediumZoom from 'medium-zoom';
     import tippy from 'tippy.js';
-    import htmx from 'htmx.org';
 
     import { initVideo, initAudio, initToggle } from '../../lib/cards';
-
-    const initZoom = () => {
-        // 选择所有未初始化的图片
-        const images = document.querySelectorAll<HTMLImageElement>('.markdown img:not(.og-card img):not([data-zoom-initialized])');
-
-        // 应用 mediumZoom 并标记已初始化的图片
-        images.forEach((img) => {
-            mediumZoom(img, {
-                background: 'rgba(0,0,0,0.75)'
-            });
-            img.setAttribute('data-zoom-initialized', 'true'); // 标记为已初始化
-        });
-    };
-
-    const initTOP = () => {
-        const scrollToTopBtn = document.getElementById('scrollToTop');
-
-        scrollToTopBtn?.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-
-        window.onscroll = function () {
-            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-                if (scrollToTopBtn) scrollToTopBtn.style.opacity = '1';
-            } else {
-                if (scrollToTopBtn) scrollToTopBtn.style.opacity = '0';
-            }
-        };
-    };
-
-    const initToc = () => {
-        const links = document.querySelectorAll<HTMLAnchorElement>('.book-toc-content a');
-        if (!links) {
-            return;
-        }
-
-        const headings: Array<{ el: HTMLElement; link: HTMLAnchorElement }> = [];
-        const offset = 80;
-
-        links.forEach((a) => {
-            const id = a.getAttribute('href')?.slice(1) ?? '';
-            const el = document.getElementById(id);
-            if (el) headings.push({ el, link: a });
-        });
-
-        /* 新增：一次性清空所有高亮 */
-        function clearAllActive() {
-            links.forEach((a) => {
-                a.classList.remove('active');
-                // 把所在 <li> 也清掉
-                a.closest('li')?.classList.remove('active');
-            });
-        }
-
-        const io = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((en) => {
-                    const map = headings.find((m) => m.el === en.target);
-                    if (!map) return;
-
-                    if (en.isIntersecting) {
-                        // 进入视口：加粗自己 + 所有祖先 <li>
-                        clearAllActive(); // 先清掉旧的
-                        map.link.classList.add('active');
-                        let li = map.link.closest('li');
-                        while (li) {
-                            li.classList.add('active');
-                            li = li.parentElement?.closest('li') ?? null; // 继续向上找嵌套的 <li>
-                        }
-                    }
-                });
-            },
-            {
-                rootMargin: `-${offset}px 0px -60% 0px`
-            }
-        );
-
-        headings.forEach((m) => io.observe(m.el));
-    };
-
-    const initGallery = () => {
-        var gallery = document.querySelectorAll<HTMLImageElement>('.kg-gallery-image img');
-        gallery.forEach(function (e) {
-            var fix = function () {
-                var l = e.closest<HTMLElement>('.kg-gallery-image'),
-                    a = e.naturalWidth / e.naturalHeight; // 使用 naturalWidth 和 naturalHeight
-                if (l) l.style.flex = a + ' 1 0%';
-            };
-
-            if (e.complete) {
-                fix();
-            } else {
-                e.addEventListener('load', fix);
-            }
-        });
-    };
-
-    const changeTheme = () => {
-        const theme = localStorage.theme;
-        if (localStorage.theme !== 'auto') {
-            document.documentElement.classList.add(theme);
-            document.documentElement.setAttribute('data-theme', theme);
-
-            localStorage.theme = theme;
-            localStorage.themetype = localStorage.themetype || 'light';
-        } else {
-            const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            localStorage.themetype = prefersDarkScheme ? 'dark' : 'light';
-        }
-
-        localStorage.name = localStorage.name || '自适应';
-        localStorage.theme = theme || 'auto';
-    };
-
-    const limitHight = (dom: HTMLElement | null = null) => {
-        // 获取页面上所有 .atk-body 元素
-        let atkBodies: NodeListOf<Element> | undefined;
-        if (dom) {
-            if (!dom.querySelector('.fold-button')) {
-                createFoldButton(dom);
-            }
-        } else {
-            atkBodies = document.querySelectorAll('.atk-content');
-        }
-        // 对每个元素调用 createFoldButton 函数
-        atkBodies?.forEach((highlightDiv) => {
-            // 检查是否已经添加过折叠按钮
-            if (!highlightDiv.querySelector('.fold-button')) {
-                createFoldButton(highlightDiv as HTMLElement);
-            }
-        });
-
-        // 你的原始函数
-        function createFoldButton(highlightDiv: HTMLElement) {
-            // 检查是否已经添加过折叠按钮
-            if (highlightDiv.querySelector('.fold-button')) {
-                return; // 如果已经存在，直接返回不再添加
-            }
-
-            const button = document.createElement('div');
-            button.innerHTML = `
-        <svg viewBox="0 0 24 24" aria-hidden="true" class="book-icon"><use xlink:href="/icons.svg#fold"></use></svg><sm>展开</sm>
-    `;
-            button.className = 'fold-button';
-            button.ariaLabel = '展开';
-
-            button.addEventListener('click', function (evn) {
-                highlightDiv.classList.toggle('limit-hight');
-                let icons = highlightDiv.classList.contains('limit-hight') ? ['/icons.svg#fold', '展开'] : ['/icons.svg#collapse', '折叠'];
-                const target = evn.currentTarget as HTMLElement;
-                target.querySelector('svg use')?.setAttribute('xlink:href', icons[0]);
-                const sm = target.querySelector<HTMLElement>('sm');
-                if (sm) sm.innerText = icons[1];
-            });
-
-            if (highlightDiv.scrollHeight > 400) {
-                highlightDiv.classList.add('limit-hight');
-                addCopyButtonToDom(button, highlightDiv);
-            }
-        }
-
-        function addCopyButtonToDom(button: HTMLDivElement, highlightDiv: HTMLElement) {
-            highlightDiv.appendChild(button);
-        }
-
-        document.querySelectorAll<HTMLImageElement>('.atk-content img').forEach((img) => {
-            img.onload = () => {
-                // 处理已加载的图片（检查 complete 属性）
-                if (img.complete) {
-                    const parent = img.closest('.atk-content');
-                    if (parent) limitHight(parent as HTMLElement);
-                }
-
-                // 监听未来加载的图片
-                img.onload = function () {
-                    const parent = img.closest('.atk-content');
-                    if (parent) limitHight(parent as HTMLElement);
-                };
-
-                // 可选：处理加载失败的情况
-                img.onerror = function () {
-                    console.error('Image failed to load:', img.src);
-                };
-            };
-        });
-    };
-
-    const memosEvent = () => {
-        if (location.pathname.includes('/now')) {
-            limitHight();
-            htmx.process(document.body);
-
-            document.body.addEventListener('htmx:beforeSwap', function () {
-                document.querySelector('.btn-more')?.remove();
-            });
-
-            document.body.addEventListener('htmx:afterSwap', function () {
-                initZoom();
-                limitHight();
-                tippy('.item-info', {
-                    allowHTML: true,
-                    interactive: true,
-                    maxWidth: 'none',
-                    theme: 'auto',
-                    appendTo: () => document.body
-                });
-            });
-        }
-    };
-
-    const doubanEvent = () => {
-        if (location.pathname.includes('/douban')) {
-            htmx.process(document.body);
-
-            document.body.addEventListener('htmx:beforeSwap', function () {
-                document.querySelector('.btn-more')?.remove();
-            });
-        }
-    };
+    import initZoom from '../../lib/client/zoom';
+    import initBackToTop from '../../lib/client/back-to-top';
+    import initGallery from '../../lib/client/gallery';
+    import initToc from '../../lib/client/toc';
+    import changeTheme from '../../lib/client/theme';
+    import initHtmxPages from '../../lib/client/htmx-pages';
 
     document.addEventListener('astro:after-swap', () => {
         changeTheme();
@@ -316,16 +98,13 @@ if (post) {
 
     document.addEventListener('astro:page-load', () => {
         initZoom();
-        initTOP();
+        initBackToTop();
         initGallery();
-        memosEvent();
+        initHtmxPages();
         initVideo();
         initAudio();
         initToggle();
-        doubanEvent();
         initToc();
-
-        // Scroll to top function
 
         tippy('.item-tippy', {
             allowHTML: true,
