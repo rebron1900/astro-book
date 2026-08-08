@@ -17,6 +17,7 @@ import Details from '../components/shortcode/Details.astro';
 import Link from '../components/shortcode/Link.astro';
 import OGCard from '../components/shortcode/OGCard.astro';
 import StravaRelitu from '../components/islands/StravaRelitu.jsx';
+import config from '../config';
 
 const page = pages.find((post) => post.slug == 'strava');
 
@@ -25,7 +26,7 @@ if (!page) {
 }
 
 // Fetch running activities from GitHub
-const activitiesUrl = 'https://raw.githubusercontent.com/rebron1900/running_page/2aa7902357e6212c61e13a3e7d143d50487d8fc8/src/static/activities.json';
+const activitiesUrl = config.strava.activitiesUrl;
 let activities = [];
 
 try {
@@ -50,7 +51,7 @@ try {
 
         <StravaRelitu activities={activities} />
         <script>
-            import initMap from '../api/strava';
+            import initMap from '../lib/client/strava';
 
             document.addEventListener('astro:page-load', () => {
                 initMap();

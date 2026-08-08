@@ -1,4 +1,4 @@
-import type { DataSource, FluxEntry, FluxFeed } from './types';
+import type { FluxEntry, FluxFeed } from './types';
 
 const fluxURL = import.meta.env.FLUX_URL;
 const fluxKey = import.meta.env.FLUX_KEY;
@@ -84,8 +84,3 @@ export async function getFlux(): Promise<FluxEntry[]> {
         return []; // Return an empty array or handle the error as needed
     }
 }
-
-export const fluxSource: DataSource<FluxEntry[]> = {
-    name: 'flux',
-    fetch: getFlux
-};

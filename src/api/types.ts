@@ -1,9 +1,3 @@
-export interface DataSource<T = unknown> {
-    name: string;
-    fetch(): Promise<T>;
-    transform?(raw: unknown): T;
-}
-
 /** Memos 微博客条目（按实际 API 响应字段） */
 export interface Memo {
     type: string;

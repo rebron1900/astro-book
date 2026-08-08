@@ -23,9 +23,9 @@ try {
 // 获取吉他练习时长
     const hours: number = rankData?.myRank ? Number((rankData.myRank.totalDuration / 3600).toFixed(2)) : 0;
 
-let content = memos[0].content;
+let content = memos[0]?.content ?? '';
 
-if (hours > 0) {
+if (content && hours > 0) {
     const newItem = `<li>最近在练习吉他 🎸 中，本月已累计练习 <strong>${hours}</strong> 小时，继续加油！</li>`;
     const lastUlIndex = content.lastIndexOf('</ul>');
     if (lastUlIndex !== -1) {
@@ -38,9 +38,13 @@ if (hours > 0) {
 
 <div class="now bio">
     <h2 class="book-title"><a href="/now/">Now</a></h2>
-    <Markdown
-        content={marked.parse(content) as string}
-        sanitize={{ allowComponents: true, allowCustomElements: true }}
-        components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
-    />
+    {
+        content && (
+            <Markdown
+                content={marked.parse(content) as string}
+                sanitize={{ allowComponents: true, allowCustomElements: true }}
+                components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
+            />
+        )
+    }
 </div>

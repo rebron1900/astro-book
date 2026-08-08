@@ -44,19 +44,21 @@ describe('getMemos', () => {
         expect(result).toEqual([]);
     });
 
-    it('propagates network failure', async () => {
+    it('returns empty array on network failure', async () => {
         vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('Network error'))));
         const { getMemos } = await import('../../src/api/memos');
 
-        await expect(getMemos()).rejects.toThrow('Network error');
+        const result = await getMemos();
+        expect(result).toEqual([]);
     });
 
-    it('propagates invalid JSON response', async () => {
+    it('returns empty array on invalid JSON response', async () => {
         vi.stubGlobal('fetch', vi.fn(() =>
             Promise.resolve(new Response('not json at all', { status: 200 }))
         ));
         const { getMemos } = await import('../../src/api/memos');
 
-        await expect(getMemos()).rejects.toThrow();
+        const result = await getMemos();
+        expect(result).toEqual([]);
     });
 });

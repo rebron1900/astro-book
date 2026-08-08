@@ -1,6 +1,5 @@
 import type { Page, Post } from '@ts-ghost/content-api';
 import { TSGhostContentAPI } from '@ts-ghost/content-api';
-import type { DataSource } from './types';
 
 const ghostUrl = import.meta.env.GHOST_API_URL;
 const ghostApiKey = import.meta.env.GHOST_API_KEY;
@@ -23,24 +22,6 @@ export const getAllAuthors = async () => {
     }
     return {
         authors: results.data,
-        meta: results.meta
-    };
-};
-
-export const getPosts = async () => {
-    const api = new TSGhostContentAPI(ghostUrl, ghostApiKey, 'v5.0');
-    const results = await api.posts
-        .browse()
-        .include({
-            authors: true,
-            tags: true
-        })
-        .fetch();
-    if (!results.success) {
-        throw new Error(results.errors.map((e) => e.message).join(', '));
-    }
-    return {
-        posts: results.data,
         meta: results.meta
     };
 };
@@ -102,7 +83,7 @@ export const getSettings = async () => {
 
 export type Settings = NonNullable<Awaited<ReturnType<typeof getSettings>>>;
 
-export const getAllTags = async () => {
+export const getAllTags = async (postsAll?: Post[]) => {
     const api = new TSGhostContentAPI(ghostUrl, ghostApiKey, 'v5.0');
     const results = await api.tags
         .browse({ limit: 'all', order: 'count.posts desc' })
@@ -114,7 +95,7 @@ export const getAllTags = async () => {
         throw new Error(results.errors.map((e) => e.message).join(', '));
     }
     //
-    const postsAll = await getAllPosts();
+    postsAll ??= await getAllPosts();
 
     const tagsWithPost = results.data.map((tag) => {
         const posts = postsAll.filter((post) => {
@@ -127,8 +108,3 @@ export const getAllTags = async () => {
     return tagsWithPost;
 };
 
-// DataSource 适配器：让 ghost-posts 可通过注册器统一管理
-export const ghostSource: DataSource<Post[]> = {
-    name: 'ghost-posts',
-    fetch: getAllPosts
-};

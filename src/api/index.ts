@@ -3,18 +3,22 @@ export * from './memos';
 export * from './neodb';
 export * from './flux';
 export * from './types';
-export * from './registry';
 
 // 整合内容源（原 getAllContent）
 import { getAllPosts } from './ghost';
 import { getMemos } from './memos';
 
-export async function getAllContent() {
+export async function getAllContent(
+    posts?: Awaited<ReturnType<typeof getAllPosts>>,
+    memos?: Awaited<ReturnType<typeof getMemos>>
+) {
     try {
-        const [posts, memos] = await Promise.all([getAllPosts(), getMemos()]);
-
+        const [postData, memoData] = await Promise.all([
+            posts ?? getAllPosts(),
+            memos ?? getMemos()
+        ]);
         // 按创建时间排序
-        return [...posts, ...memos].sort((a, b) => {
+        return [...postData, ...memoData].sort((a, b) => {
             // Memo 有 createdTs（秒），Post 有 created_at（ISO 字符串）
             // 用 `in` 收窄联合类型：仅 Memo 含 createdTs
             const aTime =
