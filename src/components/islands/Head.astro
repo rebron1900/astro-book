@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from 'astro:transitions';
 import { settings } from '../../api/store';
 import { normalizeSlug, normalizeData } from '../../lib/utils/help';
 
@@ -47,6 +48,8 @@ if (post) {
 <meta name="twitter:title" content={og_title} />
 <meta name="twitter:description" content={og_desc} />
 <meta name="twitter:image" content={og_img} />
+
+<ClientRouter />
 
 <link rel="sitemap" type="application/xml" title={`${settings?.title}的站点地图`} href="/sitemap-index.xml" />
 <link rel="alternate" type="application/rss+xml" title={`${settings?.title}的Rss`} href="/rss.xml" />
