@@ -1,5 +1,16 @@
 [
   {
+    "id": "01JV1KF35ZSBN08P1D04G5PGB0",
+    "content": "<ul><li>心情 🙁</li></ul>",
+    "createdTs": 1747031919,
+    "updatedTs": 1747031919,
+    "creatorName": "1900",
+    "resourceList": [],
+    "visibility": "PUBLIC",
+    "pinned": true,
+    "type": "memo"
+  },
+  {
     "id": "01KZDS23XB12C7JYX7WA1T0G8V",
     "content": "<p>Cloudflare目前开启了AI助手功能，在页面上你能通过AI来操作相关配置，刚刚让他帮我排查了一个Worker的错误，问题解决的很流畅。</p><p>对于这种功能复杂的操作台，有一个这种助手确实方便很多。另外前几天在x上看到Cloudflare似乎要推出一个给AI操作的类Worker云空间，可以快速部署测试项目之类的，回头再试试。</p><p><a href=\"https://social.1900.live/tags/cloudflare\" class=\"mention hashtag\" rel=\"tag nofollow noreferrer noopener\" target=\"_blank\">#<span>Cloudflare</span></a></p>",
     "createdTs": 1786095144,
