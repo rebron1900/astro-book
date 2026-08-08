@@ -1,11 +1,15 @@
 ---
 const { src, allowfullscreen, height, width, title, autoplay = 0 } = Astro.props;
 
-const url = new URL(src.startsWith('//') ? `https:${src}` : src);
-url.searchParams.set('autoplay', autoplay);
+let url: URL | null = null;
+if (src) {
+    const raw = src.startsWith('//') ? `https:${src}` : src;
+    url = new URL(raw);
+    url.searchParams.set('autoplay', autoplay);
+}
 ---
 
 <div class="aspect-ratio">
-    <iframe src={url.toString()} data-src={url.toString()} height={height} width={width} title={title} class="allowfullscreen" allowfullscreen={allowfullscreen}
+    <iframe src={url?.toString()} data-src={url?.toString()} height={height} width={width} title={title} class="allowfullscreen" allowfullscreen={allowfullscreen}
     ></iframe>
 </div>

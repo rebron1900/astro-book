@@ -11,7 +11,8 @@ const encode = (s: string) => encodeURI(s);
 type Size = { width: number; height: number };
 const TTL = 7 * 24 * 60 * 60 * 1000; // 24h
 
-async function getSize(raw: string): Promise<Size | undefined> {
+async function getSize(raw: string | undefined): Promise<Size | undefined> {
+    if (!raw) return undefined; // 防御：外部 HTML 可能缺 src
     const cacheKey = `size_${raw}`;
     const errorCacheKey = `error_${raw}`;
 
@@ -100,7 +101,7 @@ const generateImageSrcset = (image: string) => {
 };
 
 // 只处理 cdn.1900.live 的图片
-const isCdn = src.startsWith('https://cdn.1900.live/') || src.match('unsplash.com') ? true : false;
+const isCdn = src && (src.startsWith('https://cdn.1900.live/') || src.match('unsplash.com')) ? true : false;
 const size = await getSize(src);
 ---
 
