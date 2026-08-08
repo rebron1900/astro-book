@@ -4,7 +4,7 @@ import config from '../../config';
 import memosJson from '../../data/memos.json';
 import type { Memo } from '../../api/types';
 import type { GetStaticPathsOptions } from 'astro';
-import { normalizeData } from '../../lib/utils/help';
+import { relativeTime } from '../../lib/utils/help';
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Head from '../../components/islands/Head.astro';
@@ -21,6 +21,7 @@ import Columns from '../../components/shortcode/Columns.astro';
 import Details from '../../components/shortcode/Details.astro';
 import Link from '../../components/shortcode/Link.astro';
 import OGCard from '../../components/shortcode/OGCard.astro';
+import { MessageCircle, Repeat2, Heart, Eye } from '@lucide/astro';
 
 const custompage = pages.find((post) => post.slug == 'now');
 
@@ -57,33 +58,38 @@ const { page } = Astro.props;
         <div id="atk-memoslist">
             {
                 page.data.map((memo) => (
-                    <div class="atk-comment">
-                        <div class="atk-avatar">
+                    <div class="atk-comment threads-item">
+                        <div class="threads-avatar">
                             <a target="_blank" rel="noreferrer noopener nofollow" href={config.memos.siteURL + '/m/' + memo.id}>
-                                <img src={authors.authors[0].profile_image} />
+                                <img src={authors.authors[0].profile_image} alt={memo.creatorName} />
                             </a>
                         </div>
 
-                        <div class="atk-main">
-                            <div class="atk-body">
-                                <div class="atk-content">
-                                    {memo.content && (
-                                        <Markdown
-                                            content={memo.content}
-                                            sanitize={{ allowComponents: true, allowCustomElements: true }}
-                                            components={{
-                                                pre: CodeSlot,
-                                                img: RemotePicture,
-                                                iframe: IFrameSlot,
-                                                details: Details,
-                                                columns: Columns,
-                                                a: Link,
-                                                ogcard: OGCard
-                                            }}
-                                        />
-                                    )}
-                                    <OGCard text={memo.content} />
+                        <div class="threads-main">
+                            <div class="threads-head">
+                                <span class="threads-name">{memo.creatorName}</span>
+                                <span class="threads-time">{relativeTime(memo.updatedTs)}</span>
+                            </div>
 
+                            <div class="threads-body atk-content">
+                                {memo.content && (
+                                    <Markdown
+                                        content={memo.content}
+                                        sanitize={{ allowComponents: true, allowCustomElements: true }}
+                                        components={{
+                                            pre: CodeSlot,
+                                            img: RemotePicture,
+                                            iframe: IFrameSlot,
+                                            details: Details,
+                                            columns: Columns,
+                                            a: Link,
+                                            ogcard: OGCard
+                                        }}
+                                    />
+                                )}
+                                <OGCard text={memo.content} />
+
+                                {memo.resourceList.length > 0 && (
                                     <div class={`image-grid image-count-${memo.resourceList.length}`} view-image="">
                                         {memo.resourceList.map((r) => {
                                             if (r.type == 'image') {
@@ -103,36 +109,17 @@ const { page } = Astro.props;
                                             }
                                         })}
                                     </div>
-                                </div>
-                                <div class="atk-content-footer">
-                                    <span>
-                                        @{memo.creatorName} · by {normalizeData(memo.updatedTs)}
-                                    </span>
-                                </div>
+                                )}
                             </div>
-                            {/* <div class="atk-footer">
-                                <div class="atk-actions">
-                                    <>
-                                        <span class="atk-common-action-btn">赞同 (0)</span>
-                                        <span>回复</span>
-                                        <span class="atk-common-action-btn" atk-only-admin-show="">
-                                            折叠
-                                        </span>
-                                        <span class="atk-common-action-btn" atk-only-admin-show="">
-                                            已审
-                                        </span>
-                                        <span class="atk-common-action-btn" atk-only-admin-show="">
-                                            置顶
-                                        </span>
-                                        <span class="atk-common-action-btn" atk-only-admin-show="">
-                                            编辑
-                                        </span>
-                                        <span class="atk-common-action-btn" atk-only-admin-show="">
-                                            删除
-                                        </span>
-                                    </>
-                                </div>
-                            </div> */}
+
+                            <div class="threads-actions">
+                                <a class="threads-action" target="_blank" rel="noopener noreferrer" href={config.memos.siteURL + '/m/' + memo.id} aria-label="查看详情">
+                                    <MessageCircle />
+                                </a>
+                                <span class="threads-action" aria-label="转发"><Repeat2 /></span>
+                                <span class="threads-action" aria-label="点赞"><Heart /></span>
+                                <span class="threads-action" aria-label="浏览"><Eye /></span>
+                            </div>
                         </div>
                     </div>
                 ))

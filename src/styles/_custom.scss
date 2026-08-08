@@ -159,6 +159,120 @@
             margin-left: 50px;
         }
     }
+
+    /* ===== Threads 风格列表 ===== */
+    .threads-item {
+        display: flex;
+        gap: 0.75rem;
+        padding: 1rem 0.25rem;
+        border-bottom: 1px solid var(--gray-200);
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background-color: color-mix(in srgb, var(--gray-100) 60%, transparent);
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        .threads-avatar {
+            flex-shrink: 0;
+            img {
+                width: 42px;
+                height: 42px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid var(--gray-200);
+                background: var(--gray-100);
+            }
+        }
+
+        .threads-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .threads-head {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+
+            .threads-name {
+                font-weight: 700;
+                color: var(--body-font-color, inherit);
+                font-size: 0.95rem;
+            }
+            .threads-time {
+                font-size: 0.78rem;
+                color: var(--gray-700);
+                white-space: nowrap;
+            }
+        }
+
+        .threads-body {
+            color: inherit;
+            line-height: 1.6;
+            word-break: break-word;
+
+            .og-card {
+                margin-top: 0.5rem;
+            }
+
+            .image-grid {
+                display: grid;
+                gap: 4px;
+                margin-top: 0.5rem;
+
+                .image-container {
+                    position: relative;
+                    width: 100%;
+                    aspect-ratio: 1;
+                    overflow: hidden;
+                    border-radius: $border-radius;
+                }
+                .image-container img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    object-position: center;
+                }
+                &.image-count-1 { grid-template-columns: 1fr; .image-container { aspect-ratio: auto; } }
+                &.image-count-2 { grid-template-columns: repeat(2, 1fr); }
+                &.image-count-3 { grid-template-columns: repeat(3, 1fr); }
+                &.image-count-4 { grid-template-columns: repeat(2, 1fr); }
+                &.image-count-5, &.image-count-6, &.image-count-7, &.image-count-8, &.image-count-9 {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+            }
+        }
+
+        .threads-actions {
+            display: flex;
+            gap: 1.75rem;
+            margin-top: 0.6rem;
+            color: var(--gray-700);
+
+            .threads-action {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.25rem;
+                color: var(--gray-700);
+                cursor: pointer;
+                transition: color 0.2s ease;
+
+                svg {
+                    width: 1.15rem;
+                    height: 1.15rem;
+                }
+
+                &:hover {
+                    color: var(--color-hover-link);
+                }
+            }
+        }
+    }
     .atk-content {
         border-radius: $border-radius;
         border-width: 1px;

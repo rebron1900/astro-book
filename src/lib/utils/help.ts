@@ -79,6 +79,35 @@ export function normalizeSlug(slug: string) {
     return slug;
 }
 
+/**
+ * 相对时间（Threads 风格）：x 秒/分钟/小时/天前。
+ * 超过 7 天显示具体日期（YYYY-MM-DD）。
+ * 兼容秒/毫秒时间戳或 ISO 字符串。
+ */
+export function relativeTime(data: string | number | null | undefined): string {
+    if (data == null) return '';
+    let ts: number;
+    if (typeof data === 'number' || /^\d+$/.test(data)) {
+        const n = typeof data === 'number' ? data : parseInt(data, 10);
+        ts = n > 999999999999 ? n : n * 1000;
+    } else {
+        ts = new Date(data).getTime();
+    }
+    if (isNaN(ts)) return '';
+    const diff = Date.now() - ts;
+    const min = 60 * 1000;
+    const hr = 60 * min;
+    const day = 24 * hr;
+    if (diff < min) return '刚刚';
+    if (diff < hr) return `${Math.floor(diff / min)} 分钟前`;
+    if (diff < day) return `${Math.floor(diff / hr)} 小时前`;
+    if (diff < 7 * day) return `${Math.floor(diff / day)} 天前`;
+    const d = new Date(ts);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
 export function normalizeData(data: string | number | null | undefined): string | null {
     // 空值直接返回 null（Ghost 的 published_at 可能为 null/undefined）
     if (data == null) return null;
