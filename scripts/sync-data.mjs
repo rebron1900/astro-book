@@ -217,6 +217,12 @@ async function syncGhost(env) {
 
     // tags（复用已拉取 posts 避免重复请求）
     const trimmedPosts = posts.map((p) => trimEntry(p, 'post'));
+
+    // P0 数据安全：ghost 是核心数据。若拉取结果为空（网络/认证失败被静默吞掉），拒绝写入，避免用空数据覆盖线上。
+    if (!posts.length) {
+        throw new Error('Ghost 拉取到 0 篇文章（疑似认证/网络失败），拒绝写入，保留已有数据');
+    }
+
     const tagsRes = await api.tags.browse({ limit: 'all', order: 'count.posts desc' }).include({ 'count.posts': true }).fetch();
     const tags = tagsRes.success
         ? tagsRes.data.map((tag) => ({
@@ -348,6 +354,7 @@ async function main() {
     console.log(`开始同步 [${sources.join(', ')}]${dryRun ? ' (dry-run)' : ''}`);
 
     let changed = 0;
+    let failed = 0;
     for (const name of sources) {
         const src = SOURCES[name];
         try {
@@ -358,14 +365,21 @@ async function main() {
                 if (await writeJson(src.file, data)) changed++;
             }
         } catch (e) {
+            failed++;
             console.error(`[${name}] 同步失败: ${e.message}`);
         }
     }
 
     console.log(dryRun ? 'dry-run 完成（未写盘）' : `同步完成，${changed} 个文件有变化`);
+    return failed;
 }
 
-main().catch((e) => {
+main().then((failed) => {
+    if (failed > 0) {
+        console.error(`同步完成，${failed} 个源失败`);
+        process.exit(1);
+    }
+}).catch((e) => {
     console.error('脚本异常:', e);
     process.exit(1);
 });

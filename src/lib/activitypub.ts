@@ -21,6 +21,15 @@ interface InteractionStats {
     favourites_count: number;
 }
 
+// 转义外部数据，防止 XSS。同时适用于 HTML 属性与文本上下文。
+function escapeHtml(value: unknown): string {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
 interface InteractionData {
     toot_id: string;
     stats: InteractionStats;
@@ -86,11 +95,11 @@ function renderAllInteractions(data: InteractionData, container: HTMLElement) {
         const li = document.createElement('li');
         li.innerHTML = `
       <div class="comment-user-avatar ${user.type}">
-        <img src="${user.avatar || user.author.avatar}"
-             alt="${user.name || user.username}"
+        <img src="${escapeHtml(user.avatar || user.author.avatar)}"
+             alt="${escapeHtml(user.name || user.username)}"
              class="avatar avatar-60 photo"
              loading="lazy"
-             data-user-id="${user.id}"
+             data-user-id="${escapeHtml(user.id)}"
              data-type="${user.type}">
       </div>
     `;
@@ -110,7 +119,7 @@ function renderAllInteractions(data: InteractionData, container: HTMLElement) {
                 content: '加载中...',
                 onShow(instance) {
                     instance.setContent(
-                        `${user.content} <hr style="border: solid 1px var(--gray-200);" /><div class="text-right">by ${user.author.name} <em>${normalizeData(user.created_at)}</em></div>`
+                        `${escapeHtml(user.content)} <hr style="border: solid 1px var(--gray-200);" /><div class="text-right">by ${escapeHtml(user.author.name)} <em>${normalizeData(user.created_at)}</em></div>`
                     );
                 }
                 //测试
@@ -119,7 +128,7 @@ function renderAllInteractions(data: InteractionData, container: HTMLElement) {
             // 点赞工具提示
             tippy(img, {
                 allowHTML: true,
-                content: `by ${user.name} 💖`,
+                content: `by ${escapeHtml(user.name)} 💖`,
                 delay: [100, 0]
             });
         }

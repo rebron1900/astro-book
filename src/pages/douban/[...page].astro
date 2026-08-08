@@ -55,7 +55,7 @@ export async function getStaticPaths() {
 }
 
 // 从 props 获取数据
-const { data, lastPage } = Astro.props;
+const { data, currentPage, lastPage } = Astro.props;
 const groupdata = doubanGroupByDate(data);
 ---
 
@@ -139,12 +139,12 @@ const groupdata = doubanGroupByDate(data);
             </div>
             <div class="flex flex-wrap btn-more justify-center" style="padding: 3rem; gap:1.5rem">
                 {
-                    lastPage && (
+                    currentPage < lastPage && (
                         <a
                             class="loader"
                             href="javascript:(void)"
                             hx-trigger="load delay:1s"
-                            hx-get="/douban/2"
+                            hx-get={`/douban/${currentPage + 1}`}
                             hx-target=".db--list__card"
                             hx-swap="beforeend"
                             hx-select=".db--list__card"

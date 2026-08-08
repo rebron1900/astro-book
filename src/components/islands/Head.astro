@@ -3,7 +3,7 @@ import { ClientRouter } from 'astro:transitions';
 import { settings } from '../../api/store';
 import { normalizeSlug, normalizeData } from '../../lib/utils/help';
 
-const { post, title } = Astro.props;
+const { post, title, og_url: ogUrl } = Astro.props;
 
 let og_title: string,
     og_desc: string,
@@ -20,7 +20,7 @@ if (post) {
 } else {
     og_title = settings?.title ?? '';
     og_desc = (settings?.description ?? '').replace(/[\r\n]+/g, '');
-    og_url = import.meta.env.SITE;
+    og_url = ogUrl || import.meta.env.SITE;
     og_img = `https://og.190102.xyz/api/og?title=${encodeURIComponent(og_title)}&desc=${encodeURIComponent(og_desc)}&date=1900-01-01`;
 }
 ---

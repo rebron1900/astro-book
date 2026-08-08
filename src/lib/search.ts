@@ -97,11 +97,12 @@ const search = () => {
                 .then((pages) => pages.json())
                 .then((pages: SearchPage[]) => {
                     window.bookSearchIndex = new Fuse(pages, indexConfig);
-                })
-                .then(() => (input.required = false))
-                .then(() => {
-                    search;
+                    input.required = false;
                     cocoMessage.success('搜索初始化成功 🎉！');
+                })
+                .catch((err) => {
+                    console.warn('[search] 索引加载失败:', err);
+                    input.required = false; // 失败也应允许提交，避免表单永久不可用
                 });
         } else {
             input.required = false;

@@ -31,10 +31,10 @@ export default function initWebSocket(actives: Array<{ setContent: (content: str
         fetch(appListUrl)
             .then((rep) => rep.json())
             .then((data: Record<string, AppItem>) => {
-                ws2 = new WebSocket(wsUrl);
                 // 初始化app列表
                 appList = data;
-                // 绑定事件处理函数
+                // 绑定事件处理函数（先置空再建新连接，确保 onClose/onError 重连时能进入 if(!ws2)）
+                ws2 = new WebSocket(wsUrl);
                 ws2.onopen = onOpen;
                 ws2.onmessage = onMessage;
                 ws2.onclose = onClose;
@@ -66,7 +66,9 @@ function onMessage(event: MessageEvent) {
     // 条件为：当前页面显示的app和服务器下发的app要不一样（说明是新程序），并且程序在app清单中。
     if (activs.dataset.app != data.process && processName in appList) {
         // 提前缓存图片（我发现大佬博客图片加载有颜值，不过不知道这个有用没有）
-        fetch(cdn + appList[processName].url + '!20w').then(function () {
+        fetch(cdn + appList[processName].url + '!20w')
+            .catch((err) => console.warn('[actives] 预缓存图标失败:', err))
+            .then(function () {
             // 先将旧的actives执行退场动画
             activs.style.display = 'block';
             activs.classList.add('exit');
@@ -96,13 +98,16 @@ function onMessage(event: MessageEvent) {
 
 // 连接关闭的处理函数
 function onClose(_event: CloseEvent) {
-    // 尝试重新连接
+    // 置空 ws2，使 initWebSocket 的重连判断 if(!ws2) 生效
+    ws2 = null;
     document.querySelector('.actives')?.classList.add('exit');
     setTimeout(() => initWebSocket(activesTippy ?? []), 5000); // 5秒后尝试重新连接
 }
 
 // 连接错误的处理函数
 function onError(_event: Event) {
-    // 尝试重新连接
+    // 置空 ws2，使重连判断生效
+    ws2 = null;
     document.querySelector('.actives')?.classList.add('exit');
+    setTimeout(() => initWebSocket(activesTippy ?? []), 5000); // 5秒后尝试重新连接
 }

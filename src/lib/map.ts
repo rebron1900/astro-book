@@ -385,9 +385,6 @@ class FilterControl {
 }
 
 export default function initMap(url: string, key: string) {
-    url = 'https://ghproxy.net/https://raw.githubusercontent.com/rebron1900/doumark-action/master/data/geojson.json?short_path=832ba66';
-    key = 'pk.eyJ1IjoiZmF0ZXNpbmdlciIsImEiOiJjanc4bXFocG8wMXM1NDNxanB0MG5sa2ZpIn0.HqA5Q8Y4Jp1s3_TQ-sqVoQ';
-
     const mapContainer = document.querySelector('#map');
     if (mapContainer) {
         fetch(url)

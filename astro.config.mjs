@@ -21,7 +21,7 @@ export default defineConfig({
     integrations: [
         sitemap(),
         solidJs({
-            devtools: true
+            devtools: false
         })
     ],
     vite: {

@@ -1,11 +1,86 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
     normalizeSlug,
     normalizeData,
     getSvg,
     groupByDate,
     doubanGroupByDate,
+    relativeTime,
 } from '../../src/lib/utils/help';
+
+// ─── relativeTime ────────────────────────────────────────────────────────────
+
+describe('relativeTime', () => {
+    // 固定系统时间，使 Date.now() 可控
+    const BASE = new Date('2024-07-01T00:00:00Z').getTime();
+    const min = 60 * 1000;
+    const hr = 60 * min;
+    const day = 24 * hr;
+
+    beforeEach(() => {
+        vi.useFakeTimers();
+        vi.setSystemTime(BASE);
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    const iso = (msAgo: number) => new Date(BASE - msAgo).toISOString();
+
+    it('returns empty string for null/undefined', () => {
+        expect(relativeTime(null)).toBe('');
+        expect(relativeTime(undefined)).toBe('');
+    });
+
+    it('returns empty string for invalid input', () => {
+        expect(relativeTime('not-a-date')).toBe('');
+        expect(relativeTime('abc')).toBe('');
+    });
+
+    it('labels under 1 minute as 刚刚', () => {
+        expect(relativeTime(iso(30 * 1000))).toBe('刚刚');
+    });
+
+    it('labels future timestamps as 刚刚', () => {
+        expect(relativeTime(BASE + 5000)).toBe('刚刚');
+    });
+
+    it('formats minutes', () => {
+        expect(relativeTime(iso(1 * min))).toBe('1 分钟前');
+        expect(relativeTime(iso(59 * min))).toBe('59 分钟前');
+    });
+
+    it('formats hours', () => {
+        expect(relativeTime(iso(1 * hr))).toBe('1 小时前');
+        expect(relativeTime(iso(23 * hr))).toBe('23 小时前');
+    });
+
+    it('formats days', () => {
+        expect(relativeTime(iso(1 * day))).toBe('1 天前');
+        expect(relativeTime(iso(6 * day))).toBe('6 天前');
+    });
+
+    it('shows date at the 7-day threshold (not < 7d)', () => {
+        expect(relativeTime(iso(7 * day))).toBe('2024-06-24');
+    });
+
+    it('shows date beyond 7 days', () => {
+        expect(relativeTime(iso(10 * day))).toBe('2024-06-21');
+    });
+
+    it('accepts a numeric seconds timestamp', () => {
+        expect(relativeTime((BASE - 3 * day) / 1000)).toBe('3 天前');
+    });
+
+    it('accepts a numeric milliseconds timestamp (>= 13 digits)', () => {
+        expect(relativeTime(BASE - 2 * hr)).toBe('2 小时前');
+    });
+
+    it('accepts a digit-string timestamp', () => {
+        expect(relativeTime(String((BASE - 5 * day) / 1000))).toBe('5 天前');
+    });
+});
 
 // ─── normalizeSlug ────────────────────────────────────────────────────────────
 

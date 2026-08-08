@@ -28,7 +28,7 @@ const { page, tag } = Astro.props;
 ---
 
 <BaseLayout>
-    <Head slot="head" site={settings} title={settings?.title + ' | ' + settings?.description} />
+    <Head slot="head" site={settings} title={settings?.title + ' | ' + settings?.description} og_url={import.meta.env.SITE + page.url.current} />
 
     <Header slot="header" title={settings?.title} />
 
