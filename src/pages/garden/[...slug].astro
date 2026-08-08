@@ -20,7 +20,8 @@ export async function getStaticPaths() {
             post,
             nextPost: index + 1 !== postCount ? posts[index + 1] : null,
             prevPost: index !== 0 ? posts[index - 1] : null
-        }
+        },
+        cacheKey: String(post.id)
     }));
 }
 

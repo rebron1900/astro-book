@@ -22,7 +22,7 @@ jobs:
             - name: Set up Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: '18'
+                  node-version: '22'
                   cache: 'yarn'
 
             # 0️⃣ 恢复 node_modules 缓存
@@ -44,11 +44,20 @@ jobs:
                   yarn add sharp --ignore-engines
                   yarn install
 
-            # 4️⃣ 构建项目（方案 B：完全离线，读取仓库已提交的 src/data/*.json）
+            # 4️⃣ 增量构建缓存（Astro 7 experimental.incrementalBuild）
+            - name: Restore incremental build cache
+              uses: actions/cache@v4
+              with:
+                  path: node_modules/.astro
+                  key: astro-incremental-${{ runner.os }}
+                  restore-keys: |
+                      astro-incremental-${{ runner.os }}-
+
+            # 5️⃣ 构建项目（方案 B：完全离线，读取仓库已提交的 src/data/*.json）
             - name: Build Astro project
               run: yarn build
 
-            # 6️⃣ 部署到 VPS
+            # 7️⃣ 部署到 VPS
             - name: Deploy to VPS
               env:
                   VPS_HOST: ${{ secrets.VPS_HOST }}

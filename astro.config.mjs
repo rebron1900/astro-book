@@ -6,6 +6,9 @@ import { execSync } from 'node:child_process';
 // https://astro.build/config
 export default defineConfig({
     site: 'https://1900.live',
+    experimental: {
+        incrementalBuild: true
+    },
     markdown: {
         shikiConfig: {
             theme: 'dracula',
