@@ -426,3 +426,97 @@
     align-items: flex-start;
     margin-top: 15px;
 }
+
+/* ===== 票根（ticket stub）主题 tippy =====
+ * hover 评论图标时，以电影票/车票的票根形象展示评论内容。
+ * 锯齿边（打孔边）+ 圆角 + 过渡动画。
+ */
+.tippy-box[data-theme='ticket'] {
+    background-color: var(--body-background) !important;
+    color: var(--body-font-color) !important;
+    border: solid 1px var(--gray-200) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+    max-width: 280px;
+    overflow: hidden;
+}
+
+/* 票根内容区：左右留出打孔边距 */
+.tippy-box[data-theme='ticket'] .tippy-content {
+    padding: 0;
+    position: relative;
+}
+
+/* 票根主体：上下圆角 + 左右锯齿边 */
+.tippy-box[data-theme='ticket'] .ticket-body {
+    padding: 12px 18px;
+    font-size: 13px;
+    line-height: 1.6;
+    position: relative;
+    background: var(--body-background);
+}
+
+/* 左右锯齿边（打孔边） */
+.tippy-box[data-theme='ticket'] .ticket-body::before,
+.tippy-box[data-theme='ticket'] .ticket-body::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    background-image: radial-gradient(circle, var(--body-background) 3px, transparent 3.5px);
+    background-size: 10px 10px;
+    background-repeat: repeat-y;
+}
+.tippy-box[data-theme='ticket'] .ticket-body::before {
+    left: -5px;
+}
+.tippy-box[data-theme='ticket'] .ticket-body::after {
+    right: -5px;
+}
+
+/* 票根头部：小标签（如“短评”） */
+.tippy-box[data-theme='ticket'] .ticket-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--color-link);
+    text-transform: uppercase;
+}
+.tippy-box[data-theme='ticket'] .ticket-head::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--gray-200);
+}
+
+/* 票根虚线分隔（打孔线） */
+.tippy-box[data-theme='ticket'] .ticket-divider {
+    border-top: 1px dashed var(--gray-300);
+    margin: 8px 0;
+}
+
+/* 票根底部：小字（如日期/编号） */
+.tippy-box[data-theme='ticket'] .ticket-foot {
+    font-size: 10px;
+    color: var(--text-gray-light);
+    text-align: right;
+}
+
+/* 票根箭头颜色跟随主题 */
+.tippy-box[data-theme='ticket'][data-placement^='bottom'] > .tippy-arrow::before {
+    border-bottom-color: var(--body-background) !important;
+}
+.tippy-box[data-theme='ticket'][data-placement^='top'] > .tippy-arrow::before {
+    border-top-color: var(--body-background) !important;
+}
+.tippy-box[data-theme='ticket'][data-placement^='left'] > .tippy-arrow::before {
+    border-left-color: var(--body-background) !important;
+}
+.tippy-box[data-theme='ticket'][data-placement^='right'] > .tippy-arrow::before {
+    border-right-color: var(--body-background) !important;
+}

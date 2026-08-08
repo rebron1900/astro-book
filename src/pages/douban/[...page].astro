@@ -218,13 +218,37 @@ const groupdata = doubanGroupByDate(data);
 
                     tippy('.db--icon-comment', {
                         placement: 'bottom',
-                        maxWidth: 300
+                        maxWidth: 300,
+                        theme: 'ticket',
+                        animation: 'shift-away-subtle',
+                        allowHTML: true,
+                        onShow(instance) {
+                            const raw = instance.reference.getAttribute('data-tippy-content') ?? '';
+                            instance.setContent(
+                                `<div class="ticket-body">
+                                    <div class="ticket-head">短评</div>
+                                    <div>${raw}</div>
+                                </div>`
+                            );
+                        }
                     });
                 });
                 document.body.addEventListener('htmx:afterSwap', function () {
                     tippy('.db--icon-comment', {
                         placement: 'bottom',
-                        maxWidth: 300
+                        maxWidth: 300,
+                        theme: 'ticket',
+                        animation: 'shift-away-subtle',
+                        allowHTML: true,
+                        onShow(instance) {
+                            const raw = instance.reference.getAttribute('data-tippy-content') ?? '';
+                            instance.setContent(
+                                `<div class="ticket-body">
+                                    <div class="ticket-head">短评</div>
+                                    <div>${raw}</div>
+                                </div>`
+                            );
+                        }
                     });
                 });
             </script>
