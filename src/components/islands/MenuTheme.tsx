@@ -37,7 +37,9 @@ const MenuTheme = () => {
         localStorage.setItem('name', theme.desc);
         localStorage.setItem('theme', theme.name);
         localStorage.setItem('themetype', theme.type);
-        document.documentElement.setAttribute('class', theme.name);
+        // 用 classList 替换主题类，避免 setAttribute('class') 清掉 html 上其他脚本添加的类
+        document.documentElement.classList.remove(...config.themes.map((t) => t.name));
+        document.documentElement.classList.add(theme.name);
         setTheme(theme.desc);
     };
 
@@ -108,7 +110,17 @@ const MenuTheme = () => {
                             <ul>
                                 <For each={config.themes}>
                                     {(theme) => (
-                                        <li onClick={[initViewTrans, theme]}>
+                                        <li
+                                            role='menuitem'
+                                            tabindex='0'
+                                            onClick={[initViewTrans, theme]}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                    e.preventDefault();
+                                                    initViewTrans(theme);
+                                                }
+                                            }}
+                                        >
                                             <span class='theme-item' data-themeinfo={theme.info}>
                                                 {theme.desc}
                                             </span>

@@ -1,6 +1,7 @@
 ---
 import { pages, settings, neodb } from '../../api/store';
 import { doubanGroupByDate } from '../../lib/utils/help';
+import type { GetStaticPathsOptions } from 'astro';
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Head from '../../components/islands/Head.astro';
@@ -20,43 +21,13 @@ import { Sparkles, MessageSquareMore } from '@lucide/astro';
 
 const pageDouban = pages.find((post) => post.slug == 'douban');
 
-export async function getStaticPaths() {
-    const db = neodb.data;
-
-    // 第一页：固定50条
-    const page1 = db.slice(0, 30);
-    // 第二页：剩余所有数据（如果总数>50）
-    const page2 = db.slice(30);
-
-    return [
-        // 第一页
-        {
-            params: { page: undefined },
-            props: {
-                data: page1,
-                currentPage: 1,
-                lastPage: page2.length > 0 ? 2 : 1 // 只有一页时lastPage=1
-            }
-        },
-        // 第二页（如果有剩余数据）
-        ...(page2.length > 0
-            ? [
-                  {
-                      params: { page: '2' },
-                      props: {
-                          data: page2,
-                          currentPage: 2,
-                          lastPage: 2
-                      }
-                  }
-              ]
-            : [])
-    ];
+export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
+    return paginate(neodb.data, { pageSize: 30 });
 }
 
 // 从 props 获取数据
-const { data, currentPage, lastPage } = Astro.props;
-const groupdata = doubanGroupByDate(data);
+const { page } = Astro.props;
+const groupdata = doubanGroupByDate(page.data);
 ---
 
 <BaseLayout post={pageDouban}>
@@ -139,12 +110,12 @@ const groupdata = doubanGroupByDate(data);
             </div>
             <div class="flex flex-wrap btn-more justify-center" style="padding: 3rem; gap:1.5rem">
                 {
-                    currentPage < lastPage && (
+                    page.url.next && (
                         <a
                             class="loader"
                             href="javascript:(void)"
                             hx-trigger="load delay:1s"
-                            hx-get={`/douban/${currentPage + 1}`}
+                            hx-get={`${page.url.next}`}
                             hx-target=".db--list__card"
                             hx-swap="beforeend"
                             hx-select=".db--list__card"
@@ -153,9 +124,7 @@ const groupdata = doubanGroupByDate(data);
                 }
             </div>
 
-            <script src="https://unpkg.com/htmx.org@2.0.2"></script>
             <script>
-                import 'https://unpkg.com/htmx.org@2.0.2';
                 import tippy from 'tippy.js';
                 const douban = {
                     change: function (type: string) {

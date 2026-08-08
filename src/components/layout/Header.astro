@@ -5,14 +5,14 @@ const { title } = Astro.props;
 ---
 
 <div class="flex align-center justify-between">
-    <label for="menu-control">
-        <Menu class="book-icon" />
+    <label for="menu-control" aria-label="打开菜单">
+        <Menu class="book-icon" aria-hidden="true" />
     </label>
 
     <strong class="ellipsis"> {title} </strong>
 
-    <label for="toc-control">
+    <label for="toc-control" aria-label="打开目录">
         <!-- 这里是 toc 图标的 SVG 内容 -->
-        <TableOfContents class="book-icon" />
+        <TableOfContents class="book-icon" aria-hidden="true" />
     </label>
 </div>

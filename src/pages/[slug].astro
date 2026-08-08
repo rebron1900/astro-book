@@ -20,7 +20,6 @@ import RemotePicture from '../components/ui/RemotePicture.astro';
 import Columns from '../components/shortcode/Columns.astro';
 import Details from '../components/shortcode/Details.astro';
 import Footer from '../components/layout/Footer.astro';
-import { parse } from 'node-html-parser';
 import IFrameSlot from '../components/ui/IFrameSlot.astro';
 import Link from '../components/shortcode/Link.astro';
 import OGCard from '../components/shortcode/OGCard.astro';
@@ -36,7 +35,7 @@ export async function getStaticPaths() {
             nextPost: index + 1 !== postCount ? posts[index + 1] : null,
             prevPost: index !== 0 ? posts[index - 1] : null
         },
-        cacheKey: `${post.slug}:${post.updated_at ?? ''}`
+        cacheKey: `${post.slug}:${post.updated_at ?? ''}:${index !== 0 ? posts[index - 1].slug : ''}:${index + 1 !== postCount ? posts[index + 1].slug : ''}`
     }));
 }
 
@@ -80,7 +79,7 @@ const { post, prevPost, nextPost } = Astro.props;
 
 // const html = HTML.stringify(ast);
 
-const tocHtml = tocGen(await post.html);
+const tocHtml = tocGen(post.html);
 ---
 
 <BaseLayout post={post}>

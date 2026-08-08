@@ -49,7 +49,7 @@ const groupdata = groupByDate(postsAll);
                         {post.data.map((month) => (
                             <div>
                                 <h3 id={`${post.year}-${month.month}`}>
-                                    {month.month} / {month.month}
+                                    {post.year} / {month.month}
                                 </h3>
                                 {month.data && month.data.length > 0 && (
                                     <ul>

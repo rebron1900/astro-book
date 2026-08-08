@@ -1,6 +1,9 @@
 import { postsAll } from '../api/store';
 import type { Post, Tag } from '@ts-ghost/content-api';
 
+// 模块级缓存：extractAlbumsFromPosts 遍历 854 篇做正则提取，构建期多次调用时避免重复计算
+let albumsCache: Album[] | null = null;
+
 export interface AlbumImage {
     url: string;
     alt?: string;
@@ -20,6 +23,8 @@ export interface Album {
 }
 
 export function extractAlbumsFromPosts() {
+    if (albumsCache) return albumsCache;
+
     const albums: Map<string, Album> = new Map();
 
     // 遍历所有文章，查找带有相册标签的文章
@@ -73,7 +78,8 @@ export function extractAlbumsFromPosts() {
     });
 
     // 按创建时间排序
-    return Array.from(albums.values()).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    albumsCache = Array.from(albums.values()).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return albumsCache;
 }
 
 function extractImagesFromPost(post: Post): AlbumImage[] {
@@ -114,11 +120,6 @@ function extractImagesFromPost(post: Post): AlbumImage[] {
     }
 
     return images;
-}
-
-export function getAlbumBySlug(slug: string) {
-    const albums = extractAlbumsFromPosts();
-    return albums.find((album) => album.slug === slug);
 }
 
 export function getSolarTermGroups(album: Album) {

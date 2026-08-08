@@ -12,7 +12,7 @@ let og_title: string,
 
 if (post) {
     og_title = post.title;
-    og_url = normalizeSlug(post.slug);
+    og_url = import.meta.env.SITE + normalizeSlug(post.slug);
     og_desc = (post.excerpt ?? '').replace(/[\r\n]+/g, '').substring(0, 100);
     og_img = encodeURI(
         `https://og.190102.xyz/api/og?title=${encodeURIComponent(og_title)}&desc=${encodeURIComponent(og_desc)}&date=${normalizeData(post?.published_at)}`
@@ -36,7 +36,7 @@ if (post) {
 
 <!-- Facebook Meta Tags -->
 <meta property="og:url" content={og_url} />
-<meta property="og:type" content="website" />
+<meta property="og:type" content={post ? 'article' : 'website'} />
 <meta property="og:title" content={og_title} />
 <meta property="og:description" content={og_desc} />
 <meta property="og:image" content={og_img} />

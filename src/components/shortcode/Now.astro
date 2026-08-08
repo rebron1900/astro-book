@@ -1,5 +1,4 @@
 ---
-import { marked } from 'marked';
 import { memos } from '../../api/store';
 import rankJson from '../../data/rank.json';
 import { Markdown } from 'astro-remote';
@@ -35,7 +34,7 @@ if (content && hours > 0) {
     {
         content && (
             <Markdown
-                content={marked.parse(content) as string}
+                content={content}
                 sanitize={{ allowComponents: true, allowCustomElements: true }}
                 components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
             />

@@ -46,17 +46,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             const golink = () => {
                 const params = new URLSearchParams(window.location.search);
                 const encodedTarget = params.get('target');
-                const target = atob(encodedTarget); // 使用 atob 进行 Base64 解码
+                const redirectLink = document.getElementById('redirect-link');
+                const directLink = document.getElementById('direct-link');
+                if (!redirectLink || !directLink) return;
 
-                if (target) {
-                    const decodedTarget = decodeURIComponent(target);
+                let decodedTarget = '';
+                try {
+                    if (encodedTarget) {
+                        decodedTarget = decodeURIComponent(atob(encodedTarget));
+                    }
+                } catch {
+                    decodedTarget = ''; // 非法 Base64/URI，忽略
+                }
 
-                    document.getElementById('direct-link').href = decodedTarget;
-                    document.getElementById('redirect-link').textContent = '' + decodedTarget; // 在新增的元素中显示原地址
-                    document.getElementById('redirect-link').href = decodedTarget;
+                if (decodedTarget) {
+                    directLink.href = decodedTarget;
+                    redirectLink.textContent = decodedTarget;
+                    redirectLink.href = decodedTarget;
                 } else {
-                    const redirectMessageElement = document.getElementById('redirect-link');
-                    redirectMessageElement.textContent = '';
+                    redirectLink.textContent = '';
                 }
             };
 
