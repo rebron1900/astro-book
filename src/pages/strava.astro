@@ -1,5 +1,6 @@
 ---
 import { pages, settings } from '../api/store';
+import activitiesJson from '../data/strava.json';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/islands/Head.astro';
@@ -17,7 +18,6 @@ import Details from '../components/shortcode/Details.astro';
 import Link from '../components/shortcode/Link.astro';
 import OGCard from '../components/shortcode/OGCard.astro';
 import StravaRelitu from '../components/islands/StravaRelitu.jsx';
-import config from '../config';
 
 const page = pages.find((post) => post.slug == 'strava');
 
@@ -25,18 +25,8 @@ if (!page) {
     throw new Error('strava page not found');
 }
 
-// Fetch running activities from GitHub
-const activitiesUrl = config.strava.activitiesUrl;
-let activities = [];
-
-try {
-  const response = await fetch(activitiesUrl);
-  if (response.ok) {
-    activities = await response.json();
-  }
-} catch (error) {
-  console.error('Failed to fetch activities:', error);
-}
+// 从本地同步的 JSON 读取活动数据（构建时无网络依赖）
+const activities = activitiesJson;
 ---
 
 <BaseLayout post={page}>

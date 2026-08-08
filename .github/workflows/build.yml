@@ -25,23 +25,7 @@ jobs:
                   node-version: '18'
                   cache: 'yarn'
 
-            # 0️⃣⸣ 强制清空工作区里的缓存文件，确保“以缓存为准”
-            - name: Wipe local cache files
-              run: |
-                  rm -f src/data/image-meta.json src/data/og-cache.json
-                  echo "✅ 已删除本地缓存文件，保证使用 Actions 缓存或重新生成"
-
-            # 1️⃣ 恢复缓存
-            - name: Restore image/og cache
-              uses: actions/cache@v4
-              id: cache-restore
-              with:
-                  path: |
-                      src/data/image-meta.json
-                      src/data/og-cache.json
-                  key: astro-cache-single
-
-            # 2️⃣ 恢复 node_modules 缓存
+            # 0️⃣ 恢复 node_modules 缓存
             - name: Cache node modules
               uses: actions/cache@v4
               with:
@@ -60,14 +44,7 @@ jobs:
                   yarn add sharp --ignore-engines
                   yarn install
 
-            # 4️⃣ 写入配置文件
-            - name: Write config file
-              env:
-                  CONFIG_FILE: ${{ secrets.CONFIG_FILE }}
-              run: |
-                  echo "$CONFIG_FILE" > ./.env
-
-            # 5️⃣ 构建项目
+            # 4️⃣ 构建项目（方案 B：完全离线，读取仓库已提交的 src/data/*.json）
             - name: Build Astro project
               run: yarn build
 

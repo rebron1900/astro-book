@@ -1,6 +1,7 @@
 ---
 import { marked } from 'marked';
 import { memos } from '../../api/store';
+import rankJson from '../../data/rank.json';
 import { Markdown } from 'astro-remote';
 
 import CodeSlot from '../islands/CodeSlot.astro';
@@ -11,14 +12,8 @@ import Details from './Details.astro';
 import Link from './Link.astro';
 import Strava from './Strava.astro';
 
-// 在服务端获取数据
-let rankData = null;
-try {
-    const response = await fetch('https://divine-cell-831a.me-d1b.workers.dev/');
-    rankData = await response.json();
-} catch (e) {
-    console.error('Failed to fetch rank data:', e);
-}
+// 从本地同步的 JSON 读取吉他练习时长（构建时无网络依赖）
+const rankData = rankJson;
 
 // 获取吉他练习时长
     const hours: number = rankData?.myRank ? Number((rankData.myRank.totalDuration / 3600).toFixed(2)) : 0;

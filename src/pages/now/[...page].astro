@@ -1,7 +1,8 @@
 ---
 import { pages, settings, authors } from '../../api/store';
-import { getMemos } from '../../api/memos';
 import config from '../../config';
+import memosJson from '../../data/memos.json';
+import type { Memo } from '../../api/types';
 import type { GetStaticPathsOptions } from 'astro';
 import { normalizeData } from '../../lib/utils/help';
 
@@ -28,8 +29,7 @@ if (!custompage) {
 }
 
 export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
-    const allMemos = await getMemos();
-    return paginate(allMemos, { pageSize: 15 });
+    return paginate(memosJson as Memo[], { pageSize: 15 });
 }
 
 const { page } = Astro.props;

@@ -9,7 +9,8 @@
         "preview": "astro preview",
         "astro": "astro",
         "test": "vitest run",
-        "test:watch": "vitest"
+        "test:watch": "vitest",
+        "sync:data": "node scripts/sync-data.mjs"
     },
     "dependencies": {
         "@astrojs/rss": "4.0.12",
