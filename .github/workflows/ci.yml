@@ -1,12 +1,9 @@
-name: Astro-CI
+name: CI
 
 on:
     workflow_dispatch:
-    repository_dispatch:
-        types:
-            - update
     schedule:
-        - cron: '0 */3 * * *'
+        - cron: '17 */3 * * *'  # 每 3 小时：同步外部数据，有变化才构建部署
     push:
         branches:
             - main
@@ -14,6 +11,8 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
+        permissions:
+            contents: write
 
         steps:
             - name: Checkout code
@@ -25,7 +24,7 @@ jobs:
                   node-version: '22'
                   cache: 'yarn'
 
-            # 0️⃣ 恢复 node_modules 缓存
+            # 恢复 node_modules 缓存
             - name: Cache node modules
               uses: actions/cache@v4
               with:
@@ -38,13 +37,33 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-node-
 
-            # 3️⃣ 安装依赖
             - name: Install dependencies
               run: |
                   yarn add sharp --ignore-engines
                   yarn install
 
-            # 4️⃣ 增量构建缓存（Astro 7 experimental.incrementalBuild）
+            # 定时触发时：同步外部数据到 src/data/*.json（数据无变化则 writeJson 跳过写盘）
+            - name: Sync data (scheduled)
+              if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+              env:
+                  CONFIG_FILE: ${{ secrets.CONFIG_FILE }}
+              run: |
+                  echo "$CONFIG_FILE" > ./.env
+                  node scripts/sync-data.mjs
+                  echo "changed=$(git status --porcelain src/data/ | wc -l)" >> "$GITHUB_ENV"
+
+            # 数据有变化时提交（用 [skip ci] 防止触发自身 workflow 造成循环）
+            # push 触发时 changed 未设置(空)自动跳过；schedule/dispatch 触发且数据有变化时执行
+            - name: Commit data changes
+              if: ${{ env.changed != '' && env.changed != '0' }}
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git add src/data/
+                  git commit -m "chore(data): 定时同步外部数据源 [skip ci]"
+                  git push
+
+            # 恢复增量构建缓存（Astro 7 experimental.incrementalBuild）
             - name: Restore incremental build cache
               uses: actions/cache@v4
               with:
@@ -53,11 +72,11 @@ jobs:
                   restore-keys: |
                       astro-incremental-${{ runner.os }}-
 
-            # 5️⃣ 构建项目（方案 B：完全离线，读取仓库已提交的 src/data/*.json）
+            # 构建项目（方案 B：完全离线，读取仓库已提交的 src/data/*.json）
             - name: Build Astro project
               run: yarn build
 
-            # 7️⃣ 部署到 VPS
+            # 部署到 VPS
             - name: Deploy to VPS
               env:
                   VPS_HOST: ${{ secrets.VPS_HOST }}
@@ -71,15 +90,3 @@ jobs:
                   chmod 600 ~/.ssh/id_rsa
                   echo "StrictHostKeyChecking no" >> ~/.ssh/config
                   rsync -avz --delete -e "ssh -p $VPS_PORT" dist/ $VPS_USER@$VPS_HOST:/var/11ty-data
-
-            # - name: 安装 edgeone CLI
-            #   run: npm install -g edgeone
-
-            # - name: 打包 dist 为 zip
-            #   run: |
-            #     # 确保 zip 已安装（Ubuntu 自带，如缺失可 apt-get install -y zip）
-            #     zip -r dist.zip ./dist
-
-            # - name: 打包并部署到edgeone
-            #   run: |
-            #       npx edgeone pages deploy ./dist -n astro-book -t ${{ secrets.EDGE_TOKEN }}
