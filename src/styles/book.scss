@@ -24,3 +24,5 @@
 // 全局引入 artalk 样式，避免 View Transitions SPA 导航时 CSS 丢失
 @import 'artalk/dist/Artalk.css';
 // @import 'mapbox-gl/dist/mapbox-gl.css';
+// 全局引入 medium-zoom 样式，避免 View Transitions SPA 导航时运行时注入的 <style> 丢失
+@import 'medium-zoom/dist/style.css';
