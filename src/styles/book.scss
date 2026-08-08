@@ -21,5 +21,6 @@
 @import 'tippy.js/dist/tippy.css';
 @import 'tippy.js/dist/border.css';
 // @import '@tippy.js/dist/tippy';
-// @import 'artalk/dist/ArtalkLite';
+// 全局引入 artalk 样式，避免 View Transitions SPA 导航时 CSS 丢失
+@import 'artalk/dist/Artalk.css';
 // @import 'mapbox-gl/dist/mapbox-gl.css';
