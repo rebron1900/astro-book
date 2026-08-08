@@ -394,6 +394,9 @@ export default function initMap(url: string, key: string) {
             .then((response) => response.json())
             .then((data: GeoFeatureCollection) => {
                 (window as unknown as { mapboxi: MapHandler }).mapboxi = new MapHandler({ data, key });
+            })
+            .catch((err) => {
+                console.warn('[map] 加载地图数据失败:', err);
             });
     }
 }
