@@ -29,3 +29,6 @@ hugo-book
 image-meta.json
 og-cache.json
 astro-check-output.txt
+
+# 构建运行时缓存
+cache/
