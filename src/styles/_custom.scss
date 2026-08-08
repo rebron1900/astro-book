@@ -247,31 +247,6 @@
                 }
             }
         }
-
-        .threads-actions {
-            display: flex;
-            gap: 1.75rem;
-            margin-top: 0.6rem;
-            color: var(--gray-700);
-
-            .threads-action {
-                display: inline-flex;
-                align-items: center;
-                gap: 0.25rem;
-                color: var(--gray-700);
-                cursor: pointer;
-                transition: color 0.2s ease;
-
-                svg {
-                    width: 1.15rem;
-                    height: 1.15rem;
-                }
-
-                &:hover {
-                    color: var(--color-hover-link);
-                }
-            }
-        }
     }
     .atk-content {
         border-radius: $border-radius;

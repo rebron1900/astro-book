@@ -21,7 +21,6 @@ import Columns from '../../components/shortcode/Columns.astro';
 import Details from '../../components/shortcode/Details.astro';
 import Link from '../../components/shortcode/Link.astro';
 import OGCard from '../../components/shortcode/OGCard.astro';
-import { MessageCircle, Repeat2, Heart, Eye } from '@lucide/astro';
 
 const custompage = pages.find((post) => post.slug == 'now');
 
@@ -110,15 +109,6 @@ const { page } = Astro.props;
                                         })}
                                     </div>
                                 )}
-                            </div>
-
-                            <div class="threads-actions">
-                                <a class="threads-action" target="_blank" rel="noopener noreferrer" href={config.memos.siteURL + '/m/' + memo.id} aria-label="查看详情">
-                                    <MessageCircle />
-                                </a>
-                                <span class="threads-action" aria-label="转发"><Repeat2 /></span>
-                                <span class="threads-action" aria-label="点赞"><Heart /></span>
-                                <span class="threads-action" aria-label="浏览"><Eye /></span>
                             </div>
                         </div>
                     </div>
