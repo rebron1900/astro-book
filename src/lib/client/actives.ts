@@ -27,8 +27,10 @@ let activesTippy: Array<{ setContent: (content: string) => void }> | null = null
 export default function initWebSocket(actives: Array<{ setContent: (content: string) => void }>) {
     activesTippy = actives;
     if (!ws2) {
-        fetch(appListUrl).then((rep) => {
-            rep.json().then((data: Record<string, AppItem>) => {
+        // 外部 fetch 可能因跨域/网络失败，必须容错，避免 unhandled rejection
+        fetch(appListUrl)
+            .then((rep) => rep.json())
+            .then((data: Record<string, AppItem>) => {
                 ws2 = new WebSocket(wsUrl);
                 // 初始化app列表
                 appList = data;
@@ -37,8 +39,10 @@ export default function initWebSocket(actives: Array<{ setContent: (content: str
                 ws2.onmessage = onMessage;
                 ws2.onclose = onClose;
                 ws2.onerror = onError;
+            })
+            .catch((err) => {
+                console.warn('[actives] 获取 app 列表失败:', err);
             });
-        });
     }
 }
 

@@ -27,7 +27,6 @@ const MenuTheme = () => {
                     placement: 'right',
                     interactive: true,
                     appendTo: document.body,
-                    inlinePositioning: true,
                     arrow: true
                 });
             }
