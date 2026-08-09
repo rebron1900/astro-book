@@ -10,14 +10,25 @@
 }
 
 .db--navItem {
-    font-size: 20px;
-    cursor: pointer;
-    border-bottom: 1px solid transparent;
-    transition: 0.5s border-color;
     display: flex;
     align-items: center;
-    text-transform: capitalize;
     margin-right: 20px;
+    padding: 0;
+    color: inherit;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    background: transparent;
+    font: inherit;
+    font-size: 20px;
+    text-align: start;
+    cursor: pointer;
+    transition: border-color 0.5s;
+    appearance: none;
+}
+
+.db--navItem:focus-visible {
+    outline: 2px solid var(--main-hover-color);
+    outline-offset: 4px;
 }
 
 .db--navItem.current,
@@ -57,12 +68,6 @@
 .db--title a:hover {
     color: var(--main-hover-color);
     text-decoration: underline;
-}
-
-@media (max-width: 600px) {
-    .db--listBydate {
-        flex-direction: column;
-    }
 }
 
 .db--genreItem {
@@ -105,25 +110,90 @@
 
 .db--item {
     width: 170px;
+    min-height: 296px;
     padding: 10px;
     position: relative;
+    overflow: hidden;
+    contain: layout paint;
     border-radius: var(--sb-size);
     border: solid 1px var(--gray-200);
-    transition: all 0.3s ease;
     background-color: var(--gray-100);
+    transition: none;
 
     &:hover {
-        background-color: var(--gray-200);
+        border-color: transparent;
+        box-shadow: none;
     }
 }
-.db--icon-comment {
-    margin-top: 3px;
-    transform: translate(125px, 3px);
+
+/* 站点通用 hover 规则会给 .db--item 加描边和阴影，这里明确覆盖。 */
+.db--container .db--item:hover {
+    outline: 0 !important;
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
+    transition: none !important;
+}
+
+.db--sr-only {
     position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.db--card-front {
+    position: relative;
+    z-index: 1;
+    visibility: visible;
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition:
+        opacity 150ms cubic-bezier(0.2, 0, 0, 1),
+        transform 150ms cubic-bezier(0.2, 0, 0, 1),
+        visibility 0s linear;
+}
+
+.db--icon-comment {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    z-index: 2;
+    display: grid;
+    width: 24px;
+    height: 24px;
+    place-items: center;
+    color: var(--body-background);
     line-height: 1;
+    pointer-events: none;
+
     svg {
-        fill: var(--body-background);
+        fill: currentColor;
+        stroke: var(--main-border-color);
+        stroke-width: 1.5;
     }
+}
+
+.db--item:hover .db--card-front {
+    visibility: hidden;
+    opacity: 0;
+    transform: translate3d(0, -2px, 0);
+    transition:
+        opacity 150ms cubic-bezier(0.2, 0, 0, 1),
+        transform 150ms cubic-bezier(0.2, 0, 0, 1),
+        visibility 0s linear 150ms;
+}
+
+.db--image {
+    outline: 1px solid oklch(0 0 0 / 0.1);
+}
+
+.dark .db--image {
+    outline-color: oklch(1 0 0 / 0.1);
 }
 
 .db--item__music img {
@@ -395,7 +465,6 @@
     line-height: 1.1;
     margin-bottom: 10px;
     flex: none;
-    margin-right: 15px;
     align-items: center;
 }
 
@@ -416,107 +485,245 @@
 
 .db--dateList__card {
     display: flex;
+    flex: 1;
     flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 0.5em;
+    align-items: stretch;
+    gap: 12px;
+    min-width: 0;
 }
 
 .db--listBydate {
-    display: flex;
-    align-items: flex-start;
-    margin-top: 15px;
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr);
+    column-gap: 16px;
+    align-items: start;
+    margin-top: 20px;
+    content-visibility: auto;
+    contain-intrinsic-size: 320px;
 }
 
-/* ===== 票根（ticket stub）主题 tippy =====
- * hover 评论图标时，以电影票/车票的票根形象展示评论内容。
- * 锯齿边（打孔边）+ 圆角 + 过渡动画。
+.db--titleDate {
+    margin-right: 0;
+}
+
+@media (max-width: 600px) {
+    .db--listBydate {
+        display: block;
+    }
+
+    .db--titleDate {
+        flex-direction: row;
+        align-items: baseline;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .db--titleDate__day {
+        font-size: 32px;
+    }
+}
+
+/* ===== 票根卡片背面 =====
+ * 整张卡片 hover 后切换为纸质票根，展示记录时间、评分和短评。
  */
-.tippy-box[data-theme='ticket'] {
-    background-color: var(--body-background) !important;
-    color: var(--body-font-color) !important;
-    border: solid 1px var(--gray-200) !important;
-    border-radius: 10px !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
-    max-width: 280px;
-    overflow: hidden;
-}
-
-/* 票根内容区：左右留出打孔边距 */
-.tippy-box[data-theme='ticket'] .tippy-content {
-    padding: 0;
-    position: relative;
-}
-
-/* 票根主体：上下圆角 + 左右锯齿边 */
-.tippy-box[data-theme='ticket'] .ticket-body {
-    padding: 12px 18px;
-    font-size: 13px;
-    line-height: 1.6;
-    position: relative;
-    background: var(--body-background);
-}
-
-/* 左右锯齿边（打孔边） */
-.tippy-box[data-theme='ticket'] .ticket-body::before,
-.tippy-box[data-theme='ticket'] .ticket-body::after {
-    content: '';
+.db--ticket-face {
     position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 10px;
-    background-image: radial-gradient(circle, var(--body-background) 3px, transparent 3.5px);
-    background-size: 10px 10px;
-    background-repeat: repeat-y;
-}
-.tippy-box[data-theme='ticket'] .ticket-body::before {
-    left: -5px;
-}
-.tippy-box[data-theme='ticket'] .ticket-body::after {
-    right: -5px;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 14px 13px;
+    overflow: hidden;
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    color: #403528;
+    background-color: #f1e6cf;
+    background-image:
+        repeating-linear-gradient(0deg, transparent 0 3px, rgba(112, 78, 37, 0.025) 4px),
+        linear-gradient(rgba(241, 230, 207, 0.9), rgba(241, 230, 207, 0.94)),
+        var(--ticket-cover, none);
+    background-position: 0 0, center, center;
+    background-size: auto, auto, cover;
+    box-shadow: none;
+    border-radius: calc(var(--sb-size) - 1px);
+    transform: translate3d(0, 4px, 0);
+    transition:
+        opacity 180ms cubic-bezier(0.2, 0, 0, 1),
+        transform 180ms cubic-bezier(0.2, 0, 0, 1),
+        visibility 0s linear 180ms;
 }
 
-/* 票根头部：小标签（如“短评”） */
-.tippy-box[data-theme='ticket'] .ticket-head {
+.db--ticket-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+}
+
+.db--item:hover .db--ticket-face {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate3d(0, 0, 0);
+    transition:
+        opacity 180ms cubic-bezier(0.2, 0, 0, 1),
+        transform 180ms cubic-bezier(0.2, 0, 0, 1),
+        visibility 0s linear;
+}
+
+.db--ticket-topline,
+.db--ticket-footer {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: var(--color-link);
+    justify-content: space-between;
+    gap: 8px;
+    color: rgba(64, 53, 40, 0.68);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
     text-transform: uppercase;
 }
-.tippy-box[data-theme='ticket'] .ticket-head::after {
+
+.db--ticket-comment-head {
+    min-height: 0;
+}
+
+.db--ticket-rating-label {
+    position: relative;
+    top: -7px;
+    z-index: 2;
+    justify-self: end;
+    align-self: center;
+    color: #922727;
+    font-family: 'Bradley Hand', 'Comic Sans MS', 'KaiTi', cursive;
+    font-size: 18px;
+    font-style: italic;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    text-align: center;
+    text-shadow: none;
+    white-space: nowrap;
+    opacity: 0.94;
+    transform: rotate(-8deg);
+}
+
+/* 两条手写波浪线，作为评分文字的落笔。 */
+.db--ticket-rating-label::before,
+.db--ticket-rating-label::after {
+    position: absolute;
+    right: -4px;
+    left: -4px;
+    height: 6px;
     content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--gray-200);
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='6' viewBox='0 0 24 6'%3E%3Cpath d='M0 3 C2 0 4 0 6 3 S10 6 12 3 S16 0 18 3 S22 6 24 3' fill='none' stroke='%23922727' stroke-width='1.5'/%3E%3C/svg%3E") repeat-x bottom / 24px 6px;
+    pointer-events: none;
 }
 
-/* 票根虚线分隔（打孔线） */
-.tippy-box[data-theme='ticket'] .ticket-divider {
-    border-top: 1px dashed var(--gray-300);
-    margin: 8px 0;
+.db--ticket-rating-label::before {
+    bottom: -7px;
+    opacity: 0.9;
 }
 
-/* 票根底部：小字（如日期/编号） */
-.tippy-box[data-theme='ticket'] .ticket-foot {
+.db--ticket-rating-label::after {
+    right: -2px;
+    bottom: -13px;
+    left: -2px;
+    opacity: 0.68;
+    transform: scaleX(0.95);
+}
+
+.db--ticket-title-row {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    min-height: 42px;
+    margin-top: 10px;
+    align-items: center;
+    gap: 8px;
+}
+
+.db--ticket-title {
+    display: -webkit-box;
+    min-width: 0;
+    overflow: hidden;
+    color: #2f271f;
+    font-family: Georgia, 'Noto Serif SC', serif;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.25;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.db--ticket-comment-label {
+    display: block;
+    color: rgba(64, 53, 40, 0.62);
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    line-height: 1.2;
+}
+
+.db--ticket-comment {
+    position: relative;
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: none;
+    margin-top: 9px;
+    padding-top: 8px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-top: 1px dashed rgba(64, 53, 40, 0.4);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.db--ticket-comment::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.db--ticket-comment p {
+    position: relative;
+    z-index: 1;
+    display: block;
+    margin: 2px 0 0;
+    overflow-wrap: anywhere;
+    color: #403528;
+    font-size: 12px;
+    line-height: 1.45;
+    white-space: pre-line;
+}
+
+.db--ticket-comment p.is-empty {
+    color: rgba(64, 53, 40, 0.55);
+    font-style: italic;
+}
+
+.db--ticket-footer {
+    margin-top: auto;
+    padding-top: 6px;
+    border-top: 1px solid rgba(64, 53, 40, 0.2);
     font-size: 10px;
-    color: var(--text-gray-light);
-    text-align: right;
 }
 
-/* 票根箭头颜色跟随主题 */
-.tippy-box[data-theme='ticket'][data-placement^='bottom'] > .tippy-arrow::before {
-    border-bottom-color: var(--body-background) !important;
+.db--load-more {
+    display: block;
+    margin: 24px auto;
 }
-.tippy-box[data-theme='ticket'][data-placement^='top'] > .tippy-arrow::before {
-    border-top-color: var(--body-background) !important;
-}
-.tippy-box[data-theme='ticket'][data-placement^='left'] > .tippy-arrow::before {
-    border-left-color: var(--body-background) !important;
-}
-.tippy-box[data-theme='ticket'][data-placement^='right'] > .tippy-arrow::before {
-    border-right-color: var(--body-background) !important;
+
+@media (prefers-reduced-motion: reduce) {
+    .db--item,
+    .db--card-front,
+    .db--ticket-face,
+    .db--item:hover .db--card-front,
+    .db--item:hover .db--ticket-face {
+        transition: none;
+        transform: none;
+    }
 }

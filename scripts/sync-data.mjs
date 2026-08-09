@@ -152,25 +152,40 @@ function trimEntry(entry, type) {
 const NEODB_ITEM_FIELDS = ['id', 'title', 'category', 'cover_image_url', 'url', 'uuid', 'localized_title', 'type'];
 const NEODB_MARK_FIELDS = ['shelf', 'type', 'title', 'comment_text', 'rating_grade', 'item', 'created_time', 'visibility'];
 
-// 提取中文标题：优先 localized_title 的 zh-cn（若含中文），否则回退 title。
-// TVSeason 的 zh-cn 是季名（如“第 1 季”），应改用剧集名 title。
-function pickChineseTitle(item) {
+// 提取中文标题：优先简体中文 localized_title，找不到时回退到其他中文标题和 title。
+// TVSeason 常把“第 1 季”放在 zh-cn 中，不能把它当作品名；应继续找其他中文译名。
+const CHINESE_TITLE_LANGS = ['zh-cn', 'zh-hans', 'zh', 'zh-sg', 'zh-hk', 'zh-tw', 'zh-hant'];
+const SEASON_ONLY_TITLE = /^第\s*(?:\d+|[一二三四五六七八九十百千万]+)\s*季$/;
+
+function pickChineseTitle(item, previousTitle) {
     if (!item) return undefined;
-    // TVSeason：zh-cn 是季名，用 title（剧集名）
-    if (item.type === 'TVSeason') return item.title;
-    const zh = Array.isArray(item.localized_title) ? item.localized_title.find((t) => t.lang === 'zh-cn') : undefined;
-    if (zh && /[\u4e00-\u9fff]/.test(zh.text)) return zh.text;
-    return item.title;
+
+    const localized = Array.isArray(item.localized_title) ? item.localized_title : [];
+    const chineseTitles = CHINESE_TITLE_LANGS.flatMap((lang) =>
+        localized
+            .filter((title) => title?.lang === lang && typeof title.text === 'string' && /[\u4e00-\u9fff]/.test(title.text))
+            .map((title) => title.text.trim())
+            .filter(Boolean)
+    );
+
+    // 先排除 TVSeason 常见的纯季名；若上游没有完整中文译名，保留上一次同步的中文名，避免数据回退。
+    return (
+        chineseTitles.find((title) => !SEASON_ONLY_TITLE.test(title)) ||
+        ([item.title, previousTitle].find(
+            (title) => typeof title === 'string' && /[\u4e00-\u9fff]/.test(title) && !SEASON_ONLY_TITLE.test(title.trim())
+        ) ?? item.title)
+    );
 }
 
-function trimNeodb(data) {
+function trimNeodb(data, previousItems = new Map()) {
     if (!Array.isArray(data)) return data;
     return data.map((m) => {
         const out = pick(m, NEODB_MARK_FIELDS);
         if (out.item) {
             out.item = pick(out.item, NEODB_ITEM_FIELDS);
+            const previousItem = previousItems.get(out.item.uuid);
             // 生成中文标题字段（douban 页展示用）
-            out.item.title_cn = pickChineseTitle(out.item);
+            out.item.title_cn = pickChineseTitle(out.item, previousItem?.title_cn || previousItem?.title);
         }
         return out;
     });
@@ -258,7 +273,17 @@ async function syncGhost(env) {
 async function syncNeodb(env) {
     const data = await fetchJson(env.NEODB_URL);
     if (data && Array.isArray(data.data)) {
-        return { ...data, data: trimNeodb(data.data) };
+        const previousPath = path.join(DATA_DIR, 'neodb.json');
+        let previousItems = new Map();
+        if (existsSync(previousPath)) {
+            try {
+                const previous = JSON.parse(readFileSync(previousPath, 'utf8'));
+                previousItems = new Map((previous.data || []).filter((m) => m.item?.uuid).map((m) => [m.item.uuid, m.item]));
+            } catch (e) {
+                console.warn(`[neodb] 读取已有缓存失败，将不使用旧标题回退: ${e.message}`);
+            }
+        }
+        return { ...data, data: trimNeodb(data.data, previousItems) };
     }
     return data;
 }

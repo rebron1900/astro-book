@@ -49,12 +49,7 @@ const { postID } = Astro.props;
             el: commentinfo.el, // 绑定元素的 Selector
             server: commentinfo.server, // 后端地址
             site: commentinfo.name, // 你的站点名
-            pageKey: document.location.pathname.replace(/\/?$/, '/'),
-            // 覆盖服务端 emoticons 配置：服务端指向 https://1900.live/emoji.json（缺 CORS 头，前端 fetch 失败）
-            // 改为本地同源 /emoji.json，避免跨域
-            remoteConfModifier: (conf) => {
-                conf.emoticons = '/emoji.json';
-            }
+            pageKey: document.location.pathname.replace(/\/?$/, '/')
         });
 
         loadInteractions();

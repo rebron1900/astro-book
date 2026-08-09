@@ -1,5 +1,6 @@
 ---
 import { pages, settings, neodb } from '../../api/store';
+import type { NeoDBMark } from '../../api/types';
 import { doubanGroupByDate } from '../../lib/utils/help';
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
@@ -18,38 +19,62 @@ import Details from '../../components/shortcode/Details.astro';
 import Link from '../../components/shortcode/Link.astro';
 import { Sparkles, MessageSquareMore } from '@lucide/astro';
 
+const RECORD_META: Record<string, { label: string; action: string }> = {
+    movie: { label: '电影', action: '观看' },
+    tv: { label: '剧集', action: '观看' },
+    book: { label: '书籍', action: '阅读' },
+    game: { label: '游戏', action: '游玩' },
+    music: { label: '音乐', action: '聆听' },
+    podcast: { label: '播客', action: '收听' },
+    performance: { label: '演出', action: '参加' }
+};
+
+function getRatingLabel(score: number) {
+    const rating = Number(score);
+    if (!Number.isFinite(rating)) return '';
+    if (rating >= 10) return '神作';
+    if (rating >= 8) return '夯爆了';
+    if (rating >= 6) return '夯';
+    if (rating >= 4) return '路人';
+    if (rating >= 1) return '拉完了';
+    return '';
+}
+
+function getRecordMeta(mark: NeoDBMark) {
+    const category = mark.item.category;
+    const meta = RECORD_META[category] ?? { label: category, action: '记录' };
+    const created = mark.created_time ?? '';
+    const date = created.slice(0, 10).replaceAll('-', '.');
+
+    return {
+        ...meta,
+        title: mark.item.title_cn || mark.item.title || mark.title,
+        date,
+        score: mark.rating_grade || '—',
+        ratingLabel: getRatingLabel(mark.rating_grade),
+        comment: mark.comment_text?.trim() || '',
+        code: mark.item.uuid.slice(-8).toUpperCase()
+    };
+}
+
 const pageDouban = pages.find((post) => post.slug == 'douban');
 
 export async function getStaticPaths() {
+    const PAGE_SIZE = 30;
     const db = neodb.data;
+    const lastPage = Math.max(1, Math.ceil(db.length / PAGE_SIZE));
 
-    // 第一页：固定 30 条（首次加载一部分）
-    const page1 = db.slice(0, 30);
-    // 第二页：剩余所有数据（一次性加载全部）
-    const page2 = db.slice(30);
-
-    return [
-        {
-            params: { page: undefined },
+    return Array.from({ length: lastPage }, (_, index) => {
+        const currentPage = index + 1;
+        return {
+            params: { page: currentPage === 1 ? undefined : String(currentPage) },
             props: {
-                data: page1,
-                currentPage: 1,
-                lastPage: page2.length > 0 ? 2 : 1
+                data: db.slice(index * PAGE_SIZE, (index + 1) * PAGE_SIZE),
+                currentPage,
+                lastPage
             }
-        },
-        ...(page2.length > 0
-            ? [
-                  {
-                      params: { page: '2' },
-                      props: {
-                          data: page2,
-                          currentPage: 2,
-                          lastPage: 2
-                      }
-                  }
-              ]
-            : [])
-    ];
+        };
+    });
 }
 
 // 从 props 获取数据
@@ -79,14 +104,15 @@ const groupdata = doubanGroupByDate(data);
         }
 
         <div class="db--container" x-data="douban">
-            <nav class="db--nav">
-                <div class="db--navItem current" data-type="all">All</div>
-                <div class="db--navItem" data-type="movie">Movie</div>
-                <div class="db--navItem" data-type="tv">TV</div>
-                <div class="db--navItem" data-type="book">Book</div>
-                <div class="db--navItem" data-type="game">Game</div>
-                <div class="db--navItem" data-type="music">Music</div>
-                <div class="db--navItem" data-type="podcast">Podcast</div>
+            <nav class="db--nav" aria-label="书影音分类">
+                <button type="button" class="db--navItem current" data-type="all" aria-pressed="true">全部</button>
+                <button type="button" class="db--navItem" data-type="movie" aria-pressed="false">电影</button>
+                <button type="button" class="db--navItem" data-type="tv" aria-pressed="false">剧集</button>
+                <button type="button" class="db--navItem" data-type="book" aria-pressed="false">书籍</button>
+                <button type="button" class="db--navItem" data-type="game" aria-pressed="false">游戏</button>
+                <button type="button" class="db--navItem" data-type="music" aria-pressed="false">音乐</button>
+                <button type="button" class="db--navItem" data-type="podcast" aria-pressed="false">播客</button>
+                <button type="button" class="db--navItem" data-type="performance" aria-pressed="false">演出</button>
             </nav>
 
             <div class="db--genres"></div>
@@ -101,60 +127,107 @@ const groupdata = doubanGroupByDate(data);
                                 </div>
                                 <div class="db--dateList__card">
                                     {month.data &&
-                                        month.data.map((monthdata) => (
-                                            <div class="db--item" data-itemtype={monthdata.item.category}>
-                                                {monthdata.comment_text && (
-                                                    <span class="db--icon-comment" data-tippy-content={monthdata.comment_text}>
-                                                        <MessageSquareMore size={16} />
-                                                    </span>
-                                                )}
-                                                <div>
-                                                    <img
-                                                        loading="lazy"
-                                                        src={`https://images.weserv.nl/?url=${monthdata.item.cover_image_url}&w=180&fit=cover`}
-                                                        class="db--image"
-                                                    />
+                                        month.data.map((monthdata) => {
+                                            const record = getRecordMeta(monthdata);
+                                            const coverUrl = `https://images.weserv.nl/?url=${encodeURIComponent(monthdata.item.cover_image_url ?? '')}&w=180&fit=cover`;
+                                            return (
+                                                <div class="db--item" data-itemtype={monthdata.item.category}>
+                                                    <div class="db--card-front">
+                                                        {record.comment && (
+                                                            <span class="db--icon-comment" aria-hidden="true">
+                                                                <MessageSquareMore size={16} />
+                                                            </span>
+                                                        )}
+                                                        <div>
+                                                            <img
+                                                                loading="lazy"
+                                                                src={coverUrl}
+                                                                class="db--image"
+                                                                alt={record.title}
+                                                            />
+                                                        </div>
+                                                        <div class="db--score">
+                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                                                <path d="M12 20.1l5.82 3.682c1.066.675 2.37-.322 2.09-1.584l-1.543-6.926 5.146-4.667c.94-.85.435-2.465-.799-2.567l-6.773-.602L13.29.89a1.38 1.38 0 0 0-2.581 0l-2.65 6.53-6.774.602C.052 8.126-.453 9.74.486 10.59l5.147 4.666c1.067.675 2.37-.322 2.09-1.584l-1.542 6.926C4.9 22.36 5.923 23.36 7 22.68L12 20.1z" />
+                                                            </svg>
+                                                            {record.score} · {record.label}
+                                                        </div>
+                                                        <div class="db--title ellipsis">
+                                                            <a
+                                                                href={monthdata.item.id}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                title={record.title}
+                                                                aria-describedby={`db-summary-${monthdata.item.uuid}`}
+                                                            >
+                                                                {record.title}
+                                                            </a>
+                                                            <span id={`db-summary-${monthdata.item.uuid}`} class="db--sr-only">
+                                                                {record.label}{record.action}日期：{record.date}。评分：{record.score}。{record.comment ? `短评：${record.comment}` : '没有留下短评。'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div
+                                                        class="db--ticket-face"
+                                                        style={`--ticket-cover: url("${coverUrl}")`}
+                                                        role="group"
+                                                        aria-label={`${record.title}的${record.action}记录`}
+                                                    >
+                                                        <div class="db--ticket-content">
+                                                            <div class="db--ticket-topline">
+                                                                <span>{record.label} / {record.action}</span>
+                                                                <time datetime={monthdata.created_time}>{record.date}</time>
+                                                            </div>
+                                                            <div class="db--ticket-title-row">
+                                                                <div class="db--ticket-title">{record.title}</div>
+                                                                {record.ratingLabel && (
+                                                                    <span class="db--ticket-rating-label" aria-label={`评分 ${record.score}：${record.ratingLabel}`}>
+                                                                        {record.ratingLabel}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div class="db--ticket-comment">
+                                                                <div class="db--ticket-comment-head">
+                                                                    <span class="db--ticket-comment-label">短评</span>
+                                                                </div>
+                                                                {record.comment ? <p>{record.comment}</p> : <p class="is-empty">没有留下短评</p>}
+                                                            </div>
+                                                            <div class="db--ticket-footer">
+                                                                <span>NEODB</span>
+                                                                <span>#{record.code}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="db--score">
-                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                                                        <path d="M12 20.1l5.82 3.682c1.066.675 2.37-.322 2.09-1.584l-1.543-6.926 5.146-4.667c.94-.85.435-2.465-.799-2.567l-6.773-.602L13.29.89a1.38 1.38 0 0 0-2.581 0l-2.65 6.53-6.774.602C.052 8.126-.453 9.74.486 10.59l5.147 4.666-1.542 6.926c-.28 1.262 1.023 2.26 2.09 1.585L12 20.099z" />
-                                                    </svg>
-                                                    {monthdata.rating_grade || '无评分'} ·{' '}
-                                                    {monthdata.item.category.charAt(0).toUpperCase() + monthdata.item.category.slice(1)}
-                                                </div>
-                                                <div class="db--title ellipsis">
-                                                    <a href={monthdata.item.id} target="_blank" title={monthdata.item.title_cn || monthdata.item.title}>
-                                                        {monthdata.item.title_cn || monthdata.item.title}
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                 </div>
                             </div>
                         ))
                     )
                 }
-            </div>
-            <div class="flex flex-wrap btn-more justify-center" style="padding: 3rem; gap:1.5rem">
                 {
                     currentPage < lastPage && (
-                        <a
-                            class="loader"
-                            href="javascript:(void)"
-                            hx-trigger="load delay:1s"
+                        <div
+                            class="loader db--load-more"
+                            role="status"
+                            aria-label="正在加载更多记录"
+                            hx-trigger="intersect once"
                             hx-get={`/douban/${currentPage + 1}`}
-                            hx-target=".db--list__card"
+                            hx-target="#db--list__card"
                             hx-swap="beforeend"
-                            hx-select=".db--list__card"
-                        />
+                            hx-select=".db--listBydate, .db--load-more"
+                        ></div>
                     )
                 }
             </div>
 
             <script>
-                import tippy from 'tippy.js';
                 const douban = {
+                    currentType: 'all' as string,
                     change: function (type: string) {
+                        this.currentType = type;
                         // 选择所有具有data-itemtype属性的元素
                         const elements = document.querySelectorAll<HTMLElement>('[data-itemtype]');
 
@@ -198,60 +271,39 @@ const groupdata = doubanGroupByDate(data);
                     active: function (el: HTMLElement) {
                         document.querySelectorAll<HTMLElement>('.db--navItem').forEach(function (item) {
                             item.classList.remove('current');
+                            item.setAttribute('aria-pressed', 'false');
                         });
                         el.classList.add('current');
+                        el.setAttribute('aria-pressed', 'true');
                     }
                 };
+
+                document.addEventListener('htmx:beforeRequest', (event) => {
+                    const source = (event as CustomEvent<{ elt?: EventTarget }>).detail?.elt;
+                    if (source instanceof HTMLElement && source.classList.contains('db--load-more')) {
+                        source.remove();
+                    }
+                });
+
+                document.addEventListener('htmx:afterSwap', (event) => {
+                    const target = event.target;
+                    if (target instanceof HTMLElement && target.id === 'db--list__card') {
+                        douban.change(douban.currentType);
+                    }
+                });
 
                 document.addEventListener('astro:page-load', () => {
                     document.querySelectorAll<HTMLElement>('.db--navItem').forEach((el) => {
                         el.addEventListener('click', function (e) {
-                            const target = e.target as HTMLElement;
-                            douban.change(target.dataset.type ?? '');
-                            douban.active(e.currentTarget as HTMLElement);
+                            const target = e.currentTarget as HTMLElement;
+                            douban.change(target.dataset.type ?? 'all');
+                            douban.active(target);
                         });
                     });
+                });
 
-                    tippy('.db--icon-comment', {
-                        placement: 'bottom',
-                        maxWidth: 300,
-                        theme: 'ticket',
-                        animation: 'shift-away-subtle',
-                        allowHTML: true,
-                        onShow(instance) {
-                            const raw = instance.reference.getAttribute('data-tippy-content') ?? '';
-                            instance.setContent(
-                                `<div class="ticket-body">
-                                    <div class="ticket-head">短评</div>
-                                    <div>${raw}</div>
-                                </div>`
-                            );
-                        }
-                    });
-                });
-                document.body.addEventListener('htmx:afterSwap', function () {
-                    tippy('.db--icon-comment', {
-                        placement: 'bottom',
-                        maxWidth: 300,
-                        theme: 'ticket',
-                        animation: 'shift-away-subtle',
-                        allowHTML: true,
-                        onShow(instance) {
-                            const raw = instance.reference.getAttribute('data-tippy-content') ?? '';
-                            instance.setContent(
-                                `<div class="ticket-body">
-                                    <div class="ticket-head">短评</div>
-                                    <div>${raw}</div>
-                                </div>`
-                            );
-                        }
-                    });
-                });
             </script>
 
-            <div class="block-more block-more__centered">
-                <div class="lds-ripple"></div>
-            </div>
         </div>
     </article>
 
