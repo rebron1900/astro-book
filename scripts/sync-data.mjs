@@ -149,14 +149,29 @@ function trimEntry(entry, type) {
 }
 
 // NeoDB 条目消费字段（douban 页）
-const NEODB_ITEM_FIELDS = ['id', 'title', 'category', 'cover_image_url', 'url', 'uuid'];
+const NEODB_ITEM_FIELDS = ['id', 'title', 'category', 'cover_image_url', 'url', 'uuid', 'localized_title', 'type'];
 const NEODB_MARK_FIELDS = ['shelf', 'type', 'title', 'comment_text', 'rating_grade', 'item', 'created_time', 'visibility'];
+
+// 提取中文标题：优先 localized_title 的 zh-cn（若含中文），否则回退 title。
+// TVSeason 的 zh-cn 是季名（如“第 1 季”），应改用剧集名 title。
+function pickChineseTitle(item) {
+    if (!item) return undefined;
+    // TVSeason：zh-cn 是季名，用 title（剧集名）
+    if (item.type === 'TVSeason') return item.title;
+    const zh = Array.isArray(item.localized_title) ? item.localized_title.find((t) => t.lang === 'zh-cn') : undefined;
+    if (zh && /[\u4e00-\u9fff]/.test(zh.text)) return zh.text;
+    return item.title;
+}
 
 function trimNeodb(data) {
     if (!Array.isArray(data)) return data;
     return data.map((m) => {
         const out = pick(m, NEODB_MARK_FIELDS);
-        if (out.item) out.item = pick(out.item, NEODB_ITEM_FIELDS);
+        if (out.item) {
+            out.item = pick(out.item, NEODB_ITEM_FIELDS);
+            // 生成中文标题字段（douban 页展示用）
+            out.item.title_cn = pickChineseTitle(out.item);
+        }
         return out;
     });
 }
@@ -328,6 +343,58 @@ async function syncRank() {
     }
 }
 
+// ---------- 图片 meta 预取（方案 B：构建零网络） ----------
+// 从 ghost.json 提取所有图片 URL，预取尺寸写入 src/data/image-meta.json
+// 构建时 RemotePicture 直接读本地 JSON，不再 fetch cdn.1900.live!exif
+async function syncImageMeta() {
+    const ghostPath = path.join(DATA_DIR, 'ghost.json');
+    if (!existsSync(ghostPath)) return {};
+    const ghost = JSON.parse(readFileSync(ghostPath, 'utf8'));
+
+    // 收集所有图片 URL（posts + pages 的 html 和 feature_image）
+    const urls = new Set();
+    const entries = [...(ghost.posts || []), ...(ghost.pages || [])];
+    entries.forEach((p) => {
+        if (p.feature_image) urls.add(p.feature_image);
+        if (p.html) {
+            const re = /<img[^>]+src=["']([^"']+)["']/g;
+            let m;
+            while ((m = re.exec(p.html)) !== null) urls.add(m[1]);
+        }
+    });
+
+    // 读取已有缓存（避免重复请求）
+    const metaPath = path.join(DATA_DIR, 'image-meta.json');
+    const existing = existsSync(metaPath) ? JSON.parse(readFileSync(metaPath, 'utf8')) : {};
+
+    // 只处理 cdn.1900.live 的图片（RemotePicture 只对这些 fetch）
+    const cdnUrls = [...urls].filter((u) => u.startsWith('https://cdn.1900.live/'));
+    const toFetch = cdnUrls.filter((u) => !existing[`size_${u}`] && !existing[`error_${u}`]);
+
+    console.log(`[imagemeta] 共 ${cdnUrls.length} 张 cdn 图片，需新获取 ${toFetch.length} 张`);
+
+    // 并发获取（限制并发避免过载）
+    const CONCURRENCY = 10;
+    let fetched = 0;
+    for (let i = 0; i < toFetch.length; i += CONCURRENCY) {
+        const batch = toFetch.slice(i, i + CONCURRENCY);
+        await Promise.all(
+            batch.map(async (url) => {
+                try {
+                    const meta = await fetchJson(`${encodeURI(url)}!exif`, {}, 10000);
+                    existing[`size_${url}`] = { width: meta.width, height: meta.height };
+                } catch (e) {
+                    existing[`error_${url}`] = { timestamp: Date.now(), error: e.message };
+                }
+                fetched++;
+            })
+        );
+        console.log(`[imagemeta] 进度 ${fetched}/${toFetch.length}`);
+    }
+
+    return existing;
+}
+
 // ---------- 主流程 ----------
 const SOURCES = {
     ghost: { run: (env, site) => syncGhost(env), file: 'ghost.json' },
@@ -335,7 +402,8 @@ const SOURCES = {
     flux: { run: (env) => syncFlux(env), file: 'flux.json' },
     memos: { run: (env, site) => syncMemos(site), file: 'memos.json' },
     strava: { run: (env, site) => syncStrava(site), file: 'strava.json' },
-    rank: { run: () => syncRank(), file: 'rank.json' }
+    rank: { run: () => syncRank(), file: 'rank.json' },
+    imagemeta: { run: () => syncImageMeta(), file: 'image-meta.json' }
 };
 
 const args = process.argv.slice(2);

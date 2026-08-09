@@ -32,3 +32,6 @@ astro-check-output.txt
 
 # 构建运行时缓存
 cache/
+
+# 但 src/data/image-meta.json 是方案 B 的预取产物，需提交进仓库供构建离线读取
+!src/data/image-meta.json

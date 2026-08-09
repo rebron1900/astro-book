@@ -1,5 +1,5 @@
 ---
-import imageCache from '../../lib/image-cache';
+import imageMeta from '../../data/image-meta.json';
 
 export interface Props {
     src: string;
@@ -9,68 +9,25 @@ export interface Props {
 }
 const encode = (s: string) => encodeURI(s);
 type Size = { width: number; height: number };
-const TTL = 7 * 24 * 60 * 60 * 1000; // 24h
 
-async function getSize(raw: string | undefined): Promise<Size | undefined> {
+// 方案 B：图片尺寸由 sync-data 预取到 src/data/image-meta.json，构建零网络
+function getSize(raw: string | undefined): Size | undefined {
     if (!raw) return undefined; // 防御：外部 HTML 可能缺 src
-    const cacheKey = `size_${raw}`;
-    const errorCacheKey = `error_${raw}`;
 
-    interface ErrorCacheEntry {
-        timestamp: number;
-        error?: string;
+    // 从本地预取的 meta 读取（key 格式：size_<url>）
+    const cached = (imageMeta as Record<string, Size | undefined>)[`size_${raw}`];
+    if (cached && cached.width && cached.height) {
+        return cached;
     }
 
-    // 检查缓存 - 如果有错误缓存且未过期，直接返回undefined避免重复请求
-    if (await imageCache.has(errorCacheKey)) {
-        const errorData = (await imageCache.get(errorCacheKey)) as ErrorCacheEntry | undefined;
-        if (errorData && errorData.timestamp && Date.now() - errorData.timestamp < TTL) {
-            // 1小时内不再重试失败的请求
-            return undefined;
-        }
-    }
-
-    // 检查正常缓存
-    if (await imageCache.has(cacheKey)) {
-        return (await imageCache.get(cacheKey)) as Size | undefined;
-    }
-
-    let result: Size | undefined;
-
-    /* 1) cdn.1900.live */
-    if (raw.startsWith('https://cdn.1900.live/')) {
-        try {
-            const meta = await fetch(`${encode(raw)}!exif`).then((r) => r.json());
-            result = { width: meta.width, height: meta.height };
-            // 清除错误缓存（如果存在）
-            if (await imageCache.has(errorCacheKey)) {
-                imageCache.set(errorCacheKey, null);
-            }
-        } catch (error) {
-            result = undefined;
-            // 缓存错误信息，避免重复请求
-            imageCache.set(errorCacheKey, {
-                timestamp: Date.now(),
-                error: (error as Error)?.message || 'Unknown error'
-            });
-        }
-    } else if (raw.includes('unsplash.com')) {
-        /* 2) unsplash.com */
+    // unsplash 可从 URL 参数推导
+    if (raw.includes('unsplash.com')) {
         const url = new URL(raw);
         const w = Number(url.searchParams.get('w'));
-        const h = w * 2;
-
-        if (w) {
-            result = { width: w, height: h };
-        }
-    } else {
-        /* 3) 其它域名：拿不到尺寸，返回 undefined */
-        result = undefined;
+        if (w) return { width: w, height: w * 2 };
     }
 
-    // 缓存结果
-    imageCache.set(cacheKey, result);
-    return result;
+    return undefined;
 }
 
 const { src, alt, class: className, classNames, ...attrs } = Astro.props;
@@ -102,7 +59,7 @@ const generateImageSrcset = (image: string) => {
 
 // 只处理 cdn.1900.live 的图片
 const isCdn = src && (src.startsWith('https://cdn.1900.live/') || src.match('unsplash.com')) ? true : false;
-const size = await getSize(src);
+const size = getSize(src);
 ---
 
 {

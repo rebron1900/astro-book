@@ -57,6 +57,7 @@ export interface NeoDBItem {
     external_resources: Array<{ url: string }>;
     id?: string;
     title?: string;
+    title_cn?: string;
     cover_image_url?: string;
     [key: string]: unknown;
 }

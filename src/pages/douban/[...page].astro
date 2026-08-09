@@ -1,7 +1,6 @@
 ---
 import { pages, settings, neodb } from '../../api/store';
 import { doubanGroupByDate } from '../../lib/utils/help';
-import type { GetStaticPathsOptions } from 'astro';
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Head from '../../components/islands/Head.astro';
@@ -21,13 +20,41 @@ import { Sparkles, MessageSquareMore } from '@lucide/astro';
 
 const pageDouban = pages.find((post) => post.slug == 'douban');
 
-export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
-    return paginate(neodb.data, { pageSize: 30 });
+export async function getStaticPaths() {
+    const db = neodb.data;
+
+    // 第一页：固定 30 条（首次加载一部分）
+    const page1 = db.slice(0, 30);
+    // 第二页：剩余所有数据（一次性加载全部）
+    const page2 = db.slice(30);
+
+    return [
+        {
+            params: { page: undefined },
+            props: {
+                data: page1,
+                currentPage: 1,
+                lastPage: page2.length > 0 ? 2 : 1
+            }
+        },
+        ...(page2.length > 0
+            ? [
+                  {
+                      params: { page: '2' },
+                      props: {
+                          data: page2,
+                          currentPage: 2,
+                          lastPage: 2
+                      }
+                  }
+              ]
+            : [])
+    ];
 }
 
 // 从 props 获取数据
-const { page } = Astro.props;
-const groupdata = doubanGroupByDate(page.data);
+const { data, currentPage, lastPage } = Astro.props;
+const groupdata = doubanGroupByDate(data);
 ---
 
 <BaseLayout post={pageDouban}>
@@ -96,8 +123,8 @@ const groupdata = doubanGroupByDate(page.data);
                                                     {monthdata.item.category.charAt(0).toUpperCase() + monthdata.item.category.slice(1)}
                                                 </div>
                                                 <div class="db--title ellipsis">
-                                                    <a href={monthdata.item.id} target="_blank" title={monthdata.item.title}>
-                                                        {monthdata.item.title}
+                                                    <a href={monthdata.item.id} target="_blank" title={monthdata.item.title_cn || monthdata.item.title}>
+                                                        {monthdata.item.title_cn || monthdata.item.title}
                                                     </a>
                                                 </div>
                                             </div>
@@ -110,12 +137,12 @@ const groupdata = doubanGroupByDate(page.data);
             </div>
             <div class="flex flex-wrap btn-more justify-center" style="padding: 3rem; gap:1.5rem">
                 {
-                    page.url.next && (
+                    currentPage < lastPage && (
                         <a
                             class="loader"
                             href="javascript:(void)"
                             hx-trigger="load delay:1s"
-                            hx-get={`${page.url.next}`}
+                            hx-get={`/douban/${currentPage + 1}`}
                             hx-target=".db--list__card"
                             hx-swap="beforeend"
                             hx-select=".db--list__card"
