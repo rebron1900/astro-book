@@ -32,14 +32,16 @@ const isFullWidth = post && (post.slug?.includes('albums') || post.tags?.some((t
                     <slot name="h-toc" />
                 </header>
 
-                <slot name="content" />
+                <div class="book-page-sequence">
+                    <slot name="content" />
 
-                <footer class="book-footer">
-                    <slot name="footer" />
-                </footer>
+                    <footer class="book-footer">
+                        <slot name="footer" />
+                    </footer>
 
-                <slot name="pagination" />
-                <slot name="comments" />
+                    <slot name="pagination" />
+                    <slot name="comments" />
+                </div>
                 <label for="menu-control" class="hidden book-menu-overlay"></label>
             </div>
 

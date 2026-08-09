@@ -1677,43 +1677,38 @@ h3.card-title {
     }
 }
 
-// ===== 可配置变量 =====
-$start-delay: 0.15s; // 第一个子项的延迟
-$step: 0.05s; // 每往后一个子项增加的延迟
-$max-items: 15; // 超过这个数量后统一用最后一个延迟
+// 页面级内容按 DOM 顺序进入；嵌套组件内部不重复执行动画。
+$page-sequence-start-delay: 40ms;
+$page-sequence-step: 45ms;
+$page-sequence-max-items: 12;
 
-// ===== Mixin：给某个容器下的子项批量生成延迟 =====
-@mixin stagger-fade($selector) {
-    #{$selector} > * {
+.book-page-sequence {
+    display: contents;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .book-page-sequence > :not(script, style, template) {
         opacity: 0;
-        animation: fadeInUp 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+        animation: book-page-block-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
-    // 1 ~ $max-items 分别设置递增延迟
-    @for $i from 1 through $max-items {
-        #{$selector} > *:nth-child(#{$i}) {
-            animation-delay: $start-delay + ($i - 1) * $step;
+    @for $index from 1 through $page-sequence-max-items {
+        .book-page-sequence > :not(script, style, template):nth-child(#{$index}) {
+            animation-delay: $page-sequence-start-delay + ($index - 1) * $page-sequence-step;
         }
     }
 
-    // 超过 $max-items 的子项统一用最后一个延迟
-    #{$selector} > *:nth-child(n + #{$max-items + 1}) {
-        animation-delay: $start-delay + $max-items * $step;
+    .book-page-sequence > :not(script, style, template):nth-child(n + #{$page-sequence-max-items + 1}) {
+        animation-delay: $page-sequence-start-delay + ($page-sequence-max-items - 1) * $page-sequence-step;
     }
 }
 
-// ===== 调用 =====
-@include stagger-fade('.markdown');
-@include stagger-fade('.toc-relitu,.book-toc-content');
-@include stagger-fade('#comments');
-@include stagger-fade('.atk-comment');
-@include stagger-fade('.astro-masonry-grid');
-
-@keyframes fadeInUp {
+@keyframes book-page-block-enter {
     from {
         opacity: 0;
-        transform: translateY(3rem);
+        transform: translateY(0.75rem);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

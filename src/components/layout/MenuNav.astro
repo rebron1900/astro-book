@@ -47,7 +47,8 @@ const menus = nav.map((rawItem) => {
         <ul class="book-collspan">
             {
                 title && (
-                    <li>
+                    <li class="menu-flag-item">
+                        <span class="menu-flag-marker" aria-hidden="true"></span>
                         {/* prettier-ignore */}
                         <a href="javascript:void(0)" class="menu-flag current ellipsis">
                             <StickyNote class="book-icon" />{title}
@@ -57,14 +58,18 @@ const menus = nav.map((rawItem) => {
             }
 
             {
-                menus.map(({ icon: Icon, item, cleanLabel: CleanLabel }) => (
-                    <li>
-                        {/* prettier-ignore */}
-                        <a href={item.url} class={`menu-flag ellipsis ${Astro.url.pathname == item.url ? 'current' : ''}`}>
-                            {Icon && <Icon class="book-icon" />}{CleanLabel || item.label}
-                        </a>
-                    </li>
-                ))
+                menus.map(({ icon: Icon, item, cleanLabel: CleanLabel }) => {
+                    const isCurrent = !title && Astro.url.pathname == item.url;
+                    return (
+                        <li class="menu-flag-item">
+                            {isCurrent && <span class="menu-flag-marker" aria-hidden="true"></span>}
+                            {/* prettier-ignore */}
+                            <a href={item.url} class={`menu-flag ellipsis ${isCurrent ? 'current' : ''}`}>
+                                {Icon && <Icon class="book-icon" />}{CleanLabel || item.label}
+                            </a>
+                        </li>
+                    );
+                })
             }
         </ul>
     </li>
