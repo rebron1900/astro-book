@@ -1,5 +1,3 @@
-import { apps } from '../../config/apps';
-
 // 定义测试用的URL
 // const wsUrl = 'ws://localhost:8081/update';
 
@@ -7,18 +5,22 @@ import { apps } from '../../config/apps';
 const cdn = 'https://cdn.1900.live/apps/';
 const wsUrl = 'wss://hapi.190102.xyz:4433/ws/pc-status';
 
-interface ActiveMessage {
-    process?: string;
-    title?: string;
+interface ActiveApp {
+    id: string;
+    title: string;
+    url: string;
+    action?: string;
 }
 
-// app白名单以项目配置为唯一数据源，避免远端 app.json 与构建配置不一致。
-const appList = apps;
+interface ActiveMessage {
+    app?: ActiveApp | null;
+}
+
 // 保存WebSocket实例的变量
 let ws2: WebSocket | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let activesTippy: Array<{ setContent: (content: string) => void }> | null = null;
-let currentProcessName: string | null = null;
+let currentApp: ActiveApp | null = null;
 
 // 初始化WebSocket连接
 export default function initWebSocket(actives: Array<{ setContent: (content: string) => void }>) {
@@ -26,8 +28,8 @@ export default function initWebSocket(actives: Array<{ setContent: (content: str
 
     // Astro 客户端导航会重建 Brand DOM，但模块级 WebSocket 会继续存在。
     // 将最后收到的状态立即恢复到新 DOM，避免等待下一次 PC 上报。
-    if (currentProcessName && currentProcessName in appList) {
-        renderActive(currentProcessName, false);
+    if (currentApp) {
+        renderActive(currentApp, false);
     }
 
     if (!ws2) {
@@ -55,36 +57,33 @@ function onOpen(_event: Event) {
 
 // 接收到消息的处理函数
 function onMessage(event: MessageEvent) {
-    // 接受服务端下发的程序数据，并兼容 process 为空、仅提供 title 的新协议。
+    // HAPI 已完成白名单判定并下发可信的完整应用信息；前端只负责展示。
     const data: ActiveMessage = JSON.parse(event.data);
-    const processName = resolveProcessName(data);
+    const app = getRenderableApp(data);
 
-    if (!(processName in appList)) {
+    if (!app) {
         hideActive();
         return;
     }
 
     // 状态先于 DOM 更新：Astro 导航替换 Brand 的短暂窗口内也不能丢消息。
-    currentProcessName = processName;
+    currentApp = app;
     const activs = document.querySelector<HTMLElement>('.actives');
-    if (!activs || activs.dataset.app === processName) return;
+    if (!activs || activs.dataset.app === app.id) return;
 
-    renderActive(processName, true);
+    renderActive(app, true);
 }
 
-function resolveProcessName(data: ActiveMessage) {
-    const processName = data.process?.trim().toLowerCase() ?? '';
-    if (processName in appList) return processName;
-
-    const title = data.title?.trim().toLocaleLowerCase();
-    if (!title) return processName;
-
-    const match = Object.entries(appList).find(([, app]) => app.title.trim().toLocaleLowerCase() === title);
-    return match?.[0] ?? processName;
+function getRenderableApp(data: ActiveMessage) {
+    const app = data.app;
+    if (!app || typeof app.id !== 'string' || typeof app.title !== 'string' || typeof app.url !== 'string') {
+        return null;
+    }
+    return app;
 }
 
 function hideActive() {
-    currentProcessName = null;
+    currentApp = null;
     const activs = document.querySelector<HTMLElement>('.actives');
     if (!activs) return;
 
@@ -92,14 +91,13 @@ function hideActive() {
     activs.classList.add('exit');
 }
 
-function renderActive(processName: string, animate: boolean) {
+function renderActive(app: ActiveApp, animate: boolean) {
     const activs = document.querySelector<HTMLElement>('.actives');
-    const app = appList[processName];
-    if (!activs || !app) return;
+    if (!activs) return;
 
     const update = () => {
         // 图片预取和退场动画是异步的，只允许最后收到的状态更新界面。
-        if (currentProcessName !== processName) return;
+        if (currentApp !== app) return;
 
         const img = document.querySelector<HTMLImageElement>('.actives img');
         if (img) {
@@ -107,7 +105,7 @@ function renderActive(processName: string, animate: boolean) {
             img.alt = app.title;
         }
         activs.classList.remove('exit');
-        activs.dataset.app = processName;
+        activs.dataset.app = app.id;
         activesTippy?.forEach((instance) => {
             instance.setContent('@1900 在使用 ' + app.title + ' ' + (app.action ?? ''));
         });
@@ -123,7 +121,7 @@ function renderActive(processName: string, animate: boolean) {
     fetch(cdn + app.url + '!20w')
         .catch((err) => console.warn('[actives] 预缓存图标失败:', err))
         .then(() => {
-            if (currentProcessName !== processName) return;
+            if (currentApp !== app) return;
 
             activs.classList.add('exit');
             setTimeout(update, 500);

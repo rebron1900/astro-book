@@ -2,6 +2,30 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 type StatusDom = ReturnType<typeof createStatusDom>;
 
+const chromeApp = { id: 'chrome', title: 'Chrome', url: 'chrome.png', action: '冲浪' };
+const hermesApp = {
+    id: 'hermes',
+    title: 'Hermes',
+    url: 'word.png',
+    action: '正在和H小姐头脑风暴中...'
+};
+const wechatApp = { id: 'wechat', title: '微信', url: 'wechat.png', action: '摸鱼' };
+const centBrowserApp = {
+    id: 'centbrowser',
+    title: 'Cent Browser',
+    url: 'chrome.png',
+    action: '冲浪'
+};
+
+function currentProcess(app: typeof chromeApp | typeof hermesApp | typeof wechatApp | typeof centBrowserApp) {
+    return {
+        type: 'current_process',
+        process: app.id,
+        title: app.title,
+        app
+    };
+}
+
 function createStatusDom() {
     const classes = new Set<string>();
     return {
@@ -73,6 +97,21 @@ describe('PC 状态显示', () => {
         vi.restoreAllMocks();
     });
 
+    it('直接展示后端返回的完整应用信息', async () => {
+        const dom = createStatusDom();
+        installBrowserBoundaries(() => dom);
+
+        const { default: initWebSocket } = await import('../../src/lib/client/actives');
+        initWebSocket([{ setContent: vi.fn() }]);
+
+        FakeWebSocket.instances[0].receive(currentProcess(centBrowserApp));
+        await vi.advanceTimersByTimeAsync(500);
+
+        expect(dom.root.dataset.app).toBe('centbrowser');
+        expect(dom.image.alt).toBe('Cent Browser');
+        expect(dom.image.src).toContain('/chrome.png!20w');
+    });
+
     it('Astro 客户端导航后立即恢复最后收到的状态', async () => {
         let dom = createStatusDom();
         installBrowserBoundaries(() => dom);
@@ -82,7 +121,7 @@ describe('PC 状态显示', () => {
         await vi.advanceTimersByTimeAsync(0);
 
         expect(FakeWebSocket.instances).toHaveLength(1);
-        FakeWebSocket.instances[0].receive({ process: 'Chrome' });
+        FakeWebSocket.instances[0].receive(currentProcess(chromeApp));
         await vi.advanceTimersByTimeAsync(500);
         expect(dom.root.dataset.app).toBe('chrome');
         expect(dom.root.style.display).toBe('block');
@@ -97,7 +136,7 @@ describe('PC 状态显示', () => {
         expect(dom.image.alt).toBe('Chrome');
     });
 
-    it('显示项目配置中允许的 Hermes 状态', async () => {
+    it('显示后端下发的 Hermes 状态', async () => {
         const dom = createStatusDom();
         installBrowserBoundaries(() => dom);
 
@@ -105,7 +144,7 @@ describe('PC 状态显示', () => {
         initWebSocket([{ setContent: vi.fn() }]);
         await vi.advanceTimersByTimeAsync(0);
 
-        FakeWebSocket.instances[0].receive({ process: 'Hermes' });
+        FakeWebSocket.instances[0].receive(currentProcess(hermesApp));
         await vi.advanceTimersByTimeAsync(500);
 
         expect(dom.root.dataset.app).toBe('hermes');
@@ -113,7 +152,7 @@ describe('PC 状态显示', () => {
         expect(dom.image.alt).toBe('Hermes');
     });
 
-    it('动画期间收到未允许状态时不会恢复旧图标', async () => {
+    it('动画期间收到清空状态时不会恢复旧图标', async () => {
         const dom = createStatusDom();
         installBrowserBoundaries(() => dom);
 
@@ -121,15 +160,15 @@ describe('PC 状态显示', () => {
         initWebSocket([{ setContent: vi.fn() }]);
         await vi.advanceTimersByTimeAsync(0);
 
-        FakeWebSocket.instances[0].receive({ process: 'Chrome' });
-        FakeWebSocket.instances[0].receive({ process: 'NotAllowed' });
+        FakeWebSocket.instances[0].receive(currentProcess(chromeApp));
+        FakeWebSocket.instances[0].receive({ type: 'current_process', app: null });
         await vi.advanceTimersByTimeAsync(500);
 
         expect(dom.root.dataset.app).toBeUndefined();
         expect(dom.root.classList.contains('exit')).toBe(true);
     });
 
-    it('从未允许状态回到同一应用时重新显示图标', async () => {
+    it('从清空状态回到同一应用时重新显示图标', async () => {
         const dom = createStatusDom();
         installBrowserBoundaries(() => dom);
 
@@ -137,10 +176,10 @@ describe('PC 状态显示', () => {
         initWebSocket([{ setContent: vi.fn() }]);
         await vi.advanceTimersByTimeAsync(0);
 
-        FakeWebSocket.instances[0].receive({ process: 'Chrome' });
+        FakeWebSocket.instances[0].receive(currentProcess(chromeApp));
         await vi.advanceTimersByTimeAsync(500);
-        FakeWebSocket.instances[0].receive({ process: 'NotAllowed' });
-        FakeWebSocket.instances[0].receive({ process: 'Chrome' });
+        FakeWebSocket.instances[0].receive({ type: 'current_process', app: null });
+        FakeWebSocket.instances[0].receive(currentProcess(chromeApp));
         await vi.advanceTimersByTimeAsync(500);
 
         expect(dom.root.dataset.app).toBe('chrome');
@@ -155,7 +194,7 @@ describe('PC 状态显示', () => {
         initWebSocket([{ setContent: vi.fn() }]);
         await vi.advanceTimersByTimeAsync(0);
 
-        FakeWebSocket.instances[0].receive({ process: 'Chrome' });
+        FakeWebSocket.instances[0].receive(currentProcess(chromeApp));
         await vi.advanceTimersByTimeAsync(500);
         FakeWebSocket.instances[0].disconnect();
         await vi.advanceTimersByTimeAsync(5000);
@@ -185,8 +224,8 @@ describe('PC 状态显示', () => {
         const { default: initWebSocket } = await import('../../src/lib/client/actives');
         initWebSocket([{ setContent: vi.fn() }]);
 
-        FakeWebSocket.instances[0].receive({ process: 'Chrome' });
-        FakeWebSocket.instances[0].receive({ process: 'Hermes' });
+        FakeWebSocket.instances[0].receive(currentProcess(chromeApp));
+        FakeWebSocket.instances[0].receive(currentProcess(hermesApp));
         resolveHermes();
         await vi.advanceTimersByTimeAsync(500);
         expect(dom.root.dataset.app).toBe('hermes');
@@ -207,14 +246,14 @@ describe('PC 状态显示', () => {
         initWebSocket([{ setContent: vi.fn() }]);
         const oldSocket = FakeWebSocket.instances[0];
 
-        oldSocket.receive({ process: 'Chrome' });
+        oldSocket.receive(currentProcess(chromeApp));
         await vi.advanceTimersByTimeAsync(500);
         oldSocket.fail();
 
         // 报错后的 Astro 导航会在旧连接 close 事件到达前创建新连接。
         initWebSocket([{ setContent: vi.fn() }]);
         const newSocket = FakeWebSocket.instances[1];
-        newSocket.receive({ process: 'Hermes' });
+        newSocket.receive(currentProcess(hermesApp));
         await vi.advanceTimersByTimeAsync(500);
 
         oldSocket.disconnect();
@@ -231,7 +270,7 @@ describe('PC 状态显示', () => {
 
         const { default: initWebSocket } = await import('../../src/lib/client/actives');
         initWebSocket([{ setContent: vi.fn() }]);
-        FakeWebSocket.instances[0].receive({ process: 'Hermes' });
+        FakeWebSocket.instances[0].receive(currentProcess(hermesApp));
 
         dom = createStatusDom();
         initWebSocket([{ setContent: vi.fn() }]);
@@ -248,10 +287,10 @@ describe('PC 状态显示', () => {
         const { default: initWebSocket } = await import('../../src/lib/client/actives');
         initWebSocket([{ setContent: vi.fn() }]);
 
-        FakeWebSocket.instances[0].receive({ process: 'Chrome' });
+        FakeWebSocket.instances[0].receive(currentProcess(chromeApp));
         await vi.advanceTimersByTimeAsync(500);
-        FakeWebSocket.instances[0].receive({ process: 'Hermes' });
-        FakeWebSocket.instances[0].receive({ process: 'Chrome' });
+        FakeWebSocket.instances[0].receive(currentProcess(hermesApp));
+        FakeWebSocket.instances[0].receive(currentProcess(chromeApp));
         await vi.advanceTimersByTimeAsync(500);
 
         expect(dom.root.dataset.app).toBe('chrome');
@@ -259,25 +298,24 @@ describe('PC 状态显示', () => {
         expect(dom.image.alt).toBe('Chrome');
     });
 
-    it('process 为空时使用 title 匹配应用', async () => {
+    it('app 为空时清除当前状态', async () => {
         const dom = createStatusDom();
         installBrowserBoundaries(() => dom);
 
         const { default: initWebSocket } = await import('../../src/lib/client/actives');
         initWebSocket([{ setContent: vi.fn() }]);
 
+        FakeWebSocket.instances[0].receive(currentProcess(wechatApp));
+        await vi.advanceTimersByTimeAsync(500);
         FakeWebSocket.instances[0].receive({
             type: 'current_process',
-            timestamp: '',
+            timestamp: Date.now(),
             process: '',
-            title: '微信',
-            media: ''
+            title: '',
+            app: null
         });
-        await vi.advanceTimersByTimeAsync(500);
 
-        expect(dom.root.dataset.app).toBe('wechat');
-        expect(dom.root.style.display).toBe('block');
-        expect(dom.root.classList.contains('exit')).toBe(false);
-        expect(dom.image.alt).toBe('微信');
+        expect(dom.root.dataset.app).toBeUndefined();
+        expect(dom.root.classList.contains('exit')).toBe(true);
     });
 });
