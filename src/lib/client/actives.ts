@@ -1,48 +1,49 @@
+import { apps } from '../../config/apps';
+
 // 定义测试用的URL
 // const wsUrl = 'ws://localhost:8081/update';
-// const appListUrl = 'http://localhost:4321/app.json';
 
 // 定义正式环境的url
 const cdn = 'https://cdn.1900.live/apps/';
 const wsUrl = 'wss://hapi.190102.xyz:4433/ws/pc-status';
-const appListUrl = 'https://1900.live/app.json';
-
-interface AppItem {
-    url: string;
-    title: string;
-    action?: string;
-}
 
 interface ActiveMessage {
-    process: string;
+    process?: string;
+    title?: string;
 }
 
-// app白名单
-let appList: Record<string, AppItem> = {};
+// app白名单以项目配置为唯一数据源，避免远端 app.json 与构建配置不一致。
+const appList = apps;
 // 保存WebSocket实例的变量
 let ws2: WebSocket | null = null;
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let activesTippy: Array<{ setContent: (content: string) => void }> | null = null;
+let currentProcessName: string | null = null;
 
 // 初始化WebSocket连接
 export default function initWebSocket(actives: Array<{ setContent: (content: string) => void }>) {
     activesTippy = actives;
+
+    // Astro 客户端导航会重建 Brand DOM，但模块级 WebSocket 会继续存在。
+    // 将最后收到的状态立即恢复到新 DOM，避免等待下一次 PC 上报。
+    if (currentProcessName && currentProcessName in appList) {
+        renderActive(currentProcessName, false);
+    }
+
     if (!ws2) {
-        // 外部 fetch 可能因跨域/网络失败，必须容错，避免 unhandled rejection
-        fetch(appListUrl)
-            .then((rep) => rep.json())
-            .then((data: Record<string, AppItem>) => {
-                // 初始化app列表
-                appList = data;
-                // 绑定事件处理函数（先置空再建新连接，确保 onClose/onError 重连时能进入 if(!ws2)）
-                ws2 = new WebSocket(wsUrl);
-                ws2.onopen = onOpen;
-                ws2.onmessage = onMessage;
-                ws2.onclose = onClose;
-                ws2.onerror = onError;
-            })
-            .catch((err) => {
-                console.warn('[actives] 获取 app 列表失败:', err);
-            });
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+        }
+
+        const socket = new WebSocket(wsUrl);
+        ws2 = socket;
+        socket.onopen = onOpen;
+        socket.onmessage = (event) => {
+            if (ws2 === socket) onMessage(event);
+        };
+        socket.onclose = () => handleDisconnect(socket);
+        socket.onerror = () => handleDisconnect(socket);
     }
 }
 
@@ -54,60 +55,91 @@ function onOpen(_event: Event) {
 
 // 接收到消息的处理函数
 function onMessage(event: MessageEvent) {
-    // 接受服务端下发的程序数据
-    var data: ActiveMessage = JSON.parse(event.data);
-    // 获取页面上actives dom元素
+    // 接受服务端下发的程序数据，并兼容 process 为空、仅提供 title 的新协议。
+    const data: ActiveMessage = JSON.parse(event.data);
+    const processName = resolveProcessName(data);
+
+    if (!(processName in appList)) {
+        hideActive();
+        return;
+    }
+
+    // 状态先于 DOM 更新：Astro 导航替换 Brand 的短暂窗口内也不能丢消息。
+    currentProcessName = processName;
+    const activs = document.querySelector<HTMLElement>('.actives');
+    if (!activs || activs.dataset.app === processName) return;
+
+    renderActive(processName, true);
+}
+
+function resolveProcessName(data: ActiveMessage) {
+    const processName = data.process?.trim().toLowerCase() ?? '';
+    if (processName in appList) return processName;
+
+    const title = data.title?.trim().toLocaleLowerCase();
+    if (!title) return processName;
+
+    const match = Object.entries(appList).find(([, app]) => app.title.trim().toLocaleLowerCase() === title);
+    return match?.[0] ?? processName;
+}
+
+function hideActive() {
+    currentProcessName = null;
     const activs = document.querySelector<HTMLElement>('.actives');
     if (!activs) return;
-    // 之后用来判断的进程名称统一小写，方便比对
-    const processName = data.process.toLowerCase();
 
-    // 处理接收到的消息
-    // 条件为：当前页面显示的app和服务器下发的app要不一样（说明是新程序），并且程序在app清单中。
-    if (activs.dataset.app != data.process && processName in appList) {
-        // 提前缓存图片（我发现大佬博客图片加载有颜值，不过不知道这个有用没有）
-        fetch(cdn + appList[processName].url + '!20w')
-            .catch((err) => console.warn('[actives] 预缓存图标失败:', err))
-            .then(function () {
-            // 先将旧的actives执行退场动画
-            activs.style.display = 'block';
-            activs.classList.add('exit');
-            // 0.5s后执行更新操作
-            setTimeout(function () {
-                // 重新设置icon
-                const img = document.querySelector<HTMLImageElement>('.actives img');
-                if (img) {
-                    img.src = cdn + appList[processName].url + '!20w';
-                    img.alt = appList[processName].title;
-                }
-                // 执行进场动画
-                activs.classList.remove('exit');
-                // 更新dom上app的信息
-                activs.dataset.app = processName;
-                // 这里我用Tippy.js做鼠标悬浮提示，更新悬浮提示内容
-                activesTippy?.forEach(function (e) {
-                    e.setContent('@1900 在使用 ' + appList[processName].title + ' ' + (appList[processName].action ?? ''));
-                });
-            }, 500);
+    delete activs.dataset.app;
+    activs.classList.add('exit');
+}
+
+function renderActive(processName: string, animate: boolean) {
+    const activs = document.querySelector<HTMLElement>('.actives');
+    const app = appList[processName];
+    if (!activs || !app) return;
+
+    const update = () => {
+        // 图片预取和退场动画是异步的，只允许最后收到的状态更新界面。
+        if (currentProcessName !== processName) return;
+
+        const img = document.querySelector<HTMLImageElement>('.actives img');
+        if (img) {
+            img.src = cdn + app.url + '!20w';
+            img.alt = app.title;
+        }
+        activs.classList.remove('exit');
+        activs.dataset.app = processName;
+        activesTippy?.forEach((instance) => {
+            instance.setContent('@1900 在使用 ' + app.title + ' ' + (app.action ?? ''));
         });
-        // 如果是不在白名单里的应用就不显示actives元素了
-    } else if (!(processName in appList)) {
-        activs.classList.add('exit');
+    };
+
+    activs.style.display = 'block';
+    if (!animate) {
+        update();
+        return;
     }
+
+    // 提前缓存图片；即使缓存失败，也继续更新状态图标。
+    fetch(cdn + app.url + '!20w')
+        .catch((err) => console.warn('[actives] 预缓存图标失败:', err))
+        .then(() => {
+            if (currentProcessName !== processName) return;
+
+            activs.classList.add('exit');
+            setTimeout(update, 500);
+        });
 }
 
-// 连接关闭的处理函数
-function onClose(_event: CloseEvent) {
-    // 置空 ws2，使 initWebSocket 的重连判断 if(!ws2) 生效
-    ws2 = null;
-    document.querySelector('.actives')?.classList.add('exit');
-    setTimeout(() => initWebSocket(activesTippy ?? []), 5000); // 5秒后尝试重新连接
-}
+function handleDisconnect(socket: WebSocket) {
+    // 忽略已被新连接替代的旧 socket 事件，避免清空新连接及其状态。
+    if (ws2 !== socket) return;
 
-// 连接错误的处理函数
-function onError(_event: Event) {
-    // 置空 ws2，使重连判断生效
     ws2 = null;
-    document.querySelector('.actives')?.classList.add('exit');
-    setTimeout(() => initWebSocket(activesTippy ?? []), 5000); // 5秒后尝试重新连接
+    hideActive();
+    if (reconnectTimer) return;
+
+    reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        initWebSocket(activesTippy ?? []);
+    }, 5000);
 }

@@ -6,6 +6,7 @@ export interface AppConfig {
 
 export const apps: Record<string, AppConfig> = {
     wechat: { title: '微信', url: 'wechat.png', action: '摸鱼' },
+    weixin: { title: '微信', url: 'wechat.png', action: '摸鱼' },
     chrome: { title: 'Chrome', url: 'chrome.png', action: '冲浪' },
     code: { title: 'Visual Studio Code', url: 'code.png', action: '捣鼓一些小玩意儿' },
     'lx-music-desktop.exe': { title: '洛雪音乐播放器', url: 'music.png', action: '听音乐' },
