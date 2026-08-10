@@ -2,18 +2,28 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 type StatusDom = ReturnType<typeof createStatusDom>;
 
-const chromeApp = { id: 'chrome', title: 'Chrome', url: 'chrome.png', action: '冲浪' };
+const chromeApp = {
+    id: 'chrome',
+    title: 'Chrome',
+    url: 'https://cdn.jsdelivr.net/gh/selfhst/icons@main/webp/chrome.webp',
+    action: '冲浪'
+};
 const hermesApp = {
     id: 'hermes',
     title: 'Hermes',
-    url: 'word.png',
+    url: 'https://cdn.1900.live/apps/word.png',
     action: '正在和H小姐头脑风暴中...'
 };
-const wechatApp = { id: 'wechat', title: '微信', url: 'wechat.png', action: '摸鱼' };
+const wechatApp = {
+    id: 'wechat',
+    title: '微信',
+    url: 'https://cdn.1900.live/apps/wechat.png',
+    action: '摸鱼'
+};
 const centBrowserApp = {
     id: 'centbrowser',
     title: 'Cent Browser',
-    url: 'chrome.png',
+    url: 'https://cdn.jsdelivr.net/gh/selfhst/icons@main/webp/centbrowser.webp',
     action: '冲浪'
 };
 
@@ -109,7 +119,7 @@ describe('PC 状态显示', () => {
 
         expect(dom.root.dataset.app).toBe('centbrowser');
         expect(dom.image.alt).toBe('Cent Browser');
-        expect(dom.image.src).toContain('/chrome.png!20w');
+        expect(dom.image.src).toBe(centBrowserApp.url);
     });
 
     it('Astro 客户端导航后立即恢复最后收到的状态', async () => {
@@ -215,7 +225,7 @@ describe('PC 状态显示', () => {
             vi.fn(
                 (url: string) =>
                     new Promise<Record<string, never>>((resolve) => {
-                        if (url.includes('chrome.png')) resolveChrome = () => resolve({});
+                        if (url.includes('chrome.webp')) resolveChrome = () => resolve({});
                         if (url.includes('word.png')) resolveHermes = () => resolve({});
                     })
             )

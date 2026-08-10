@@ -2,7 +2,6 @@
 // const wsUrl = 'ws://localhost:8081/update';
 
 // 定义正式环境的url
-const cdn = 'https://cdn.1900.live/apps/';
 const wsUrl = 'wss://hapi.190102.xyz:4433/ws/pc-status';
 
 interface ActiveApp {
@@ -101,7 +100,7 @@ function renderActive(app: ActiveApp, animate: boolean) {
 
         const img = document.querySelector<HTMLImageElement>('.actives img');
         if (img) {
-            img.src = cdn + app.url + '!20w';
+            img.src = app.url;
             img.alt = app.title;
         }
         activs.classList.remove('exit');
@@ -118,7 +117,7 @@ function renderActive(app: ActiveApp, animate: boolean) {
     }
 
     // 提前缓存图片；即使缓存失败，也继续更新状态图标。
-    fetch(cdn + app.url + '!20w')
+    fetch(app.url)
         .catch((err) => console.warn('[actives] 预缓存图标失败:', err))
         .then(() => {
             if (currentApp !== app) return;
