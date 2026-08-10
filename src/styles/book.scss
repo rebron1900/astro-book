@@ -27,3 +27,12 @@
 // @import 'mapbox-gl/dist/mapbox-gl.css';
 // 全局引入 medium-zoom 样式，避免 View Transitions SPA 导航时运行时注入的 <style> 丢失
 @import 'medium-zoom/dist/style.css';
+
+// medium-zoom 默认不设置 z-index；明确保证放大图位于遮罩和页面内容之上。
+.medium-zoom-overlay {
+    z-index: 10000;
+}
+
+.medium-zoom-image--opened {
+    z-index: 10001;
+}
