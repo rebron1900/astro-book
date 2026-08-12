@@ -11,6 +11,23 @@
     "type": "memo"
   },
   {
+    "id": "01KZTMVPT83SZCJXVF0CP21D93",
+    "content": "<p>犹豫今天去不去看流星雨，晚上的云感觉挺厚的。</p>",
+    "createdTs": 1786526948,
+    "updatedTs": 1786526948,
+    "creatorName": "1900",
+    "resourceList": [
+      {
+        "type": "image",
+        "filename": "https://social.1900.live/fileserver/01SV363TAXYS6VB89TAX89H6N9/attachment/original/01KZTMVCESHXV4SZ5DTKAQPNVJ.png",
+        "externalLink": "https://social.1900.live/fileserver/01SV363TAXYS6VB89TAX89H6N9/attachment/original/01KZTMVCESHXV4SZ5DTKAQPNVJ.png"
+      }
+    ],
+    "visibility": "PUBLIC",
+    "pinned": false,
+    "type": "memo"
+  },
+  {
     "id": "01KZDS23XB12C7JYX7WA1T0G8V",
     "content": "<p>Cloudflare目前开启了AI助手功能，在页面上你能通过AI来操作相关配置，刚刚让他帮我排查了一个Worker的错误，问题解决的很流畅。</p><p>对于这种功能复杂的操作台，有一个这种助手确实方便很多。另外前几天在x上看到Cloudflare似乎要推出一个给AI操作的类Worker云空间，可以快速部署测试项目之类的，回头再试试。</p><p><a href=\"https://social.1900.live/tags/cloudflare\" class=\"mention hashtag\" rel=\"tag nofollow noreferrer noopener\" target=\"_blank\">#<span>Cloudflare</span></a></p>",
     "createdTs": 1786095144,
@@ -4249,17 +4266,6 @@
     "content": "1900 转嘟 <a href=\"https://neodb.social/@1900/posts/535604843643887624/\" target=\"_blank\" rel=\"noopener noreferrer\">@1900</a>:\n<p>在读 <a href=\"https://neodb.social/~neodb~/book/1t2jzfOBpVryosuZ8jTAyw\" rel=\"nofollow noreferrer noopener\" target=\"_blank\">怀孕呵护指南</a> 🌕🌕🌕🌕🌑</p><p><a href=\"https://neodb.social/tags/neodb/\" class=\"mention hashtag\" rel=\"tag nofollow noreferrer noopener\" target=\"_blank\">#Neodb</a></p>",
     "createdTs": 1768718547,
     "updatedTs": 1768718547,
-    "creatorName": "1900",
-    "resourceList": [],
-    "visibility": "PUBLIC",
-    "pinned": false,
-    "type": "memo"
-  },
-  {
-    "id": "01KF7XD309YMGYWDE3ZNV6EYFJ",
-    "content": "1900 转嘟 <a href=\"https://neodb.social/@1900/posts/535604656665456144/\" target=\"_blank\" rel=\"noopener noreferrer\">@1900</a>:\n<p>不再读 <a href=\"https://neodb.social/~neodb~/book/2TF9MJdnJMdeEwp8oLruwZ\" rel=\"nofollow noreferrer noopener\" target=\"_blank\">地球上最后的夜晚</a></p><p><a href=\"https://neodb.social/tags/neodb/\" class=\"mention hashtag\" rel=\"tag nofollow noreferrer noopener\" target=\"_blank\">#Neodb</a></p>",
-    "createdTs": 1768718502,
-    "updatedTs": 1768718502,
     "creatorName": "1900",
     "resourceList": [],
     "visibility": "PUBLIC",
