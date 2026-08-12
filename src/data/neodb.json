@@ -2845,7 +2845,7 @@
       "rating_grade": 6,
       "item": {
         "id": "https://neodb.social/tv/season/2EFTuRlSBep8PTxslMFExN",
-        "title": "Six Sisters (六姐妹)",
+        "title": "Six Sisters",
         "category": "tv",
         "cover_image_url": "https://neodb.social/m/item/doubanmovie/2025/02/05/d98c90a1-4026-41ee-b1b1-4ee9dc3d700a.jpg",
         "url": "/tv/season/2EFTuRlSBep8PTxslMFExN",
@@ -2858,6 +2858,46 @@
           {
             "lang": "zh-cn",
             "text": "六姊妹"
+          },
+          {
+            "lang": "ko",
+            "text": "시즌 1"
+          },
+          {
+            "lang": "ja",
+            "text": "シーズン1"
+          },
+          {
+            "lang": "pt",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "de",
+            "text": "Staffel 1"
+          },
+          {
+            "lang": "fr",
+            "text": "Saison 1"
+          },
+          {
+            "lang": "es",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "en",
+            "text": "Season 1"
           }
         ],
         "type": "TVSeason",
@@ -4943,7 +4983,7 @@
       "rating_grade": 7,
       "item": {
         "id": "https://neodb.social/tv/season/6Zr3nYE20lPXCC5ijdDIF6",
-        "title": "This Thriving Land (缱绻与决绝)",
+        "title": "This Thriving Land",
         "category": "tv",
         "cover_image_url": "https://neodb.social/m/item/doubanmovie/2025/08/16/699e844e-18fa-4f57-adb7-cac48e39bd29.jpg",
         "url": "/tv/season/6Zr3nYE20lPXCC5ijdDIF6",
@@ -4956,6 +4996,46 @@
           {
             "lang": "zh-cn",
             "text": "生万物"
+          },
+          {
+            "lang": "ko",
+            "text": "시즌 1"
+          },
+          {
+            "lang": "ja",
+            "text": "シーズン1"
+          },
+          {
+            "lang": "pt",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "de",
+            "text": "Staffel 1"
+          },
+          {
+            "lang": "fr",
+            "text": "Saison 1"
+          },
+          {
+            "lang": "es",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "en",
+            "text": "Season 1"
           }
         ],
         "type": "TVSeason",
@@ -13189,7 +13269,7 @@
       "rating_grade": 6,
       "item": {
         "id": "https://neodb.social/tv/season/5rOAS5cAuyVXxewGxoJnBF",
-        "title": "错位",
+        "title": "Interlaced Scenes",
         "category": "tv",
         "cover_image_url": "https://neodb.social/m/item/doubanmovie/2024/07/12/4e82fb3d-f73d-4940-a9c7-301fc9c8663c.webp",
         "url": "/tv/season/5rOAS5cAuyVXxewGxoJnBF",
@@ -13202,6 +13282,42 @@
           {
             "lang": "zh-cn",
             "text": "交错的场景"
+          },
+          {
+            "lang": "ko",
+            "text": "시즌 1"
+          },
+          {
+            "lang": "ja",
+            "text": "シーズン1"
+          },
+          {
+            "lang": "pt",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "de",
+            "text": "Staffel 1"
+          },
+          {
+            "lang": "fr",
+            "text": "Saison 1"
+          },
+          {
+            "lang": "es",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "錯位"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "en",
+            "text": "Season 1"
           }
         ],
         "type": "TVSeason",
