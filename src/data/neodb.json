@@ -1,6 +1,28 @@
 {
   "data": [
     {
+      "comment_text": "停不下来，感觉比一饭封神好看😂",
+      "rating_grade": 7,
+      "item": {
+        "id": "https://neodb.social/tv/season/3SHl2hy1gbWKDupEMAWlnX",
+        "title": "天才厨人",
+        "category": "tv",
+        "cover_image_url": "https://neodb.social/m/item/doubanmovie/2026/07/03/246c8322-f0c8-4f45-8129-35716e439e9b.webp",
+        "url": "/tv/season/3SHl2hy1gbWKDupEMAWlnX",
+        "uuid": "3SHl2hy1gbWKDupEMAWlnX",
+        "localized_title": [
+          {
+            "lang": "zh-cn",
+            "text": "天才厨人"
+          }
+        ],
+        "type": "TVSeason",
+        "title_cn": "天才厨人"
+      },
+      "created_time": "2026-08-14T10:57:49.580Z",
+      "visibility": 0
+    },
+    {
       "comment_text": "国内漫画也是好起来了，推荐个新番《记忆管理局》，风格化非常强烈的新番。\r\n就是和大多数风格化强烈的作品一样，只看一遍会觉得看不明白。",
       "rating_grade": 8,
       "item": {
@@ -30516,76 +30538,6 @@
       "comment_text": "@2023-01-16 17:00:35",
       "rating_grade": null,
       "item": {
-        "id": "https://neodb.social/movie/2rRCaF69iiNElnyZ8E9fkA",
-        "title": "Hidden Man",
-        "category": "movie",
-        "cover_image_url": "https://neodb.social/m/item/movie/2026/02/08/05d1e0b6-5d23-4176-ace3-796c07afc104.jpeg",
-        "url": "/movie/2rRCaF69iiNElnyZ8E9fkA",
-        "uuid": "2rRCaF69iiNElnyZ8E9fkA",
-        "localized_title": [
-          {
-            "lang": "zh-cn",
-            "text": "邪不压正"
-          },
-          {
-            "lang": "zh-cn",
-            "text": "侠隐"
-          },
-          {
-            "lang": "nl",
-            "text": "Hidden Man"
-          },
-          {
-            "lang": "zh",
-            "text": "邪不压正"
-          },
-          {
-            "lang": "zh-tw",
-            "text": "邪不壓正"
-          },
-          {
-            "lang": "zh-hans",
-            "text": "邪不压正"
-          },
-          {
-            "lang": "zh-hant",
-            "text": "邪不壓正"
-          },
-          {
-            "lang": "en",
-            "text": "Hidden Man"
-          },
-          {
-            "lang": "es",
-            "text": "Hidden Man"
-          },
-          {
-            "lang": "ko",
-            "text": "사불압정"
-          },
-          {
-            "lang": "pt",
-            "text": "Homem Oculto"
-          },
-          {
-            "lang": "fr",
-            "text": "Hidden man"
-          },
-          {
-            "lang": "zh-hk",
-            "text": "邪不壓正"
-          }
-        ],
-        "type": "Movie",
-        "title_cn": "邪不压正"
-      },
-      "created_time": "2023-01-16T00:48:35Z",
-      "visibility": 0
-    },
-    {
-      "comment_text": "@2023-01-16 17:00:35",
-      "rating_grade": null,
-      "item": {
         "id": "https://neodb.social/movie/2FNBSdrJ9Jd1asj0WaP73W",
         "title": "Chasing the Dragon",
         "category": "movie",
@@ -30664,6 +30616,76 @@
         ],
         "type": "Movie",
         "title_cn": "追龙"
+      },
+      "created_time": "2023-01-16T00:48:35Z",
+      "visibility": 0
+    },
+    {
+      "comment_text": "@2023-01-16 17:00:35",
+      "rating_grade": null,
+      "item": {
+        "id": "https://neodb.social/movie/2rRCaF69iiNElnyZ8E9fkA",
+        "title": "Hidden Man",
+        "category": "movie",
+        "cover_image_url": "https://neodb.social/m/item/movie/2026/02/08/05d1e0b6-5d23-4176-ace3-796c07afc104.jpeg",
+        "url": "/movie/2rRCaF69iiNElnyZ8E9fkA",
+        "uuid": "2rRCaF69iiNElnyZ8E9fkA",
+        "localized_title": [
+          {
+            "lang": "zh-cn",
+            "text": "邪不压正"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "侠隐"
+          },
+          {
+            "lang": "nl",
+            "text": "Hidden Man"
+          },
+          {
+            "lang": "zh",
+            "text": "邪不压正"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "邪不壓正"
+          },
+          {
+            "lang": "zh-hans",
+            "text": "邪不压正"
+          },
+          {
+            "lang": "zh-hant",
+            "text": "邪不壓正"
+          },
+          {
+            "lang": "en",
+            "text": "Hidden Man"
+          },
+          {
+            "lang": "es",
+            "text": "Hidden Man"
+          },
+          {
+            "lang": "ko",
+            "text": "사불압정"
+          },
+          {
+            "lang": "pt",
+            "text": "Homem Oculto"
+          },
+          {
+            "lang": "fr",
+            "text": "Hidden man"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "邪不壓正"
+          }
+        ],
+        "type": "Movie",
+        "title_cn": "邪不压正"
       },
       "created_time": "2023-01-16T00:48:35Z",
       "visibility": 0
@@ -43048,6 +43070,14 @@
           {
             "lang": "zh-tw",
             "text": "屍速列車"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "屍殺列車（港）"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "屍速列車（台）"
           }
         ],
         "type": "Movie",
@@ -43146,6 +43176,14 @@
           {
             "lang": "ko",
             "text": "슈퍼배드"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "偷天换“月”"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "壞蛋獎門人（港）"
           }
         ],
         "type": "Movie",
@@ -62068,6 +62106,18 @@
           {
             "lang": "ko",
             "text": "반지의 제왕: 왕의 귀환"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "魔戒三部曲：国王归来"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "魔戒三部曲：王者再临"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "指环王：王者无敌"
           }
         ],
         "type": "Movie",
