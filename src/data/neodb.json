@@ -19834,6 +19834,10 @@
           {
             "lang": "ko",
             "text": "어느 가족"
+          },
+          {
+            "lang": "ja",
+            "text": "まんびきかぞく"
           }
         ],
         "type": "Movie",
@@ -34874,6 +34878,10 @@
           {
             "lang": "ko",
             "text": "프리 가이"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "爆機自由仁"
           }
         ],
         "type": "Movie",
@@ -44194,6 +44202,14 @@
           {
             "lang": "pt",
             "text": "Okuribito"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "禮儀師之奏鳴曲（港）"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "送行者：禮儀師的樂章（台）"
           }
         ],
         "type": "Movie",
@@ -45634,6 +45650,10 @@
           {
             "lang": "ko",
             "text": "파이트 클럽"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "搏擊會"
           }
         ],
         "type": "Movie",
@@ -46632,6 +46652,14 @@
           {
             "lang": "ko",
             "text": "해리 포터와 마법사의 돌"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "Harry Potter and the Sorcerer's Stone(美国、印度、菲律宾)"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "哈利波特：神秘的魔法石（港/台）"
           }
         ],
         "type": "Movie",
@@ -54586,6 +54614,10 @@
           {
             "lang": "ko",
             "text": "인터스텔라"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "星際啟示錄"
           }
         ],
         "type": "Movie",
@@ -61894,6 +61926,22 @@
           {
             "lang": "ko",
             "text": "반지의 제왕: 두 개의 탑"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "魔戒2：双塔奇兵"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "双城奇谋"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "双塔奇兵"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "指环王2：双塔奇谋"
           }
         ],
         "type": "Movie",
