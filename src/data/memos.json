@@ -11,6 +11,17 @@
     "type": "memo"
   },
   {
+    "id": "01M06RNBBSWCK1WZXW68WB9MFV",
+    "content": "<p>要对自己狠一点。</p>",
+    "createdTs": 1786933587,
+    "updatedTs": 1786933587,
+    "creatorName": "1900",
+    "resourceList": [],
+    "visibility": "PUBLIC",
+    "pinned": false,
+    "type": "memo"
+  },
+  {
     "id": "01M046FBYGBQ8V9MV3KMM5AMYD",
     "content": "<p>早上nas上的服务忽然都挂掉了，进去后检查了各项指标，发现是硬盘空间满了。<br>但是不应该呀，我此前给docker分配了非常充裕的空间，不可能忽然就满了。</p><p>起初以为是某个程序的错误日志导致的，但是检查后发现不是，然后各种排查。<br>最后发现是tr下载器占用了三四百G的空间，这才想起前几天发现有一些种子下载失败，我手动启用了下载，但是不知道为啥没有下载到我配置的影视目录里去，直接存在了容器目录里，这才导致了这个情况。</p>",
     "createdTs": 1786847408,
@@ -4261,17 +4272,6 @@
     "content": "<p>错怪它了，cloudflare的一个worker拉不到数据导致的。</p>",
     "createdTs": 1768723462,
     "updatedTs": 1768723462,
-    "creatorName": "1900",
-    "resourceList": [],
-    "visibility": "PUBLIC",
-    "pinned": false,
-    "type": "memo"
-  },
-  {
-    "id": "01KF80GWEKX0ZGHZSWKNMFF9MV",
-    "content": "<p><strong>我为什么写博客</strong><br><a href=\"https://1900.live/wo-wei-shi-yao-xie-bo-ke\" rel=\"nofollow noreferrer noopener\" target=\"_blank\">https://1900.live/wo-wei-shi-yao-xie-bo-ke</a></p><p><em>from 1900'Blog.</em></p><p><a href=\"https://social.1900.live/tags/%E5%8D%9A%E5%AE%A2\" class=\"mention hashtag\" rel=\"tag nofollow noreferrer noopener\" target=\"_blank\">#<span>博客</span></a></p><blockquote><p>最近有两位大佬都写了以「每日写作」为主题的文章，一位是「莫比乌斯-每日写作的意义是什么？」、一位「So!azy-日更博客的真正门槛」，所以我也想聊聊我的看法。</p><p>我最近也在尝试控制自己的输出频率和产出内容，但是像他们那样一天一更或者多更我确实做不到，所以目前的想法是尝试两到三天更新一篇，虽然目前只坚持了一两个星期，不过能感觉已经开始逐渐习惯这个节奏，在生活中遇到的很多事情都会习惯性往更多角度去思考其本质和意义。</p><p>首先关于莫比乌斯在他这篇文章和此前写过一些关于写日更博客或者写博客这件事的观点，其一为「写博客的本质是为了关注」、其二为「混杂着每个人自己的意义」，我先对号入座解剖一下自己。</p><p>首先，我承认自己写博客的意图中有很大一部分确实是为了关注，通过阐述自己的观点获得朋友、游客的共鸣。其次基于共鸣这一点衍生得到的部分新反馈，这些朋友所表达出来关于内容主题的另外一部分思考也是我乐于见到和学习的 ，思想的碰撞能产生新的化学反应。</p><p>其二的观点则因人而异了，这部分我的个人意义应该是解压、自我整理 和助人为乐的成就感 。</p><p>我时常感觉在生活中应付纷乱的思绪在汹涌的人际关系、信息洪流会产生巨大的...</p></blockquote>",
-    "createdTs": 1768721773,
-    "updatedTs": 1768721773,
     "creatorName": "1900",
     "resourceList": [],
     "visibility": "PUBLIC",
