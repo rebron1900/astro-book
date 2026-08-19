@@ -1,5 +1,18 @@
 [
   {
+    "title": "人间颜色",
+    "url": "https://blog.zzbd.org/miao202608/",
+    "published_at": "2026-08-19T00:51:19Z",
+    "created_at": "2026-08-19T03:20:40.9614Z",
+    "feed": {
+      "id": 119,
+      "site_url": "https://blog.zzbd.org",
+      "title": "J.F's BLOG"
+    },
+    "feed_id": 119,
+    "update_timestamp": 1787100679000
+  },
+  {
     "title": "兔子",
     "url": "http://www.xulog.cn/index.php?act=pl&id=1208",
     "published_at": "2026-08-19T00:12:33Z",
@@ -440,19 +453,6 @@
     },
     "feed_id": 132,
     "update_timestamp": 1785553980000
-  },
-  {
-    "title": "Vibe coding 项目：影响因子和分区查询 API",
-    "url": "https://blog.zzbd.org/jcr-if-fenqu2/",
-    "published_at": "2026-08-01T01:22:54Z",
-    "created_at": "2026-08-01T16:46:48.720672Z",
-    "feed": {
-      "id": 119,
-      "site_url": "https://blog.zzbd.org",
-      "title": "J.F's BLOG"
-    },
-    "feed_id": 119,
-    "update_timestamp": 1785547374000
   },
   {
     "title": "一些想法汇总 from 手机记事本",
