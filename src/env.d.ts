@@ -36,8 +36,8 @@ interface ImportMetaEnv {
     readonly FLUX_URL: string;
     readonly FLUX_KEY: string;
     readonly CDN_URL: string;
-    readonly MAP_URL: string;
-    readonly MAP_KEY: string;
+    readonly PUBLIC_MAP_URL: string;
+    readonly PUBLIC_MAP_KEY: string;
     readonly SITE: string;
 }
 

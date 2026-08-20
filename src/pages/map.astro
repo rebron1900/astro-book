@@ -33,7 +33,7 @@ const page = pages.find((post) => post.slug == 'map');
             import initMap from '../lib/map';
 
             document.addEventListener('astro:page-load', () => {
-                initMap(import.meta.env.MAP_URL, import.meta.env.MAP_KEY);
+                initMap(import.meta.env.PUBLIC_MAP_URL, import.meta.env.PUBLIC_MAP_KEY);
             });
         </script>
         <div id="map" class="footer-map"></div>
