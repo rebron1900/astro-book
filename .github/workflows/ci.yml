@@ -73,6 +73,14 @@ jobs:
                       astro-incremental-${{ runner.os }}-
 
             # 构建项目（方案 B：完全离线，读取仓库已提交的 src/data/*.json）
+            # 客户端地图配置来自仓库 Secret，不能依赖被 .gitignore 忽略的本地 .env。
+            - name: Prepare build environment
+              env:
+                  CONFIG_FILE: ${{ secrets.CONFIG_FILE }}
+              run: |
+                  echo "$CONFIG_FILE" > ./.env
+                  sed -i -e 's/^MAP_URL=/PUBLIC_MAP_URL=/' -e 's/^MAP_KEY=/PUBLIC_MAP_KEY=/' ./.env
+
             - name: Build Astro project
               run: yarn build
 
