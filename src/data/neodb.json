@@ -41282,6 +41282,50 @@
           {
             "lang": "en",
             "text": "The Green Planet"
+          },
+          {
+            "lang": "ko",
+            "text": "시즌 1"
+          },
+          {
+            "lang": "ja",
+            "text": "シーズン1"
+          },
+          {
+            "lang": "pt",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "de",
+            "text": "Staffel 1"
+          },
+          {
+            "lang": "fr",
+            "text": "Saison 1"
+          },
+          {
+            "lang": "es",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "綠色星球"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "en",
+            "text": "Season 1"
+          },
+          {
+            "lang": "en",
+            "text": "The Green Planet (Season 1)"
+          },
+          {
+            "lang": "de",
+            "text": "Unser grüner Planet/Staffel 1"
           }
         ],
         "type": "TVSeason",
