@@ -11,6 +11,17 @@
     "type": "memo"
   },
   {
+    "id": "01M1407KWCYVD93DRHWZRE88FN",
+    "content": "<p>glm-5.3-flash的稳定和速度是在太差了，刚刚跑了几个长任务无一例外都出现了中断。首token的等待时间基本上在10s以上。</p>",
+    "createdTs": 1787914604,
+    "updatedTs": 1787914604,
+    "creatorName": "1900",
+    "resourceList": [],
+    "visibility": "PUBLIC",
+    "pinned": false,
+    "type": "memo"
+  },
+  {
     "id": "01M10ZG5YKXEF4YE5377BYSQMW",
     "content": "1900 转嘟 <a href=\"https://neodb.social/@1900/posts/615693497049448120/\" target=\"_blank\" rel=\"noopener noreferrer\">@1900</a>:\n<p>看过 <a href=\"https://neodb.social/~neodb~/tv/season/4dCuqkV3WcFhCxQLwp510e\" rel=\"nofollow noreferrer noopener\" target=\"_blank\">重器</a> 🌕🌕🌕🌕🌑  <br>好看</p><p><a href=\"https://neodb.social/tags/neodb/\" class=\"mention hashtag\" rel=\"tag nofollow noreferrer noopener\" target=\"_blank\">#Neodb</a></p>",
     "createdTs": 1787813173,
@@ -4269,17 +4280,6 @@
         "externalLink": "https://social.1900.live/fileserver/01SV363TAXYS6VB89TAX89H6N9/attachment/original/01KF9X80AHATXK50QDMJN3GJ2S.jpeg"
       }
     ],
-    "visibility": "PUBLIC",
-    "pinned": false,
-    "type": "memo"
-  },
-  {
-    "id": "01KF8AK6DW2CA7DZ3Q0WGQY6E5",
-    "content": "<p>随着梁小龙离去的不止有火云邪神，霍元甲，还有我的青春。</p><p>火云邪神武功盖世，斧头帮全体成员都给邪神敬礼！</p>",
-    "createdTs": 1768732334,
-    "updatedTs": 1768732334,
-    "creatorName": "1900",
-    "resourceList": [],
     "visibility": "PUBLIC",
     "pinned": false,
     "type": "memo"

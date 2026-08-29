@@ -4483,7 +4483,7 @@
       "rating_grade": 7,
       "item": {
         "id": "https://neodb.social/tv/season/1d5kA0J3YC9PJ5bMP4mHkt",
-        "title": "Twelve Letters (十二封信)",
+        "title": "Twelve Letters",
         "category": "tv",
         "cover_image_url": "https://neodb.social/m/item/doubanmovie/2025/08/29/c0afc7f3-048c-42be-b23b-d23038a5e611.jpg",
         "url": "/tv/season/1d5kA0J3YC9PJ5bMP4mHkt",
@@ -4496,6 +4496,46 @@
           {
             "lang": "zh-cn",
             "text": "后会有期"
+          },
+          {
+            "lang": "ko",
+            "text": "시즌 1"
+          },
+          {
+            "lang": "ja",
+            "text": "シーズン1"
+          },
+          {
+            "lang": "pt",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "de",
+            "text": "Staffel 1"
+          },
+          {
+            "lang": "fr",
+            "text": "Saison 1"
+          },
+          {
+            "lang": "es",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "en",
+            "text": "Season 1"
           }
         ],
         "type": "TVSeason",
@@ -4836,6 +4876,14 @@
           {
             "lang": "zh-cn",
             "text": "贝利叶一家中国版"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "獨一無二"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "獨一無二"
           }
         ],
         "type": "Movie",
@@ -9370,6 +9418,46 @@
           {
             "lang": "en",
             "text": "Drifting Away"
+          },
+          {
+            "lang": "ko",
+            "text": "시즌 1"
+          },
+          {
+            "lang": "ja",
+            "text": "シーズン1"
+          },
+          {
+            "lang": "pt",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "de",
+            "text": "Staffel 1"
+          },
+          {
+            "lang": "fr",
+            "text": "Saison 1"
+          },
+          {
+            "lang": "es",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "en",
+            "text": "Season 1"
           }
         ],
         "type": "TVSeason",
