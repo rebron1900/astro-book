@@ -4984,13 +4984,73 @@
       "comment_text": "上次看还是第一季，这季没有那些什么妖魔鬼怪剧本，就简简单单出去玩，就挺好了",
       "rating_grade": 7,
       "item": {
-        "id": "https://neodb.social/tv/season/6DGiByxzHjlhNIN9L1OUap",
-        "title": "花儿与少年·同心季",
+        "id": "https://neodb.social/tv/season/7i5AT5LoAPrhonDwyXC8g0",
+        "title": "Divas Hit the Road (Hearts United)",
         "category": "tv",
-        "cover_image_url": "https://neodb.social/m/item/tmdb_tvseason/2025/08/20/aaaac7e4-3d52-4ab7-8e94-9ee3092ce331.jpg",
-        "url": "/tv/season/6DGiByxzHjlhNIN9L1OUap",
-        "uuid": "6DGiByxzHjlhNIN9L1OUap",
+        "cover_image_url": "https://neodb.social/m/item/tmdb_tvseason/2025/11/19/51854abf-c56f-44a6-9ab5-99c976ae6b68.jpg",
+        "url": "/tv/season/7i5AT5LoAPrhonDwyXC8g0",
+        "uuid": "7i5AT5LoAPrhonDwyXC8g0",
         "localized_title": [
+          {
+            "lang": "ko",
+            "text": "시즌 7"
+          },
+          {
+            "lang": "ja",
+            "text": "シーズン7"
+          },
+          {
+            "lang": "pt",
+            "text": "Temporada 7"
+          },
+          {
+            "lang": "de",
+            "text": "Staffel 7"
+          },
+          {
+            "lang": "fr",
+            "text": "Saison 7"
+          },
+          {
+            "lang": "es",
+            "text": "Temporada 7"
+          },
+          {
+            "lang": "en",
+            "text": "Hearts United"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "第 7 季"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "第 7 季"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "同心季"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "花少7"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "花儿与少年 第七季"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "花儿与少年7"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "花儿与少年·回归季‎"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "花儿与少年·同心季"
+          },
           {
             "lang": "ko",
             "text": "시즌 1"
@@ -5033,7 +5093,7 @@
           }
         ],
         "type": "TVSeason",
-        "title_cn": "花儿与少年·同心季"
+        "title_cn": "同心季"
       },
       "created_time": "2025-09-01T05:30:00.788Z",
       "visibility": 0
