@@ -8036,6 +8036,10 @@
           {
             "lang": "es",
             "text": "Volumen 4"
+          },
+          {
+            "lang": "en",
+            "text": "Love, Death & Robots S04E01 - Season 4"
           }
         ],
         "type": "TVSeason",
@@ -23762,6 +23766,10 @@
           {
             "lang": "es",
             "text": "Los Últimos de Nosotros"
+          },
+          {
+            "lang": "en",
+            "text": "The Last of Us - Season 1"
           }
         ],
         "type": "TVSeason",
@@ -41488,6 +41496,10 @@
           {
             "lang": "de",
             "text": "Unser grüner Planet/Staffel 1"
+          },
+          {
+            "lang": "en",
+            "text": "The Green Planet S01E01 - Season 1"
           }
         ],
         "type": "TVSeason",
