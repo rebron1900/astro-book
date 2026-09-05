@@ -10254,5 +10254,9 @@
   "error_https://cdn.1900.live/wp-content/uploads/2018/04/header.png": {
     "timestamp": 1786242567435,
     "error": "fetch failed"
+  },
+  "size_https://cdn.1900.live/assets/2026/09/5b9b3b98e399cd29d6ec4c573e26d495f_origin(1).jpg": {
+    "width": 2000,
+    "height": 2667
   }
 }
