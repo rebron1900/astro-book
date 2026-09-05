@@ -4,6 +4,48 @@
       "comment_text": null,
       "rating_grade": 7,
       "item": {
+        "id": "https://neodb.social/movie/1gP1Z5nj7Y4HCBdwRi8bY2",
+        "title": "Vanishing Point",
+        "category": "movie",
+        "cover_image_url": "https://neodb.social/m/item/movie/2026/05/01/f3c6d9a7-2ff2-457c-a4fd-14947c83e1ae.jpg",
+        "url": "/movie/1gP1Z5nj7Y4HCBdwRi8bY2",
+        "uuid": "1gP1Z5nj7Y4HCBdwRi8bY2",
+        "localized_title": [
+          {
+            "lang": "zh-hk",
+            "text": "消失的人"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "消失的人"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "消失的人"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "消失的孩子(电影版)"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "海葵"
+          },
+          {
+            "lang": "en",
+            "text": "Vanishing Point"
+          }
+        ],
+        "type": "Movie",
+        "title_cn": "消失的人"
+      },
+      "created_time": "2026-09-05T15:09:58.060Z",
+      "visibility": 0
+    },
+    {
+      "comment_text": null,
+      "rating_grade": 7,
+      "item": {
         "id": "https://neodb.social/movie/5TTMVeHIkg4ZGn3vBj07nV",
         "title": "All Wishes Come True!",
         "category": "movie",
