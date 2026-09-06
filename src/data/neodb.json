@@ -4,6 +4,32 @@
       "comment_text": null,
       "rating_grade": 7,
       "item": {
+        "id": "https://neodb.social/movie/7l8eQ2ofuNwcb6naOCEAS4",
+        "title": "得闲谨制",
+        "category": "movie",
+        "cover_image_url": "https://neodb.social/m/item/doubanmovie/2025/12/20/cd582adc-4369-4b76-9ce2-3ec46b17db75.jpg",
+        "url": "/movie/7l8eQ2ofuNwcb6naOCEAS4",
+        "uuid": "7l8eQ2ofuNwcb6naOCEAS4",
+        "localized_title": [
+          {
+            "lang": "pl",
+            "text": "Gezhi Town"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "得闲谨制"
+          }
+        ],
+        "type": "Movie",
+        "title_cn": "得闲谨制"
+      },
+      "created_time": "2026-09-06T07:22:38.181Z",
+      "visibility": 0
+    },
+    {
+      "comment_text": null,
+      "rating_grade": 7,
+      "item": {
         "id": "https://neodb.social/movie/1gP1Z5nj7Y4HCBdwRi8bY2",
         "title": "Vanishing Point",
         "category": "movie",
