@@ -6247,9 +6247,9 @@
       "rating_grade": 6,
       "item": {
         "id": "https://neodb.social/tv/season/1cojzuJsVdvJs9uQdurekD",
-        "title": "K-Pop 猎魔女团",
+        "title": "KPOP DEMON HUNTERS",
         "category": "tv",
-        "cover_image_url": "https://neodb.social/m/item/bangumi/2026/05/20/a9c418e9-a365-44ef-bdd7-c0b84c89576b.jpg",
+        "cover_image_url": "https://neodb.social/m/item/bangumi/2026/09/07/e0e937e0-c14e-4341-a8a4-e567aa02e018.jpg",
         "url": "/tv/season/1cojzuJsVdvJs9uQdurekD",
         "uuid": "1cojzuJsVdvJs9uQdurekD",
         "localized_title": [
@@ -6258,7 +6258,7 @@
             "text": "K-Pop 猎魔女团"
           },
           {
-            "lang": "de",
+            "lang": "en",
             "text": "KPOP DEMON HUNTERS"
           },
           {
@@ -6274,20 +6274,8 @@
             "text": "韩流：恶魔猎人"
           },
           {
-            "lang": "nl",
+            "lang": "en",
             "text": "K-Pop Demon Hunters"
-          },
-          {
-            "lang": "zh-cn",
-            "text": "Kpop 猎魔女团"
-          },
-          {
-            "lang": "zh-cn",
-            "text": "K-POP：猎魔女团"
-          },
-          {
-            "lang": "nl",
-            "text": "K-Pop: Demon Hunters"
           }
         ],
         "type": "TVSeason",
