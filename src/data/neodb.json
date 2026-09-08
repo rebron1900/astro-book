@@ -42556,6 +42556,10 @@
           {
             "lang": "zh-tw",
             "text": "超人：鋼鐵英雄"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "超人：鋼鐵英雄（港/台）"
           }
         ],
         "type": "Movie",
@@ -42674,6 +42678,14 @@
           {
             "lang": "zh-hk",
             "text": "地球末日戰"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "地球末日戰（港）"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "末日之戰（台）"
           }
         ],
         "type": "Movie",
@@ -69018,6 +69030,10 @@
           {
             "lang": "ko",
             "text": "드래곤 길들이기"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "驯龙记"
           }
         ],
         "type": "Movie",
