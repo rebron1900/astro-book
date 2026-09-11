@@ -715,19 +715,6 @@
     "update_timestamp": 1784181600000
   },
   {
-    "title": "Cursor 订阅踩坑",
-    "url": "https://lynkxu.com/blog/2026-07-08-cursor-subscription.html",
-    "published_at": "2026-07-08T00:00:00Z",
-    "created_at": "2026-07-12T15:46:50.40883Z",
-    "feed": {
-      "id": 198,
-      "site_url": "https://lynkxu.com",
-      "title": "LynkXu's Blog"
-    },
-    "feed_id": 198,
-    "update_timestamp": 1783468800000
-  },
-  {
     "title": "字体对齐真难啊",
     "url": "https://imnerd.org/text-align-is-really-hard.html",
     "published_at": "2026-03-26T00:00:00Z",
