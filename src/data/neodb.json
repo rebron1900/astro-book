@@ -2,6 +2,48 @@
   "data": [
     {
       "comment_text": null,
+      "rating_grade": 8,
+      "item": {
+        "id": "https://neodb.social/tv/season/4Xgq5u7bWaTGzI6e2mRG1H",
+        "title": "Affair Is Not the Issue Now (The Affair Was Just The Beginning)",
+        "category": "tv",
+        "cover_image_url": "https://neodb.social/m/item/doubanmovie/2026/08/05/4ec4caca-b776-4705-8c54-324f8aa7d983.webp",
+        "url": "/tv/season/4Xgq5u7bWaTGzI6e2mRG1H",
+        "uuid": "4Xgq5u7bWaTGzI6e2mRG1H",
+        "localized_title": [
+          {
+            "lang": "zh-cn",
+            "text": "现在不是出轨的问题"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "不伦现在不是问题"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "现在出轨不是问题"
+          },
+          {
+            "lang": "en",
+            "text": "The Affair Was Just The Beginning"
+          },
+          {
+            "lang": "ko",
+            "text": "지금 불륜이 문제가 아닙니다"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "现在不是外遇的问题(台)"
+          }
+        ],
+        "type": "TVSeason",
+        "title_cn": "现在不是出轨的问题"
+      },
+      "created_time": "2026-09-11T09:52:55.294Z",
+      "visibility": 0
+    },
+    {
+      "comment_text": null,
       "rating_grade": 7,
       "item": {
         "id": "https://neodb.social/tv/season/422NvJxul7QpcjzaRH7jhY",
@@ -50764,6 +50806,10 @@
           {
             "lang": "en",
             "text": "Season 1"
+          },
+          {
+            "lang": "en",
+            "text": "The Sandman "
           }
         ],
         "type": "TVSeason",
