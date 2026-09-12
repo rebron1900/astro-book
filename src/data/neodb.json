@@ -26631,95 +26631,43 @@
       "rating_grade": null,
       "item": {
         "id": "https://neodb.social/movie/75nEqhCiirFvCOhen1uM4A",
-        "title": "The Legend II",
+        "title": "The Legend of Fong Sai Yuk 2",
         "category": "movie",
-        "cover_image_url": "https://neodb.social/m/item/movie/2023/05/13/32c97e44-ff91-4e6e-a345-1bacacdcf0d8.webp",
+        "cover_image_url": "https://neodb.social/m/item/doubanmovie/2026/09/12/6fd3389b-3126-4993-b0a6-be809417bdb1.webp",
         "url": "/movie/75nEqhCiirFvCOhen1uM4A",
         "uuid": "75nEqhCiirFvCOhen1uM4A",
         "localized_title": [
           {
             "lang": "zh-cn",
-            "text": "功夫皇帝方世玉2：萬夫莫敵"
+            "text": "方世玉续集"
           },
           {
             "lang": "zh-cn",
-            "text": "方世玉2：谁与争锋"
+            "text": "方世玉2：万夫莫敌"
           },
           {
             "lang": "zh-cn",
             "text": "功夫皇帝II：万夫莫敌(台)"
           },
           {
-            "lang": "en",
-            "text": "The Legend II"
-          },
-          {
-            "lang": "zh",
-            "text": "方世玉續集"
-          },
-          {
-            "lang": "zh-hk",
-            "text": "方世玉續集"
-          },
-          {
-            "lang": "zh-hans",
-            "text": "方世玉续集"
-          },
-          {
-            "lang": "zh-hant",
-            "text": "方世玉續集"
-          },
-          {
-            "lang": "en",
-            "text": "Fong Sai-yuk II"
-          },
-          {
-            "lang": "fr",
-            "text": "La Légende de Fong Sai-yuk 2"
-          },
-          {
-            "lang": "de",
-            "text": "Iron Tiger"
-          },
-          {
-            "lang": "pt",
-            "text": "Fong Sai-yuk II"
-          },
-          {
-            "lang": "ko",
-            "text": "방세옥 2"
-          },
-          {
-            "lang": "ko",
-            "text": "방세옥 2: 대도무문"
-          },
-          {
-            "lang": "pt",
-            "text": "Fong Sai Yuk II - a saga de um herói"
-          },
-          {
-            "lang": "fr",
-            "text": "La Légende de Fong Sai-Yuk 2"
-          },
-          {
-            "lang": "es",
-            "text": "Fong Sai Yuk 2"
-          },
-          {
-            "lang": "zh-tw",
-            "text": "功夫皇帝II萬夫莫敵"
+            "lang": "id",
+            "text": "Fong Sai Yuk II"
           },
           {
             "lang": "zh-cn",
-            "text": "方世玉续集"
+            "text": "方世玉续集：谁与争锋"
           },
           {
-            "lang": "cn",
-            "text": "方世玉續集"
+            "lang": "en",
+            "text": "The Legend of Fong Sai Yuk 2"
+          },
+          {
+            "lang": "en",
+            "text": "The Legend II"
           }
         ],
         "type": "Movie",
-        "title_cn": "功夫皇帝方世玉2：萬夫莫敵"
+        "title_cn": "方世玉续集"
       },
       "created_time": "2023-01-16T01:04:37Z",
       "visibility": 0
