@@ -4460,6 +4460,18 @@
           {
             "lang": "zh-tw",
             "text": "轻于鸿毛"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "輕於鴻毛"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "輕於鴻毛"
+          },
+          {
+            "lang": "en",
+            "text": "Fish Flew Away"
           }
         ],
         "type": "Movie",
@@ -7492,6 +7504,26 @@
           {
             "lang": "zh-cn",
             "text": "冲·撞"
+          },
+          {
+            "lang": "ko",
+            "text": "충·당: 충돌"
+          },
+          {
+            "lang": "ja",
+            "text": "クラッシュ"
+          },
+          {
+            "lang": "es",
+            "text": "Choque"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "衝·撞"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "沖·撞"
           }
         ],
         "type": "Movie",
@@ -15989,7 +16021,7 @@
       "rating_grade": 4,
       "item": {
         "id": "https://neodb.social/movie/2xOzHQqtBItR27lEbUVrB6",
-        "title": "灿烂的她",
+        "title": "Remember Me",
         "category": "movie",
         "cover_image_url": "https://neodb.social/m/item/doubanmovie/2024/03/08/75caa43b-2c00-4bb3-9596-0de634851025.webp",
         "url": "/movie/2xOzHQqtBItR27lEbUVrB6",
@@ -16009,6 +16041,26 @@
           },
           {
             "lang": "de",
+            "text": "Remember Me"
+          },
+          {
+            "lang": "ja",
+            "text": "スケッチ"
+          },
+          {
+            "lang": "es",
+            "text": "Remember Me"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "燦爛的她"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "燦爛的她"
+          },
+          {
+            "lang": "en",
             "text": "Remember Me"
           }
         ],
