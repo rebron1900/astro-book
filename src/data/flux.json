@@ -1,5 +1,18 @@
 [
   {
+    "title": "Xcode 27 下 HBuilderX 运行 iOS 模拟器报错 `Unable to find application named 'Simulator'` 的解决办法",
+    "url": "https://zishu.me/blog/xcode27-hbuilderx-ios-error.html",
+    "published_at": "2026-09-19T00:00:00Z",
+    "created_at": "2026-09-19T07:20:44.251185Z",
+    "feed": {
+      "id": 43,
+      "site_url": "https://zishu.me",
+      "title": "子舒的博客"
+    },
+    "feed_id": 43,
+    "update_timestamp": 1789776000000
+  },
+  {
     "title": "青春回忆录之跳蚤市场",
     "url": "https://d-d.design/single/20397",
     "published_at": "2026-09-18T23:16:02Z",
@@ -908,19 +921,6 @@
     },
     "feed_id": 24,
     "update_timestamp": 1786731240000
-  },
-  {
-    "title": "DeekSeek Harness 初体验，非常有意思",
-    "url": "https://zishu.me/blog/deekseek-harness-experience.html",
-    "published_at": "2026-08-14T00:00:00Z",
-    "created_at": "2026-09-19T02:23:33.71735Z",
-    "feed": {
-      "id": 43,
-      "site_url": "https://zishu.me",
-      "title": "子舒的博客"
-    },
-    "feed_id": 43,
-    "update_timestamp": 1786665600000
   },
   {
     "title": "忙",
