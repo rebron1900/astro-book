@@ -6437,7 +6437,7 @@
         "id": "https://neodb.social/tv/season/1cojzuJsVdvJs9uQdurekD",
         "title": "KPOP DEMON HUNTERS",
         "category": "tv",
-        "cover_image_url": "https://neodb.social/m/item/bangumi/2026/09/07/e0e937e0-c14e-4341-a8a4-e567aa02e018.jpg",
+        "cover_image_url": "https://neodb.social/m/item/bangumi/2026/09/20/305b921f-351b-42f5-8272-ce7882c63698.jpg",
         "url": "/tv/season/1cojzuJsVdvJs9uQdurekD",
         "uuid": "1cojzuJsVdvJs9uQdurekD",
         "localized_title": [
@@ -11968,6 +11968,14 @@
           {
             "lang": "zh-cn",
             "text": "诛仙 第一季"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "诛仙动画"
+          },
+          {
+            "lang": "en",
+            "text": "Jade Dynasty"
           }
         ],
         "type": "TVSeason",
