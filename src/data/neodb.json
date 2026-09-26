@@ -812,6 +812,10 @@
           {
             "lang": "ko",
             "text": "김부장"
+          },
+          {
+            "lang": "sw",
+            "text": "Manager Kim"
           }
         ],
         "type": "TVSeason",
@@ -914,6 +918,10 @@
           {
             "lang": "zh-tw",
             "text": "鏢人：風起大漠"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "镖人 真人电影"
           }
         ],
         "type": "Movie",
@@ -10258,6 +10266,10 @@
           {
             "lang": "zh-cn",
             "text": "英雄"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "胶囊计划·英雄"
           }
         ],
         "type": "TVSeason",
@@ -11986,6 +11998,10 @@
           {
             "lang": "es",
             "text": "White Snake: Afloat"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "White Snake：Afloat"
           }
         ],
         "type": "Movie",
@@ -14862,6 +14878,10 @@
           {
             "lang": "zh-cn",
             "text": "一年一度喜剧大赛3"
+          },
+          {
+            "lang": "de",
+            "text": "AMAZING NIGHT"
           }
         ],
         "type": "TVSeason",
@@ -40018,6 +40038,10 @@
           {
             "lang": "ko",
             "text": "당인가탐안 2"
+          },
+          {
+            "lang": "en",
+            "text": "唐探2 / Detective Chinatown Vol 2"
           }
         ],
         "type": "Movie",
@@ -48096,6 +48120,10 @@
           {
             "lang": "zh-tw",
             "text": "熔爐"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "无声呐喊"
           }
         ],
         "type": "Movie",
