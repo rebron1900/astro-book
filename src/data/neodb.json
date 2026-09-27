@@ -24598,6 +24598,14 @@
           {
             "lang": "cn",
             "text": "猛龍過江"
+          },
+          {
+            "lang": "it",
+            "text": "L'urlo di Chen terrorizza anche l'occidente"
+          },
+          {
+            "lang": "da",
+            "text": "Dragen slår til igen"
           }
         ],
         "type": "Movie",
@@ -24998,6 +25006,14 @@
           {
             "lang": "pt",
             "text": "The Big Boss"
+          },
+          {
+            "lang": "it",
+            "text": "Il furore della Cina colpisce ancora"
+          },
+          {
+            "lang": "da",
+            "text": "Karatenæver af Stål"
           }
         ],
         "type": "Movie",
@@ -26082,6 +26098,26 @@
           {
             "lang": "cn",
             "text": "警察故事"
+          },
+          {
+            "lang": "it",
+            "text": "Police Story"
+          },
+          {
+            "lang": "da",
+            "text": "Police Story: En Strømer Ta'r Hævn"
+          },
+          {
+            "lang": "es",
+            "text": "Police Story"
+          },
+          {
+            "lang": "pt",
+            "text": "Ging chaat goo si"
+          },
+          {
+            "lang": "da",
+            "text": "Police story - en strømer ta'r hævn"
           }
         ],
         "type": "Movie",
@@ -26352,6 +26388,10 @@
           {
             "lang": "pt",
             "text": "Rush Hour"
+          },
+          {
+            "lang": "it",
+            "text": "Rush Hour - Due mine vaganti"
           }
         ],
         "type": "Movie",
@@ -26786,6 +26826,14 @@
           {
             "lang": "ja",
             "text": "サンダーアーム/龍兄虎弟"
+          },
+          {
+            "lang": "it",
+            "text": "Armour of God"
+          },
+          {
+            "lang": "da",
+            "text": "Fandens til våben"
           }
         ],
         "type": "Movie",
@@ -27042,6 +27090,62 @@
           {
             "lang": "zh-cn",
             "text": "无敌小子"
+          },
+          {
+            "lang": "da",
+            "text": "Born to Defence"
+          },
+          {
+            "lang": "pt",
+            "text": "Duelo de Campeões"
+          },
+          {
+            "lang": "de",
+            "text": "Born to Defense"
+          },
+          {
+            "lang": "fr",
+            "text": "Born to Defense"
+          },
+          {
+            "lang": "es",
+            "text": "Born to Defense"
+          },
+          {
+            "lang": "en",
+            "text": "Born to Defence"
+          },
+          {
+            "lang": "cn",
+            "text": "中華英雄"
+          },
+          {
+            "lang": "de",
+            "text": "Final Fight"
+          },
+          {
+            "lang": "da",
+            "text": "Born to Defense"
+          },
+          {
+            "lang": "it",
+            "text": "Born to Defence"
+          },
+          {
+            "lang": "zh",
+            "text": "中華英雄"
+          },
+          {
+            "lang": "zh-hant",
+            "text": "中華英雄"
+          },
+          {
+            "lang": "ja",
+            "text": "ファイナル・ファイター 鉄拳英雄"
+          },
+          {
+            "lang": "ko",
+            "text": "중화영웅"
           }
         ],
         "type": "Movie",
@@ -40686,6 +40790,10 @@
           {
             "lang": "zh-tw",
             "text": "精武英雄"
+          },
+          {
+            "lang": "it",
+            "text": "Fist of Legend"
           }
         ],
         "type": "Movie",
@@ -41541,6 +41649,18 @@
           },
           {
             "lang": "zh-tw",
+            "text": "英雄本色2"
+          },
+          {
+            "lang": "it",
+            "text": "A Better Tomorrow II"
+          },
+          {
+            "lang": "da",
+            "text": "A Better Tomorrow  II"
+          },
+          {
+            "lang": "zh",
             "text": "英雄本色2"
           }
         ],
@@ -43458,6 +43578,14 @@
           {
             "lang": "es",
             "text": "Un mañana mejor"
+          },
+          {
+            "lang": "it",
+            "text": "A Better Tomorrow"
+          },
+          {
+            "lang": "da",
+            "text": "A Better Tomorrow"
           }
         ],
         "type": "Movie",
@@ -44436,6 +44564,14 @@
           {
             "lang": "cn",
             "text": "倩女幽魂"
+          },
+          {
+            "lang": "pt",
+            "text": "Uma História Chinesa de Fantasmas"
+          },
+          {
+            "lang": "it",
+            "text": "Storia di fantasmi cinesi"
           }
         ],
         "type": "Movie",
@@ -47256,6 +47392,10 @@
           {
             "lang": "de",
             "text": "Eine chinesische Odyssee"
+          },
+          {
+            "lang": "it",
+            "text": "Chinese Odyssey (Part I), A"
           }
         ],
         "type": "Movie",
@@ -48686,6 +48826,14 @@
           {
             "lang": "ja",
             "text": "さらば、わが愛/覇王別姫"
+          },
+          {
+            "lang": "it",
+            "text": "Addio mia concubina"
+          },
+          {
+            "lang": "da",
+            "text": "Farvel min konkubine"
           }
         ],
         "type": "Movie",
@@ -49740,6 +49888,10 @@
           {
             "lang": "ko",
             "text": "쿵푸 팬더"
+          },
+          {
+            "lang": "it",
+            "text": "Kung Fu Panda"
           }
         ],
         "type": "Movie",
@@ -50144,6 +50296,14 @@
           {
             "lang": "es",
             "text": "The Warlords: Los señores de la guerra"
+          },
+          {
+            "lang": "it",
+            "text": "The Warlords - La battaglia dei tre guerrieri"
+          },
+          {
+            "lang": "pt",
+            "text": "Warlords - Irmãos de Sangue"
           }
         ],
         "type": "Movie",
