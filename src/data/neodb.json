@@ -66843,7 +66843,7 @@
       "rating_grade": 10,
       "item": {
         "id": "https://neodb.social/movie/4Xj7ObTh25cyYgQvQQNoDp",
-        "title": "Evangelion New Theatrical Version: Beginning",
+        "title": "Evangelion: 1.0 You Are (Not) Alone",
         "category": "movie",
         "cover_image_url": "https://neodb.social/m/item/movie/2026/05/11/3cbad58a-cfb9-4497-ac4e-aaf03d5a2021.jpeg",
         "url": "/movie/4Xj7ObTh25cyYgQvQQNoDp",
@@ -66864,10 +66864,6 @@
           {
             "lang": "nl",
             "text": "Evangerion shin gekijôban: Jo"
-          },
-          {
-            "lang": "en",
-            "text": "Evangelion New Theatrical Version: Beginning"
           },
           {
             "lang": "zh",
@@ -66945,9 +66941,9 @@
       "rating_grade": 10,
       "item": {
         "id": "https://neodb.social/movie/7Z7wwprWqr4J6c5aX9LuoG",
-        "title": "Evangelion New Theatrical Version: Breaking",
+        "title": "Evangelion: 2.0 You Can (Not) Advance",
         "category": "movie",
-        "cover_image_url": "https://neodb.social/m/item/movie/2026/05/11/84df33a4-05d9-4db5-baa2-423f6a00481f.jpeg",
+        "cover_image_url": "https://neodb.social/m/item/imdb/2023/12/28/9ea09df6-0ed4-412e-b9b5-30ef0f80a9bb.jpg",
         "url": "/movie/7Z7wwprWqr4J6c5aX9LuoG",
         "uuid": "7Z7wwprWqr4J6c5aX9LuoG",
         "localized_title": [
@@ -66962,10 +66958,6 @@
           {
             "lang": "nl",
             "text": "Evangelion: 2.0 You Can (Not) Advance"
-          },
-          {
-            "lang": "en",
-            "text": "Evangelion New Theatrical Version: Breaking"
           },
           {
             "lang": "zh",
