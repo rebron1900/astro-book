@@ -1,16 +1,81 @@
 [
   {
-    "title": "0 A.D. 游戏体验报告：一款开源的实时战略游戏，但社区协作令人堪忧",
-    "url": "https://090909.top/2026/09/30/0-A-D-%E6%B8%B8%E6%88%8F%E4%BD%93%E9%AA%8C%E6%8A%A5%E5%91%8A/",
-    "published_at": "2026-09-30T09:37:06Z",
-    "created_at": "2026-09-30T10:20:43.988279Z",
+    "title": "消失的我——最近都在做什么？",
+    "url": "https://blog.veitzn.top/%e6%b6%88%e5%a4%b1%e7%9a%84%e6%88%91-%e6%9c%80%e8%bf%91%e9%83%bd%e5%9c%a8%e5%81%9a%e4%bb%80%e4%b9%88%ef%bc%9f/",
+    "published_at": "2026-09-30T17:15:33Z",
+    "created_at": "2026-09-30T19:20:42.063883Z",
+    "feed": {
+      "id": 207,
+      "site_url": "https://blog.veitzn.top",
+      "title": "Vei Blog"
+    },
+    "feed_id": 207,
+    "update_timestamp": 1790788533000
+  },
+  {
+    "title": "道歉要趁早",
+    "url": "https://blog.solazy.me/20260930/",
+    "published_at": "2026-09-30T15:00:00Z",
+    "created_at": "2026-09-30T17:20:43.110749Z",
+    "feed": {
+      "id": 172,
+      "site_url": "https://blog.solazy.me",
+      "title": "So!azy"
+    },
+    "feed_id": 172,
+    "update_timestamp": 1790780400000
+  },
+  {
+    "title": "方舟第四次同步进度：超大杯干员到达精二 60 级，资源积累与养成策略",
+    "url": "https://090909.top/2026/09/30/%E6%96%B9%E8%88%9F%E7%AC%AC%E5%9B%9B%E6%AC%A1%E5%90%8C%E6%AD%A5%E8%BF%9B%E5%BA%A6/",
+    "published_at": "2026-09-30T14:56:23Z",
+    "created_at": "2026-09-30T16:20:46.319516Z",
     "feed": {
       "id": 208,
       "site_url": "http://090909.top",
       "title": "Liang's Dyog"
     },
     "feed_id": 208,
-    "update_timestamp": 1790761026000
+    "update_timestamp": 1790780183000
+  },
+  {
+    "title": "九月末小记",
+    "url": "https://hxy.cc/9yuemo.html",
+    "published_at": "2026-09-30T13:46:18Z",
+    "created_at": "2026-09-30T15:20:43.10723Z",
+    "feed": {
+      "id": 105,
+      "site_url": "https://www.hary.cc",
+      "title": "韩情脉脉"
+    },
+    "feed_id": 105,
+    "update_timestamp": 1790775978000
+  },
+  {
+    "title": "用 Claude Code、Codex 和 Remotion 做一支《命运石之门》MV",
+    "url": "https://innei.in/posts/tinkering/steins-gate-mv-with-claude-code",
+    "published_at": "2026-09-30T11:20:26Z",
+    "created_at": "2026-09-30T14:20:42.411599Z",
+    "feed": {
+      "id": 80,
+      "site_url": "https://innei.in",
+      "title": "静かな森"
+    },
+    "feed_id": 80,
+    "update_timestamp": 1790767226000
+  },
+  {
+    "title": "#22 潦草写就的九月月报",
+    "url": "https://isming.me/2026-09-september-summary/",
+    "published_at": "2026-09-30T10:42:24Z",
+    "created_at": "2026-09-30T15:20:43.794442Z",
+    "feed": {
+      "id": 182,
+      "site_url": "https://isming.me",
+      "title": "码农明明桑"
+    },
+    "feed_id": 182,
+    "update_timestamp": 1790764944000
   },
   {
     "title": "走路摇摆的可能原因找到",
@@ -65,19 +130,6 @@
     "update_timestamp": 1790708410000
   },
   {
-    "title": "把 Electron 更新做快：我在 OTA 上的几次推倒重来",
-    "url": "https://innei.in/posts/tech/electron-ota-updater",
-    "published_at": "2026-09-29T15:24:21Z",
-    "created_at": "2026-09-29T22:20:42.712178Z",
-    "feed": {
-      "id": 80,
-      "site_url": "https://innei.in",
-      "title": "静かな森"
-    },
-    "feed_id": 80,
-    "update_timestamp": 1790695461000
-  },
-  {
     "title": "Hermes微信失联处理",
     "url": "https://ezo.biz/Coding/Hermes.html",
     "published_at": "2026-09-29T15:11:00Z",
@@ -102,19 +154,6 @@
     },
     "feed_id": 144,
     "update_timestamp": 1790691645000
-  },
-  {
-    "title": "让人运气变好的秘诀",
-    "url": "https://blog.solazy.me/20260929/",
-    "published_at": "2026-09-29T14:00:00Z",
-    "created_at": "2026-09-29T15:20:44.203809Z",
-    "feed": {
-      "id": 172,
-      "site_url": "https://blog.solazy.me",
-      "title": "So!azy"
-    },
-    "feed_id": 172,
-    "update_timestamp": 1790690400000
   },
   {
     "title": "围坐杯前，把酒话当年。",
@@ -637,19 +676,6 @@
     "update_timestamp": 1789570930000
   },
   {
-    "title": "九月半的鸡毛蒜皮",
-    "url": "https://hxy.cc/9yueban.html",
-    "published_at": "2026-09-16T12:20:55Z",
-    "created_at": "2026-09-16T14:20:41.309748Z",
-    "feed": {
-      "id": 105,
-      "site_url": "https://www.hary.cc",
-      "title": "韩情脉脉"
-    },
-    "feed_id": 105,
-    "update_timestamp": 1789561255000
-  },
-  {
     "title": "被裁记 2.0",
     "url": "https://blog.douchi.space/layoff-2.0/",
     "published_at": "2026-09-16T07:12:00Z",
@@ -739,19 +765,6 @@
     },
     "feed_id": 175,
     "update_timestamp": 1789305016000
-  },
-  {
-    "title": "记香港高温徒步与办卡之旅",
-    "url": "https://isming.me/2026-09-11-hongkong/",
-    "published_at": "2026-09-13T05:31:04Z",
-    "created_at": "2026-09-19T02:23:31.601143Z",
-    "feed": {
-      "id": 182,
-      "site_url": "https://isming.me",
-      "title": "码农明明桑"
-    },
-    "feed_id": 182,
-    "update_timestamp": 1789277464000
   },
   {
     "title": "9月的旅行",

@@ -1204,13 +1204,45 @@
       "comment_text": null,
       "rating_grade": 6,
       "item": {
-        "id": "https://neodb.social/tv/season/0QTvg8ejjtMHVVOxLfzmYr",
-        "title": "The Legend of Kitchen Soldier",
+        "id": "https://neodb.social/tv/season/6DtizBtDHVh9aYn2u4sasv",
+        "title": "The Legend of Kitchen Soldier (The Legendary Cook Soldier)",
         "category": "tv",
-        "cover_image_url": "https://neodb.social/m/item/tmdb_tvseason/2026/05/12/4d389faa-c221-4171-be78-179c11de47cc.jpg",
-        "url": "/tv/season/0QTvg8ejjtMHVVOxLfzmYr",
-        "uuid": "0QTvg8ejjtMHVVOxLfzmYr",
+        "cover_image_url": "https://neodb.social/m/item/doubanmovie/2026/05/15/d5e8707f-5a5b-40b2-92a9-db9412966eb1.webp",
+        "url": "/tv/season/6DtizBtDHVh9aYn2u4sasv",
+        "uuid": "6DtizBtDHVh9aYn2u4sasv",
         "localized_title": [
+          {
+            "lang": "en",
+            "text": "The Legendary Cook Soldier"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "菜鸟炊事兵"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "超新丁伙头兵"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "成为传说的炊事兵"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "炊事兵成为传说"
+          },
+          {
+            "lang": "en",
+            "text": "The Legend of Kitchen Soldier"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "菜鸟伙房兵"
+          },
+          {
+            "lang": "ko",
+            "text": "취사병 전설이 되다"
+          },
           {
             "lang": "ko",
             "text": "시즌 1"
@@ -1253,7 +1285,7 @@
           }
         ],
         "type": "TVSeason",
-        "title_cn": "菜鸟伙房兵"
+        "title_cn": "菜鸟炊事兵"
       },
       "created_time": "2026-05-20T10:14:51.083Z",
       "visibility": 0
