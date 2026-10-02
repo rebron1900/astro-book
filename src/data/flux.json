@@ -1,5 +1,31 @@
 [
   {
+    "title": "探讨 AI 的性别问题：DeepSeek 的性别争议，大语言模型需要有性别吗",
+    "url": "https://090909.top/2026/10/02/%E6%8E%A2%E8%AE%A8-AI-%E7%9A%84%E6%80%A7%E5%88%AB%E9%97%AE%E9%A2%98/",
+    "published_at": "2026-10-02T07:32:16Z",
+    "created_at": "2026-10-02T08:20:42.736504Z",
+    "feed": {
+      "id": 208,
+      "site_url": "http://090909.top",
+      "title": "Liang's Dyog"
+    },
+    "feed_id": 208,
+    "update_timestamp": 1790926336000
+  },
+  {
+    "title": "第五年 III",
+    "url": "https://mobius.blog/25820.html",
+    "published_at": "2026-10-02T01:30:00Z",
+    "created_at": "2026-10-02T02:20:43.109933Z",
+    "feed": {
+      "id": 137,
+      "site_url": "https://onojyun.com",
+      "title": "莫比乌斯"
+    },
+    "feed_id": 137,
+    "update_timestamp": 1790904600000
+  },
+  {
     "title": "猫",
     "url": "https://jingxin18.cn/3579.html",
     "published_at": "2026-10-01T17:15:54Z",
@@ -24,19 +50,6 @@
     },
     "feed_id": 144,
     "update_timestamp": 1790871645000
-  },
-  {
-    "title": "最近把 QQ 删掉了：社交媒体的边界感，为什么我最终选择删掉了 QQ",
-    "url": "https://090909.top/2026/10/01/%E6%9C%80%E8%BF%91%E6%8A%8A-QQ-%E5%88%A0%E6%8E%89%E4%BA%86/",
-    "published_at": "2026-10-01T15:13:58Z",
-    "created_at": "2026-10-01T16:20:43.93974Z",
-    "feed": {
-      "id": 208,
-      "site_url": "http://090909.top",
-      "title": "Liang's Dyog"
-    },
-    "feed_id": 208,
-    "update_timestamp": 1790867638000
   },
   {
     "title": "国庆",
@@ -89,19 +102,6 @@
     },
     "feed_id": 109,
     "update_timestamp": 1790839920000
-  },
-  {
-    "title": "第五年 II",
-    "url": "https://mobius.blog/25813.html",
-    "published_at": "2026-10-01T01:30:00Z",
-    "created_at": "2026-10-01T02:20:42.522754Z",
-    "feed": {
-      "id": 137,
-      "site_url": "https://onojyun.com",
-      "title": "莫比乌斯"
-    },
-    "feed_id": 137,
-    "update_timestamp": 1790818200000
   },
   {
     "title": "道歉要趁早",
