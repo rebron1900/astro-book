@@ -1,16 +1,55 @@
 [
   {
-    "title": "探讨 AI 的性别问题：DeepSeek 的性别争议，大语言模型需要有性别吗",
-    "url": "https://090909.top/2026/10/02/%E6%8E%A2%E8%AE%A8-AI-%E7%9A%84%E6%80%A7%E5%88%AB%E9%97%AE%E9%A2%98/",
-    "published_at": "2026-10-02T07:32:16Z",
-    "created_at": "2026-10-02T08:20:42.736504Z",
+    "title": "国庆第二天下雨：来聊聊南方湿热与北方的干燥，跨越气候的发散性探讨",
+    "url": "https://090909.top/2026/10/02/%E5%9B%BD%E5%BA%86%E7%AC%AC%E4%BA%8C%E5%A4%A9%E4%B8%8B%E9%9B%A8/",
+    "published_at": "2026-10-02T14:01:23Z",
+    "created_at": "2026-10-02T16:20:42.735307Z",
     "feed": {
       "id": 208,
       "site_url": "http://090909.top",
       "title": "Liang's Dyog"
     },
     "feed_id": 208,
-    "update_timestamp": 1790926336000
+    "update_timestamp": 1790949683000
+  },
+  {
+    "title": "再谈 Carplay 播放视频",
+    "url": "https://zhongxiaojie.cn/2026/10/2029/",
+    "published_at": "2026-10-02T13:54:34Z",
+    "created_at": "2026-10-02T15:20:42.290538Z",
+    "feed": {
+      "id": 86,
+      "site_url": "https://h4ck.org.cn",
+      "title": "obaby@mars"
+    },
+    "feed_id": 86,
+    "update_timestamp": 1790949274000
+  },
+  {
+    "title": "脸上的黄褐斑",
+    "url": "https://acevs.com/5268/",
+    "published_at": "2026-10-02T09:14:00Z",
+    "created_at": "2026-10-02T10:20:48.854485Z",
+    "feed": {
+      "id": 149,
+      "site_url": "https://acevs.com",
+      "title": "ACEVS"
+    },
+    "feed_id": 149,
+    "update_timestamp": 1790932440000
+  },
+  {
+    "title": "西北三日游",
+    "url": "https://atpx.com/blog/northwest-china-tour/",
+    "published_at": "2026-10-02T08:36:40Z",
+    "created_at": "2026-10-02T10:20:42.344629Z",
+    "feed": {
+      "id": 12,
+      "site_url": "https://atpx.com",
+      "title": "atpX"
+    },
+    "feed_id": 12,
+    "update_timestamp": 1790930200000
   },
   {
     "title": "第五年 III",
@@ -63,19 +102,6 @@
     },
     "feed_id": 123,
     "update_timestamp": 1790866440000
-  },
-  {
-    "title": "刷视频",
-    "url": "https://acevs.com/5266/",
-    "published_at": "2026-10-01T10:16:53Z",
-    "created_at": "2026-10-01T10:20:47.585665Z",
-    "feed": {
-      "id": 149,
-      "site_url": "https://acevs.com",
-      "title": "ACEVS"
-    },
-    "feed_id": 149,
-    "update_timestamp": 1790849813000
   },
   {
     "title": "消失的我——最近都在做什么项目？",
@@ -219,19 +245,6 @@
     },
     "feed_id": 67,
     "update_timestamp": 1790640000000
-  },
-  {
-    "title": "open -a Simulator Unable to find application named ‘Simulator’",
-    "url": "https://zhongxiaojie.cn/2026/09/2019/",
-    "published_at": "2026-09-28T11:18:47Z",
-    "created_at": "2026-09-28T13:20:41.896674Z",
-    "feed": {
-      "id": 86,
-      "site_url": "https://h4ck.org.cn",
-      "title": "obaby@mars"
-    },
-    "feed_id": 86,
-    "update_timestamp": 1790594327000
   },
   {
     "title": "TC分享第 300 期",
