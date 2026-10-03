@@ -12587,15 +12587,51 @@
       "rating_grade": null,
       "item": {
         "id": "https://neodb.social/tv/season/0ODpsGLM0mrTnM9WMTeP6J",
-        "title": "仙逆 第一季",
+        "title": "Renegade Immortal",
         "category": "tv",
-        "cover_image_url": "https://neodb.social/m/item/tmdb_tvseason/2024/06/24/4e904555-d653-4ad3-a801-5ac017ce0fcf.jpg",
+        "cover_image_url": "https://neodb.social/m/item/tmdb_tvseason/2026/10/03/fdd99dc7-4fb0-4081-aec8-020eb1128be6.jpg",
         "url": "/tv/season/0ODpsGLM0mrTnM9WMTeP6J",
         "uuid": "0ODpsGLM0mrTnM9WMTeP6J",
         "localized_title": [
           {
+            "lang": "ko",
+            "text": "시즌 1"
+          },
+          {
+            "lang": "ja",
+            "text": "シーズン1"
+          },
+          {
+            "lang": "pt",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "de",
+            "text": "Staffel 1"
+          },
+          {
+            "lang": "fr",
+            "text": "Saison 1"
+          },
+          {
+            "lang": "es",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "第 1 季"
+          },
+          {
             "lang": "zh-cn",
-            "text": "仙逆 第一季"
+            "text": "第 1 季"
+          },
+          {
+            "lang": "en",
+            "text": "Season 1"
           }
         ],
         "type": "TVSeason",
