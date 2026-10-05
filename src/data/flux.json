@@ -1,5 +1,31 @@
 [
   {
+    "title": "试试这个小玩具：在你的电脑上运行 PyGAD，用遗传算法玩马里奥",
+    "url": "https://090909.top/2026/10/06/%E8%AF%95%E8%AF%95%E8%BF%99%E4%B8%AA%E5%B0%8F%E7%8E%A9%E5%85%B7/",
+    "published_at": "2026-10-05T16:45:33Z",
+    "created_at": "2026-10-05T18:20:43.127931Z",
+    "feed": {
+      "id": 208,
+      "site_url": "http://090909.top",
+      "title": "Liang's Dyog"
+    },
+    "feed_id": 208,
+    "update_timestamp": 1791218733000
+  },
+  {
+    "title": "形式熟悉，内容陌生，味道惊喜",
+    "url": "https://anotherdayu.com/9891/",
+    "published_at": "2026-10-05T15:01:00Z",
+    "created_at": "2026-10-05T15:20:43.657079Z",
+    "feed": {
+      "id": 101,
+      "site_url": "https://anotherdayu.com",
+      "title": "Another Dayu"
+    },
+    "feed_id": 101,
+    "update_timestamp": 1791212460000
+  },
+  {
     "title": "户外露营",
     "url": "http://www.xulog.cn/index.php?act=pl&id=1225",
     "published_at": "2026-10-05T11:28:31Z",
@@ -102,19 +128,6 @@
     },
     "feed_id": 47,
     "update_timestamp": 1791095640000
-  },
-  {
-    "title": "错误教程对错误的人：当你在冷门的领域，搜到了自己几个月前的错教程",
-    "url": "https://090909.top/2026/10/04/%E9%94%99%E8%AF%AF%E6%95%99%E7%A8%8B%E5%AF%B9%E9%94%99%E8%AF%AF%E7%9A%84%E4%BA%BA/",
-    "published_at": "2026-10-04T06:14:44Z",
-    "created_at": "2026-10-04T08:20:42.853396Z",
-    "feed": {
-      "id": 208,
-      "site_url": "http://090909.top",
-      "title": "Liang's Dyog"
-    },
-    "feed_id": 208,
-    "update_timestamp": 1791094484000
   },
   {
     "title": "Windows 搭建 WSL2 AI 开发环境",
@@ -427,19 +440,6 @@
     },
     "feed_id": 129,
     "update_timestamp": 1790399640000
-  },
-  {
-    "title": "天展钓Tenkara和在Folkestone挖化石",
-    "url": "https://anotherdayu.com/tenkara-folkestone/",
-    "published_at": "2026-09-24T13:02:00Z",
-    "created_at": "2026-09-24T13:20:44.745088Z",
-    "feed": {
-      "id": 101,
-      "site_url": "https://anotherdayu.com",
-      "title": "Another Dayu"
-    },
-    "feed_id": 101,
-    "update_timestamp": 1790254920000
   },
   {
     "title": "青甘行 序曲",
