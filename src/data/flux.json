@@ -1,5 +1,44 @@
 [
   {
+    "title": "豆腐，与认知边界",
+    "url": "https://mobius.blog/25834.html",
+    "published_at": "2026-10-06T01:30:00Z",
+    "created_at": "2026-10-06T03:20:43.723572Z",
+    "feed": {
+      "id": 137,
+      "site_url": "https://onojyun.com",
+      "title": "莫比乌斯"
+    },
+    "feed_id": 137,
+    "update_timestamp": 1791250200000
+  },
+  {
+    "title": "游兰崖湾",
+    "url": "http://www.xulog.cn/index.php?act=pl&id=1226",
+    "published_at": "2026-10-06T01:29:57Z",
+    "created_at": "2026-10-06T03:20:41.902081Z",
+    "feed": {
+      "id": 192,
+      "site_url": "http://www.xulog.cn",
+      "title": "徐建伟"
+    },
+    "feed_id": 192,
+    "update_timestamp": 1791250197000
+  },
+  {
+    "title": "雨のち晴れ",
+    "url": "https://innei.in/notes/220",
+    "published_at": "2026-10-05T18:51:29Z",
+    "created_at": "2026-10-05T22:20:42.117333Z",
+    "feed": {
+      "id": 80,
+      "site_url": "https://innei.in",
+      "title": "静かな森"
+    },
+    "feed_id": 80,
+    "update_timestamp": 1791226289000
+  },
+  {
     "title": "试试这个小玩具：在你的电脑上运行 PyGAD，用遗传算法玩马里奥",
     "url": "https://090909.top/2026/10/06/%E8%AF%95%E8%AF%95%E8%BF%99%E4%B8%AA%E5%B0%8F%E7%8E%A9%E5%85%B7/",
     "published_at": "2026-10-05T16:45:33Z",
@@ -13,6 +52,19 @@
     "update_timestamp": 1791218733000
   },
   {
+    "title": "立场的反面",
+    "url": "https://blog.solazy.me/20261005/",
+    "published_at": "2026-10-05T15:30:00Z",
+    "created_at": "2026-10-06T03:20:43.647397Z",
+    "feed": {
+      "id": 172,
+      "site_url": "https://blog.solazy.me",
+      "title": "So!azy"
+    },
+    "feed_id": 172,
+    "update_timestamp": 1791214200000
+  },
+  {
     "title": "形式熟悉，内容陌生，味道惊喜",
     "url": "https://anotherdayu.com/9891/",
     "published_at": "2026-10-05T15:01:00Z",
@@ -24,19 +76,6 @@
     },
     "feed_id": 101,
     "update_timestamp": 1791212460000
-  },
-  {
-    "title": "户外露营",
-    "url": "http://www.xulog.cn/index.php?act=pl&id=1225",
-    "published_at": "2026-10-05T11:28:31Z",
-    "created_at": "2026-10-05T13:20:41.823679Z",
-    "feed": {
-      "id": 192,
-      "site_url": "http://www.xulog.cn",
-      "title": "徐建伟"
-    },
-    "feed_id": 192,
-    "update_timestamp": 1791199711000
   },
   {
     "title": "继续运动",
@@ -76,19 +115,6 @@
     },
     "feed_id": 118,
     "update_timestamp": 1791165604000
-  },
-  {
-    "title": "磨损与魔法",
-    "url": "https://mobius.blog/25827.html",
-    "published_at": "2026-10-05T01:30:00Z",
-    "created_at": "2026-10-05T03:20:44.212158Z",
-    "feed": {
-      "id": 137,
-      "site_url": "https://onojyun.com",
-      "title": "莫比乌斯"
-    },
-    "feed_id": 137,
-    "update_timestamp": 1791163800000
   },
   {
     "title": "第二年云中祭",
@@ -141,19 +167,6 @@
     },
     "feed_id": 184,
     "update_timestamp": 1791088311000
-  },
-  {
-    "title": "莫名其妙的优越感",
-    "url": "https://blog.solazy.me/20261003/",
-    "published_at": "2026-10-03T15:00:00Z",
-    "created_at": "2026-10-04T03:20:44.353912Z",
-    "feed": {
-      "id": 172,
-      "site_url": "https://blog.solazy.me",
-      "title": "So!azy"
-    },
-    "feed_id": 172,
-    "update_timestamp": 1791039600000
   },
   {
     "title": "中秋与国庆",
@@ -271,19 +284,6 @@
     },
     "feed_id": 158,
     "update_timestamp": 1790769680000
-  },
-  {
-    "title": "用 Claude Code、Codex 和 Remotion 做一支《命运石之门》MV",
-    "url": "https://innei.in/posts/tinkering/steins-gate-mv-with-claude-code",
-    "published_at": "2026-09-30T11:20:26Z",
-    "created_at": "2026-09-30T14:20:42.411599Z",
-    "feed": {
-      "id": 80,
-      "site_url": "https://innei.in",
-      "title": "静かな森"
-    },
-    "feed_id": 80,
-    "update_timestamp": 1790767226000
   },
   {
     "title": "#22 潦草写就的九月月报",
