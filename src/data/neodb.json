@@ -28512,6 +28512,10 @@
           {
             "lang": "zh",
             "text": "天庭外傳"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "天庭外傳"
           }
         ],
         "type": "Movie",
@@ -34694,6 +34698,18 @@
           {
             "lang": "zh-cn",
             "text": "神力女超人1984（台）"
+          },
+          {
+            "lang": "pt",
+            "text": "Mulher-Maravilha 1984"
+          },
+          {
+            "lang": "da",
+            "text": "Wonder Woman 1984"
+          },
+          {
+            "lang": "it",
+            "text": "Wonder Woman 1984"
           }
         ],
         "type": "Movie",
@@ -56735,7 +56751,7 @@
       "rating_grade": 6,
       "item": {
         "id": "https://neodb.social/movie/63mQnUa2N42OTR8znzGhAo",
-        "title": "天将雄师",
+        "title": "Dragon Blade",
         "category": "movie",
         "cover_image_url": "https://neodb.social/m/movie/2021/09/18100f3fcb-9a60-4023-b322-1561de7a881c.jpg",
         "url": "/movie/63mQnUa2N42OTR8znzGhAo",
@@ -56756,6 +56772,50 @@
           {
             "lang": "cy",
             "text": "Dragon Blade"
+          },
+          {
+            "lang": "ko",
+            "text": "드래곤 블레이드: 천장웅사"
+          },
+          {
+            "lang": "ja",
+            "text": "ドラゴン・ブレイド"
+          },
+          {
+            "lang": "pt",
+            "text": "Dragon Blade"
+          },
+          {
+            "lang": "de",
+            "text": "Dragon Blade"
+          },
+          {
+            "lang": "fr",
+            "text": "Dragon Blade"
+          },
+          {
+            "lang": "es",
+            "text": "Dragon Blade"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "天將雄師"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "天將雄師"
+          },
+          {
+            "lang": "en",
+            "text": "Dragon Blade"
+          },
+          {
+            "lang": "zh",
+            "text": "天将雄師"
+          },
+          {
+            "lang": "ko",
+            "text": "드래곤 블레이드"
           }
         ],
         "type": "Movie",
