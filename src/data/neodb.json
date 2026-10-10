@@ -10480,6 +10480,10 @@
           {
             "lang": "fr",
             "text": "Her Story"
+          },
+          {
+            "lang": "de",
+            "text": "Her Story"
           }
         ],
         "type": "Movie",
@@ -21864,6 +21868,22 @@
           {
             "lang": "ru",
             "text": "Судзумэ"
+          },
+          {
+            "lang": "pt-br",
+            "text": "Suzume"
+          },
+          {
+            "lang": "pt",
+            "text": "Suzume"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "鈴芽之旅"
+          },
+          {
+            "lang": "x",
+            "text": "Suzume's Door-Locking"
           }
         ],
         "type": "Movie",
@@ -44562,6 +44582,14 @@
           {
             "lang": "zh-tw",
             "text": "屍速列車（台）"
+          },
+          {
+            "lang": "pt",
+            "text": "Invasão Zumbi"
+          },
+          {
+            "lang": "pt-br",
+            "text": "Invasão Zumbi"
           }
         ],
         "type": "Movie",
@@ -61124,6 +61152,38 @@
           {
             "lang": "zh-cn",
             "text": "夏目友人帐 壹"
+          },
+          {
+            "lang": "en",
+            "text": "Natsume's Book of Friends Season 1"
+          },
+          {
+            "lang": "x",
+            "text": "Natsume Yuujinchou"
+          },
+          {
+            "lang": "x",
+            "text": "Natsume Yujincho"
+          },
+          {
+            "lang": "th",
+            "text": "นัตสึเมะกับบันทึกพิศวง"
+          },
+          {
+            "lang": "es",
+            "text": "Hữu Nhân Sổ - Natsume Yuujinchou"
+          },
+          {
+            "lang": "pt",
+            "text": "O Livro de Amigos de Natsume"
+          },
+          {
+            "lang": "en",
+            "text": "Natsume's Book of Friends"
+          },
+          {
+            "lang": "x",
+            "text": "Natsume Yujin-cho"
           }
         ],
         "type": "TVSeason",
@@ -64152,6 +64212,14 @@
           {
             "lang": "en",
             "text": "The Godfather"
+          },
+          {
+            "lang": "es",
+            "text": "El Padrino"
+          },
+          {
+            "lang": "pt-br",
+            "text": "O Poderoso Chefão"
           }
         ],
         "type": "Movie",
