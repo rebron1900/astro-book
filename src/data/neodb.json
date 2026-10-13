@@ -17741,7 +17741,7 @@
       "rating_grade": null,
       "item": {
         "id": "https://neodb.social/tv/season/5r6zBcSaLY8Z08Zwc6gqMV",
-        "title": "Delicious in Dungeon (迷宫饭)",
+        "title": "Delicious in Dungeon - Season 1",
         "category": "tv",
         "cover_image_url": "https://neodb.social/m/item/doubanmovie/2024/07/16/9d5b54b1-ef55-45c9-b340-cd2370e545eb.jpg",
         "url": "/tv/season/5r6zBcSaLY8Z08Zwc6gqMV",
@@ -17766,6 +17766,10 @@
           {
             "lang": "nl",
             "text": "Delicious in Dungeon"
+          },
+          {
+            "lang": "en",
+            "text": "Delicious in Dungeon - Season 1"
           }
         ],
         "type": "TVSeason",
