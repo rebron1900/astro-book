@@ -52148,6 +52148,10 @@
           {
             "lang": "pt-br",
             "text": "Tudo em Todo o Lugar ao Mesmo Tempo"
+          },
+          {
+            "lang": "ko",
+            "text": "에브리씽 에브리웨어 올 앳 원스"
           }
         ],
         "type": "Movie",
@@ -58374,6 +58378,10 @@
           {
             "lang": "zh-cn",
             "text": "第 2 季"
+          },
+          {
+            "lang": "en",
+            "text": "Season 2"
           }
         ],
         "type": "TVSeason",
