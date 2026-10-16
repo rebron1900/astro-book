@@ -20196,6 +20196,30 @@
           {
             "lang": "da",
             "text": "Get Out"
+          },
+          {
+            "lang": "it",
+            "text": "Scappa - Get Out"
+          },
+          {
+            "lang": "pt",
+            "text": "Foge"
+          },
+          {
+            "lang": "es",
+            "text": "Déjame salir"
+          },
+          {
+            "lang": "pt-br",
+            "text": "Corra!"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "访‧吓(港)"
+          },
+          {
+            "lang": "it",
+            "text": "Get Out"
           }
         ],
         "type": "Movie",
@@ -43150,6 +43174,22 @@
           {
             "lang": "es",
             "text": "Paprika, detective de los sueños"
+          },
+          {
+            "lang": "it",
+            "text": "Paprika - Sognando un sogno"
+          },
+          {
+            "lang": "da",
+            "text": "Paprika"
+          },
+          {
+            "lang": "pt",
+            "text": "Paprica"
+          },
+          {
+            "lang": "fr",
+            "text": "Papurika"
           }
         ],
         "type": "Movie",
@@ -49774,6 +49814,14 @@
           {
             "lang": "zh-sg",
             "text": "失忆症"
+          },
+          {
+            "lang": "it",
+            "text": "Memento"
+          },
+          {
+            "lang": "pt",
+            "text": "Amnésia"
           }
         ],
         "type": "Movie",

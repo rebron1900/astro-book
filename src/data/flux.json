@@ -1,5 +1,18 @@
 [
   {
+    "title": "新增站点外链访问确认 – 博客更新（一百二十六）",
+    "url": "https://blog.2broear.com/weblog/16-10-2026_%e6%96%b0%e5%a2%9e%e7%ab%99%e7%82%b9%e5%a4%96%e9%93%be%e8%ae%bf%e9%97%ae%e7%a1%ae%e8%ae%a4-%e5%8d%9a%e5%ae%a2%e6%9b%b4%e6%96%b0%ef%bc%88%e4%b8%80%e7%99%be%e4%ba%8c%e5%8d%81%e5%85%ad%ef%bc%89",
+    "published_at": "2026-10-16T06:42:12Z",
+    "created_at": "2026-10-16T07:20:43.653951Z",
+    "feed": {
+      "id": 196,
+      "site_url": "https://blog.2broear.com",
+      "title": "2B博客"
+    },
+    "feed_id": 196,
+    "update_timestamp": 1792132932000
+  },
+  {
     "title": "做过最爽的梦：学校的题目是肉鸽爬塔，带着同学爽吃经验，很快哉",
     "url": "https://090909.top/2026/10/16/%E5%81%9A%E8%BF%87%E6%9C%80%E7%88%BD%E7%9A%84%E6%A2%A6/",
     "published_at": "2026-10-16T02:47:16Z",
@@ -882,19 +895,6 @@
     },
     "feed_id": 189,
     "update_timestamp": 1789689600000
-  },
-  {
-    "title": "AI真的会杀死人类吗？",
-    "url": "https://blog.2broear.com/notes/16-09-2026_will-ai-kill-us-all",
-    "published_at": "2026-09-16T15:02:10Z",
-    "created_at": "2026-09-19T02:23:12.747718Z",
-    "feed": {
-      "id": 196,
-      "site_url": "https://blog.2broear.com",
-      "title": "2B博客"
-    },
-    "feed_id": 196,
-    "update_timestamp": 1789570930000
   },
   {
     "title": "关于失业，我与生活的一场和解与迷茫",
