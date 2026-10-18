@@ -1,5 +1,96 @@
 [
   {
+    "title": "在 Codium 中使用 Aider：想要图形化，试试  Aider Composer 插件吧",
+    "url": "https://090909.top/2026/10/19/%E5%9C%A8-Codium-%E4%B8%AD%E4%BD%BF%E7%94%A8-Aider/",
+    "published_at": "2026-10-18T18:06:06Z",
+    "created_at": "2026-10-18T20:20:42.991582Z",
+    "feed": {
+      "id": 208,
+      "site_url": "http://090909.top",
+      "title": "Liang's Dyog"
+    },
+    "feed_id": 208,
+    "update_timestamp": 1792346766000
+  },
+  {
+    "title": "周记 – Oct 18",
+    "url": "https://zhangke.space/%e5%91%a8%e8%ae%b0-oct-18/",
+    "published_at": "2026-10-18T15:14:52Z",
+    "created_at": "2026-10-18T15:20:44.657249Z",
+    "feed": {
+      "id": 190,
+      "site_url": "https://zhangke.space",
+      "title": "张可的博客"
+    },
+    "feed_id": 190,
+    "update_timestamp": 1792336492000
+  },
+  {
+    "title": "简单调整主机风道",
+    "url": "https://ezo.biz/Play_More/1758.html",
+    "published_at": "2026-10-18T15:12:00Z",
+    "created_at": "2026-10-18T17:20:42.025335Z",
+    "feed": {
+      "id": 123,
+      "site_url": "https://ezo.biz",
+      "title": "小猪的窝"
+    },
+    "feed_id": 123,
+    "update_timestamp": 1792336320000
+  },
+  {
+    "title": "周末流水账 1018",
+    "url": "https://blog.solazy.me/20261018/",
+    "published_at": "2026-10-18T15:00:00Z",
+    "created_at": "2026-10-18T17:20:42.694451Z",
+    "feed": {
+      "id": 172,
+      "site_url": "https://blog.solazy.me",
+      "title": "So!azy"
+    },
+    "feed_id": 172,
+    "update_timestamp": 1792335600000
+  },
+  {
+    "title": "2026W42：桂博园和良渚遗址公园",
+    "url": "https://www.skyue.com/26101822.html",
+    "published_at": "2026-10-18T14:43:00Z",
+    "created_at": "2026-10-18T15:20:41.992723Z",
+    "feed": {
+      "id": 47,
+      "site_url": "https://www.skyue.com",
+      "title": "拾月"
+    },
+    "feed_id": 47,
+    "update_timestamp": 1792334580000
+  },
+  {
+    "title": "闯红灯，罚款200元，记6分",
+    "url": "https://4311346.com/post/2026/1018-runred.html",
+    "published_at": "2026-10-18T14:23:10Z",
+    "created_at": "2026-10-18T15:20:41.347469Z",
+    "feed": {
+      "id": 11,
+      "site_url": "https://4311346.com",
+      "title": "Andy烧麦 - 成熟，聪明，豁达的人什么也不问 过去，现在，将来…"
+    },
+    "feed_id": 11,
+    "update_timestamp": 1792333390000
+  },
+  {
+    "title": "听我说，虽然不是我说",
+    "url": "https://d-d.design/single/20579",
+    "published_at": "2026-10-18T10:19:58Z",
+    "created_at": "2026-10-18T11:20:43.600551Z",
+    "feed": {
+      "id": 138,
+      "site_url": "https://d-d.design",
+      "title": "孤斗"
+    },
+    "feed_id": 138,
+    "update_timestamp": 1792318798000
+  },
+  {
     "title": "忍者神龟3",
     "url": "https://pewae.com/2026/10/teenage-mutant-ninja-turtles-iii-the-manhattan-project.html",
     "published_at": "2026-10-18T09:25:02Z",
@@ -24,19 +115,6 @@
     },
     "feed_id": 149,
     "update_timestamp": 1792305739000
-  },
-  {
-    "title": "真得老老实实分工了：代码编辑器管代码文件，笔记软件管笔记文件",
-    "url": "https://090909.top/2026/10/18/%E7%9C%9F%E5%BE%97%E8%80%81%E8%80%81%E5%AE%9E%E5%AE%9E%E5%88%86%E5%B7%A5%E4%BA%86/",
-    "published_at": "2026-10-18T05:45:23Z",
-    "created_at": "2026-10-18T06:20:44.304902Z",
-    "feed": {
-      "id": 208,
-      "site_url": "http://090909.top",
-      "title": "Liang's Dyog"
-    },
-    "feed_id": 208,
-    "update_timestamp": 1792302323000
   },
   {
     "title": "≡ 017｜代价论与选择的自由",
@@ -76,19 +154,6 @@
     },
     "feed_id": 140,
     "update_timestamp": 1792250709000
-  },
-  {
-    "title": "留在手里的手机",
-    "url": "https://blog.solazy.me/20261017/",
-    "published_at": "2026-10-17T15:00:00Z",
-    "created_at": "2026-10-18T05:20:41.703378Z",
-    "feed": {
-      "id": 172,
-      "site_url": "https://blog.solazy.me",
-      "title": "So!azy"
-    },
-    "feed_id": 172,
-    "update_timestamp": 1792249200000
   },
   {
     "title": "生活大小片段",
@@ -141,32 +206,6 @@
     },
     "feed_id": 55,
     "update_timestamp": 1792220100000
-  },
-  {
-    "title": "初试手动补漆",
-    "url": "https://ezo.biz/Play_More/1754.html",
-    "published_at": "2026-10-17T03:38:00Z",
-    "created_at": "2026-10-17T19:20:42.174488Z",
-    "feed": {
-      "id": 123,
-      "site_url": "https://ezo.biz",
-      "title": "小猪的窝"
-    },
-    "feed_id": 123,
-    "update_timestamp": 1792208280000
-  },
-  {
-    "title": "低维度社会观察报告",
-    "url": "https://d-d.design/single/20560",
-    "published_at": "2026-10-16T19:58:43Z",
-    "created_at": "2026-10-16T21:20:43.116854Z",
-    "feed": {
-      "id": 138,
-      "site_url": "https://d-d.design",
-      "title": "孤斗"
-    },
-    "feed_id": 138,
-    "update_timestamp": 1792180723000
   },
   {
     "title": "小城广德徒步逛吃游",
@@ -416,19 +455,6 @@
     "update_timestamp": 1791783173000
   },
   {
-    "title": "又又又决定写周记了",
-    "url": "https://zhangke.space/%e5%8f%88%e5%8f%88%e5%8f%88%e5%86%b3%e5%ae%9a%e8%a6%81%e5%86%99%e5%91%a8%e8%ae%b0%e4%ba%86/",
-    "published_at": "2026-10-12T01:58:35Z",
-    "created_at": "2026-10-12T03:20:43.645546Z",
-    "feed": {
-      "id": 190,
-      "site_url": "https://zhangke.space",
-      "title": "张可的博客"
-    },
-    "feed_id": 190,
-    "update_timestamp": 1791770315000
-  },
-  {
     "title": "《给阿嬷的情书》：一封家书两地情",
     "url": "https://www.jfsay.com/archives/6097.html",
     "published_at": "2026-10-11T15:32:03Z",
@@ -440,19 +466,6 @@
     },
     "feed_id": 161,
     "update_timestamp": 1791732723000
-  },
-  {
-    "title": "假期带娃",
-    "url": "https://www.skyue.com/26101123.html",
-    "published_at": "2026-10-11T15:03:00Z",
-    "created_at": "2026-10-11T15:20:42.578606Z",
-    "feed": {
-      "id": 47,
-      "site_url": "https://www.skyue.com",
-      "title": "拾月"
-    },
-    "feed_id": 47,
-    "update_timestamp": 1791730980000
   },
   {
     "title": "人一旦倒霉起来就没轻没重的",
@@ -492,19 +505,6 @@
     },
     "feed_id": 105,
     "update_timestamp": 1791689525000
-  },
-  {
-    "title": "记忆里最严重的一次发烧…",
-    "url": "https://4311346.com/post/2026/1010-fever.html",
-    "published_at": "2026-10-10T15:23:23Z",
-    "created_at": "2026-10-10T17:20:43.319744Z",
-    "feed": {
-      "id": 11,
-      "site_url": "https://4311346.com",
-      "title": "Andy烧麦 - 成熟，聪明，豁达的人什么也不问 过去，现在，将来…"
-    },
-    "feed_id": 11,
-    "update_timestamp": 1791645803000
   },
   {
     "title": "十月近况",
