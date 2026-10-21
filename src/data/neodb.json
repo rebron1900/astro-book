@@ -17168,6 +17168,14 @@
           {
             "lang": "ko",
             "text": "하울의 움직이는 성"
+          },
+          {
+            "lang": "es",
+            "text": "El castillo ambulante"
+          },
+          {
+            "lang": "pt-br",
+            "text": "O Castelo Animado"
           }
         ],
         "type": "Movie",
@@ -45216,6 +45224,10 @@
           {
             "lang": "ko",
             "text": "비포 선셋"
+          },
+          {
+            "lang": "pt",
+            "text": "Antes do Anoitecer"
           }
         ],
         "type": "Movie",
@@ -45412,6 +45424,10 @@
           {
             "lang": "ko",
             "text": "모노노케 히메"
+          },
+          {
+            "lang": "pt-br",
+            "text": "Princesa Mononoke"
           }
         ],
         "type": "Movie",
@@ -56718,6 +56734,18 @@
           {
             "lang": "es",
             "text": "Birdman o (la inesperada virtud de la ignorancia)"
+          },
+          {
+            "lang": "pt",
+            "text": "Birdman Ou (A Inesperada Virtude da Ignorância)"
+          },
+          {
+            "lang": "es",
+            "text": "Birdman o (La inesperada virtud de la ignorancia)"
+          },
+          {
+            "lang": "pt-br",
+            "text": "Birdman (ou a Inesperada Virtude da Ignorância)"
           }
         ],
         "type": "Movie",
@@ -58604,6 +58632,10 @@
           {
             "lang": "ko",
             "text": "비포 선라이즈"
+          },
+          {
+            "lang": "pt",
+            "text": "Antes do Amanhecer"
           }
         ],
         "type": "Movie",
