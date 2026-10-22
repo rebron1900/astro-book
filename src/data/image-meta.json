@@ -10270,5 +10270,57 @@
   "size_https://cdn.1900.live/assets/2026/10/8aad8316c06a37bd1070ea0d13a16d7ba_origin(1).jpg": {
     "width": 2000,
     "height": 2667
+  },
+  "size_https://cdn.1900.live/assets/2026/10/22IMG_20261003_075405_compressed.jpeg": {
+    "width": 1707,
+    "height": 1280
+  },
+  "size_https://cdn.1900.live/assets/2026/10/22PixPin_2026-10-22_12-29-48.png": {
+    "width": 1080,
+    "height": 1920
+  },
+  "size_https://cdn.1900.live/assets/2026/10/22MVIMG_20261002_164218_compressed.jpeg": {
+    "width": 1280,
+    "height": 2276
+  },
+  "size_https://cdn.1900.live/assets/2026/10/22MVIMG_20260504_082558.jpg": {
+    "width": 2000,
+    "height": 1125
+  },
+  "size_https://cdn.1900.live/assets/2026/10/22mmexport1777887274745.jpg": {
+    "width": 2000,
+    "height": 1500
+  },
+  "size_https://cdn.1900.live/assets/2026/10/22MVIMG_20261003_064650_compressed.jpeg": {
+    "width": 2000,
+    "height": 1125
+  },
+  "size_https://cdn.1900.live/assets/2026/10/22MVIMG_20260504_063027_compressed.jpeg": {
+    "width": 2000,
+    "height": 1125
+  },
+  "size_https://cdn.1900.live/assets/2026/10/22PixPin_2026-10-22_12-28-45.png": {
+    "width": 577,
+    "height": 1026
+  },
+  "size_https://cdn.1900.live/assets/2026/10/22mmexport1778031434120_compressed.jpeg": {
+    "width": 1707,
+    "height": 1280
+  },
+  "size_https://cdn.1900.live/assets/2026/10/22MVIMG_20261004_091810_1_compressed.jpeg": {
+    "width": 2000,
+    "height": 1125
+  },
+  "size_https://cdn.1900.live/assets/2026/10/22MVIMG_20261003_135955_compressed.jpeg": {
+    "width": 1280,
+    "height": 2276
+  },
+  "size_https://cdn.1900.live/assets/2026/10/22videoframe_2004.png": {
+    "width": 1080,
+    "height": 1920
+  },
+  "size_https://cdn.1900.live/assets/2026/10/22MVIMG_20261003_140113_compressed.jpeg": {
+    "width": 1280,
+    "height": 2276
   }
 }
