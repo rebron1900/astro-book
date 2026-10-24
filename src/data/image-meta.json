@@ -10358,5 +10358,9 @@
   "error_https://cdn.1900.live/assets/2026/10/23IMG_20261003_192844_compressed.jpeg": {
     "timestamp": 1792759490287,
     "error": "This operation was aborted"
+  },
+  "size_https://cdn.1900.live/assets/2026/10/241000086632.jpg": {
+    "width": 2000,
+    "height": 2667
   }
 }
