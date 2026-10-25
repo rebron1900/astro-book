@@ -9941,7 +9941,7 @@
       "rating_grade": 6,
       "item": {
         "id": "https://neodb.social/tv/season/1j19SkIhKx8QTH8dKqdEFs",
-        "title": "Happy Kanako's Killer Life",
+        "title": "Happy Kanako's Killer Life Season 1",
         "category": "tv",
         "cover_image_url": "https://neodb.social/m/item/doubanmovie/2025/10/04/4fc19499-ed53-4fd9-9b59-0efa3351b890.jpg",
         "url": "/tv/season/1j19SkIhKx8QTH8dKqdEFs",
@@ -16244,6 +16244,14 @@
           {
             "lang": "it",
             "text": "Mad Max: Fury Road"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "末日先鋒：戰甲飛車（港）"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "瘋狂麥斯：憤怒道（台）"
           }
         ],
         "type": "Movie",
@@ -21566,6 +21574,18 @@
           {
             "lang": "da",
             "text": "Guardians of the Galaxy Vol. 3"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "銀河守護隊3（港）"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "星際異攻隊3（台）"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "银河护卫队Vol. 3"
           }
         ],
         "type": "Movie",
@@ -33760,6 +33780,22 @@
           {
             "lang": "zh-cn",
             "text": "黑衣人：全球通缉"
+          },
+          {
+            "lang": "en",
+            "text": "MIB:International"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "黑超特警組：反轉世界（港）"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "MIB星際戰警：跨國行動（台）"
+          },
+          {
+            "lang": "en",
+            "text": "Men in Black 4"
           }
         ],
         "type": "Movie",
@@ -50326,6 +50362,18 @@
           {
             "lang": "es",
             "text": "Sin City: Ciudad del pecado"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "罪惡城(港)"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "萬惡城市（台）"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "罪恶城"
           }
         ],
         "type": "Movie",
@@ -56034,6 +56082,18 @@
           {
             "lang": "ko",
             "text": "로건"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "金刚狼3"
+          },
+          {
+            "lang": "en",
+            "text": "Wolverine 3"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "盧根"
           }
         ],
         "type": "Movie",
@@ -56442,6 +56502,18 @@
           {
             "lang": "zh-tw",
             "text": "星際異攻隊2"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "銀河守護隊2（港）"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "星際異攻隊2（台）"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "银河护卫队Vol. 2"
           }
         ],
         "type": "Movie",
