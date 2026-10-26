@@ -5798,6 +5798,30 @@
           {
             "lang": "hr",
             "text": "Jeonjijeok Dokja Sijeom"
+          },
+          {
+            "lang": "de",
+            "text": "Omniscient Reader"
+          },
+          {
+            "lang": "en",
+            "text": "Omniscient Reader: The Prophet"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "全知讀者視角：滅世預言"
+          },
+          {
+            "lang": "de",
+            "text": "Omniscient Reader: The Prophecy"
+          },
+          {
+            "lang": "en",
+            "text": "Omniscient Reader: The Prophecy"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "全知讀者視角"
           }
         ],
         "type": "Movie",
@@ -12858,13 +12882,29 @@
       "comment_text": "日版亲爱的",
       "rating_grade": 8,
       "item": {
-        "id": "https://neodb.social/movie/44ltqt99OWxTBhqr3cJJzs",
-        "title": "消失的女儿",
+        "id": "https://neodb.social/movie/0dxKQ2YHIg9ZNJObYdedFJ",
+        "title": "Missing",
         "category": "movie",
-        "cover_image_url": "https://neodb.social/m/item/tmdb_movie/2024/06/18/465f8363-d7db-45fa-bd41-bc841113c666.jpg",
-        "url": "/movie/44ltqt99OWxTBhqr3cJJzs",
-        "uuid": "44ltqt99OWxTBhqr3cJJzs",
+        "cover_image_url": "https://neodb.social/m/item/doubanmovie/2024/12/27/4800aeec-9fc7-4e11-988f-e2675d403715.jpg",
+        "url": "/movie/0dxKQ2YHIg9ZNJObYdedFJ",
+        "uuid": "0dxKQ2YHIg9ZNJObYdedFJ",
         "localized_title": [
+          {
+            "lang": "zh-cn",
+            "text": "失踪"
+          },
+          {
+            "lang": "ja",
+            "text": "ミッシング"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "我的女儿不见了(台)"
+          },
+          {
+            "lang": "en",
+            "text": "Missing"
+          },
           {
             "lang": "zh-cn",
             "text": "消失的女儿"
@@ -12875,7 +12915,7 @@
           }
         ],
         "type": "Movie",
-        "title_cn": "消失的女儿"
+        "title_cn": "失踪"
       },
       "created_time": "2024-10-07T10:44:19.280Z",
       "visibility": 0
@@ -12884,13 +12924,33 @@
       "comment_text": null,
       "rating_grade": 6,
       "item": {
-        "id": "https://neodb.social/movie/0wlLKGUrCeqKjjZ3IZSTPr",
-        "title": "Rebirth",
+        "id": "https://neodb.social/movie/0h9YVocK5HwP0JXZgXwORH",
+        "title": "Go for Broke",
         "category": "movie",
-        "cover_image_url": "https://neodb.social/m/item/tmdb_movie/2024/08/16/d94f78e8-b206-45ed-a36f-f110a879a513.jpg",
-        "url": "/movie/0wlLKGUrCeqKjjZ3IZSTPr",
-        "uuid": "0wlLKGUrCeqKjjZ3IZSTPr",
+        "cover_image_url": "https://neodb.social/m/item/doubanmovie/2024/10/08/52ee920c-49cc-4459-8de8-a379118c95fb.jpg",
+        "url": "/movie/0h9YVocK5HwP0JXZgXwORH",
+        "uuid": "0h9YVocK5HwP0JXZgXwORH",
         "localized_title": [
+          {
+            "lang": "en",
+            "text": "Go for Broke"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "重生"
+          },
+          {
+            "lang": "en",
+            "text": "Go For Broke"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "重生"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "重生"
+          },
           {
             "lang": "ko",
             "text": "重生"
@@ -12918,18 +12978,6 @@
           {
             "lang": "en",
             "text": "Rebirth"
-          },
-          {
-            "lang": "zh-hk",
-            "text": "重生"
-          },
-          {
-            "lang": "zh-tw",
-            "text": "重生"
-          },
-          {
-            "lang": "zh-cn",
-            "text": "重生"
           }
         ],
         "type": "Movie",
@@ -16944,6 +16992,10 @@
           {
             "lang": "zh-cn",
             "text": "Dwelling in the Fuchun Mountains 2：Qiantang River"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "春江水暖2"
           }
         ],
         "type": "Movie",
@@ -19154,6 +19206,10 @@
           {
             "lang": "id",
             "text": "Man Hunt"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "三大队(剧版)"
           }
         ],
         "type": "TVSeason",
@@ -19832,6 +19888,10 @@
           {
             "lang": "zh-tw",
             "text": "長安三萬里"
+          },
+          {
+            "lang": "en",
+            "text": "Chang An"
           }
         ],
         "type": "Movie",
@@ -34780,6 +34840,14 @@
           {
             "lang": "en",
             "text": "The Day We Lit Up The Sky"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "燃野少年的天空"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "燃野少年的天空"
           }
         ],
         "type": "Movie",
@@ -42428,6 +42496,14 @@
           {
             "lang": "it",
             "text": "Independence Day"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "天煞-地球反擊戰"
+          },
+          {
+            "lang": "en",
+            "text": "ID4"
           }
         ],
         "type": "Movie",
@@ -54098,6 +54174,22 @@
           {
             "lang": "zh-tw",
             "text": "名偵探皮卡丘"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "POKÉMON 神探 Pikachu"
+          },
+          {
+            "lang": "fr",
+            "text": "POKÉMON Détective Pikachu"
+          },
+          {
+            "lang": "de",
+            "text": "POKÉMON Meisterdetektiv Pikachu"
+          },
+          {
+            "lang": "en",
+            "text": "POKÉMON Detective Pikachu"
           }
         ],
         "type": "Movie",
