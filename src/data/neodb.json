@@ -2,6 +2,64 @@
   "data": [
     {
       "comment_text": null,
+      "rating_grade": null,
+      "item": {
+        "id": "https://neodb.social/tv/season/5L5xP1dwVBF8zj2diMdTzJ",
+        "title": "The Hustler's Gambit",
+        "category": "tv",
+        "cover_image_url": null,
+        "url": "/tv/season/5L5xP1dwVBF8zj2diMdTzJ",
+        "uuid": "5L5xP1dwVBF8zj2diMdTzJ",
+        "localized_title": [
+          {
+            "lang": "ko",
+            "text": "시즌 1"
+          },
+          {
+            "lang": "ja",
+            "text": "シーズン1"
+          },
+          {
+            "lang": "pt",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "de",
+            "text": "Staffel 1"
+          },
+          {
+            "lang": "fr",
+            "text": "Saison 1"
+          },
+          {
+            "lang": "es",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "en",
+            "text": "Season 1"
+          }
+        ],
+        "type": "TVSeason",
+        "title_cn": "The Hustler's Gambit"
+      },
+      "created_time": "2026-10-26T01:44:36.544Z",
+      "visibility": 0
+    },
+    {
+      "comment_text": null,
       "rating_grade": 8,
       "item": {
         "id": "https://neodb.social/movie/3QlU5iHlCBkhQqbZ9vmBpE",
@@ -22430,6 +22488,14 @@
           {
             "lang": "de",
             "text": "John Q. – Verzweifelte Wut"
+          },
+          {
+            "lang": "it",
+            "text": "John Q"
+          },
+          {
+            "lang": "da",
+            "text": "John Q"
           }
         ],
         "type": "Movie",
@@ -28052,6 +28118,26 @@
           {
             "lang": "pt",
             "text": "Dragonball - Evolução"
+          },
+          {
+            "lang": "nn",
+            "text": "Dragonball Evolution"
+          },
+          {
+            "lang": "nb",
+            "text": "Dragonball Evolution"
+          },
+          {
+            "lang": "no",
+            "text": "Dragonball Evolution"
+          },
+          {
+            "lang": "sv",
+            "text": "Dragonball Evolution"
+          },
+          {
+            "lang": "da",
+            "text": "Dragonball Evolution"
           }
         ],
         "type": "Movie",
@@ -62903,6 +62989,26 @@
           },
           {
             "lang": "pt",
+            "text": "The Green Hornet"
+          },
+          {
+            "lang": "nn",
+            "text": "The Green Hornet"
+          },
+          {
+            "lang": "nb",
+            "text": "The Green Hornet"
+          },
+          {
+            "lang": "no",
+            "text": "The Green Hornet"
+          },
+          {
+            "lang": "sv",
+            "text": "The Green Hornet"
+          },
+          {
+            "lang": "da",
             "text": "The Green Hornet"
           }
         ],
