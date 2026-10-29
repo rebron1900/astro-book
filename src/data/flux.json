@@ -1,5 +1,122 @@
 [
   {
+    "title": "话说商场",
+    "url": "http://www.xulog.cn/index.php?act=pl&id=1238",
+    "published_at": "2026-10-29T07:48:30Z",
+    "created_at": "2026-10-29T07:54:34.891363Z",
+    "feed": {
+      "id": 192,
+      "site_url": "http://www.xulog.cn",
+      "title": "徐建伟"
+    },
+    "feed_id": 192,
+    "update_timestamp": 1793260110000
+  },
+  {
+    "title": "带着249块盲订的行者彩色码表漫骑松江佘山",
+    "url": "https://blog.feng.pub/1020269931.html",
+    "published_at": "2026-10-29T07:32:34Z",
+    "created_at": "2026-10-29T09:06:30.012391Z",
+    "feed": {
+      "id": 76,
+      "site_url": "https://feng.pub",
+      "title": "阿锋的小宇宙"
+    },
+    "feed_id": 76,
+    "update_timestamp": 1793259154000
+  },
+  {
+    "title": "Unicloud 云服务空间迁移不完全指南",
+    "url": "https://zhongxiaojie.cn/2026/10/2315/",
+    "published_at": "2026-10-29T07:02:56Z",
+    "created_at": "2026-10-29T09:06:42.407841Z",
+    "feed": {
+      "id": 86,
+      "site_url": "https://h4ck.org.cn",
+      "title": "obaby@mars"
+    },
+    "feed_id": 86,
+    "update_timestamp": 1793257376000
+  },
+  {
+    "title": "群晖NAS被勒索攻击",
+    "url": "https://hux.ink/posts/synology-attack/",
+    "published_at": "2026-10-29T06:43:39Z",
+    "created_at": "2026-10-29T07:54:16.367074Z",
+    "feed": {
+      "id": 171,
+      "site_url": "https://hux.ink",
+      "title": "Counting Stars💫"
+    },
+    "feed_id": 171,
+    "update_timestamp": 1793256219000
+  },
+  {
+    "title": "一些近期改善睡眠质量的尝试",
+    "url": "https://blog.douchi.space/sleep-env-improvement/",
+    "published_at": "2026-10-29T06:19:00Z",
+    "created_at": "2026-10-29T07:54:17.603003Z",
+    "feed": {
+      "id": 55,
+      "site_url": "https://proxy-json.123404321.xyz",
+      "title": "椒盐豆豉"
+    },
+    "feed_id": 55,
+    "update_timestamp": 1793254740000
+  },
+  {
+    "title": "失乐园里有什么？II",
+    "url": "https://mobius.blog/26011.html",
+    "published_at": "2026-10-29T03:06:25Z",
+    "created_at": "2026-10-29T07:54:29.652991Z",
+    "feed": {
+      "id": 137,
+      "site_url": "https://onojyun.com",
+      "title": "莫比乌斯"
+    },
+    "feed_id": 137,
+    "update_timestamp": 1793243185000
+  },
+  {
+    "title": "酒店门口在施工：朴实无华的广场记录，回忆毕竟还得是触景生情的",
+    "url": "https://090909.top/2026/10/29/%E9%85%92%E5%BA%97%E9%97%A8%E5%8F%A3%E5%9C%A8%E6%96%BD%E5%B7%A5/",
+    "published_at": "2026-10-29T03:02:24Z",
+    "created_at": "2026-10-29T07:54:13.020756Z",
+    "feed": {
+      "id": 208,
+      "site_url": "http://090909.top",
+      "title": "Liang's Dyog"
+    },
+    "feed_id": 208,
+    "update_timestamp": 1793242944000
+  },
+  {
+    "title": "痛苦从哪来，幸福往哪去",
+    "url": "https://qixidi.top/articles/163",
+    "published_at": "2026-10-29T02:52:27Z",
+    "created_at": "2026-10-29T03:20:41.625884Z",
+    "feed": {
+      "id": 180,
+      "site_url": "https://qixidi.top",
+      "title": "栖息地知识社区"
+    },
+    "feed_id": 180,
+    "update_timestamp": 1793242347000
+  },
+  {
+    "title": "再上新台阶（重拾英语七）",
+    "url": "https://www.lindongfang.top/archives/2728/",
+    "published_at": "2026-10-29T02:16:00Z",
+    "created_at": "2026-10-29T07:54:11.052595Z",
+    "feed": {
+      "id": 57,
+      "site_url": "https://www.lindongfang.top",
+      "title": "游子微博"
+    },
+    "feed_id": 57,
+    "update_timestamp": 1793240160000
+  },
+  {
     "title": "鼻毛",
     "url": "https://ezo.biz/Diary/b.html",
     "published_at": "2026-10-28T15:08:00Z",
@@ -13,17 +130,43 @@
     "update_timestamp": 1793200080000
   },
   {
-    "title": "自欺欺人 — 一个程序媛的自白",
-    "url": "https://zhongxiaojie.cn/2026/10/2306/",
-    "published_at": "2026-10-28T09:18:55Z",
-    "created_at": "2026-10-28T09:20:41.837057Z",
+    "title": "云南盐津：真一线城市",
+    "url": "https://macin.org/2026/10/28/yun-nan-yan-jin/",
+    "published_at": "2026-10-28T14:53:51Z",
+    "created_at": "2026-10-29T07:54:17.627487Z",
     "feed": {
-      "id": 86,
-      "site_url": "https://h4ck.org.cn",
-      "title": "obaby@mars"
+      "id": 158,
+      "site_url": "https://macin.org",
+      "title": "Macin"
     },
-    "feed_id": 86,
-    "update_timestamp": 1793179135000
+    "feed_id": 158,
+    "update_timestamp": 1793199231000
+  },
+  {
+    "title": "东湖公园玩耍记录随拍",
+    "url": "https://www.rpzm.com/son/9454.html",
+    "published_at": "2026-10-28T10:53:22Z",
+    "created_at": "2026-10-29T09:06:22.650114Z",
+    "feed": {
+      "id": 191,
+      "site_url": "https://blog.rpzm.com",
+      "title": "如品之茗"
+    },
+    "feed_id": 191,
+    "update_timestamp": 1793184802000
+  },
+  {
+    "title": "轴体评测汇总",
+    "url": "https://acevs.com/5326/",
+    "published_at": "2026-10-28T05:17:20Z",
+    "created_at": "2026-10-29T07:54:29.117118Z",
+    "feed": {
+      "id": 149,
+      "site_url": "https://acevs.com",
+      "title": "ACEVS"
+    },
+    "feed_id": 149,
+    "update_timestamp": 1793164640000
   },
   {
     "title": "小记",
@@ -39,17 +182,56 @@
     "update_timestamp": 1793156100000
   },
   {
-    "title": "红叶又红",
-    "url": "http://www.xulog.cn/index.php?act=pl&id=1236",
-    "published_at": "2026-10-28T01:03:50Z",
-    "created_at": "2026-10-28T01:20:41.300043Z",
+    "title": "真与假",
+    "url": "https://ihaihe.cn/3730.htm",
+    "published_at": "2026-10-28T01:10:26Z",
+    "created_at": "2026-10-29T07:24:02.008778Z",
     "feed": {
-      "id": 192,
-      "site_url": "http://www.xulog.cn",
-      "title": "徐建伟"
+      "id": 136,
+      "site_url": "https://ihaihe.cn",
+      "title": "三十里海河"
     },
-    "feed_id": 192,
-    "update_timestamp": 1793149430000
+    "feed_id": 136,
+    "update_timestamp": 1793149826000
+  },
+  {
+    "title": "BabyLog记录了我14年对孩子所有的回忆也见证了我自学编程的学习路线",
+    "url": "https://www.suiyan.cc/blog/20261028080326",
+    "published_at": "2026-10-28T00:03:26Z",
+    "created_at": "2026-10-29T07:54:23.236056Z",
+    "feed": {
+      "id": 204,
+      "site_url": "https://www.suiyan.cc",
+      "title": "碎言 - SuiYan Blog"
+    },
+    "feed_id": 204,
+    "update_timestamp": 1793145806000
+  },
+  {
+    "title": "一些生活习惯上的改变",
+    "url": "https://tumutanzi.com/archives/17653",
+    "published_at": "2026-10-27T16:00:34Z",
+    "created_at": "2026-10-29T07:54:17.977976Z",
+    "feed": {
+      "id": 135,
+      "site_url": "https://tumutanzi.com",
+      "title": "土木坛子"
+    },
+    "feed_id": 135,
+    "update_timestamp": 1793116834000
+  },
+  {
+    "title": "那些偷偷变瘦的人",
+    "url": "https://blog.solazy.me/20261027/",
+    "published_at": "2026-10-27T15:00:00Z",
+    "created_at": "2026-10-29T07:54:19.968332Z",
+    "feed": {
+      "id": 172,
+      "site_url": "https://blog.solazy.me",
+      "title": "So!azy"
+    },
+    "feed_id": 172,
+    "update_timestamp": 1793113200000
   },
   {
     "title": "少年老成与多彩中登",
@@ -65,6 +247,32 @@
     "update_timestamp": 1793102400000
   },
   {
+    "title": "做了一个镜片厚度计算器",
+    "url": "https://www.iliu.org/posts/lens-thickness-calculator/",
+    "published_at": "2026-10-27T08:50:00Z",
+    "created_at": "2026-10-29T08:19:14.337621Z",
+    "feed": {
+      "id": 214,
+      "site_url": "https://www.iliu.org",
+      "title": "Home on 老刘博客"
+    },
+    "feed_id": 214,
+    "update_timestamp": 1793091000000
+  },
+  {
+    "title": "修修补补",
+    "url": "https://pewae.com/2026/10/tinkering.html",
+    "published_at": "2026-10-27T08:09:34Z",
+    "created_at": "2026-10-29T07:54:07.350145Z",
+    "feed": {
+      "id": 63,
+      "site_url": "https://pewae.com",
+      "title": "破袜子"
+    },
+    "feed_id": 63,
+    "update_timestamp": 1793088574000
+  },
+  {
     "title": "我被重新理解了一次",
     "url": "https://d-d.design/single/20614",
     "published_at": "2026-10-27T07:23:31Z",
@@ -76,6 +284,45 @@
     },
     "feed_id": 138,
     "update_timestamp": 1793085811000
+  },
+  {
+    "title": "Being Proactive",
+    "url": "https://jefftay.com/quotes/being-proactive",
+    "published_at": "2026-10-27T00:00:00Z",
+    "created_at": "2026-10-29T09:05:35.923285Z",
+    "feed": {
+      "id": 77,
+      "site_url": "https://imzm.im",
+      "title": "陈仓颉"
+    },
+    "feed_id": 77,
+    "update_timestamp": 1793059200000
+  },
+  {
+    "title": "蹬额度的日子，和一台交给 AI 的 Mac mini",
+    "url": "https://wind.ink/archives/10869",
+    "published_at": "2026-10-26T14:44:36Z",
+    "created_at": "2026-10-29T07:24:01.9905Z",
+    "feed": {
+      "id": 82,
+      "site_url": "https://wind.ink",
+      "title": "风清的精神角落"
+    },
+    "feed_id": 82,
+    "update_timestamp": 1793025876000
+  },
+  {
+    "title": "大可不必？",
+    "url": "https://forbetty.com/diary/23097",
+    "published_at": "2026-10-26T10:18:29Z",
+    "created_at": "2026-10-29T07:54:23.351907Z",
+    "feed": {
+      "id": 144,
+      "site_url": "https://forbetty.com",
+      "title": "BETTYPLEX | Life is full of regrets."
+    },
+    "feed_id": 144,
+    "update_timestamp": 1793009909000
   },
   {
     "title": "高性价比人生指南",
@@ -104,19 +351,6 @@
     "update_timestamp": 1792996871000
   },
   {
-    "title": "看视频一些启发",
-    "url": "https://acevs.com/5322/",
-    "published_at": "2026-10-26T05:58:52Z",
-    "created_at": "2026-10-26T06:20:48.260024Z",
-    "feed": {
-      "id": 149,
-      "site_url": "https://acevs.com",
-      "title": "ACEVS"
-    },
-    "feed_id": 149,
-    "update_timestamp": 1792994332000
-  },
-  {
     "title": "TC分享第 304 期",
     "url": "http://study.tczhong.com/post/sharing/tcsharing_304/",
     "published_at": "2026-10-26T05:14:06Z",
@@ -130,30 +364,17 @@
     "update_timestamp": 1792991646000
   },
   {
-    "title": "理发等了一个小时：没能准时赴约游戏，但好在最后游戏能赴约联机",
-    "url": "https://090909.top/2026/10/26/%E7%90%86%E5%8F%91%E7%AD%89%E4%BA%86%E4%B8%80%E4%B8%AA%E5%B0%8F%E6%97%B6/",
-    "published_at": "2026-10-26T04:04:05Z",
-    "created_at": "2026-10-26T05:20:43.694596Z",
+    "title": "下雨了",
+    "url": "https://shuiba.co/it-is-raining",
+    "published_at": "2026-10-25T23:46:00Z",
+    "created_at": "2026-10-29T07:54:15.376606Z",
     "feed": {
-      "id": 208,
-      "site_url": "http://090909.top",
-      "title": "Liang's Dyog"
+      "id": 104,
+      "site_url": "http://shuiba.co",
+      "title": "水八口"
     },
-    "feed_id": 208,
-    "update_timestamp": 1792987445000
-  },
-  {
-    "title": "第两百万字",
-    "url": "https://mobius.blog/25986.html",
-    "published_at": "2026-10-26T02:08:15Z",
-    "created_at": "2026-10-26T02:20:43.793469Z",
-    "feed": {
-      "id": 137,
-      "site_url": "https://onojyun.com",
-      "title": "莫比乌斯"
-    },
-    "feed_id": 137,
-    "update_timestamp": 1792980495000
+    "feed_id": 104,
+    "update_timestamp": 1792971960000
   },
   {
     "title": "太阳照在我手上—中秋记",
@@ -195,30 +416,17 @@
     "update_timestamp": 1792938840000
   },
   {
-    "title": "「做个人」",
-    "url": "https://blog.solazy.me/20261025/",
-    "published_at": "2026-10-25T14:00:00Z",
-    "created_at": "2026-10-25T16:20:43.279112Z",
+    "title": "月下海棠",
+    "url": "https://lingdu7.org/yue-xia-hai-tang/",
+    "published_at": "2026-10-25T13:26:15Z",
+    "created_at": "2026-10-29T07:54:07.235537Z",
     "feed": {
-      "id": 172,
-      "site_url": "https://blog.solazy.me",
-      "title": "So!azy"
+      "id": 159,
+      "site_url": "https://lingdu7.org",
+      "title": "风凌渡's Blog"
     },
-    "feed_id": 172,
-    "update_timestamp": 1792936800000
-  },
-  {
-    "title": "我的个人版本 21 世纪最佳电视节目",
-    "url": "https://blog.douchi.space/best-tv-21-century/",
-    "published_at": "2026-10-25T08:28:00Z",
-    "created_at": "2026-10-25T10:20:42.533433Z",
-    "feed": {
-      "id": 55,
-      "site_url": "https://proxy-json.123404321.xyz",
-      "title": "椒盐豆豉"
-    },
-    "feed_id": 55,
-    "update_timestamp": 1792916880000
+    "feed_id": 159,
+    "update_timestamp": 1792934775000
   },
   {
     "title": "日常漫步 Vol.26 之永丰古树公园",
@@ -232,19 +440,6 @@
     },
     "feed_id": 79,
     "update_timestamp": 1792910140000
-  },
-  {
-    "title": "有钱真好",
-    "url": "https://forbetty.com/diary/23095",
-    "published_at": "2026-10-25T06:20:45Z",
-    "created_at": "2026-10-25T06:20:45.83471Z",
-    "feed": {
-      "id": 144,
-      "site_url": "https://forbetty.com",
-      "title": "BETTYPLEX | Life is full of regrets."
-    },
-    "feed_id": 144,
-    "update_timestamp": 1792909245000
   },
   {
     "title": "辞职",
@@ -286,6 +481,19 @@
     "update_timestamp": 1792855403000
   },
   {
+    "title": "2026 GEO 大会现场复盘：从流量争夺到 AI 答案竞逐，出海品牌如何打赢 AI 搜索？",
+    "url": "https://plogs.top/2026/10/24/2026-geo-conference/",
+    "published_at": "2026-10-24T15:12:40Z",
+    "created_at": "2026-10-29T07:24:01.690124Z",
+    "feed": {
+      "id": 20,
+      "site_url": "https://plogs.top",
+      "title": "Justin写Plogs的地方"
+    },
+    "feed_id": 20,
+    "update_timestamp": 1792854760000
+  },
+  {
     "title": "什么都在涨价的今天",
     "url": "https://hin.cool/posts/thingsgettingexpensive.html",
     "published_at": "2026-10-24T13:00:00Z",
@@ -297,6 +505,19 @@
     },
     "feed_id": 142,
     "update_timestamp": 1792846800000
+  },
+  {
+    "title": "主材和设备在计价时有什么区别",
+    "url": "https://www.laomuzhu.cn/18.html",
+    "published_at": "2026-10-24T07:54:00Z",
+    "created_at": "2026-10-29T07:23:56.625718Z",
+    "feed": {
+      "id": 187,
+      "site_url": "https://www.laomuzhu.cn",
+      "title": "木 竹 造 价"
+    },
+    "feed_id": 187,
+    "update_timestamp": 1792828440000
   },
   {
     "title": "上班途中",
@@ -323,45 +544,6 @@
     },
     "feed_id": 130,
     "update_timestamp": 1792806898000
-  },
-  {
-    "title": "青甘行·下｜盐湖映翠，初见黄河",
-    "url": "https://hux.ink/posts/qinggan-trip-04/",
-    "published_at": "2026-10-23T23:00:00Z",
-    "created_at": "2026-10-24T00:20:45.0647Z",
-    "feed": {
-      "id": 171,
-      "site_url": "https://hux.ink",
-      "title": "Counting Stars💫"
-    },
-    "feed_id": 171,
-    "update_timestamp": 1792796400000
-  },
-  {
-    "title": "曼龙勒雨林赶摆，尝尝竹筒酸腌鱼",
-    "url": "https://macin.org/2026/10/23/man-long-le-gan-bai/",
-    "published_at": "2026-10-23T21:22:47Z",
-    "created_at": "2026-10-23T16:20:44.367398Z",
-    "feed": {
-      "id": 158,
-      "site_url": "https://macin.org",
-      "title": "Macin"
-    },
-    "feed_id": 158,
-    "update_timestamp": 1792790567000
-  },
-  {
-    "title": "刻意的逃避关于死亡的话题",
-    "url": "https://wind.ink/archives/9836",
-    "published_at": "2026-10-23T15:18:47Z",
-    "created_at": "2026-10-23T16:20:42.334201Z",
-    "feed": {
-      "id": 82,
-      "site_url": "https://wind.ink",
-      "title": "风清的精神角落"
-    },
-    "feed_id": 82,
-    "update_timestamp": 1792768727000
   },
   {
     "title": "走大朝台我在想啥？二",
@@ -416,6 +598,19 @@
     "update_timestamp": 1792683000000
   },
   {
+    "title": "入门3D打印",
+    "url": "https://type.nivo.life/archives/46/",
+    "published_at": "2026-10-22T06:41:00Z",
+    "created_at": "2026-10-29T07:54:06.058562Z",
+    "feed": {
+      "id": 109,
+      "site_url": "https://type.nivo.life",
+      "title": "吉吉如律令"
+    },
+    "feed_id": 109,
+    "update_timestamp": 1792651260000
+  },
+  {
     "title": "从PHP漏洞聊聊AI时代的网站安全",
     "url": "https://www.weisay.com/blog/php-vulnerabilities-in-the-ai-era.html",
     "published_at": "2026-10-22T05:12:29Z",
@@ -440,19 +635,6 @@
     },
     "feed_id": 175,
     "update_timestamp": 1792598400000
-  },
-  {
-    "title": "博客的评论（回应）真的很重要吗？",
-    "url": "https://www.suiyan.cc/blog/20261021212349",
-    "published_at": "2026-10-21T13:23:49Z",
-    "created_at": "2026-10-21T14:20:43.410136Z",
-    "feed": {
-      "id": 204,
-      "site_url": "https://www.suiyan.cc",
-      "title": "碎言 - SuiYan Blog"
-    },
-    "feed_id": 204,
-    "update_timestamp": 1792589029000
   },
   {
     "title": "入蜀记 day512 刚需与服从性",
@@ -507,32 +689,6 @@
     "update_timestamp": 1792333390000
   },
   {
-    "title": "忍者神龟3",
-    "url": "https://pewae.com/2026/10/teenage-mutant-ninja-turtles-iii-the-manhattan-project.html",
-    "published_at": "2026-10-18T09:25:02Z",
-    "created_at": "2026-10-18T10:20:51.707263Z",
-    "feed": {
-      "id": 63,
-      "site_url": "https://pewae.com",
-      "title": "破袜子"
-    },
-    "feed_id": 63,
-    "update_timestamp": 1792315502000
-  },
-  {
-    "title": "Starryblu：跨境资金管理平台Wise的平替？",
-    "url": "https://tumutanzi.com/archives/17648",
-    "published_at": "2026-10-17T16:00:07Z",
-    "created_at": "2026-10-18T06:20:41.844077Z",
-    "feed": {
-      "id": 135,
-      "site_url": "https://tumutanzi.com",
-      "title": "土木坛子"
-    },
-    "feed_id": 135,
-    "update_timestamp": 1792252807000
-  },
-  {
     "title": "20261017帽峰红叶",
     "url": "https://www.luzhaojun.com/5996.html",
     "published_at": "2026-10-17T15:25:09Z",
@@ -544,6 +700,19 @@
     },
     "feed_id": 140,
     "update_timestamp": 1792250709000
+  },
+  {
+    "title": "上博美洲文明展",
+    "url": "https://synyan.cn/118102/",
+    "published_at": "2026-10-17T10:35:27Z",
+    "created_at": "2026-10-29T07:23:57.101362Z",
+    "feed": {
+      "id": 50,
+      "site_url": "https://synyan.cn",
+      "title": "旅行漫记"
+    },
+    "feed_id": 50,
+    "update_timestamp": 1792233327000
   },
   {
     "title": "为什么没有尊界 v800 车主亲自出来测试刹车踏板",
@@ -624,19 +793,6 @@
     "update_timestamp": 1792066724000
   },
   {
-    "title": "重拾英语（四）",
-    "url": "https://www.lindongfang.top/archives/2713/",
-    "published_at": "2026-10-15T01:31:00Z",
-    "created_at": "2026-10-15T03:20:44.445168Z",
-    "feed": {
-      "id": 57,
-      "site_url": "https://www.lindongfang.top",
-      "title": "游子微博"
-    },
-    "feed_id": 57,
-    "update_timestamp": 1792027860000
-  },
-  {
     "title": "共享记忆，最后还是落回了文档",
     "url": "https://scottyeung.top/2026/doc-based-ai-memory/",
     "published_at": "2026-10-14T11:00:00Z",
@@ -648,19 +804,6 @@
     },
     "feed_id": 26,
     "update_timestamp": 1791975600000
-  },
-  {
-    "title": "小K的一岁生日会",
-    "url": "https://shuiba.co/klayton-1st-birthday-party",
-    "published_at": "2026-10-14T09:50:00Z",
-    "created_at": "2026-10-14T11:20:44.516186Z",
-    "feed": {
-      "id": 104,
-      "site_url": "http://shuiba.co",
-      "title": "水八口"
-    },
-    "feed_id": 104,
-    "update_timestamp": 1791971400000
   },
   {
     "title": "拆解四柱五行--自测篇",
@@ -687,19 +830,6 @@
     },
     "feed_id": 201,
     "update_timestamp": 1791868234000
-  },
-  {
-    "title": "【Java】使用Lucene实现文章检索",
-    "url": "https://qixidi.top/articles/118",
-    "published_at": "2026-10-13T01:35:58Z",
-    "created_at": "2026-10-13T02:20:41.170179Z",
-    "feed": {
-      "id": 180,
-      "site_url": "https://qixidi.top",
-      "title": "栖息地知识社区"
-    },
-    "feed_id": 180,
-    "update_timestamp": 1791855358000
   },
   {
     "title": "人一旦倒霉起来就没轻没重的",
@@ -819,17 +949,17 @@
     "update_timestamp": 1791017508000
   },
   {
-    "title": "芜湖电脑维修店黑店是真多啊",
-    "url": "https://type.nivo.life/archives/43/",
-    "published_at": "2026-10-01T07:32:00Z",
-    "created_at": "2026-10-01T09:20:43.642546Z",
+    "title": "最近的事@11",
+    "url": "https://fangtang.net/life/1680.html",
+    "published_at": "2026-09-30T16:08:25Z",
+    "created_at": "2026-10-29T09:09:16.793213Z",
     "feed": {
-      "id": 109,
-      "site_url": "https://type.nivo.life",
-      "title": "吉吉如律令"
+      "id": 195,
+      "site_url": "https://fangtang.net",
+      "title": "方糖"
     },
-    "feed_id": 109,
-    "update_timestamp": 1790839920000
+    "feed_id": 195,
+    "update_timestamp": 1790784505000
   },
   {
     "title": "欢迎使用 Typecho",
@@ -871,32 +1001,6 @@
     "update_timestamp": 1790467200000
   },
   {
-    "title": "天崇山",
-    "url": "https://lingdu7.org/tian-chong-shan/",
-    "published_at": "2026-09-26T18:27:01Z",
-    "created_at": "2026-09-26T19:20:43.19395Z",
-    "feed": {
-      "id": 159,
-      "site_url": "https://lingdu7.org",
-      "title": "风凌渡's Blog"
-    },
-    "feed_id": 159,
-    "update_timestamp": 1790447221000
-  },
-  {
-    "title": "潮涨云涌贡湖堤",
-    "url": "https://synyan.cn/117398/",
-    "published_at": "2026-09-26T10:12:32Z",
-    "created_at": "2026-09-26T11:20:42.720248Z",
-    "feed": {
-      "id": 50,
-      "site_url": "https://synyan.cn",
-      "title": "旅行漫记"
-    },
-    "feed_id": 50,
-    "update_timestamp": 1790417552000
-  },
-  {
     "title": "开发了一个云剪贴板服务 Cloud Clipboard",
     "url": "https://hellodk.cn/post/1231",
     "published_at": "2026-09-26T05:14:00Z",
@@ -934,19 +1038,6 @@
     },
     "feed_id": 202,
     "update_timestamp": 1790118000000
-  },
-  {
-    "title": "自己动手装了个床",
-    "url": "https://blog.rpzm.com/life/8861.html",
-    "published_at": "2026-09-22T08:24:56Z",
-    "created_at": "2026-09-22T09:20:41.980599Z",
-    "feed": {
-      "id": 191,
-      "site_url": "https://blog.rpzm.com",
-      "title": "如品之茗"
-    },
-    "feed_id": 191,
-    "update_timestamp": 1790065496000
   },
   {
     "title": "读《陶庵梦忆》（三、报恩塔）",
@@ -1038,19 +1129,6 @@
     },
     "feed_id": 100,
     "update_timestamp": 1789322541000
-  },
-  {
-    "title": "9月的旅行",
-    "url": "https://ihaihe.cn/3688.htm",
-    "published_at": "2026-09-12T07:11:03Z",
-    "created_at": "2026-09-12T08:20:41.730147Z",
-    "feed": {
-      "id": 136,
-      "site_url": "https://ihaihe.cn",
-      "title": "三十里海河"
-    },
-    "feed_id": 136,
-    "update_timestamp": 1789197063000
   },
   {
     "title": "近期开发的四个开源项目",
@@ -1235,6 +1313,19 @@
     "update_timestamp": 1780219740000
   },
   {
+    "title": "青竹海淘转运跑路了",
+    "url": "https://looooog.com/archives/2869",
+    "published_at": "2026-05-23T13:59:25Z",
+    "created_at": "2026-10-29T09:26:06.366465Z",
+    "feed": {
+      "id": 215,
+      "site_url": "https://looooog.com",
+      "title": "好活儿"
+    },
+    "feed_id": 215,
+    "update_timestamp": 1779544765000
+  },
+  {
     "title": "借助 Claude 实现 AI 翻译功能的工程化验证",
     "url": "https://ro.yikzero.com/blog/ai-translate-demo/",
     "published_at": "2026-01-23T00:00:00Z",
@@ -1259,6 +1350,19 @@
     },
     "feed_id": 46,
     "update_timestamp": 1764131402000
+  },
+  {
+    "title": "内在的力量",
+    "url": "https://weichen.blog/aug22/",
+    "published_at": "2025-08-22T00:00:00Z",
+    "created_at": "2026-10-29T07:54:15.992559Z",
+    "feed": {
+      "id": 117,
+      "site_url": "https://weichen.blog",
+      "title": "炜晨"
+    },
+    "feed_id": 117,
+    "update_timestamp": 1755820800000
   },
   {
     "title": "我们高估了智力的重要性",
