@@ -24306,46 +24306,6 @@
           {
             "lang": "zh-cn",
             "text": "声生不息第二季"
-          },
-          {
-            "lang": "ko",
-            "text": "시즌 1"
-          },
-          {
-            "lang": "ja",
-            "text": "シーズン1"
-          },
-          {
-            "lang": "pt",
-            "text": "Temporada 1"
-          },
-          {
-            "lang": "de",
-            "text": "Staffel 1"
-          },
-          {
-            "lang": "fr",
-            "text": "Saison 1"
-          },
-          {
-            "lang": "es",
-            "text": "Temporada 1"
-          },
-          {
-            "lang": "en",
-            "text": "Season 1"
-          },
-          {
-            "lang": "zh-hk",
-            "text": "第 1 季"
-          },
-          {
-            "lang": "zh-tw",
-            "text": "第 1 季"
-          },
-          {
-            "lang": "zh-cn",
-            "text": "港乐季"
           }
         ],
         "type": "TVSeason",
@@ -32938,6 +32898,14 @@
           {
             "lang": "es",
             "text": "Marte (The Martian)"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "火星任务"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "绝地救援"
           }
         ],
         "type": "Movie",
@@ -33804,6 +33772,18 @@
           {
             "lang": "zh-tw",
             "text": "X戰警：黑鳳凰"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "黑凤凰"
+          },
+          {
+            "lang": "en",
+            "text": "X-Men: Dark Phoenix"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "變種特攻：黑鳳凰"
           }
         ],
         "type": "Movie",
@@ -39878,6 +39858,14 @@
           {
             "lang": "ko",
             "text": "가디언즈 오브 갤럭시"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "銀河守護隊（港）"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "星際異攻隊（台）"
           }
         ],
         "type": "Movie",
