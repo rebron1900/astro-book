@@ -141,4 +141,3 @@ export function routeSketch(encoded: string | undefined) {
     const [endX, endY] = projected.at(-1)!;
     return { path, startX, startY, endX, endY };
 }
-
