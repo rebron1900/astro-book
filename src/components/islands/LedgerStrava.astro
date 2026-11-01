@@ -3,7 +3,8 @@ import { stravaMetaFor, routeSketch } from '../../lib/strava-preview';
 import StravaCardPreview from './StravaCardPreview.astro';
 
 const { activity } = Astro.props;
-const href = `/golink?target=${btoa(unescape(encodeURIComponent(`https://www.strava.com/activities/${activity.run_id}`)))}`;
+const activityUrl = activity.url || `https://www.strava.com/activities/${activity.run_id}`;
+const href = `/golink?target=${btoa(unescape(encodeURIComponent(activityUrl)))}`;
 ---
 
 <StravaCardPreview

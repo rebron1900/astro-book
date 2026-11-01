@@ -47,6 +47,8 @@ jobs:
               if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
               env:
                   CONFIG_FILE: ${{ secrets.CONFIG_FILE }}
+                  INTERVALS_ICU_API_KEY: ${{ secrets.INTERVALS_ICU_API_KEY }}
+                  INTERVALS_ICU_ATHLETE_ID: ${{ secrets.INTERVALS_ICU_ATHLETE_ID }}
               run: |
                   echo "$CONFIG_FILE" > ./.env
                   node scripts/sync-data.mjs

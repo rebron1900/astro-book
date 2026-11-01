@@ -37,7 +37,7 @@ function loadEnv() {
     }
     // 进程环境变量优先
     for (const [k, v] of Object.entries(process.env)) {
-        if (k.startsWith('GHOST_') || k.startsWith('NEODB_') || k.startsWith('FLUX_') || k.startsWith('MAP_') || k.startsWith('CDN_')) {
+        if (k.startsWith('GHOST_') || k.startsWith('NEODB_') || k.startsWith('FLUX_') || k.startsWith('MAP_') || k.startsWith('CDN_') || k.startsWith('INTERVALS_')) {
             env[k] = v;
         }
     }
@@ -52,8 +52,7 @@ async function loadSiteConfig() {
     } catch (e) {
         console.warn('[config] 无法读取 site.ts，使用默认值:', e.message);
         return {
-            memos: { url: 'https://m2m.996288.xyz/api/v1/memo', siteURL: 'https://m2m.996288.xyz' },
-            strava: { activitiesUrl: '' }
+            memos: { url: 'https://m2m.996288.xyz/api/v1/memo', siteURL: 'https://m2m.996288.xyz' }
         };
     }
 }
@@ -511,9 +510,154 @@ async function syncMemos(siteConfig) {
     return trimMemos(all.map((m) => ({ ...m, type: 'memo' })));
 }
 
-async function syncStrava(siteConfig) {
-    if (!siteConfig.strava?.activitiesUrl) return [];
-    return await fetchJson(siteConfig.strava.activitiesUrl);
+function formatDuration(totalSeconds) {
+    const seconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
+function addDays(dateString, days) {
+    const date = new Date(`${dateString}T00:00:00Z`);
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
+}
+
+function encodePolyline(points) {
+    const encodeValue = (value) => {
+        let current = value < 0 ? ~(value << 1) : value << 1;
+        let result = '';
+        while (current >= 0x20) {
+            result += String.fromCharCode((0x20 | (current & 0x1f)) + 63);
+            current >>= 5;
+        }
+        return result + String.fromCharCode(current + 63);
+    };
+
+    let lastLat = 0;
+    let lastLng = 0;
+    let encoded = '';
+    for (const point of points) {
+        const lat = Math.round(Number(point[0]) * 1e5);
+        const lng = Math.round(Number(point[1]) * 1e5);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+        encoded += encodeValue(lat - lastLat) + encodeValue(lng - lastLng);
+        lastLat = lat;
+        lastLng = lng;
+    }
+    return encoded;
+}
+
+async function fetchIntervalsMap(id, authorization) {
+    try {
+        const data = await fetchJson(`https://intervals.icu/api/v1/activity/${encodeURIComponent(id)}/map`, { headers: { Authorization: authorization } }, 20000);
+        const rawPoints = Array.isArray(data?.latlngs)
+            ? data.latlngs.filter((point) => Array.isArray(point) && point.length >= 2 && Number.isFinite(point[0]) && Number.isFinite(point[1]))
+            : [];
+        if (rawPoints.length < 2) return undefined;
+        // 地图折线只用于卡片背景，不需要把几万个点完整写进数据文件。
+        const step = Math.max(1, Math.ceil(rawPoints.length / 1500));
+        const points = rawPoints.filter((_, index) => index % step === 0 || index === rawPoints.length - 1);
+        return points.length > 1 ? encodePolyline(points) : undefined;
+    } catch (error) {
+        console.warn(`[intervals] 活动 ${id} 地图获取失败: ${error.message}`);
+        return undefined;
+    }
+}
+
+function toStravaActivity(activity, summaryPolyline) {
+    const local = String(activity.start_date_local || '').replace('T', ' ').slice(0, 19);
+    return {
+        run_id: String(activity.id),
+        name: activity.name || '运动记录',
+        distance: Number(activity.distance ?? 0),
+        moving_time: formatDuration(activity.moving_time),
+        type: activity.type || 'Other',
+        subtype: activity.sub_type || activity.type || 'Other',
+        start_date: activity.start_date || `${local.replace(' ', 'T')}Z`,
+        start_date_local: local,
+        average_heartrate: activity.average_heartrate ?? null,
+        average_speed: Number(activity.average_speed ?? 0),
+        elevation_gain: Number(activity.total_elevation_gain ?? 0),
+        summary_polyline: summaryPolyline,
+        url: `https://intervals.icu/activities/${activity.id}`,
+        source: 'intervals'
+    };
+}
+
+function sameActivity(left, right) {
+    if (String(left.type).toLowerCase() !== String(right.type).toLowerCase()) return false;
+    const leftTime = new Date(String(left.start_date_local).replace(' ', 'T')).getTime();
+    const rightTime = new Date(String(right.start_date_local).replace(' ', 'T')).getTime();
+    if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime) || Math.abs(leftTime - rightTime) > 120000) return false;
+    const leftDistance = Number(left.distance ?? 0);
+    const rightDistance = Number(right.distance ?? 0);
+    return Math.abs(leftDistance - rightDistance) <= Math.max(50, Math.max(leftDistance, rightDistance) * 0.02);
+}
+
+function dedupeActivities(items) {
+    const unique = [];
+    for (const item of items) {
+        if (!item) continue;
+        if (!unique.some((existing) => sameActivity(existing, item))) unique.push(item);
+    }
+    return unique;
+}
+
+async function syncIntervals(env) {
+    const apiKey = env.INTERVALS_ICU_API_KEY;
+    if (!apiKey) throw new Error('缺少 INTERVALS_ICU_API_KEY');
+    const athleteId = env.INTERVALS_ICU_ATHLETE_ID || '0';
+
+    // 历史数据只读基线，当前 strava.json 可能包含上一次同步的新活动。
+    const history = readJson('strava-history.json', []);
+    const current = readJson('strava.json', []);
+    const known = dedupeActivities([...history, ...current]);
+    const latest = known.reduce((max, item) => {
+        const value = item?.start_date_local?.slice(0, 10) || '';
+        return value > max ? value : max;
+    }, '');
+    const missingRoutes = known
+        .filter((item) => item?.source === 'intervals' && !item.summary_polyline && Number(item.distance ?? 0) > 0)
+        .map((item) => item.start_date_local?.slice(0, 10))
+        .filter(Boolean)
+        .sort();
+    const oldest = missingRoutes.length ? addDays(missingRoutes[0], -1) : latest ? addDays(latest, -1) : '2024-01-01';
+    const newest = new Date().toISOString().slice(0, 10);
+
+    const params = new URLSearchParams({
+        oldest,
+        newest,
+        limit: '500',
+        fields: 'id,name,type,sub_type,start_date_local,start_date,distance,moving_time,elapsed_time,average_heartrate,average_speed,total_elevation_gain'
+    });
+    const url = `https://intervals.icu/api/v1/athlete/${encodeURIComponent(athleteId)}/activities?${params}`;
+    const authorization = `Basic ${Buffer.from(`API_KEY:${apiKey}`).toString('base64')}`;
+    const data = await fetchJson(url, { headers: { Authorization: authorization } }, 30000);
+    if (!Array.isArray(data)) throw new Error('Intervals.icu 返回了非数组活动数据');
+
+    const merged = [...known];
+    for (const activity of data) {
+        if (!activity?.id) continue;
+        const existing = merged.find((item) => String(item.run_id) === String(activity.id));
+        if (existing) {
+            if (!existing.summary_polyline && Number(activity.distance ?? 0) > 0) {
+                existing.summary_polyline = await fetchIntervalsMap(activity.id, authorization);
+            }
+            continue;
+        }
+        const candidate = toStravaActivity(activity);
+        if (Number(activity.distance ?? 0) > 0) {
+            candidate.summary_polyline = await fetchIntervalsMap(activity.id, authorization);
+        }
+        if (!merged.some((item) => sameActivity(item, candidate))) merged.push(candidate);
+    }
+
+    return merged.sort((a, b) => {
+        const at = new Date(String(a.start_date_local).replace(' ', 'T')).getTime();
+        const bt = new Date(String(b.start_date_local).replace(' ', 'T')).getTime();
+        return at - bt;
+    });
 }
 
 async function syncRank() {
@@ -591,7 +735,7 @@ const SOURCES = {
         ]
     },
     memos: { run: (env, site) => syncMemos(site), file: 'memos.json' },
-    strava: { run: (env, site) => syncStrava(site), file: 'strava.json' },
+    intervals: { run: (env) => syncIntervals(env), file: 'strava.json' },
     rank: { run: () => syncRank(), file: 'rank.json' },
     imagemeta: { run: () => syncImageMeta(), file: 'image-meta.json' }
 };

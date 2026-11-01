@@ -1,10 +1,6 @@
 export const siteConfig = {
     blogURL: 'https://1900.live',
     apiUrl: 'https://hapi.190102.xyz:4433/blog',
-    strava: {
-        // 跑步活动数据源（raw GitHub JSON）
-        activitiesUrl: 'https://raw.githubusercontent.com/rebron1900/running_page/master/src/static/activities.json'
-    },
     memos: {
         url: 'https://m2m.996288.xyz/api/v1/memo',
         siteURL: 'https://m2m.996288.xyz',

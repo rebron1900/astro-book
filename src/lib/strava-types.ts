@@ -1,7 +1,7 @@
 // Strava 活动数据类型（与 src/data/strava.json 字段对齐）
 // 数据源：running_page 同步的 activities.json
 export interface StravaActivity {
-    run_id: number;
+    run_id: string | number;
     name: string;
     distance: number; // 米
     moving_time: string; // "0:31:53"
@@ -15,4 +15,6 @@ export interface StravaActivity {
     average_speed?: number;
     elevation_gain?: number;
     streak?: number;
+    url?: string;
+    source?: string;
 }

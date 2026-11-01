@@ -13,7 +13,6 @@ const config = {
     blogURL: siteConfig.blogURL,
     apiUrl: siteConfig.apiUrl,
     memos: siteConfig.memos,
-    strava: siteConfig.strava,
     customPage: siteConfig.customPage,
     taxonomy: siteConfig.taxonomy,
     themes,

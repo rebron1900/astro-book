@@ -1,13 +1,15 @@
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js';
 import MapboxLanguage from '@mapbox/mapbox-gl-language';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import config from '../../config';
+import activitiesJson from '../../data/strava.json';
 
 interface StravaActivity {
     run_id: string | number;
     type: string;
     summary_polyline?: string;
 }
+
+const localActivities = activitiesJson as unknown as StravaActivity[];
 
 // Google polyline 解码（MIT）
 function decodePolyline(str: string, precision = 5): number[][] {
@@ -50,8 +52,6 @@ function decodePolyline(str: string, precision = 5): number[][] {
 
 // 初始化地图
 export default function initMap() {
-    const DATA_URL = config.strava.activitiesUrl;
-
     mapboxgl.accessToken = import.meta.env.MAP_KEY;
 
     const map = new mapboxgl.Map({
@@ -64,7 +64,7 @@ export default function initMap() {
     });
     map.addControl(new MapboxLanguage({ defaultLanguage: 'zh-Hans' }));
 
-    let activities: StravaActivity[] = [];
+    let activities: StravaActivity[] = localActivities;
 
     function setOpacity(id: string, opacity: number) {
         if (map.getLayer(id)) {
@@ -94,11 +94,8 @@ export default function initMap() {
         map.fitBounds(bounds, { padding: 40, duration: 800 });
     }
 
-    map.on('load', async () => {
+    map.on('load', () => {
         try {
-            const res = await fetch(DATA_URL);
-            activities = await res.json();
-
             const allCoords: number[][] = [];
 
             activities.forEach((act) => {
