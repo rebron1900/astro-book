@@ -1,0 +1,84 @@
+---
+// @ts-nocheck
+import { Markdown } from 'astro-remote';
+import CodeSlot from './CodeSlot.astro';
+import IFrameSlot from '../ui/IFrameSlot.astro';
+import RemotePicture from '../ui/RemotePicture.astro';
+import Columns from '../shortcode/Columns.astro';
+import Link from '../shortcode/Link.astro';
+
+const { memo } = Astro.props;
+const resources = memo.resourceList ?? [];
+/** @type {Array<any>} */
+const visibleResources = resources.slice(0, 9);
+
+
+
+/** @param {string} id @param {number} index */
+function photoTilt(id, index) {
+    const seed = `${id}:${index}`;
+    let hash = 2166136261;
+    for (let i = 0; i < seed.length; i += 1) {
+        hash ^= seed.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+    }
+    hash ^= hash >>> 16;
+    hash = Math.imul(hash ^ (index + 1), 0x85ebca6b);
+    hash ^= hash >>> 13;
+    hash = Math.imul(hash, 0xc2b2ae35);
+    hash ^= hash >>> 16;
+    const normalized = (hash >>> 0) / 4294967295;
+    const magnitude = 1.4 + normalized * 3.2;
+    const direction = (hash >>> 1) & 1 ? 1 : -1;
+    return `${(magnitude * direction).toFixed(2)}deg`;
+}
+
+
+---
+
+<div class="memo-block">
+    <div class="memo-text-wrap">
+        <div class="memo-text" data-memo-text>
+            <div class="memo-content markdown">
+                {memo.content && (
+                    <Markdown
+                        content={memo.content}
+                        sanitize={{ allowComponents: true, allowCustomElements: true }}
+                        components={{
+                            pre: CodeSlot,
+                            img: RemotePicture,
+                            iframe: IFrameSlot,
+                            columns: Columns,
+                            a: Link
+                        }}
+                    />
+                )}
+            </div>
+        </div>
+        <button class="memo-more" type="button" data-memo-more hidden aria-label="展开全文">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+        </button>
+    </div>
+
+    {visibleResources.length > 0 && (
+        <div class="memo-photo-stack">
+            {visibleResources.map((resource, index) => (
+                <figure class="memo-photo" style={`--tilt:${photoTilt(memo.id, index)};`}>
+                    {resource.type === 'image' && (
+                        <RemotePicture
+                            src={resource.externalLink}
+                            alt={`${memo.creatorName} 的动态图片 ${index + 1}`}
+                            classNames="memo-photo-image"
+                            referrerpolicy="no-referrer"
+                        />
+                    )}
+                    {resource.type === 'video' && (
+                        <video src={resource.externalLink} controls preload="metadata">
+                            您的浏览器不支持 HTML5 视频。
+                        </video>
+                    )}
+                </figure>
+            ))}
+        </div>
+    )}
+</div>

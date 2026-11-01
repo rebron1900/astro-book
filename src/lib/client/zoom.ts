@@ -6,7 +6,9 @@ import mediumZoom from 'medium-zoom';
  * 排除 .og-card 内的图片（OG 卡片是链接跳转，不需要放大）。
  */
 export default function initZoom() {
-    const images = document.querySelectorAll<HTMLImageElement>('.markdown img:not(.og-card img):not([data-zoom-initialized])');
+    const images = document.querySelectorAll<HTMLImageElement>(
+        '.markdown img:not(.og-card img):not([data-zoom-initialized]), .memo-content img:not([data-zoom-initialized]), .memo-media img:not([data-zoom-initialized]), .memo-photo-stack img:not([data-zoom-initialized])'
+    );
     if (!images.length) return;
 
     images.forEach((img) => {

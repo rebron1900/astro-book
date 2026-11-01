@@ -1,6 +1,7 @@
 ---
-import { pages, settings, flux } from '../api/store';
+import { pages, settings, flux, fluxLost } from '../api/store';
 import { normalizeData } from '../lib/utils/help';
+import type { FluxLostFeed } from '../api/types';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/islands/Head.astro';
@@ -14,9 +15,18 @@ import RemotePicture from '../components/ui/RemotePicture.astro';
 import Columns from '../components/shortcode/Columns.astro';
 import Details from '../components/shortcode/Details.astro';
 import Link from '../components/shortcode/Link.astro';
-import { DoorOpen } from '@lucide/astro';
+import { DoorOpen, Unplug } from '@lucide/astro';
+import ScrollReveal from '../components/islands/ScrollReveal.astro';
 
 const page = pages.find((post) => post.slug == 'links');
+
+const lostReasonLabels = { error: '抓取失败', empty: '暂无文章', disabled: '已停用' } as const;
+
+function lostReasonTitle(item: FluxLostFeed): string | undefined {
+    if (item.error) return item.error;
+    const lastEntry = normalizeData(item.last_entry_at);
+    return lastEntry ? `最后文章：${lastEntry}` : undefined;
+}
 ---
 
 <BaseLayout post={page}>
@@ -60,6 +70,31 @@ const page = pages.find((post) => post.slug == 'links');
                 ))
             }
         </div>
+
+        {
+            fluxLost.length > 0 && (
+                <section class="lost-feeds" aria-labelledby="lost-feeds-title">
+                    <h2 class="book-title" id="lost-feeds-title">
+                        <Unplug /> 失联订阅
+                    </h2>
+                    <p class="lost-feeds-desc">以下 {fluxLost.length} 个订阅暂时没有获取到最新文章，可能已经失效或停更。</p>
+                    <ul class="lost-feeds-list">
+                        {fluxLost.map((item) => (
+                            <li class="lost-feed">
+                                <img loading="lazy" src={'https://icon.bqb.cool/?url=' + (item.site_url || '')} alt="" width="20" height="20" />
+                                <Link href={item.site_url || '#'} class="lost-feed-link ellipsis" target="_blank" title={item.title}>
+                                    {item.title}
+                                </Link>
+                                <span class="lost-feed-reason" title={lostReasonTitle(item)}>
+                                    {lostReasonLabels[item.reason]}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )
+        }
+        <ScrollReveal selector=".book-columns > .flex-even, .lost-feed" />
     </article>
     <Comments slot="comments" />
 </BaseLayout>

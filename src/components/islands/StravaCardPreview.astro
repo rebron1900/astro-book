@@ -1,0 +1,62 @@
+---
+import { Bike, Dumbbell, Footprints, Mountain, Waves } from '@lucide/astro';
+
+type SportKey = 'run' | 'ride' | 'walk' | 'hike' | 'climb' | 'swim' | 'other';
+
+interface Props {
+    activity: { name: string };
+    route: { path: string; startX: number; startY: number; endX: number; endY: number } | null;
+    meta: {
+        key: SportKey;
+        label: string;
+        stats: Array<{ label: string; value: string; primary?: boolean }>;
+    };
+    href: string;
+}
+
+const { activity, route, meta, href } = Astro.props as Props;
+
+const SPORT_ICONS: Record<SportKey, any> = {
+    run: Footprints,
+    ride: Bike,
+    walk: Footprints,
+    hike: Mountain,
+    climb: Mountain,
+    swim: Waves,
+    other: Dumbbell
+};
+
+const SportIcon = SPORT_ICONS[meta.key] ?? Footprints;
+---
+
+<div class:list={['strava-card', `sport-${meta.key}`]}>
+    {route && (
+        <svg class="strava-route" viewBox="0 0 620 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <path d={route.path} />
+            <circle cx={route.startX} cy={route.startY} r="2.4" />
+            <circle cx={route.endX} cy={route.endY} r="2.4" />
+        </svg>
+    )}
+    <div class="strava-content">
+        <div class="strava-head">
+            <div class="strava-title-row">
+                <SportIcon class="strava-sport-icon" size={14} aria-hidden="true" />
+                <span class="strava-sport-name">{meta.label}</span>
+                <h2 class="entry-title">
+                    <a href={href}>
+                        {activity.name}
+                        <span class="ext">↗</span>
+                    </a>
+                </h2>
+            </div>
+        </div>
+        <dl class="stats strava-stats">
+            {meta.stats.map((stat) => (
+                <div class:list={{ 'is-primary': stat.primary }}>
+                    <dt>{stat.label}</dt>
+                    <dd>{stat.value}</dd>
+                </div>
+            ))}
+        </dl>
+    </div>
+</div>

@@ -60,7 +60,6 @@ img {
 #book-search-input:focus,
 #atk-memoslist .atk-content:hover,
 .db--item:hover,
-.astro-code:hover,
 .footer-map:hover,
 .book-columns > div:hover {
     box-shadow:
@@ -247,6 +246,9 @@ ul.pagination {
         scrollbar-width: none; /* 对于 Firefox */
 
         @include fixed;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
     }
 
     .book-menu-nav {

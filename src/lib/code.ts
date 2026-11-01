@@ -6,31 +6,32 @@ var scriptBundle = document.getElementById('script-bundle');
 var copyText = (scriptBundle && scriptBundle.getAttribute('data-copy')) || '复制';
 
 function createCopyButton2(highlightDiv: HTMLElement) {
-    const button = document.createElement('div');
+    const button = document.createElement('button');
     button.innerHTML = `
     <svg viewBox="0 0 24 24" aria-hidden="true" class="book-icon"><use xlink:href="/icons.svg#copy"></use></svg>
     `;
     button.className = 'copy-button';
-    button.setAttribute('type', 'button');
+    button.type = 'button';
     button.ariaLabel = copyText;
     button.addEventListener('click', () => copyCodeToClipboard(button, highlightDiv));
     addCopyButtonToDom(button, highlightDiv);
 }
 
 function createFoldButton(highlightDiv: HTMLElement) {
-    const button = document.createElement('div');
+    const button = document.createElement('button');
     button.innerHTML = `
-    <svg viewBox="0 0 24 24" aria-hidden="true" class="book-icon"><use xlink:href="/icons.svg#fold"></use></svg><sm>展开</sm>
+    <svg viewBox="0 0 24 24" aria-hidden="true" class="book-icon"><use xlink:href="/icons.svg#fold"></use></svg><small>展开</small>
     `;
     button.className = 'fold-button';
+    button.type = 'button';
     button.ariaLabel = '展开';
     button.addEventListener('click', function (evn) {
         highlightDiv.classList.toggle('limit-hight');
         let icons = highlightDiv.classList.contains('limit-hight') ? ['/icons.svg#fold', '展开'] : ['/icons.svg#collapse', '折叠'];
         const target = evn.currentTarget as HTMLElement;
         target.querySelector('svg use')?.setAttribute('xlink:href', icons[0]);
-        const sm = target.querySelector<HTMLElement>('sm');
-        if (sm) sm.innerText = icons[1];
+        const label = target.querySelector<HTMLElement>('small');
+        if (label) label.innerText = icons[1];
     });
     if (highlightDiv.scrollHeight > 400) {
         highlightDiv.classList.add('limit-hight');
@@ -90,6 +91,8 @@ function addCopyButtonToDom(button: HTMLElement, highlightDiv: HTMLElement) {
 
 export function initCopyButton() {
     document.querySelectorAll<HTMLElement>('pre').forEach(function (highlightDiv) {
+        if (!highlightDiv.querySelector('code') || highlightDiv.dataset.codeControlsInitialized === 'true') return;
+        highlightDiv.dataset.codeControlsInitialized = 'true';
         createCopyButton2(highlightDiv);
         createFoldButton(highlightDiv);
     });

@@ -1,0 +1,52 @@
+---
+import type { GetStaticPathsOptions } from 'astro';
+import { timeline, settings } from '../../../api/store';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Head from '../../../components/islands/Head.astro';
+import List from '../../../components/islands/List.astro';
+import Pagination from '../../../components/ui/Pagination.astro';
+import Relitu from '../../../components/islands/Relitu';
+import TocTagloop from '../../../components/islands/TocTagloop.astro';
+import Header from '../../../components/layout/Header.astro';
+import Top from '../../../components/ui/Top.astro';
+import Menu from '../../../components/layout/Menu.astro';
+
+export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
+    const kinds = ['post', 'memo', 'neodb', 'strava'];
+    const paths = kinds.flatMap((kind) =>
+        paginate(timeline.filter((entry) => entry.kind === kind), {
+            params: { kind },
+            pageSize: 10
+        })
+    );
+    return paths;
+}
+
+const { page } = Astro.props;
+const kind = Astro.params.kind ?? 'all';
+const kindLabels: Record<string, string> = {
+    post: '文章',
+    memo: '随记',
+    neodb: '书影音',
+    strava: '运动'
+};
+const title = kindLabels[kind] ?? '时间线';
+---
+
+<BaseLayout>
+    <Head slot="head" site={settings} title={`${title} | ${settings?.title}`} og_url={import.meta.env.SITE + page.url.current} />
+
+    <Header slot="header" title={settings?.title} />
+
+    <Menu slot="menu" title={page.currentPage != 1 ? `${title} · 第 ${page.currentPage} 页` : title} />
+
+    <List slot="content" page={page} filterKind={kind} isFeature={false} />
+
+    <Pagination slot="pagination" page={page} />
+
+    <Fragment slot="toc">
+        <Relitu />
+        <TocTagloop />
+        <Top />
+    </Fragment>
+</BaseLayout>

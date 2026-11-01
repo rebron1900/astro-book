@@ -18,6 +18,7 @@ import Columns from '../components/shortcode/Columns.astro';
 import Details from '../components/shortcode/Details.astro';
 import Link from '../components/shortcode/Link.astro';
 import { Package } from '@lucide/astro';
+import ScrollReveal from '../components/islands/ScrollReveal.astro';
 
 const page = pages.find((post) => post.slug == 'archives');
 const groupdata = groupByDate(postsAll);
@@ -44,10 +45,10 @@ const groupdata = groupByDate(postsAll);
         <div>
             {
                 groupdata.map((post) => (
-                    <div>
+                    <div class="archive-year">
                         <h2>{post.year}</h2>
                         {post.data.map((month) => (
-                            <div>
+                            <div class="archive-month">
                                 <h3 id={`${post.year}-${month.month}`}>
                                     {post.year} / {month.month}
                                 </h3>
@@ -69,6 +70,7 @@ const groupdata = groupByDate(postsAll);
                 ))
             }
         </div>
+        <ScrollReveal selector=".archive-year, .archive-month, .archive-month li" />
     </div>
 
     <Comments slot="comments" />

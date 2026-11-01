@@ -1,5 +1,6 @@
 /** Memos 微博客条目（按实际 API 响应字段） */
 export interface Memo {
+    id: string;
     type: string;
     content: string;
     createdTs: number;
@@ -15,7 +16,7 @@ export interface Memo {
 
 /** Flux RSS 单条聚合结果 */
 export interface FluxEntry {
-    feed_id: string;
+    feed_id: number;
     feed: FluxFeed;
     update_timestamp: number;
     title?: string;
@@ -27,10 +28,26 @@ export interface FluxEntry {
 }
 
 export interface FluxFeed {
-    id: string;
+    id: number;
     site_url: string;
     title?: string;
     [key: string]: unknown;
+}
+
+/** Flux 中暂时无法获取最新文章的订阅（友邻页「失联订阅」分组） */
+export interface FluxLostFeed {
+    id: number;
+    title: string;
+    site_url: string;
+    feed_url?: string;
+    /** error = 抓取失败 / empty = 暂无文章 / disabled = 已被 Miniflux 停用 */
+    reason: 'error' | 'empty' | 'disabled';
+    /** Miniflux 返回的最近一次错误信息，用于悬停提示 */
+    error?: string;
+    /** 最后一次成功抓到文章的时间（缓存继承，可能为空） */
+    last_entry_at?: string;
+    /** 首次被判定为失联的时间，后续同步保持不变 */
+    first_seen_at: string;
 }
 
 /** NeoDB 书影条目（标记数据，来自 doumark-action 输出） */

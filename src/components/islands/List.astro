@@ -1,78 +1,1192 @@
 ---
-import type { ExPost } from '../../api/ghost';
 import type { Memo } from '../../api/types';
-import { normalizeData, normalizeSlug } from '../../lib/utils/help';
+import type { TimelineEntry } from '../../api/store';
+import type { Post } from '@ts-ghost/content-api';
+import { normalizeSlug } from '../../lib/utils/help';
+import { timeline } from '../../api/store';
+import { BookOpenText, Clapperboard, Footprints, MessageCircle } from '@lucide/astro';
 import PostMeta from '../ui/PostMeta.astro';
 import Hero from '../layout/Hero.astro';
-import { Markdown } from 'astro-remote';
-import CodeSlot from './CodeSlot.astro';
-import IFrameSlot from '../ui/IFrameSlot.astro';
-import RemotePicture from '../ui/RemotePicture.astro';
-import Columns from '../shortcode/Columns.astro';
-import Details from '../shortcode/Details.astro';
-import Link from '../shortcode/Link.astro';
+import LedgerMemo from './LedgerMemo.astro';
+import LedgerNeodb from './LedgerNeodb.astro';
+import LedgerStrava from './LedgerStrava.astro';
 
-const { page } = Astro.props as { page: { data: (ExPost | Memo)[] } };
+type PostItem = Post & { type: string };
+type RawItem = TimelineEntry | PostItem | Memo;
 
+const { page, filterKind = 'all' } = Astro.props as { page: { data: RawItem[]; url?: { next?: string; prev?: string; current?: string }; currentPage?: number }; filterKind?: string };
 const url = new URL(Astro.request.url);
-// 检查当前页面的路径是否为根路径
 const isHomePage = url.pathname === '/';
+const isTimelinePage = page.data.some((item) => 'kind' in item);
+
+function isTimelineEntry(raw: RawItem): raw is TimelineEntry {
+    const kind = (raw as { kind?: unknown }).kind;
+    return kind === 'post' || kind === 'memo' || kind === 'neodb' || kind === 'strava';
+}
+
+function isMemo(raw: RawItem): raw is Memo {
+    return typeof (raw as Memo).createdTs === 'number';
+}
+
+function toTimelineEntry(raw: RawItem): TimelineEntry {
+    if (isTimelineEntry(raw)) return raw;
+    if (isMemo(raw)) {
+        return { kind: 'memo', time: raw.createdTs * 1000, data: raw };
+    }
+    const post = raw as PostItem;
+    return {
+        kind: 'post',
+        time: new Date(post.published_at ?? post.created_at).getTime(),
+        data: post
+    };
+}
+
+const entries = page.data.map(toTimelineEntry);
+const activeKind = ['post', 'memo', 'neodb', 'strava'].includes(filterKind) ? filterKind : 'all';
+const filterHref = (kind: string) => (kind === 'all' ? '/' : `/timeline/${kind}/`);
+const timelineTotals = timeline.reduce((totals, entry) => {
+    totals.all += 1;
+    if (totals[entry.kind] !== undefined) totals[entry.kind] += 1;
+    return totals;
+}, { all: 0, post: 0, memo: 0, neodb: 0, strava: 0 });
+
+const timelineIntros = {
+    all: {
+        title: '沿着时间，慢慢往下读。',
+        copy: '这里收录了博主的文章、随记、书影音和运动记录，也收录日常里值得留下的片段。所有内容按时间依次排列，左侧细线与类型图标标出每一天的开始；'
+    },
+    post: {
+        title: '把想说的话，慢慢写下来。',
+        copy: '这里放着我认真写下的长文章。有些是关于技术、折腾和工具的记录，有些只是生活里绕不开的念头。写完就放在这里，等有缘的人路过时读一读。'
+    },
+    memo: {
+        title: '随手记下，日子就有了回声。',
+        copy: '这里是一些没有来得及展开的片段：今天的天气、脑子里突然冒出的想法、路上看见的一棵树，以及那些不适合写成文章的小事。'
+    },
+    neodb: {
+        title: '在别人的故事里，度过一些时间。',
+        copy: '这里记下我看过的电影、读过的书、追过的剧和听过的音乐。喜欢的会多写两句，不喜欢的也留个脚印，算是给自己的一份观影与阅读账本。'
+    },
+    strava: {
+        title: '用身体，把日子往前推一点。',
+        copy: '这里是我跑步、徒步、骑行和游泳的轨迹。它们谈不上什么成绩，只是每一次出门、流汗和回来的证据；路很长，慢慢走。'
+    }
+};
+const intro = timelineIntros[activeKind as keyof typeof timelineIntros] ?? timelineIntros.all;
+const currentYear = new Date().getFullYear();
+
+const stravaGroupLeads = new Map<number, TimelineEntry[]>();
+const stravaGroupMembers = new Set<number>();
+entries.forEach((entry, index) => {
+    if (entry.kind !== 'strava' || stravaGroupMembers.has(index)) return;
+    const group = [entry];
+    for (let nextIndex = index + 1; nextIndex < entries.length; nextIndex += 1) {
+        const next = entries[nextIndex];
+        if (next.kind !== 'strava' || dateKey(next.time) !== dateKey(entry.time)) break;
+        group.push(next);
+        stravaGroupMembers.add(nextIndex);
+    }
+    if (group.length > 1) stravaGroupLeads.set(index, group);
+});
+
+const neodbGroupLeads = new Map<number, TimelineEntry[]>();
+const neodbGroupMembers = new Set<number>();
+entries.forEach((entry, index) => {
+    if (entry.kind !== 'neodb' || neodbGroupMembers.has(index)) return;
+    const group = [entry];
+    for (let nextIndex = index + 1; nextIndex < entries.length; nextIndex += 1) {
+        const next = entries[nextIndex];
+        if (next.kind !== 'neodb' || dateKey(next.time) !== dateKey(entry.time)) break;
+        group.push(next);
+        neodbGroupMembers.add(nextIndex);
+    }
+    if (group.length > 1) neodbGroupLeads.set(index, group);
+});
+const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
+function dateAt(time: number) {
+    return new Date(time);
+}
+
+function dateKey(time: number) {
+    const date = dateAt(time);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function dayLabel(time: number) {
+    const date = dateAt(time);
+    return `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function weekday(time: number) {
+    return WEEKDAYS[dateAt(time).getDay()];
+}
+
+function fullDate(time: number) {
+    const date = dateAt(time);
+    return `${dateKey(time)} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
+function excerptText(value: string | null | undefined, max = 160) {
+    const text = (value ?? '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    if (text.length <= max) return text;
+    return `${text.slice(0, max).replace(/[，。！？；、,.!?;：:].*$/, '')}…`;
+}
 ---
 
-{isHomePage ? <Hero /> : ''}
+{isHomePage && <Hero />}
 
-{
-    page.data.map((post) =>
-        'createdTs' in post ? (
-            <div class="page-memos markdown">
-            <div class="atk-main">
-                <div class="atk-body">
-                    <div class="atk-content">
-                        {post.content && (
-                            <Markdown
-                                content={post.content}
-                                sanitize={{ allowComponents: true, allowCustomElements: true }}
-                                components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
-                            />
-                        )}
-                        <style />
-                        <div class={`image-grid image-count-${post.resourceList.length}`} view-image="">
-                            {post.resourceList.map((r) => {
-                                if (r.type == 'image') {
-                                    return (
-                                        <div class="image-container">
-                                            <RemotePicture src={r.externalLink} alt={r.filename} classNames="image-item" />
-                                        </div>
-                                    );
-                                } else if (r.type == 'video') {
-                                    return (
-                                        <div class="image-container">
-                                            <video src={r.externalLink} controls width="640" height="360">
-                                                您的浏览器不支持 HTML5 视频标签
-                                            </video>
-                                        </div>
-                                    );
-                                }
-                            })}
-                        </div>
+{isTimelinePage ? (
+    <>
+        <header class="timeline-intro">
+            <h2 class="timeline-intro-title">{intro.title}</h2>
+            <p class="timeline-intro-copy">{intro.copy}</p>
+        </header>
+
+        <div class="timeline-toolbar" data-timeline-toolbar>
+            <div class="filter-chips" role="group" aria-label="时间线筛选">
+                <a class:list={['filter-chip', { 'is-active': activeKind === 'all' }]} href={filterHref('all')} aria-current={activeKind === 'all' ? 'page' : undefined}>全部 <span data-count="all" data-total={timelineTotals.all}>{timelineTotals.all}</span></a>
+                <a class:list={['filter-chip', { 'is-active': activeKind === 'post' }]} href={filterHref('post')} aria-current={activeKind === 'post' ? 'page' : undefined}>文章 <span data-count="post" data-total={timelineTotals.post}>{timelineTotals.post}</span></a>
+                <a class:list={['filter-chip', { 'is-active': activeKind === 'memo' }]} href={filterHref('memo')} aria-current={activeKind === 'memo' ? 'page' : undefined}>随记 <span data-count="memo" data-total={timelineTotals.memo}>{timelineTotals.memo}</span></a>
+                <a class:list={['filter-chip', { 'is-active': activeKind === 'neodb' }]} href={filterHref('neodb')} aria-current={activeKind === 'neodb' ? 'page' : undefined}>书影音 <span data-count="neodb" data-total={timelineTotals.neodb}>{timelineTotals.neodb}</span></a>
+                <a class:list={['filter-chip', { 'is-active': activeKind === 'strava' }]} href={filterHref('strava')} aria-current={activeKind === 'strava' ? 'page' : undefined}>运动 <span data-count="strava" data-total={timelineTotals.strava}>{timelineTotals.strava}</span></a>
+            </div>
+            <p class="timeline-count" data-timeline-count data-active-kind={activeKind} aria-live="polite">共 {activeKind === 'all' ? timelineTotals.all : timelineTotals[activeKind as keyof typeof timelineTotals]} 条</p>
+        </div>
+
+        <div class="tl tl-ledger timeline-list" data-timeline-list data-next={page.url?.next ?? ''}>
+        {entries.map((entry, index) => {
+            if (stravaGroupMembers.has(index) || neodbGroupMembers.has(index)) return null;
+            const showDate = index === 0 || dateKey(entries[index - 1].time) !== dateKey(entry.time);
+            const stravaGroup = stravaGroupLeads.get(index) ?? null;
+            const neodbGroup = neodbGroupLeads.get(index) ?? null;
+
+            return (
+                <article class:list={['ledger-row', { 'is-repeat': !showDate }]} data-kind={entry.kind} data-date-key={dateKey(entry.time)}>
+                    <div class="ledger-date">
+                        {dateAt(entry.time).getFullYear() !== currentYear && <span class="ledger-year">{dateAt(entry.time).getFullYear()}</span>}
+                        <time class="ledger-date-value" datetime={dateKey(entry.time)}>{dayLabel(entry.time)}</time>
+                        <span class="ledger-weekday">{weekday(entry.time)}</span>
                     </div>
-                    <div class="atk-content-footer">
-                        <span>
-                            @{post.creatorName} · by {normalizeData(post.updatedTs)}
+
+                    <div class="ledger-rail" aria-hidden="true">
+                        <span class="rail-marker">
+                            {entry.kind === 'post' && <BookOpenText />}
+                            {entry.kind === 'memo' && <MessageCircle />}
+                            {entry.kind === 'neodb' && <Clapperboard />}
+                            {entry.kind === 'strava' && <Footprints />}
                         </span>
                     </div>
-                    <!-- <span>浏览 {post.viewCount}</span> -->
-                </div>
-            </div>
+
+                    <div class="ledger-body">
+                        <div class="ledger-content">
+                            {entry.kind === 'memo' && <LedgerMemo memo={entry.data} />}
+
+                            {entry.kind === 'post' && (
+                                <article class:list={['ledger-post', { 'has-thumb': Boolean(entry.data.feature_image) }]}>
+                                    <p class="kicker">文章 · {entry.data.reading_time || 2} 分钟阅读</p>
+                                    <h2 class="entry-title">
+                                        <a href={normalizeSlug(entry.data.slug)}>{entry.data.title}</a>
+                                    </h2>
+                                    <div class="post-summary">
+                                        <p class="excerpt">{excerptText(entry.data.excerpt)}</p>
+                                    </div>
+                                    {entry.data.feature_image && (
+                                        <a class="post-thumb" href={normalizeSlug(entry.data.slug)} tabindex="-1" aria-hidden="true">
+                                            <img src={entry.data.feature_image} alt="" loading="lazy" referrerpolicy="no-referrer" />
+                                        </a>
+                                    )}
+                                </article>
+                            )}
+
+                            {neodbGroup ? (
+                                <div class="neodb-cards is-group">
+                                    {neodbGroup.map((groupEntry) => (
+                                        <LedgerNeodb mark={groupEntry.data} />
+                                    ))}
+                                </div>
+                            ) : (
+                                entry.kind === 'neodb' && <LedgerNeodb mark={entry.data} />
+                            )}
+                            {stravaGroup ? (
+                                <div class="strava-cards is-group">
+                                    {stravaGroup.map((groupEntry) => (
+                                        <LedgerStrava activity={groupEntry.data} />
+                                    ))}
+                                </div>
+                            ) : (
+                                entry.kind === 'strava' && <LedgerStrava activity={entry.data} />
+                            )}
+                        </div>
+
+                        <div class="card-foot">
+                            <time class="card-time" datetime={new Date(entry.time).toISOString()} title={fullDate(entry.time)}>
+                                {fullDate(entry.time)}
+                            </time>
+                        </div>
+                    </div>
+                </article>
+            );
+        })}
         </div>
-        ) : (
-            <article class="markdown book-post">
-                <h2 class="book-title">
-                    <a href={normalizeSlug(post.slug)}>{post.title}</a>
-                </h2>
-                <PostMeta post={post} />
-                <p>{post.excerpt.replace(/<[^>]+>/g, '').substring(0, 150)}...</p>
-            </article>
-        )
-    )
-}
+        <p class="timeline-empty" data-timeline-empty hidden>没有符合条件的记录。</p>
+    </>
+) : (
+    <div class="post-list">
+        {entries.map((entry) => {
+            const post = entry.data as PostItem;
+            const excerpt = (post.excerpt ?? '').replace(/<[^>]+>/g, '').trim();
+            return (
+                <article class="markdown book-post">
+                    <h2 class="book-title">
+                        <a href={normalizeSlug(post.slug)}>{post.title}</a>
+                    </h2>
+                    <PostMeta post={post} />
+                    {excerpt && <p>{excerpt.substring(0, 150)}{excerpt.length > 150 ? '…' : ''}</p>}
+                </article>
+            );
+        })}
+    </div>
+)}
+
+
+<script is:inline>
+    (() => {
+        const boot = () => {
+        const list = document.querySelector('[data-timeline-list]');
+        if (!list || list.dataset.autoLoadReady === 'true') return;
+        list.dataset.autoLoadReady = 'true';
+
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let loading = false;
+
+        const setupMemoText = (root = document) => {
+            root.querySelectorAll('[data-memo-text]').forEach((box) => {
+                if (box.dataset.memoReady === 'true') return;
+                box.dataset.memoReady = 'true';
+
+                const block = box.closest('.memo-block');
+                const button = block?.querySelector('[data-memo-more]');
+                if (!button) return;
+
+                const sync = () => {
+                    if (box.classList.contains('is-expanded')) return;
+                    const overflow = box.scrollHeight > box.clientHeight + 2;
+                    box.classList.toggle('is-collapsed', overflow);
+                    button.hidden = !overflow;
+                    button.setAttribute('aria-expanded', 'false');
+                };
+
+                const body = box.querySelector('.memo-content');
+                if (body && 'ResizeObserver' in window) {
+                    new ResizeObserver(() => sync()).observe(body);
+                }
+                if (document.fonts?.ready) document.fonts.ready.then(sync);
+                window.addEventListener('load', sync);
+                sync();
+
+                button.addEventListener('click', () => {
+                    const isExpanded = box.classList.contains('is-expanded');
+                    if (isExpanded) {
+                        box.classList.remove('is-expanded');
+                        box.classList.add('is-collapsed');
+                        button.setAttribute('aria-label', '展开全文');
+                        button.setAttribute('aria-expanded', 'false');
+                        button.hidden = false;
+                        window.setTimeout(sync, 300);
+                    } else {
+                        box.style.setProperty('--memo-expanded-height', `${box.scrollHeight}px`);
+                        box.classList.add('is-expanded');
+                        box.classList.remove('is-collapsed');
+                        button.setAttribute('aria-label', '收起');
+                        button.setAttribute('aria-expanded', 'true');
+                        button.hidden = false;
+                    }
+                });
+            });
+        };
+
+        const setupPhotoStacks = (root = document) => {
+            root.querySelectorAll('.memo-photo-stack').forEach((stack) => {
+                if (stack.dataset.photosReady === 'true') return;
+                stack.dataset.photosReady = 'true';
+                const photos = Array.from(stack.querySelectorAll('.memo-photo'));
+                if (!photos.length) return;
+                const setPhotoSize = (photo) => {
+                    const image = photo.querySelector('img');
+                    if (!image) return;
+                    const naturalWidth = image.naturalWidth;
+                    const naturalHeight = image.naturalHeight;
+                    if (!naturalWidth || !naturalHeight) return;
+                    const compact = window.innerWidth <= 544;
+                    const height = compact ? 90 : 112;
+                    // 只用两种固定比例：横向长边 1.618，纵向短边 1 / 1.618。
+                    const ratio = naturalWidth >= naturalHeight ? 1.61803398875 : 1 / 1.61803398875;
+                    photo.style.setProperty('--photo-width', `${Math.round(height * ratio)}px`);
+                    photo.style.setProperty('--photo-height', `${height}px`);
+                };
+
+                const setActive = (activeIndex) => {
+                    photos.forEach((photo, index) => {
+                        photo.classList.toggle('is-right', activeIndex >= 0 && index > activeIndex);
+                        photo.classList.toggle('is-active', index === activeIndex);
+                    });
+                };
+                photos.forEach((photo, index) => {
+                    const image = photo.querySelector('img');
+                    if (image) {
+                        if (image.complete && image.naturalWidth) setPhotoSize(photo);
+                        else image.addEventListener('load', () => setPhotoSize(photo), { once: true });
+                    }
+                    photo.addEventListener('pointerenter', () => setActive(index));
+                });
+                stack.addEventListener('pointerleave', () => setActive(-1));
+            });
+        };
+
+        const revealObserver = !reduceMotion && 'IntersectionObserver' in window
+            ? new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('is-visible');
+                    revealObserver.unobserve(entry.target);
+                });
+            }, { rootMargin: '0px 0px -5% 0px', threshold: 0.05 })
+            : null;
+
+        const setupReveal = (root = document) => {
+            if (!revealObserver) return;
+            root.querySelectorAll('.ledger-row:not([data-reveal-ready])').forEach((row) => {
+                row.dataset.revealReady = 'true';
+                row.classList.add('reveal-ready');
+                revealObserver.observe(row);
+            });
+        };
+
+        const setupNewRows = () => {
+            setupMemoText();
+            setupPhotoStacks();
+            setupReveal();
+            window.dispatchEvent(new CustomEvent('timeline:updated'));
+        };
+
+        const loadNext = async () => {
+            if (loading) return false;
+            const nextUrl = list.dataset.next;
+            if (!nextUrl) return false;
+            loading = true;
+            try {
+                const response = await fetch(nextUrl, { headers: { 'X-Requested-With': 'fetch' } });
+                if (!response.ok) return false;
+                const html = await response.text();
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const nextList = doc.querySelector('[data-timeline-list]');
+                if (!nextList) return false;
+                const incoming = Array.from(nextList.querySelectorAll('.ledger-row'));
+                if (!incoming.length) {
+                    list.dataset.next = '';
+                    return false;
+                }
+                incoming.forEach((row) => list.append(row));
+                list.dataset.next = nextList.getAttribute('data-next') || '';
+                if (nextUrl) window.history.replaceState({}, '', nextUrl);
+                setupNewRows();
+                return true;
+            } catch {
+                return false;
+            } finally {
+                loading = false;
+            }
+        };
+
+        setupNewRows();
+
+        const hidePagination = () => document.querySelector('.book-pagination')?.setAttribute('hidden', '');
+        hidePagination();
+        window.addEventListener('load', hidePagination);
+
+        const sentinel = document.createElement('div');
+        sentinel.className = 'timeline-sentinel';
+        sentinel.setAttribute('aria-hidden', 'true');
+        list.after(sentinel);
+
+        if ('IntersectionObserver' in window) {
+            const loadObserver = new IntersectionObserver((entries) => {
+                if (entries.some((entry) => entry.isIntersecting)) loadNext();
+            }, { rootMargin: '700px 0px' });
+            loadObserver.observe(sentinel);
+        } else {
+            window.addEventListener('scroll', () => {
+                if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 700) loadNext();
+            }, { passive: true });
+        }
+        };
+        boot();
+        document.addEventListener('astro:page-load', boot);
+    })();
+</script>
+
+<script>
+    import initZoom from '../../lib/client/zoom';
+
+    const zoomTimelineImages = () => initZoom();
+    document.addEventListener('astro:page-load', zoomTimelineImages);
+    window.addEventListener('timeline:updated', zoomTimelineImages);
+</script>
+
+<style is:global>
+
+    .timeline-intro {
+        max-inline-size: 44rem;
+        margin-block: 0.3rem 1.45rem;
+    }
+
+    .timeline-intro-kicker {
+        margin: 0;
+        color: var(--gray-500);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.625rem;
+        letter-spacing: 0.14em;
+        line-height: 1.4;
+        text-transform: uppercase;
+    }
+
+    .timeline-intro-title {
+        margin: 0.38rem 0 0.55rem;
+        color: var(--body-font-color);
+        font-size: clamp(1.3rem, 1.55vw, 1.55rem);
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        line-height: 1.4;
+    }
+
+    .timeline-intro-copy {
+        margin: 0;
+        color: var(--gray-700);
+        font-size: 0.875rem;
+        line-height: 1.85;
+    }
+
+    .timeline-intro-note {
+        margin: 0.5rem 0 0;
+        color: var(--gray-500);
+        font-size: 0.6875rem;
+        letter-spacing: 0.01em;
+        line-height: 1.5;
+    }
+
+    .timeline-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+        margin-block: 0 1.25rem;
+    }
+
+    .filter-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        min-inline-size: 0;
+    }
+
+    .filter-chip {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.3rem;
+        margin: 0;
+        padding: 0.3rem 0.7rem;
+        border: 1px solid var(--gray-200);
+        border-radius: 999px;
+        background: transparent;
+        color: var(--gray-700);
+        font: inherit;
+        font-size: 0.75rem;
+        line-height: 1.25;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+    }
+
+    .filter-chip span {
+        color: var(--gray-500);
+        font-size: 0.625rem;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .filter-chip:hover {
+        border-color: var(--gray-400);
+        color: var(--body-font-color);
+    }
+
+    .filter-chip.is-active {
+        border-color: var(--body-font-color);
+        background: var(--body-font-color);
+        color: var(--body-background);
+    }
+
+    .filter-chip.is-active span {
+        color: color-mix(in srgb, var(--body-background) 65%, transparent);
+    }
+
+    .timeline-count {
+        margin: 0;
+        color: var(--gray-500);
+        font-size: 0.625rem;
+        white-space: nowrap;
+    }
+
+    .timeline-empty {
+        margin: 1.5rem 0;
+        color: var(--gray-500);
+        font-size: 0.8125rem;
+    }
+
+    .book-pagination[hidden] {
+        display: none !important;
+    }
+
+    .timeline-sentinel {
+        block-size: 1px;
+    }
+
+    @media (max-width: 34rem) {
+        .timeline-intro {
+            margin-block-end: 1.2rem;
+        }
+
+        .timeline-intro-title {
+            font-size: 1.15rem;
+        }
+
+        .timeline-intro-copy {
+            font-size: 0.8125rem;
+            line-height: 1.75;
+        }
+
+        .timeline-toolbar {
+            align-items: center;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            gap: 0.5rem;
+            margin-block-end: 1rem;
+        }
+
+        .filter-chips {
+            flex: 1 1 0;
+            flex-wrap: nowrap;
+            inline-size: 0;
+            min-inline-size: 0;
+            overflow-x: auto;
+            padding-block-end: 0.2rem;
+            scrollbar-width: none;
+        }
+
+        .filter-chips::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-chip {
+            flex: none;
+        }
+
+        .timeline-count {
+            flex: none;
+        }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        .ledger-row.reveal-ready {
+            opacity: 0.45;
+            transform: translateY(14px);
+        }
+
+        .ledger-row.reveal-ready.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+            transition:
+                opacity 520ms ease-out,
+                transform 620ms cubic-bezier(0.2, 0.6, 0.2, 1);
+        }
+    }
+
+    .ledger-row[hidden] {
+        display: none;
+    }
+
+    .timeline-list {
+        inline-size: 100%;
+        margin-block: 0.5rem 1.5rem;
+    }
+
+    .tl-ledger {
+        position: relative;
+    }
+
+    .ledger-row {
+        display: grid;
+        grid-template-columns: 2.4rem 1.25rem minmax(0, 1fr);
+        gap: 1rem;
+        align-items: start;
+        min-inline-size: 0;
+    }
+
+    .ledger-row + .ledger-row {
+        margin-block-start: 1.7rem;
+    }
+
+    .ledger-date {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.08rem;
+        padding-block-start: 0.03rem;
+        color: var(--gray-700);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .ledger-date .ledger-year {
+        color: var(--gray-500);
+        font-size: 0.5625rem;
+        line-height: 1.15;
+    }
+
+    .ledger-date .ledger-date-value {
+        color: var(--body-font-color);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+    }
+
+    .ledger-date .ledger-weekday {
+        color: var(--gray-500);
+        font-size: 0.625rem;
+        line-height: 1.2;
+    }
+
+    .ledger-row.is-repeat .ledger-date > * {
+        display: none;
+    }
+
+    .ledger-rail {
+        position: relative;
+        display: flex;
+        align-self: stretch;
+        justify-content: center;
+    }
+
+    .ledger-rail::before {
+        content: '';
+        position: absolute;
+        inset-block: -1.7rem 0;
+        inline-size: 1px;
+        background: var(--gray-200);
+    }
+
+    .ledger-row:first-child .ledger-rail::before {
+        inset-block-start: 0.45rem;
+    }
+
+    .ledger-row:last-child .ledger-rail::before {
+        inset-block-end: calc(100% - 0.85rem);
+    }
+
+    .rail-marker {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        place-items: center;
+        inline-size: 0.95rem;
+        block-size: 0.95rem;
+        margin-block-start: 0.3rem;
+        background: var(--body-background);
+        color: var(--gray-500);
+    }
+
+    .rail-marker svg {
+        inline-size: 0.72rem;
+        block-size: 0.72rem;
+        stroke-width: 1.8;
+    }
+
+    .ledger-row[data-kind='post'] .rail-marker { color: var(--color-link); }
+    .ledger-row[data-kind='neodb'] .rail-marker { color: color-mix(in srgb, #b37a00 68%, var(--gray-500)); }
+    .ledger-row[data-kind='strava'] .rail-marker { color: color-mix(in srgb, #18794e 55%, var(--gray-500)); }
+
+    .ledger-body { min-inline-size: 0; }
+    .ledger-content { min-inline-size: 0; }
+
+    .ledger-post {
+        position: relative;
+        overflow: hidden;
+        max-block-size: 11rem;
+        padding: 1rem 1.25rem 0.9rem;
+        border-radius: 0.5rem;
+        box-shadow: inset 0 0 0 1px var(--gray-200);
+    }
+
+    .ledger-post.has-thumb {
+        min-block-size: 7rem;
+        padding-inline-end: calc(clamp(8.5rem, 30%, 15rem) + 1rem);
+    }
+
+    .ledger-post .kicker,
+    .ledger-post .entry-title,
+    .ledger-post .excerpt { margin: 0; }
+
+    .ledger-post .entry-title {
+        margin-block-start: 0.35rem;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .ledger-post .entry-title a {
+        display: block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    .ledger-post .post-summary { margin-block-start: 0.55rem; }
+    .ledger-post .post-summary .excerpt {
+        min-block-size: 0;
+        max-block-size: 4.9rem;
+        overflow: hidden;
+        color: var(--gray-700);
+        font-size: 0.85rem;
+        line-height: 1.65;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+    }
+    .ledger-post .post-thumb {
+        position: absolute;
+        inset-block: 0;
+        inset-inline-end: 0;
+        display: block;
+        inline-size: clamp(8.5rem, 30%, 15rem);
+        block-size: 100%;
+        overflow: hidden;
+    }
+    .ledger-post .post-thumb img {
+        display: block;
+        inline-size: 100%;
+        block-size: 100%;
+        object-fit: cover;
+    }
+
+    .card-foot { display: flex; justify-content: flex-end; margin-block-start: 0.55rem; }
+    .card-time { color: var(--gray-500); font-size: 0.625rem; font-variant-numeric: tabular-nums; opacity: 0; transition: opacity 120ms ease-out; }
+    .ledger-row:hover .card-time,
+    .ledger-row:focus-within .card-time { opacity: 1; }
+
+    @media (max-width: 34rem) {
+        .ledger-row { grid-template-columns: 3rem minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 0.55rem; row-gap: 0; }
+        .ledger-date { grid-column: 1; grid-row: 1; justify-self: center; align-items: center; z-index: 2; padding: 0 0.1rem 0.35rem; background: var(--body-background); text-align: center; }
+        .ledger-rail { grid-column: 1; grid-row: 2; }
+        .ledger-rail::before { inset-block: -1.7rem 0; }
+        .ledger-rail .rail-marker { margin-block-start: 0; }
+        .ledger-body { grid-column: 2; grid-row: 2; }
+        .ledger-row.is-repeat .ledger-rail { grid-row: 1 / span 2; }
+        .ledger-row.is-repeat .ledger-body { grid-row: 1 / span 2; }
+        .ledger-row + .ledger-row { margin-block-start: 1.4rem; }
+        .ledger-post.has-thumb { padding-inline-end: calc(7rem + 0.75rem); }
+        .ledger-post .post-thumb { inline-size: 7rem; }
+    }
+
+    /* Ledger memo bubble */
+    .memo-block {
+        --bubble-bg: color-mix(in srgb, var(--body-font-color) 6%, var(--body-background));
+        position: relative;
+        inline-size: fit-content;
+        max-inline-size: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        padding: 0.7rem 0.85rem 0.75rem;
+        border-radius: 0.9rem 1.2rem 1.2rem 0.9rem;
+        background: var(--bubble-bg);
+        box-shadow: 0 1px 2px rgb(0 0 0 / 0.045);
+    }
+
+    .memo-block::before {
+        content: '';
+        position: absolute;
+        top: 1.05rem;
+        left: -0.58rem;
+        inline-size: 0.7rem;
+        block-size: 1rem;
+        background: var(--bubble-bg);
+        clip-path: polygon(100% 0, 100% 100%, 0 50%);
+    }
+
+    .memo-text-wrap {
+        position: relative;
+    }
+
+    .memo-text-wrap:has(.memo-text.is-expanded) {
+        padding-block-end: 2.2rem;
+    }
+
+    .memo-text {
+        position: relative;
+        max-block-size: 10rem;
+        overflow: hidden;
+        transition: max-block-size 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    .memo-text.is-expanded {
+        max-block-size: var(--memo-expanded-height, 100rem);
+        animation: memo-expand 260ms ease-out both;
+    }
+
+    .memo-text.is-collapsed::after {
+        content: '';
+        position: absolute;
+        inset: auto 0 0;
+        block-size: 4rem;
+        background: linear-gradient(to bottom, transparent 0%, var(--bubble-bg) 82%, var(--bubble-bg) 100%);
+        pointer-events: none;
+    }
+
+    .memo-text-wrap > .memo-more {
+        position: absolute;
+        right: auto;
+        bottom: 0.15rem;
+        left: 50%;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        inline-size: 2rem;
+        block-size: 1.35rem;
+        margin: 0 0 0 -1rem;
+        padding: 0;
+        border: 1px solid color-mix(in srgb, var(--body-font-color) 12%, transparent);
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--body-font-color) 4%, transparent);
+        color: var(--body-font-color);
+        cursor: pointer;
+        transform: none;
+    }
+
+    .memo-text-wrap > .memo-more:hover {
+        background: color-mix(in srgb, var(--body-font-color) 8%, transparent);
+        border-color: color-mix(in srgb, var(--body-font-color) 22%, transparent);
+    }
+
+    .memo-text-wrap > .memo-more:active {
+        transform: scale(0.97);
+    }
+
+    .memo-text-wrap > .memo-more:not([hidden]) {
+        animation: memo-more-fade 180ms ease-out both;
+    }
+
+    .memo-text-wrap > .memo-more[hidden] {
+        display: none;
+    }
+
+    .memo-more svg {
+        inline-size: 0.875rem;
+        block-size: 0.875rem;
+        transition: transform 180ms ease;
+    }
+
+    .memo-more[aria-expanded='true'] svg {
+        transform: rotate(180deg);
+    }
+
+    @keyframes memo-more-fade {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes memo-expand {
+        from { opacity: 0.72; transform: translateY(-2px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .memo-block .memo-content {
+        color: var(--body-font-color);
+        overflow-wrap: anywhere;
+    }
+
+    .memo-block .memo-content.markdown strong {
+        text-decoration: underline;
+        text-decoration-style: dotted;
+        text-underline-offset: 0.3em;
+    }
+
+    .memo-block .memo-content :first-child { margin-block-start: 0; }
+    .memo-block .memo-content :last-child { margin-block-end: 0; }
+
+    .memo-photo-stack {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        max-inline-size: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 1rem 0.5rem 0.85rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+    }
+
+    .memo-photo-stack::-webkit-scrollbar {
+        block-size: var(--sb-size);
+        background: var(--sb-track-color);
+    }
+
+    .memo-photo-stack::-webkit-scrollbar-track {
+        background: var(--sb-track-color);
+        border-radius: 3px;
+    }
+
+    .memo-photo-stack::-webkit-scrollbar-thumb {
+        background: var(--sb-thumb-color);
+        border-radius: 3px;
+    }
+
+    .memo-photo {
+        position: relative;
+        flex: 0 0 auto;
+        inline-size: var(--photo-width, 9rem);
+        block-size: var(--photo-height, 5.56rem);
+        margin: 0;
+        padding: 0;
+    }
+
+    .memo-photo + .memo-photo {
+        margin-inline-start: -0.45rem;
+    }
+
+    .memo-photo img {
+        display: block;
+        inline-size: 100%;
+        block-size: 100%;
+        object-fit: cover;
+        border-radius: 0.55rem;
+        outline: 1px solid rgb(0 0 0 / 0.1);
+        outline-offset: -1px;
+        box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 8px rgb(0 0 0 / 0.05);
+        transform: rotate(var(--tilt, 0deg));
+        transform-origin: center;
+        transition: transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 260ms ease;
+        cursor: zoom-in;
+        will-change: transform;
+    }
+
+    .memo-photo:first-child img {
+        transform: rotate(0deg);
+        transform-origin: left center;
+    }
+
+    .memo-photo.is-right img {
+        transform: translateX(1.25rem) rotate(var(--tilt, 0deg));
+    }
+
+    .memo-photo.is-active { z-index: 4; }
+
+    .memo-photo.is-active {
+        z-index: 4;
+    }
+
+    .memo-photo.is-active img,
+    .memo-photo:hover img {
+        transform: translateY(-1px) rotate(0deg) scale(1.035);
+        transform-origin: left center;
+        box-shadow: 0 4px 10px rgb(0 0 0 / 0.1), 0 1px 3px rgb(0 0 0 / 0.06);
+    }
+
+    .memo-photo:hover {
+        z-index: 4;
+    }
+
+    .memo-photo:hover ~ .memo-photo img {
+        transform: translateX(1.25rem) rotate(var(--tilt, 0deg));
+    }
+
+    .memo-photo:first-child:hover img,
+    .memo-photo:only-child:hover img {
+        transform: translateY(-1px) rotate(0deg) scale(1.025);
+        transform-origin: left center;
+    }
+
+    .memo-photo video {
+        display: block;
+        block-size: 100%;
+        inline-size: auto;
+        max-inline-size: 20rem;
+        border-radius: 0.55rem;
+    }
+
+    /* NeoDB card */
+    .neodb-card {
+        position: relative;
+        display: grid;
+        grid-template-columns: 3.8rem minmax(0, 1fr);
+        gap: 0.85rem;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        background: var(--gray-100);
+        box-shadow: inset 0 0 0 1px var(--gray-200);
+    }
+
+    .neodb-cards {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.8rem;
+    }
+
+    .neodb-cards.is-group {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (max-width: 64rem) {
+        .neodb-cards.is-group {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    .neodb-card .cover {
+        display: grid;
+        place-items: center;
+        inline-size: 3.8rem;
+        aspect-ratio: 2 / 3;
+        overflow: hidden;
+        border-radius: 0.25rem;
+        background: var(--gray-200);
+        color: var(--gray-700);
+        font-size: 1.1rem;
+        outline: 1px solid rgb(0 0 0 / 0.1);
+        outline-offset: -1px;
+    }
+
+    .neodb-card .cover img {
+        inline-size: 100%;
+        block-size: 100%;
+        object-fit: cover;
+    }
+
+    .neodb-card .media-info { min-inline-size: 0; padding-inline-end: 3.4rem; }
+    .neodb-card .kicker { margin: 0; }
+    .neodb-card .entry-title {
+        margin-block-start: 0.25rem;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    .neodb-card .entry-title a {
+        display: block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    .neodb-card .rating {
+        position: absolute;
+        top: 0.7rem;
+        right: 0.8rem;
+        z-index: 2;
+        margin: 0;
+        background: color-mix(in srgb, var(--gray-100) 82%, transparent);
+        border-radius: 999px;
+        padding: 0.1rem 0.25rem;
+    }
+    .neodb-card .excerpt {
+        display: -webkit-box;
+        margin: 0.35rem 0 0;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .kicker {
+        color: var(--gray-500);
+        font-size: 0.6875rem;
+        line-height: 1.35;
+        letter-spacing: 0.035em;
+    }
+
+    .entry-title {
+        margin: 0;
+        color: var(--body-font-color);
+        font-size: 1.0625rem;
+        font-weight: 600;
+        line-height: 1.4;
+        letter-spacing: -0.01em;
+    }
+
+    .entry-title a {
+        color: var(--body-font-color);
+        text-decoration: none;
+    }
+
+    .entry-title a:hover { color: var(--color-hover-link); }
+    .ext { margin-inline-start: 0.15rem; color: var(--gray-500); font-size: 0.75rem; font-weight: 400; }
+    .excerpt { max-inline-size: 40rem; margin: 0.35rem 0 0; color: var(--gray-700); font-size: 0.875rem; line-height: 1.7; }
+    .rating { display: flex; align-items: baseline; gap: 0.15rem; color: #b37a00; font-size: 0.75rem; font-weight: 600; }
+    .rating small { color: var(--gray-500); font-size: 0.6875rem; font-weight: 400; }
+
+    /* Strava card */
+    .strava-cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.8rem; }
+    .strava-cards.is-group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .strava-cards.is-group .strava-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 0.9rem; }
+
+    @media (max-width: 64rem) {
+        .strava-cards.is-group { grid-template-columns: minmax(0, 1fr); }
+    }
+
+    .strava-card {
+        --strava-color: #16a34a;
+        --strava-soft: var(--green-soft);
+        position: relative;
+        overflow: hidden;
+        padding: 0.8rem 0.9rem 0.85rem;
+        border-radius: 0.375rem;
+        background: var(--strava-soft);
+        box-shadow: inset 3px 0 0 color-mix(in srgb, var(--strava-color) 48%, var(--gray-500));
+    }
+    .strava-card.sport-ride { --strava-color: #2563eb; --strava-soft: color-mix(in srgb, #dbeafe 42%, var(--body-background)); }
+    .strava-card.sport-walk { --strava-color: #b45309; --strava-soft: color-mix(in srgb, #fef3c7 32%, var(--body-background)); }
+    .strava-card.sport-hike { --strava-color: #4d7c0f; --strava-soft: color-mix(in srgb, #ecfccb 30%, var(--body-background)); }
+    .strava-card.sport-climb { --strava-color: #7c3aed; --strava-soft: color-mix(in srgb, #ede9fe 35%, var(--body-background)); }
+    .strava-card.sport-swim { --strava-color: #0e7490; --strava-soft: color-mix(in srgb, #cffafe 35%, var(--body-background)); }
+    .strava-card.sport-other { --strava-color: var(--gray-500); --strava-soft: var(--gray-100); }
+    .strava-route {
+        position: absolute; top: 0; right: 0; bottom: 0;
+        inline-size: 100%; block-size: 100%;
+        color: var(--strava-color); opacity: 0.2; pointer-events: none;
+        mask-image: linear-gradient(to bottom, #000 48%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to bottom, #000 48%, transparent 100%);
+    }
+    .strava-route path { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .strava-route circle { fill: currentColor; }
+    .strava-content { position: relative; z-index: 1; }
+    .strava-title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; }
+    .strava-title-row .entry-title { margin: 0; }
+    .strava-sport-icon { flex: none; inline-size: 0.9rem; block-size: 0.9rem; color: var(--strava-color); }
+    .strava-sport-name { color: var(--strava-color); font-size: 0.6875rem; font-weight: 600; }
+    .strava-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 1.2rem; row-gap: 0.4rem; margin-block-start: 0.6rem; }
+    .strava-stats > div { display: flex; align-items: baseline; gap: 0.3rem; min-inline-size: 0; }
+    .strava-stats dt { color: var(--gray-500); font-size: 0.6875rem; }
+    .strava-stats dd { margin: 0; color: var(--body-font-color); font-size: 0.78rem; font-weight: 600; white-space: nowrap; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .strava-stats .is-primary dd { color: var(--strava-color); }
+
+    @media (max-width: 34rem) {
+        .memo-photo-stack { overflow-x: auto; padding: 0.9rem 0.35rem 1rem; }
+        .memo-photo { inline-size: var(--photo-width, 7.5rem); block-size: var(--photo-height, 4.64rem); }
+        .memo-photo + .memo-photo { margin-inline-start: -1.2rem; }
+        .memo-photo.is-right img { transform: translateX(0.8rem) rotate(var(--tilt, 0deg)); }
+        .neodb-card { grid-template-columns: 3.8rem minmax(0, 1fr); gap: 0.65rem; padding: 0.6rem 0.65rem; }
+        .neodb-card .cover { inline-size: 3.8rem; }
+        .neodb-card .kicker { font-size: 0.625rem; }
+        .neodb-card .entry-title { font-size: 0.95rem; line-height: 1.35; }
+        .neodb-card .rating { margin-block-start: 0.15rem; font-size: 0.6875rem; }
+        .neodb-card .excerpt { display: -webkit-box; margin-block-start: 0.25rem; overflow: hidden; font-size: 0.8125rem; line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+        .strava-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+</style>

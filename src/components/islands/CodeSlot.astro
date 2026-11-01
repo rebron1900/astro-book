@@ -9,12 +9,17 @@ const { document } = parseHTML(html);
 
 // 3. 取第一个 <code> 标签
 const codeEl = document.querySelector('code');
-const code = codeEl?.textContent ?? '';
-const langRaw = codeEl?.className?.replace(/^language-/, '') || '';
+const code = (codeEl?.textContent ?? '')
+    .replace(/\u00a0/g, ' ')
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .join('\n')
+    .trim();
+const langRaw = codeEl?.className?.match(/(?:^|\s)language-([^\s]+)/)?.[1] ?? '';
 const lang = (langRaw || 'plaintext') as never;
 ---
 
-<Code wrap={true} code={code} lang={lang} themes={{ dark: 'vitesse-dark', light: 'vitesse-light' }} defaultColor={false} />
+<Code wrap={false} code={code} lang={lang} themes={{ dark: 'vitesse-dark', light: 'vitesse-light' }} defaultColor={false} />
 
 <script>
     import { initCopyButton } from '../../lib/code';

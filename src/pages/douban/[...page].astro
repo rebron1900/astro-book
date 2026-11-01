@@ -18,6 +18,7 @@ import Columns from '../../components/shortcode/Columns.astro';
 import Details from '../../components/shortcode/Details.astro';
 import Link from '../../components/shortcode/Link.astro';
 import { Sparkles, MessageSquareMore } from '@lucide/astro';
+import ScrollReveal from '../../components/islands/ScrollReveal.astro';
 
 const RECORD_META: Record<string, { label: string; action: string }> = {
     movie: { label: '电影', action: '观看' },
@@ -305,6 +306,7 @@ const groupdata = doubanGroupByDate(data);
             </script>
 
         </div>
+        <ScrollReveal selector=".db--item" />
     </article>
 
     <Comments slot="comments" />

@@ -1,6 +1,6 @@
 ---
 import type { GetStaticPathsOptions } from 'astro';
-import { postsAll, settings } from '../api/store';
+import { timeline, settings } from '../api/store';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/islands/Head.astro';
@@ -13,7 +13,7 @@ import Top from '../components/ui/Top.astro';
 import Menu from '../components/layout/Menu.astro';
 
 export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
-    return paginate(postsAll, {
+    return paginate(timeline, {
         pageSize: 10
     });
 }

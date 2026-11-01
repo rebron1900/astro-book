@@ -1,0 +1,31 @@
+---
+import { normalizeData } from '../../lib/utils/help';
+
+const { mark } = Astro.props;
+const title = mark.item.title_cn || mark.item.title || mark.item.display_title || '';
+const categoryMap: Record<string, string> = { movie: '电影', tv: '剧集', book: '书籍', game: '游戏', music: '音乐', podcast: '播客', performance: '演出' };
+const actionMap: Record<string, string> = { movie: '看过', tv: '看过', book: '读过', game: '玩过', music: '听过', podcast: '听过', performance: '看过' };
+const category = categoryMap[mark.item.category] ?? mark.item.category;
+const action = actionMap[mark.item.category] ?? '记录';
+const rating = Number(mark.rating_grade);
+const hasRating = rating > 0;
+const href = `/golink?target=${btoa(encodeURIComponent(mark.item.id ?? `https://neodb.social${mark.item.url}`))}`;
+---
+
+<div class="neodb-card">
+    <div class="cover">
+        {mark.item.cover_image_url ? (
+            <img src={mark.item.cover_image_url} alt={`${title}封面`} loading="lazy" referrerpolicy="no-referrer" />
+        ) : (
+            <span aria-hidden="true">{title.slice(0, 1)}</span>
+        )}
+    </div>
+    <div class="media-info">
+        <p class="kicker">{action} · {category}</p>
+        <h2 class="entry-title">
+            <a href={href}>{title}<span class="ext">↗</span></a>
+        </h2>
+        {hasRating && <p class="rating"><span aria-hidden="true">★</span> {rating}<small>/10</small></p>}
+        {mark.comment_text && <p class="excerpt">“{mark.comment_text}”</p>}
+    </div>
+</div>

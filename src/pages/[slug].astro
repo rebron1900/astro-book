@@ -23,6 +23,7 @@ import Footer from '../components/layout/Footer.astro';
 import IFrameSlot from '../components/ui/IFrameSlot.astro';
 import Link from '../components/shortcode/Link.astro';
 import OGCard from '../components/shortcode/OGCard.astro';
+import ScrollReveal from '../components/islands/ScrollReveal.astro';
 
 export async function getStaticPaths() {
     const posts = postsAll.concat(pages);
@@ -102,6 +103,7 @@ const tocHtml = tocGen(post.html);
                 />
             )
         }
+        <ScrollReveal selector=".book-article > :not(h1):not(.book-title):not(script):not(br), .book-article blockquote > :is(p, h2, h3, h4, h5, h6, ul, ol, figure, pre, table)" />
     </article>
 
     {post.type == 'post' && <Pagination slot="pagination" prev={prevPost} next={nextPost} />}
