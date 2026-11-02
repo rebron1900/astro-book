@@ -4,7 +4,7 @@ import type { Tag } from '@ts-ghost/content-api';
 import { settings } from '../api/store';
 import '../styles/book.scss';
 // ...
-const { post, slug } = Astro.props;
+const { post, slug, hideToc = false } = Astro.props as { post?: any; slug?: string; hideToc?: boolean };
 
 const isFullWidth = post && (post.slug?.includes('albums') || post.tags?.some((tag: Tag) => tag.slug === 'hash-page-fullwidth'));
 ---
@@ -45,11 +45,13 @@ const isFullWidth = post && (post.slug?.includes('albums') || post.tags?.some((t
                 <label for="menu-control" class="hidden book-menu-overlay"></label>
             </div>
 
-            <aside class={`book-toc ${isFullWidth ? 'full-width' : ''}`}>
-                <div class="book-toc-content">
-                    <slot name="toc" />
-                </div>
-            </aside>
+            {!hideToc && !isFullWidth && (
+                <aside class={`book-toc ${isFullWidth ? 'full-width' : ''}`}>
+                    <div class="book-toc-content">
+                        <slot name="toc" />
+                    </div>
+                </aside>
+            )}
         </main>
         <Fragment set:html={settings?.codeinjection_foot} />
     </body>

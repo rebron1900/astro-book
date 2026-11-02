@@ -1,5 +1,6 @@
 ---
 import { normalizeData } from '../../lib/utils/help';
+import NeodbCategoryIcon from '../ui/NeodbCategoryIcon.astro';
 
 const { mark } = Astro.props;
 const title = mark.item.title_cn || mark.item.title || mark.item.display_title || '';
@@ -21,7 +22,7 @@ const href = `/golink?target=${btoa(encodeURIComponent(mark.item.id ?? `https://
         )}
     </div>
     <div class="media-info">
-        <p class="kicker">{action} · {category}</p>
+        <p class="kicker"><NeodbCategoryIcon category={mark.item.category} /> {action} · {category}</p>
         <h2 class="entry-title">
             <a href={href}>{title}<span class="ext">↗</span></a>
         </h2>

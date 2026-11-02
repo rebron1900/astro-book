@@ -62,11 +62,18 @@ function entryTitle(entry: TimelineEntry) {
     return entry.data.name || '一次运动';
 }
 
+function goLink(value: unknown) {
+    const href = String(value ?? '#');
+    if (!/^https?:\/\//i.test(href)) return href;
+    return `/golink?target=${btoa(encodeURIComponent(href))}`;
+}
+
 function entryHref(entry: TimelineEntry) {
     if (entry.kind === 'post') return normalizeSlug(entry.data.slug);
     if (entry.kind === 'memo') return '/now/';
-    if (entry.kind === 'neodb') return entry.data.item.id || '#';
-    return entry.data.url || (entry.data.run_id ? `https://www.strava.com/activities/${entry.data.run_id}` : '#');
+    if (entry.kind === 'neodb') return goLink(entry.data.item.id);
+    const stravaHref = entry.data.url || (entry.data.run_id ? `https://www.strava.com/activities/${entry.data.run_id}` : '#');
+    return goLink(stravaHref);
 }
 
 type DayHeat = {

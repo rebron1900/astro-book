@@ -4,17 +4,26 @@ import type { TimelineEntry } from '../../api/store';
 import type { Post } from '@ts-ghost/content-api';
 import { normalizeSlug } from '../../lib/utils/help';
 import { timeline } from '../../api/store';
-import { BookOpenText, Clapperboard, Footprints, MessageCircle } from '@lucide/astro';
+import { BookOpenText, Footprints, LibraryBig, MessageCircle } from '@lucide/astro';
 import PostMeta from '../ui/PostMeta.astro';
 import Hero from '../layout/Hero.astro';
 import LedgerMemo from './LedgerMemo.astro';
 import LedgerNeodb from './LedgerNeodb.astro';
 import LedgerStrava from './LedgerStrava.astro';
+import NeodbCategoryIcon from '../ui/NeodbCategoryIcon.astro';
+import TimelineMonthList from './TimelineMonthList.astro';
 
 type PostItem = Post & { type: string };
 type RawItem = TimelineEntry | PostItem | Memo;
 
-const { page, filterKind = 'all' } = Astro.props as { page: { data: RawItem[]; url?: { next?: string; prev?: string; current?: string }; currentPage?: number }; filterKind?: string };
+type FilterNavItem = { label: string; href: string; count: number; active?: boolean };
+const { page, filterKind = 'all', filterNav = null, groupBy = 'day', monthCategory = 'all' } = Astro.props as {
+    page: { data: RawItem[]; url?: { next?: string; prev?: string; current?: string }; currentPage?: number };
+    filterKind?: string;
+    filterNav?: FilterNavItem[] | null;
+    groupBy?: 'day' | 'month';
+    monthCategory?: string;
+};
 const url = new URL(Astro.request.url);
 const isHomePage = url.pathname === '/';
 const isTimelinePage = page.data.some((item) => 'kind' in item);
@@ -144,17 +153,32 @@ function excerptText(value: string | null | undefined, max = 150) {
         </header>
 
         <div class="timeline-toolbar" data-timeline-toolbar>
-            <div class="filter-chips" role="group" aria-label="时间线筛选">
-                <a class:list={['filter-chip', { 'is-active': activeKind === 'all' }]} href={filterHref('all')} aria-current={activeKind === 'all' ? 'page' : undefined}>全部 <span data-count="all" data-total={timelineTotals.all}>{timelineTotals.all}</span></a>
-                <a class:list={['filter-chip', { 'is-active': activeKind === 'post' }]} href={filterHref('post')} aria-current={activeKind === 'post' ? 'page' : undefined}>文章 <span data-count="post" data-total={timelineTotals.post}>{timelineTotals.post}</span></a>
-                <a class:list={['filter-chip', { 'is-active': activeKind === 'memo' }]} href={filterHref('memo')} aria-current={activeKind === 'memo' ? 'page' : undefined}>随记 <span data-count="memo" data-total={timelineTotals.memo}>{timelineTotals.memo}</span></a>
-                <a class:list={['filter-chip', { 'is-active': activeKind === 'neodb' }]} href={filterHref('neodb')} aria-current={activeKind === 'neodb' ? 'page' : undefined}>书影音 <span data-count="neodb" data-total={timelineTotals.neodb}>{timelineTotals.neodb}</span></a>
-                <a class:list={['filter-chip', { 'is-active': activeKind === 'strava' }]} href={filterHref('strava')} aria-current={activeKind === 'strava' ? 'page' : undefined}>运动 <span data-count="strava" data-total={timelineTotals.strava}>{timelineTotals.strava}</span></a>
-            </div>
-            <p class="timeline-count" data-timeline-count data-active-kind={activeKind} aria-live="polite">共 {activeKind === 'all' ? timelineTotals.all : timelineTotals[activeKind as keyof typeof timelineTotals]} 条</p>
+            {filterNav ? (
+                <div class="filter-chips" role="group" aria-label="时间线分类筛选">
+                    {filterNav.map((item) => (
+                        <a class:list={['filter-chip', { 'is-active': item.active }]} href={item.href} aria-current={item.active ? 'page' : undefined}>
+                            {item.label} <span>{item.count}</span>
+                        </a>
+                    ))}
+                </div>
+            ) : (
+                <div class="filter-chips" role="group" aria-label="时间线筛选">
+                    <a class:list={['filter-chip', { 'is-active': activeKind === 'all' }]} href={filterHref('all')} aria-current={activeKind === 'all' ? 'page' : undefined}>全部 <span data-count="all" data-total={timelineTotals.all}>{timelineTotals.all}</span></a>
+                    <a class:list={['filter-chip', { 'is-active': activeKind === 'post' }]} href={filterHref('post')} aria-current={activeKind === 'post' ? 'page' : undefined}>文章 <span data-count="post" data-total={timelineTotals.post}>{timelineTotals.post}</span></a>
+                    <a class:list={['filter-chip', { 'is-active': activeKind === 'memo' }]} href={filterHref('memo')} aria-current={activeKind === 'memo' ? 'page' : undefined}>随记 <span data-count="memo" data-total={timelineTotals.memo}>{timelineTotals.memo}</span></a>
+                    <a class:list={['filter-chip', { 'is-active': activeKind === 'neodb' }]} href={filterHref('neodb')} aria-current={activeKind === 'neodb' ? 'page' : undefined}>书影音 <span data-count="neodb" data-total={timelineTotals.neodb}>{timelineTotals.neodb}</span></a>
+                    <a class:list={['filter-chip', { 'is-active': activeKind === 'strava' }]} href={filterHref('strava')} aria-current={activeKind === 'strava' ? 'page' : undefined}>运动 <span data-count="strava" data-total={timelineTotals.strava}>{timelineTotals.strava}</span></a>
+                </div>
+            )}
+            <p class="timeline-count" data-timeline-count data-active-kind={activeKind} aria-live="polite">
+                共 {filterNav ? (filterNav.find((item) => item.active)?.count ?? filterNav[0]?.count ?? 0) : (activeKind === 'all' ? timelineTotals.all : timelineTotals[activeKind as keyof typeof timelineTotals])} 条
+            </p>
         </div>
 
-        <div class="tl tl-ledger timeline-list" data-timeline-list data-next={page.url?.next ?? ''}>
+        {groupBy === 'month' ? (
+            <TimelineMonthList entries={entries} page={page} category={monthCategory} />
+        ) : (
+            <div class="tl tl-ledger timeline-list" data-timeline-list data-next={page.url?.next ?? ''}>
         {entries.map((entry, index) => {
             if (stravaGroupMembers.has(index) || neodbGroupMembers.has(index)) return null;
             const showDate = index === 0 || dateKey(entries[index - 1].time) !== dateKey(entry.time);
@@ -173,7 +197,7 @@ function excerptText(value: string | null | undefined, max = 150) {
                         <span class="rail-marker">
                             {entry.kind === 'post' && <BookOpenText />}
                             {entry.kind === 'memo' && <MessageCircle />}
-                            {entry.kind === 'neodb' && <Clapperboard />}
+                            {entry.kind === 'neodb' && (neodbGroup ? <LibraryBig /> : <NeodbCategoryIcon category={entry.data.item.category} />)}
                             {entry.kind === 'strava' && <Footprints />}
                         </span>
                     </div>
@@ -183,14 +207,16 @@ function excerptText(value: string | null | undefined, max = 150) {
                             {entry.kind === 'memo' && <LedgerMemo memo={entry.data} />}
 
                             {entry.kind === 'post' && (
-                                <article class="markdown book-post timeline-post">
-                                    <h2 class="book-title">
-                                        <a href={normalizeSlug(entry.data.slug)}>{entry.data.title}</a>
-                                    </h2>
-                                    <PostMeta post={entry.data} />
-                                    {excerptText(entry.data.excerpt) && (
-                                        <p>{excerptText(entry.data.excerpt)}</p>
-                                    )}
+                                <article class="ledger-post timeline-post-card">
+                                    <div class="timeline-post-content">
+                                        <h2 class="book-title">
+                                            <a href={normalizeSlug(entry.data.slug)}>{entry.data.title}</a>
+                                        </h2>
+                                        <PostMeta post={entry.data} />
+                                        {excerptText(entry.data.excerpt) && (
+                                            <p>{excerptText(entry.data.excerpt)}</p>
+                                        )}
+                                    </div>
                                 </article>
                             )}
 
@@ -224,6 +250,7 @@ function excerptText(value: string | null | undefined, max = 150) {
             );
         })}
         </div>
+        )}
         <p class="timeline-empty" data-timeline-empty hidden>没有符合条件的记录。</p>
     </>
 ) : (
@@ -349,20 +376,59 @@ function excerptText(value: string | null | undefined, max = 150) {
             }, { rootMargin: '0px 0px -5% 0px', threshold: 0.05 })
             : null;
 
-        const setupReveal = (root = document) => {
-            if (!revealObserver) return;
-            root.querySelectorAll('.ledger-row:not([data-reveal-ready])').forEach((row) => {
+        const setupReveal = (root = document, animate = true) => {
+            root.querySelectorAll('.ledger-row:not([data-reveal-ready]), .timeline-month-row:not([data-reveal-ready])').forEach((row) => {
                 row.dataset.revealReady = 'true';
+                if (!animate || !revealObserver) {
+                    row.classList.add('is-visible');
+                    return;
+                }
                 row.classList.add('reveal-ready');
                 revealObserver.observe(row);
             });
         };
 
-        const setupNewRows = () => {
+        const setupNewRows = (animate = true) => {
             setupMemoText();
             setupPhotoStacks();
-            setupReveal();
+            setupReveal(document, animate);
             window.dispatchEvent(new CustomEvent('timeline:updated'));
+        };
+
+        const pageCache = new Map();
+        const fetchPage = (url) => {
+            if (!pageCache.has(url)) {
+                pageCache.set(
+                    url,
+                    fetch(url, { headers: { 'X-Requested-With': 'fetch' } })
+                        .then((response) => {
+                            if (!response.ok) throw new Error('Request failed');
+                            return response.text();
+                        })
+                        .catch(() => {
+                            pageCache.delete(url);
+                            return null;
+                        })
+                );
+            }
+            return pageCache.get(url);
+        };
+
+        const prefetchSeen = new Set();
+        const prefetchChain = (url, depth) => {
+            if (!url || depth <= 0 || prefetchSeen.has(url)) return;
+            prefetchSeen.add(url);
+            void fetchPage(url).then((html) => {
+                if (!html || depth <= 1) return;
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const nextList = doc.querySelector('[data-timeline-list]');
+                const nextUrl = nextList?.getAttribute('data-next');
+                if (nextUrl) prefetchChain(nextUrl, depth - 1);
+            });
+        };
+
+        const prefetchNext = () => {
+            prefetchChain(list.dataset.next, 3);
         };
 
         const loadNext = async () => {
@@ -371,21 +437,34 @@ function excerptText(value: string | null | undefined, max = 150) {
             if (!nextUrl) return false;
             loading = true;
             try {
-                const response = await fetch(nextUrl, { headers: { 'X-Requested-With': 'fetch' } });
-                if (!response.ok) return false;
-                const html = await response.text();
+                const html = await fetchPage(nextUrl);
+                if (!html) return false;
                 const doc = new DOMParser().parseFromString(html, 'text/html');
                 const nextList = doc.querySelector('[data-timeline-list]');
                 if (!nextList) return false;
-                const incoming = Array.from(nextList.querySelectorAll('.ledger-row'));
+                const incoming = Array.from(nextList.querySelectorAll('.ledger-row, .timeline-month-row'));
                 if (!incoming.length) {
                     list.dataset.next = '';
                     return false;
                 }
-                incoming.forEach((row) => list.append(row));
+                if (list.dataset.groupBy === 'month') {
+                    incoming.forEach((row) => {
+                        if (!row.matches('.timeline-month-row')) return;
+                        const key = row.getAttribute('data-month-key');
+                        const existing = key ? list.querySelector(`.timeline-month-row[data-month-key="${key}"]`) : null;
+                        const grid = existing?.querySelector('.timeline-month-grid');
+                        if (grid) {
+                            row.querySelectorAll('.timeline-month-grid > *').forEach((card) => grid.append(card));
+                        } else {
+                            list.append(row);
+                        }
+                    });
+                } else {
+                    incoming.forEach((row) => list.append(row));
+                }
                 list.dataset.next = nextList.getAttribute('data-next') || '';
-                if (nextUrl) window.history.replaceState({}, '', nextUrl);
                 setupNewRows();
+                prefetchNext();
                 return true;
             } catch {
                 return false;
@@ -394,7 +473,28 @@ function excerptText(value: string | null | undefined, max = 150) {
             }
         };
 
+        const loadStatus = document.querySelector('[data-timeline-load-status]');
+        const refreshLoadStatus = () => {
+            if (!loadStatus) return;
+            loadStatus.textContent = list.dataset.next ? '继续向下滚动加载更多' : '已加载全部';
+        };
+        const requestNext = async () => {
+            if (loading) return false;
+            if (loadStatus) loadStatus.textContent = '正在加载…';
+            const loaded = await loadNext();
+            refreshLoadStatus();
+            return loaded;
+        };
+
         setupNewRows();
+        refreshLoadStatus();
+        prefetchNext();
+
+        window.addEventListener('scroll', () => {
+            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2600) {
+                void requestNext();
+            }
+        }, { passive: true });
 
         const hidePagination = () => document.querySelector('.book-pagination')?.setAttribute('hidden', '');
         hidePagination();
@@ -405,14 +505,30 @@ function excerptText(value: string | null | undefined, max = 150) {
         sentinel.setAttribute('aria-hidden', 'true');
         list.after(sentinel);
 
+        const loadMoreButton = list.dataset.loadMore === 'true' ? document.createElement('button') : null;
+        if (loadMoreButton) {
+            loadMoreButton.type = 'button';
+            loadMoreButton.className = 'timeline-load-more';
+            loadMoreButton.textContent = '加载更多';
+            loadMoreButton.addEventListener('click', async () => {
+                loadMoreButton.disabled = true;
+                loadMoreButton.textContent = '加载中…';
+                await requestNext();
+                loadMoreButton.disabled = false;
+                loadMoreButton.textContent = '加载更多';
+                loadMoreButton.hidden = !list.dataset.next;
+            });
+            list.after(loadMoreButton);
+        }
+
         if ('IntersectionObserver' in window) {
             const loadObserver = new IntersectionObserver((entries) => {
-                if (entries.some((entry) => entry.isIntersecting)) loadNext();
-            }, { rootMargin: '700px 0px' });
+                if (entries.some((entry) => entry.isIntersecting)) void requestNext();
+            }, { rootMargin: '2800px 0px' });
             loadObserver.observe(sentinel);
         } else {
             window.addEventListener('scroll', () => {
-                if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 700) loadNext();
+                if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2600) void requestNext();
             }, { passive: true });
         }
         };
@@ -536,6 +652,30 @@ function excerptText(value: string | null | undefined, max = 150) {
         margin: 1.5rem 0;
         color: var(--gray-500);
         font-size: 0.8125rem;
+    }
+
+    .timeline-load-more {
+        display: block;
+        margin: 1.2rem auto 0;
+        padding: 0.35rem 0.9rem;
+        border: 1px solid var(--gray-200);
+        border-radius: 999px;
+        background: transparent;
+        color: var(--gray-700);
+        font: inherit;
+        font-size: 0.72rem;
+        line-height: 1.3;
+        cursor: pointer;
+    }
+
+    .timeline-load-more:hover:not(:disabled) {
+        border-color: var(--body-font-color);
+        color: var(--body-font-color);
+    }
+
+    .timeline-load-more:disabled {
+        cursor: wait;
+        opacity: 0.6;
     }
 
     .book-pagination[hidden] {
@@ -713,11 +853,13 @@ function excerptText(value: string | null | undefined, max = 150) {
     .ledger-body { min-inline-size: 0; }
     .ledger-content { min-inline-size: 0; }
 
-    .timeline-post {
-        margin-block-end: 0;
+    .ledger-post.timeline-post-card {
+        max-block-size: none;
     }
 
-    .timeline-post .book-title {
+    .timeline-post-content { min-inline-size: 0; }
+
+    .timeline-post-card .book-title {
         margin: 0;
         font-size: 1.05rem;
         font-weight: 600;
@@ -725,11 +867,11 @@ function excerptText(value: string | null | undefined, max = 150) {
         letter-spacing: -0.01em;
     }
 
-    .timeline-post .book-title a {
-        color: var(--color-link);
+    .timeline-post-card .book-title a {
+        color: var(--body-font-color);
     }
 
-    .timeline-post .book-post-meta {
+    .timeline-post-card .book-post-meta {
         margin-block-start: 0.35rem;
         color: var(--gray-500);
         font-family: inherit;
@@ -738,14 +880,14 @@ function excerptText(value: string | null | undefined, max = 150) {
         line-height: 1.4;
     }
 
-    .timeline-post .book-post-tags {
+    .timeline-post-card .book-post-tags {
         margin-block-start: 0.15rem;
         color: var(--gray-500);
         font-size: 0.75rem;
         line-height: 1.4;
     }
 
-    .timeline-post p {
+    .timeline-post-card p {
         margin: 0.5rem 0 0;
         color: var(--gray-700);
         font-size: 0.875rem;
@@ -842,18 +984,35 @@ function excerptText(value: string | null | undefined, max = 150) {
         padding: 0.7rem 0.85rem 0.75rem;
         border-radius: 0.9rem 1.2rem 1.2rem 0.9rem;
         background: var(--bubble-bg);
-        box-shadow: 0 1px 2px rgb(0 0 0 / 0.045);
+        box-shadow:
+            inset 0 0 0 1px var(--gray-200),
+            0 1px 2px rgb(0 0 0 / 0.045);
     }
 
-    .memo-block::before {
+    .memo-block::before,
+    .memo-block::after {
         content: '';
         position: absolute;
-        top: 1.05rem;
-        left: -0.58rem;
-        inline-size: 0.7rem;
-        block-size: 1rem;
-        background: var(--bubble-bg);
         clip-path: polygon(100% 0, 100% 100%, 0 50%);
+    }
+
+    /* 外层画描边，内层用气泡背景盖住中间，只留下三角形边缘。 */
+    .memo-block::before {
+        top: 1.05rem;
+        left: -0.76em;
+        z-index: 0;
+        inline-size: 0.74rem;
+        block-size: 1.04rem;
+        background: var(--gray-200);
+    }
+
+    .memo-block::after {
+        top: 1.11rem;
+        left: -0.68em;
+        z-index: 2;
+        inline-size: 0.72rem;
+        block-size: 0.92rem;
+        background: var(--bubble-bg);
     }
 
     .memo-text-wrap {
@@ -946,12 +1105,6 @@ function excerptText(value: string | null | undefined, max = 150) {
     .memo-block .memo-content {
         color: var(--body-font-color);
         overflow-wrap: anywhere;
-    }
-
-    .memo-block .memo-content.markdown strong {
-        text-decoration: underline;
-        text-decoration-style: dotted;
-        text-underline-offset: 0.3em;
     }
 
     .memo-block .memo-content :first-child { margin-block-start: 0; }
@@ -1109,7 +1262,19 @@ function excerptText(value: string | null | undefined, max = 150) {
     }
 
     .neodb-card .media-info { min-inline-size: 0; padding-inline-end: 3.4rem; }
-    .neodb-card .kicker { margin: 0; }
+    .neodb-card .kicker {
+        display: flex;
+        align-items: center;
+        gap: 0.28rem;
+        margin: 0;
+    }
+
+    .neodb-card .kicker svg {
+        flex: 0 0 auto;
+        inline-size: 0.72rem;
+        block-size: 0.72rem;
+        stroke-width: 1.8;
+    }
     .neodb-card .entry-title {
         margin-block-start: 0.25rem;
         overflow: hidden;
@@ -1164,6 +1329,26 @@ function excerptText(value: string | null | undefined, max = 150) {
     .entry-title a:hover { color: var(--color-hover-link); }
     .ext { margin-inline-start: 0.15rem; color: var(--gray-500); font-size: 0.75rem; font-weight: 400; }
     .excerpt { max-inline-size: 40rem; margin: 0.35rem 0 0; color: var(--gray-700); font-size: 0.875rem; line-height: 1.7; }
+
+    /* 时间线统一层级：日期 < 辅助信息 < 标题 < 正文 */
+    .timeline-list .ledger-date-value { font-size: 0.875rem; }
+    .timeline-list .ledger-date .ledger-year,
+    .timeline-list .ledger-date .ledger-weekday { font-size: 0.5625rem; }
+    .timeline-list .kicker { font-size: 0.6875rem; line-height: 1.35; letter-spacing: 0.035em; }
+    .timeline-list .entry-title,
+    .timeline-list .book-title { font-size: 1.0625rem; font-weight: 600; line-height: 1.4; letter-spacing: -0.01em; }
+    .timeline-list .excerpt { font-size: 0.875rem; line-height: 1.7; }
+    .timeline-list .neodb-card .excerpt { font-size: 0.8125rem; line-height: 1.6; }
+    .timeline-list .memo-block .memo-content.markdown { font-size: 0.9375rem; line-height: 1.75; }
+    .timeline-list .memo-block .memo-content.markdown h1,
+    .timeline-list .memo-block .memo-content.markdown h2,
+    .timeline-list .memo-block .memo-content.markdown h3,
+    .timeline-list .memo-block .memo-content.markdown h4,
+    .timeline-list .memo-block .memo-content.markdown h5,
+    .timeline-list .memo-block .memo-content.markdown h6 { margin-block: 1rem 0.35rem; font-size: 1rem; line-height: 1.4; }
+    .timeline-list .memo-block .memo-content.markdown h1:first-child,
+    .timeline-list .memo-block .memo-content.markdown h2:first-child,
+    .timeline-list .memo-block .memo-content.markdown h3:first-child { margin-block-start: 0; }
     .rating { display: flex; align-items: baseline; gap: 0.15rem; color: #b37a00; font-size: 0.75rem; font-weight: 600; }
     .rating small { color: var(--gray-500); font-size: 0.6875rem; font-weight: 400; }
 
@@ -1178,20 +1363,21 @@ function excerptText(value: string | null | undefined, max = 150) {
 
     .strava-card {
         --strava-color: #16a34a;
-        --strava-soft: var(--green-soft);
         position: relative;
         overflow: hidden;
         padding: 0.8rem 0.9rem 0.85rem;
         border-radius: 0.375rem;
-        background: var(--strava-soft);
-        box-shadow: inset 3px 0 0 color-mix(in srgb, var(--strava-color) 48%, var(--gray-500));
+        background: color-mix(in srgb, var(--body-background) 92%, var(--strava-color));
+        box-shadow:
+            inset 3px 0 0 color-mix(in srgb, var(--strava-color) 48%, var(--gray-500)),
+            inset 0 0 0 1px var(--gray-200);
     }
-    .strava-card.sport-ride { --strava-color: #2563eb; --strava-soft: color-mix(in srgb, #dbeafe 42%, var(--body-background)); }
-    .strava-card.sport-walk { --strava-color: #b45309; --strava-soft: color-mix(in srgb, #fef3c7 32%, var(--body-background)); }
-    .strava-card.sport-hike { --strava-color: #4d7c0f; --strava-soft: color-mix(in srgb, #ecfccb 30%, var(--body-background)); }
-    .strava-card.sport-climb { --strava-color: #7c3aed; --strava-soft: color-mix(in srgb, #ede9fe 35%, var(--body-background)); }
-    .strava-card.sport-swim { --strava-color: #0e7490; --strava-soft: color-mix(in srgb, #cffafe 35%, var(--body-background)); }
-    .strava-card.sport-other { --strava-color: var(--gray-500); --strava-soft: var(--gray-100); }
+    .strava-card.sport-ride { --strava-color: #2563eb; }
+    .strava-card.sport-walk { --strava-color: #b45309; }
+    .strava-card.sport-hike { --strava-color: #4d7c0f; }
+    .strava-card.sport-climb { --strava-color: #7c3aed; }
+    .strava-card.sport-swim { --strava-color: #0e7490; }
+    .strava-card.sport-other { --strava-color: var(--gray-500); }
     .strava-route {
         position: absolute; top: 0; right: 0; bottom: 0;
         inline-size: 100%; block-size: 100%;
@@ -1221,6 +1407,13 @@ function excerptText(value: string | null | undefined, max = 150) {
         .neodb-card .cover { inline-size: 3.8rem; }
         .neodb-card .kicker { font-size: 0.625rem; }
         .neodb-card .entry-title { font-size: 0.95rem; line-height: 1.35; }
+        .timeline-post-card p {
+            display: -webkit-box;
+            overflow: hidden;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+        }
         .neodb-card .rating { margin-block-start: 0.15rem; font-size: 0.6875rem; }
         .neodb-card .excerpt { display: -webkit-box; margin-block-start: 0.25rem; overflow: hidden; font-size: 0.8125rem; line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
         .strava-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }

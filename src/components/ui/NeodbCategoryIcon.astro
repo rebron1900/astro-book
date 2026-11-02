@@ -1,0 +1,23 @@
+---
+import { BookOpen, Clapperboard, Gamepad2, Music2, Podcast, Theater, Tv } from '@lucide/astro';
+
+interface Props {
+    category?: string;
+    size?: number;
+    class?: string;
+}
+
+const { category, size = 13, class: className } = Astro.props;
+const icons = {
+    movie: Clapperboard,
+    tv: Tv,
+    book: BookOpen,
+    game: Gamepad2,
+    music: Music2,
+    podcast: Podcast,
+    performance: Theater
+};
+const Icon = icons[category as keyof typeof icons] ?? Clapperboard;
+---
+
+<Icon size={size} class={className} aria-hidden="true" />

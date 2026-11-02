@@ -1,0 +1,78 @@
+---
+import { pages, settings, timeline } from '../../api/store';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Head from '../../components/islands/Head.astro';
+import Header from '../../components/layout/Header.astro';
+import Menu from '../../components/layout/Menu.astro';
+import List from '../../components/islands/List.astro';
+import Pagination from '../../components/ui/Pagination.astro';
+import Comments from '../../components/islands/Comments.astro';
+
+const { page, activeCategory = 'all' } = Astro.props as { page: any; activeCategory?: string };
+const pageDouban = pages.find((post) => post.slug == 'douban');
+const fullWidthPage = pageDouban
+    ? { ...pageDouban, tags: [...(pageDouban.tags ?? []), { slug: 'hash-page-fullwidth', name: 'Full Width' } as any] }
+    : pageDouban;
+
+const categoryMap: Record<string, string> = { movie: '电影', tv: '剧集', book: '书籍', music: '音乐', game: '游戏', podcast: '播客', performance: '演出' };
+const categoryOrder = ['movie', 'tv', 'book', 'music', 'game', 'podcast', 'performance'];
+const neodbEntries = timeline.filter((entry) => entry.kind === 'neodb');
+const filterNav = [
+    { label: '全部', href: '/douban/', count: neodbEntries.length, active: activeCategory === 'all' },
+    ...categoryOrder.map((key) => ({
+        label: categoryMap[key],
+        href: `/douban/${key}/`,
+        count: neodbEntries.filter((entry) => entry.data.item.category === key).length,
+        active: activeCategory === key
+    }))
+].filter((item) => item.count > 0);
+---
+
+<BaseLayout post={fullWidthPage} hideToc>
+    <Head
+        slot="head"
+        post={pageDouban}
+        site={settings}
+        title={`${pageDouban?.title || '书影音游'} | ${settings?.title} - ${settings?.description}`}
+    />
+    <Header slot="header" title={pageDouban?.title || '书影音游'} />
+    <Menu slot="menu" title="书影音" />
+
+    <List slot="content" page={page} filterKind="neodb" filterNav={filterNav} groupBy="month" monthCategory={activeCategory} />
+
+    <Pagination slot="pagination" page={page} />
+    <Comments slot="comments" />
+</BaseLayout>
+
+<script>
+    import tippy from 'tippy.js';
+
+    const setupCommentTooltips = () => {
+        document.querySelectorAll<HTMLElement>('.neodb-card .excerpt').forEach((element) => {
+            if (element.dataset.commentTip === 'true') return;
+            if (element.scrollHeight <= element.clientHeight + 1) return;
+            const content = element.textContent?.trim();
+            if (!content) return;
+            element.dataset.commentTip = 'true';
+            tippy(element, {
+                content,
+                allowHTML: false,
+                interactive: false,
+                maxWidth: 'min(22rem, 70vw)',
+                theme: 'auto',
+                appendTo: () => document.body
+            });
+        });
+    };
+
+    const bootCommentTooltips = () => {
+        requestAnimationFrame(setupCommentTooltips);
+        document.fonts?.ready.then(setupCommentTooltips);
+    };
+
+    bootCommentTooltips();
+    document.addEventListener('astro:page-load', bootCommentTooltips);
+    window.addEventListener('timeline:updated', bootCommentTooltips);
+    window.addEventListener('resize', setupCommentTooltips);
+</script>

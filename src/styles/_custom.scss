@@ -1940,6 +1940,7 @@ $page-sequence-max-items: 12;
 .relitu-tooltip-date {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.35rem;
     margin-block-end: 0.35rem;
     padding-block-end: 0.35rem;
@@ -1973,8 +1974,9 @@ $page-sequence-max-items: 12;
 }
 
 .relitu-tooltip-list {
-    inline-size: min(16rem, 70vw);
-    max-inline-size: 100%;
+    inline-size: max-content;
+    max-inline-size: min(16rem, 70vw);
+    min-inline-size: 0;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -2022,4 +2024,18 @@ $page-sequence-max-items: 12;
 
 .relitu-tooltip-list a:hover {
     text-decoration: underline;
+}
+
+.book-article strong {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 0.3em;
+}
+
+/* 所有 page 页面标题统一对齐 /douban/ 的标题层级。 */
+.book-article h1.page-title {
+    font-size: clamp(1.3rem, 1.55vw, 1.55rem);
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.025em;
 }

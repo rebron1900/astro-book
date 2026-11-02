@@ -1,100 +1,177 @@
 ---
 import { pages, settings, flux, fluxLost } from '../api/store';
+import type { FluxEntry } from '../api/types';
 import { normalizeData } from '../lib/utils/help';
-import type { FluxLostFeed } from '../api/types';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/islands/Head.astro';
-import Comments from '../components/islands/Comments.astro';
 import Header from '../components/layout/Header.astro';
 import Menu from '../components/layout/Menu.astro';
-import { Markup } from 'astro-remote';
-import CodeSlot from '../components/islands/CodeSlot.astro';
-import IFrameSlot from '../components/ui/IFrameSlot.astro';
-import RemotePicture from '../components/ui/RemotePicture.astro';
-import Columns from '../components/shortcode/Columns.astro';
-import Details from '../components/shortcode/Details.astro';
-import Link from '../components/shortcode/Link.astro';
-import { DoorOpen, Unplug } from '@lucide/astro';
+import LinksStyles from '../components/pages/LinksStyles.astro';
 import ScrollReveal from '../components/islands/ScrollReveal.astro';
+import Comments from '../components/islands/Comments.astro';
+import { Unplug } from '@lucide/astro';
 
 const page = pages.find((post) => post.slug == 'links');
+const fullWidthPage = page
+    ? { ...page, tags: [...(page.tags ?? []), { slug: 'hash-page-fullwidth', name: 'Full Width' } as any] }
+    : page;
+
+function entryTime(item: FluxEntry) {
+    const raw = item.published_at || item.created_at || item.date;
+    const time = raw ? new Date(raw as string | number).getTime() : 0;
+    return Number.isFinite(time) ? time : 0;
+}
+
+const totalFriends = flux.length;
+const entries = [...flux].sort((a, b) => entryTime(b) - entryTime(a));
+
+function goLink(url: string | undefined) {
+    if (!url) return '#';
+    return `/golink?target=${btoa(encodeURIComponent(url))}`;
+}
+
+function entryUrl(item: FluxEntry) {
+    return item.url || (item.link as string | undefined) || item.feed?.site_url || '#';
+}
+
+function initial(value: string | undefined) {
+    return (value || '友').trim().slice(0, 1);
+}
+
+function siteHost(value: string | undefined) {
+    if (!value) return 'friend';
+    try {
+        return new URL(value).hostname.replace(/^www\./, '');
+    } catch {
+        return value.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    }
+}
+
+
+
 
 const lostReasonLabels = { error: '抓取失败', empty: '暂无文章', disabled: '已停用' } as const;
-
-function lostReasonTitle(item: FluxLostFeed): string | undefined {
-    if (item.error) return item.error;
-    const lastEntry = normalizeData(item.last_entry_at);
-    return lastEntry ? `最后文章：${lastEntry}` : undefined;
-}
 ---
 
-<BaseLayout post={page}>
-    <Head slot="head" post={page} site={settings} title={page?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
-
-    <Header slot="header" title={page?.title} />
+<BaseLayout post={fullWidthPage} hideToc>
+    <Head slot="head" post={page} site={settings} title={`${page?.title || '友邻'} | ${settings?.title} - ${settings?.description}`} />
+    <Header slot="header" title="友邻" />
     <Menu slot="menu" />
 
-    <article slot="content" class="markdown book-article">
-        <h1 class="book-title"><DoorOpen /> {page?.title}</h1>
+    <article slot="content" class="markdown book-article pv-page">
+        <LinksStyles />
+        <header class="pv-header">
+            <h1 class="pv-title page-title">去别人的院子里坐一会儿。</h1>
+            <p class="pv-intro">这里是我常去逛逛的地方。有人写技术，有人写生活，有人只是偶尔记下一阵风。顺着这些名字点过去，看看他们最近在做什么。</p>
+        </header>
 
-        {
-            page?.html && (
-                <Markup
-                    content={page.html}
-                    sanitize={{ allowComponents: true, allowCustomElements: true }}
-                    components={{ pre: CodeSlot, img: RemotePicture, iframe: IFrameSlot, details: Details, columns: Columns, a: Link }}
-                />
-            )
-        }
-        <div class="book-columns flex flex-wrap">
-            {
-                flux.map((item) => (
-                    <div class="flex-even markdown-inner">
-                        <h3 class="book-title flex">
-                            <img loading="lazy" style="width: 1.5em;margin-right: 0.3em;" src={'https://icon.bqb.cool/?url=' + (item.feed?.site_url || '')} />
-                            <Link href={item.feed?.site_url || '#'} class="ellipsis" target="_blank">
-                                {item.feed?.title || 'Unknown Feed'}
-                            </Link>
-                        </h3>
-
-                        <div class="ellipsis">
-                            <Link href={item.url || (item.link as string | undefined) || '#'} class="ellipsis" target="_blank">
-                                {item.title || 'Untitled'}
-                            </Link>
-                        </div>
-                        <div>
-                            <span>{normalizeData(item.published_at || item.created_at || (item.date as string | number))}</span>
-                        </div>
-                    </div>
-                ))
-            }
+        <div class="pv-section-head">
+            <h2 class="pv-section-title">最近更新</h2>
+            <span class="pv-count">共 {totalFriends} 位友邻</span>
         </div>
 
-        {
-            fluxLost.length > 0 && (
-                <section class="lost-feeds" aria-labelledby="lost-feeds-title">
-                    <h2 class="book-title" id="lost-feeds-title">
-                        <Unplug /> 失联订阅
-                    </h2>
-                    <p class="lost-feeds-desc">以下 {fluxLost.length} 个订阅暂时没有获取到最新文章，可能已经失效或停更。</p>
-                    <ul class="lost-feeds-list">
-                        {fluxLost.map((item) => (
-                            <li class="lost-feed">
-                                <img loading="lazy" src={'https://icon.bqb.cool/?url=' + (item.site_url || '')} alt="" width="20" height="20" />
-                                <Link href={item.site_url || '#'} class="lost-feed-link ellipsis" target="_blank" title={item.title}>
-                                    {item.title}
-                                </Link>
-                                <span class="lost-feed-reason" title={lostReasonTitle(item)}>
-                                    {lostReasonLabels[item.reason]}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-                </section>
-            )
-        }
-        <ScrollReveal selector=".book-columns > .flex-even, .lost-feed" />
+        <div class="pv-friend-grid">
+            {entries.map((item) => (
+                <a class="pv-friend-card" href={goLink(entryUrl(item))} target="_blank" rel="noopener noreferrer">
+                    <div class="pv-friend-top">
+                        <span class="pv-avatar">
+                            <span>{initial(item.feed?.title)}</span>
+                            {item.feed?.site_url && (
+                                <img
+                                    loading="lazy"
+                                    src={`https://icon.bqb.cool/?url=${encodeURIComponent(item.feed.site_url)}`}
+                                    alt=""
+                                    onerror="this.style.display='none'"
+                                />
+                            )}
+                        </span>
+                        <div class="pv-friend-copy">
+                            <h2 class="pv-friend-site-title pv-clip-target">{item.feed?.title || 'Unknown Feed'}</h2>
+                            <span class="pv-friend-domain pv-clip-target">{siteHost(item.feed?.site_url)}</span>
+                        </div>
+                        <span class="pv-arrow">↗</span>
+                    </div>
+                    <div class="pv-friend-latest">
+                        <span class="pv-latest-label">最近更新</span>
+                        <span class="pv-friend-title pv-clip-target">{item.title || 'Untitled'}</span>
+                        <time class="pv-friend-date">{normalizeData(item.published_at || item.created_at || (item.date as string | number))}</time>
+                    </div>
+                </a>
+            ))}
+        </div>
+
+        {entries.length === 0 && <p class="pv-empty">暂时没有读到友邻的新文章。</p>}
+
+        {fluxLost.length > 0 && (
+            <section class="pv-lost" aria-labelledby="pv-lost-title">
+                <h2 class="pv-lost-title" id="pv-lost-title"><Unplug /> 失联订阅</h2>
+                <p class="pv-lost-intro">下面这些订阅暂时没有新文章，可能只是很久没更新，也可能已经停更了。</p>
+                <ul class="pv-lost-grid">
+                    {fluxLost.map((item) => (
+                        <li class="pv-lost-item-card">
+                            <a class="pv-friend-card" href={goLink(item.site_url || '#')} target="_blank" rel="noopener noreferrer">
+                                <div class="pv-friend-top">
+                                    <span class="pv-avatar">
+                                        <span>{initial(item.title)}</span>
+                                        {item.site_url && (
+                                            <img loading="lazy" src={`https://icon.bqb.cool/?url=${encodeURIComponent(item.site_url)}`} alt="" onerror="this.style.display='none'" />
+                                        )}
+                                    </span>
+                                    <div class="pv-friend-copy">
+                                        <h2 class="pv-friend-site-title pv-clip-target">{item.title}</h2>
+                                        <span class="pv-friend-domain pv-clip-target">{siteHost(item.site_url)}</span>
+                                    </div>
+                                    <span class="pv-arrow">↗</span>
+                                </div>
+                                <div class="pv-friend-latest">
+                                    <span class="pv-latest-label">订阅状态</span>
+                                    <span class="pv-friend-title pv-clip-target">{lostReasonLabels[item.reason]}</span>
+                                    <time class="pv-friend-date">{normalizeData(item.last_entry_at) || '暂无文章'}</time>
+                                </div>
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </section>
+        )}
+
+        <ScrollReveal selector=".pv-friend-card" />
     </article>
     <Comments slot="comments" />
 </BaseLayout>
+
+<script>
+    import tippy from 'tippy.js';
+
+    const setupClippedTooltips = () => {
+        document.querySelectorAll<HTMLElement>('.pv-clip-target').forEach((element) => {
+            if (element.dataset.clipReady === 'true') return;
+            const clipped =
+                element.scrollWidth > element.clientWidth + 1 ||
+                element.scrollHeight > element.clientHeight + 1;
+            if (!clipped) return;
+
+            const content = element.textContent?.trim();
+            if (!content) return;
+            element.dataset.clipReady = 'true';
+            tippy(element, {
+                content,
+                allowHTML: false,
+                interactive: false,
+                maxWidth: 'min(22rem, 70vw)',
+                theme: 'auto',
+                appendTo: () => document.body
+            });
+        });
+    };
+
+    const bootClippedTooltips = () => {
+        requestAnimationFrame(setupClippedTooltips);
+        document.fonts?.ready.then(setupClippedTooltips);
+    };
+
+    bootClippedTooltips();
+    document.addEventListener('astro:page-load', bootClippedTooltips);
+    window.addEventListener('resize', setupClippedTooltips);
+</script>

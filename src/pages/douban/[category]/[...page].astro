@@ -1,0 +1,21 @@
+---
+import type { GetStaticPathsOptions } from 'astro';
+import { timeline } from '../../../api/store';
+import DoubanTimelinePage from '../../../components/douban/DoubanTimelinePage.astro';
+
+export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
+    const categories = ['movie', 'tv', 'book', 'music', 'game', 'podcast', 'performance'];
+    const neodbEntries = timeline.filter((entry) => entry.kind === 'neodb');
+    return categories.flatMap((category) =>
+        paginate(
+            neodbEntries.filter((entry) => entry.data.item.category === category),
+            { params: { category }, pageSize: 10 }
+        )
+    );
+}
+
+const { page } = Astro.props;
+const category = Astro.params.category ?? 'all';
+---
+
+<DoubanTimelinePage page={page} activeCategory={category} />

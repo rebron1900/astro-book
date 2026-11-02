@@ -622,7 +622,7 @@ async function syncIntervals(env) {
         .map((item) => item.start_date_local?.slice(0, 10))
         .filter(Boolean)
         .sort();
-    const oldest = missingRoutes.length ? addDays(missingRoutes[0], -1) : latest ? addDays(latest, -1) : '2024-01-01';
+    const oldest = missingRoutes.length ? addDays(missingRoutes[0], -1) : latest ? addDays(latest, -90) : '2024-01-01';
     const newest = new Date().toISOString().slice(0, 10);
 
     const params = new URLSearchParams({
@@ -639,14 +639,29 @@ async function syncIntervals(env) {
     const merged = [...known];
     for (const activity of data) {
         if (!activity?.id) continue;
+        const candidate = toStravaActivity(activity);
         const existing = merged.find((item) => String(item.run_id) === String(activity.id));
         if (existing) {
+            // Intervals 里可能修改活动名称、类型或统计值，已有记录也要刷新。
+            Object.assign(existing, {
+                name: candidate.name,
+                distance: candidate.distance,
+                moving_time: candidate.moving_time,
+                type: candidate.type,
+                subtype: candidate.subtype,
+                start_date: candidate.start_date,
+                start_date_local: candidate.start_date_local,
+                average_heartrate: candidate.average_heartrate,
+                average_speed: candidate.average_speed,
+                elevation_gain: candidate.elevation_gain,
+                url: candidate.url,
+                source: candidate.source
+            });
             if (!existing.summary_polyline && Number(activity.distance ?? 0) > 0) {
                 existing.summary_polyline = await fetchIntervalsMap(activity.id, authorization);
             }
             continue;
         }
-        const candidate = toStravaActivity(activity);
         if (Number(activity.distance ?? 0) > 0) {
             candidate.summary_polyline = await fetchIntervalsMap(activity.id, authorization);
         }

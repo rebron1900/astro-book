@@ -31,7 +31,7 @@ const page = pages.find((post) => post.slug == 'about-now');
     <Menu slot="menu" />
 
     <div slot="content" class="markdown book-article">
-        <h1 class="book-title"><Sprout /> {page?.title}</h1>
+        <h1 class="book-title page-title"><Sprout /> {page?.title}</h1>
         {
             page?.feature_image && true && (
                 <figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption">

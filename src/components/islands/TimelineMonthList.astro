@@ -1,0 +1,163 @@
+---
+import type { TimelineEntry } from '../../api/store';
+import { LibraryBig } from '@lucide/astro';
+import LedgerNeodb from './LedgerNeodb.astro';
+import NeodbCategoryIcon from '../ui/NeodbCategoryIcon.astro';
+
+const { entries, page, category = 'all' } = Astro.props as {
+    entries: TimelineEntry[];
+    page: { url?: { next?: string } };
+    category?: string;
+};
+
+type MonthGroup = {
+    key: string;
+    year: string;
+    month: string;
+    items: TimelineEntry[];
+};
+
+const groups: MonthGroup[] = [];
+entries.forEach((entry) => {
+    const date = new Date(entry.time);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    let group = groups.find((item) => item.key === key);
+    if (!group) {
+        group = { key, year: String(date.getFullYear()), month: String(date.getMonth() + 1), items: [] };
+        groups.push(group);
+    }
+    group.items.push(entry);
+});
+---
+
+<div class="timeline-month-list" data-timeline-list data-group-by="month" data-next={page.url?.next ?? ''}>
+    {groups.map((group) => (
+        <section class="timeline-month-row" data-month-key={group.key}>
+            <div class="timeline-month-date">
+                <span class="timeline-month-year">{group.year}</span>
+                <time class="timeline-month-value" datetime={group.key}>{group.month}月</time>
+            </div>
+            <div class="timeline-month-rail" aria-hidden="true">
+                <span class="rail-marker">{category === 'all' ? <LibraryBig /> : <NeodbCategoryIcon category={category} />}</span>
+            </div>
+            <div class="timeline-month-content">
+                <div class="timeline-month-grid">
+                    {group.items.map((entry) => <LedgerNeodb mark={entry.data} />)}
+                </div>
+            </div>
+        </section>
+    ))}
+</div>
+<p class="timeline-load-status" data-timeline-load-status aria-live="polite">继续向下滚动加载更多</p>
+
+<style is:global>
+    .timeline-month-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .timeline-month-row {
+        display: grid;
+        grid-template-columns: 3.4rem 1.25rem minmax(0, 1fr);
+        gap: 1rem;
+        align-items: start;
+    }
+
+    .timeline-month-row + .timeline-month-row {
+        margin-block-start: 2.2rem;
+    }
+
+    .timeline-month-date {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.08rem;
+        padding-block-start: 0.1rem;
+        color: var(--gray-700);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .timeline-month-year {
+        color: var(--gray-500);
+        font-size: 0.5625rem;
+        line-height: 1.15;
+    }
+
+    .timeline-month-value {
+        color: var(--body-font-color);
+        font-size: 0.875rem;
+        font-weight: 600;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+    }
+
+    .timeline-month-rail {
+        position: relative;
+        display: flex;
+        align-self: stretch;
+        justify-content: center;
+    }
+
+    .timeline-month-rail::before {
+        content: '';
+        position: absolute;
+        inset-block: -2.2rem 0;
+        inline-size: 1px;
+        background: var(--gray-200);
+    }
+
+    .timeline-month-row:first-child .timeline-month-rail::before {
+        inset-block-start: 0.45rem;
+    }
+
+    .timeline-month-row:last-child .timeline-month-rail::before {
+        inset-block-end: calc(100% - 0.8rem);
+    }
+
+    .timeline-load-status {
+        margin: 1.4rem 0 0;
+        color: var(--gray-500);
+        font-size: 0.6875rem;
+        line-height: 1.5;
+        text-align: center;
+    }
+
+    .timeline-month-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+        gap: 0.8rem;
+        align-items: start;
+    }
+
+    @media (max-width: 64rem) {
+        .timeline-month-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 34rem) {
+        .timeline-month-row {
+            grid-template-columns: 3rem 0.9rem minmax(0, 1fr);
+            gap: 0.6rem;
+        }
+
+        .timeline-month-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        .timeline-month-row.reveal-ready {
+            opacity: 0.45;
+            transform: translateY(14px);
+        }
+
+        .timeline-month-row.reveal-ready.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+            transition:
+                opacity 520ms ease-out,
+                transform 620ms cubic-bezier(0.2, 0.6, 0.2, 1);
+        }
+    }
+</style>

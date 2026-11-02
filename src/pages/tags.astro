@@ -33,7 +33,7 @@ const page = pages.find((post) => post.slug == 'tags');
     <Menu slot="menu" />
 
     <div slot="content" class="markdown book-article">
-        <h1 class="book-title"><ITags /> {page?.title}</h1>
+        <h1 class="book-title page-title"><ITags /> {page?.title}</h1>
         <p></p>
         {
             page?.html && (
