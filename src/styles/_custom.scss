@@ -1944,11 +1944,18 @@ $page-sequence-max-items: 12;
     padding-inline-start: 1rem;
 }
 
-.relitu-tooltip-kind {
+.relitu-tooltip-icon {
+    display: inline-flex;
     flex: 0 0 auto;
-    margin-inline-end: 0.35rem;
-    color: var(--gray-400);
-    font-size: 0.75em;
+    inline-size: 0.9rem;
+    block-size: 0.9rem;
+    margin-inline-end: 0.4rem;
+}
+
+.relitu-tooltip-icon svg {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
 }
 
 .relitu-tooltip-list li {

@@ -5,11 +5,23 @@ import { normalizeSlug } from '../../lib/utils/help';
 
 type Kind = TimelineEntry['kind'];
 
-const KIND_META: Record<Kind, { label: string }> = {
-    post: { label: '文章' },
-    memo: { label: '随记' },
-    neodb: { label: '书影音' },
-    strava: { label: '运动' }
+const KIND_META: Record<Kind, { color: string; icon: string }> = {
+    post: {
+        color: '#4f9d62',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h6"/></svg>'
+    },
+    memo: {
+        color: '#5b8dd9',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+    },
+    neodb: {
+        color: '#8b73c9',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>'
+    },
+    strava: {
+        color: '#d98247',
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>'
+    }
 };
 
 const KIND_ORDER: Kind[] = ['post', 'memo', 'neodb', 'strava'];
@@ -95,10 +107,10 @@ function heatStyle(counts: Record<Kind, number>) {
 
 function tooltipContent(day: DayHeat) {
     const items = day.entries.slice(0, 8).map((entry) => {
-        const label = KIND_META[entry.kind].label;
+        const meta = KIND_META[entry.kind];
         const title = escapeHtml(entryTitle(entry));
         const href = escapeHtml(entryHref(entry));
-        return `<li><span class="relitu-tooltip-kind">${label}</span><a href="${href}">${title}</a></li>`;
+        return `<li><span class="relitu-tooltip-icon" style="color:${meta.color}" aria-hidden="true">${meta.icon}</span><a href="${href}">${title}</a></li>`;
     }).join('');
     return `${day.date}<ul class="relitu-tooltip-list">${items}</ul>`;
 }
