@@ -1938,16 +1938,30 @@ $page-sequence-max-items: 12;
 
 
 .relitu-tooltip-list {
+    inline-size: min(16rem, 70vw);
+    max-inline-size: 100%;
     margin: 0.35rem 0 0;
     padding-inline-start: 1rem;
 }
 
 .relitu-tooltip-kind {
+    flex: 0 0 auto;
     margin-inline-end: 0.35rem;
     color: var(--gray-400);
     font-size: 0.75em;
 }
 
 .relitu-tooltip-list li {
+    display: flex;
+    min-inline-size: 0;
     margin-block: 0.15rem;
+}
+
+.relitu-tooltip-list a {
+    flex: 1 1 auto;
+    display: block;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

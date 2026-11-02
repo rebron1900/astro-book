@@ -94,19 +94,13 @@ function heatStyle(counts: Record<Kind, number>) {
 }
 
 function tooltipContent(day: DayHeat) {
-    const total = day.entries.length;
-    const summary = KIND_ORDER
-        .filter((kind) => day.counts[kind] > 0)
-        .map((kind) => `${KIND_META[kind].label} ${day.counts[kind]}`)
-        .join('、');
     const items = day.entries.slice(0, 8).map((entry) => {
         const label = KIND_META[entry.kind].label;
         const title = escapeHtml(entryTitle(entry));
         const href = escapeHtml(entryHref(entry));
         return `<li><span class="relitu-tooltip-kind">${label}</span><a href="${href}">${title}</a></li>`;
     }).join('');
-    const more = total > 8 ? `<li class="relitu-tooltip-more">还有 ${total - 8} 条</li>` : '';
-    return `${day.date}，共 ${total} 条${summary ? `（${summary}）` : ''}<ul class="relitu-tooltip-list">${items}${more}</ul>`;
+    return `${day.date}<ul class="relitu-tooltip-list">${items}</ul>`;
 }
 
 const DateGrid = () => {
