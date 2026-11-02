@@ -4,7 +4,7 @@
     line-height: 2;
 
     // remove padding at the beginning of page
-    > :first-child {
+    > :first-child:not(p) {
         margin-top: 0;
     }
 
@@ -124,7 +124,7 @@
 
     p {
         word-wrap: break-word;
-        margin-bottom: $padding-16 * 1.5;
+        margin-block: 1rem;
     }
 
     /** adapter ghost callout cards **/
