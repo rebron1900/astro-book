@@ -1951,26 +1951,3 @@ $page-sequence-max-items: 12;
 .relitu-tooltip-list li {
     margin-block: 0.15rem;
 }
-
-
-.relitu-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.2rem 0.6rem;
-    margin-block: 0.35rem 0.2rem;
-    color: var(--gray-500);
-    font-size: 0.6875rem;
-}
-
-.relitu-legend span {
-    display: inline-flex;
-    align-items: center;
-}
-
-.relitu-legend i {
-    display: inline-block;
-    inline-size: 0.45rem;
-    block-size: 0.45rem;
-    margin-inline-end: 0.2rem;
-    border-radius: 2px;
-}

@@ -183,18 +183,13 @@ function excerptText(value: string | null | undefined, max = 160) {
                             {entry.kind === 'memo' && <LedgerMemo memo={entry.data} />}
 
                             {entry.kind === 'post' && (
-                                <article class:list={['ledger-post', { 'has-thumb': Boolean(entry.data.feature_image) }]}>
-                                    <p class="kicker">文章 · {entry.data.reading_time || 2} 分钟阅读</p>
-                                    <h2 class="entry-title">
+                                <article class="markdown book-post timeline-post">
+                                    <h2 class="book-title">
                                         <a href={normalizeSlug(entry.data.slug)}>{entry.data.title}</a>
                                     </h2>
-                                    <div class="post-summary">
-                                        <p class="excerpt">{excerptText(entry.data.excerpt)}</p>
-                                    </div>
-                                    {entry.data.feature_image && (
-                                        <a class="post-thumb" href={normalizeSlug(entry.data.slug)} tabindex="-1" aria-hidden="true">
-                                            <img src={entry.data.feature_image} alt="" loading="lazy" referrerpolicy="no-referrer" />
-                                        </a>
+                                    <PostMeta post={entry.data} />
+                                    {excerptText(entry.data.excerpt) && (
+                                        <p>{excerptText(entry.data.excerpt)}</p>
                                     )}
                                 </article>
                             )}
@@ -718,6 +713,10 @@ function excerptText(value: string | null | undefined, max = 160) {
     .ledger-body { min-inline-size: 0; }
     .ledger-content { min-inline-size: 0; }
 
+    .timeline-post {
+        margin-block-end: 0;
+    }
+
     .ledger-post {
         position: relative;
         overflow: hidden;
@@ -922,8 +921,8 @@ function excerptText(value: string | null | undefined, max = 160) {
 
     .memo-block .memo-content :first-child { margin-block-start: 0; }
     .memo-block .memo-content :last-child { margin-block-end: 0; }
-    .memo-block .memo-content p:first-child { margin-block-start: 1rem; }
-    .memo-block .memo-content p:last-child { margin-block-end: 1rem; }
+    .memo-block .memo-content p:first-child { margin-block-start: 0; }
+    .memo-block .memo-content p:last-child { margin-block-end: 0; }
 
     .memo-photo-stack {
         display: flex;

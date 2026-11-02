@@ -5,11 +5,11 @@ import { normalizeSlug } from '../../lib/utils/help';
 
 type Kind = TimelineEntry['kind'];
 
-const KIND_META: Record<Kind, { label: string; rgb: string }> = {
-    post: { label: '文章', rgb: '77, 208, 90' },
-    memo: { label: '随记', rgb: '79, 156, 249' },
-    neodb: { label: '书影音', rgb: '167, 139, 250' },
-    strava: { label: '运动', rgb: '249, 115, 22' }
+const KIND_META: Record<Kind, { label: string }> = {
+    post: { label: '文章' },
+    memo: { label: '随记' },
+    neodb: { label: '书影音' },
+    strava: { label: '运动' }
 };
 
 const KIND_ORDER: Kind[] = ['post', 'memo', 'neodb', 'strava'];
@@ -89,15 +89,8 @@ function dateBuild(today: Date): DayHeat[] {
 function heatStyle(counts: Record<Kind, number>) {
     const total = KIND_ORDER.reduce((sum, kind) => sum + counts[kind], 0);
     if (!total) return undefined;
-    let cursor = 0;
-    const stops = KIND_ORDER.filter((kind) => counts[kind] > 0).map((kind) => {
-        const share = (counts[kind] / total) * 100;
-        const start = cursor;
-        cursor += share;
-        const alpha = 0.25 + Math.min(1, total / 3) * 0.65;
-        return `rgba(${KIND_META[kind].rgb}, ${alpha}) ${start}% ${cursor}%`;
-    });
-    return `background: linear-gradient(90deg, ${stops.join(', ')});`;
+    const alpha = 0.18 + Math.min(1, total / 4) * 0.62;
+    return `background-color: rgba(77, 208, 90, ${alpha});`;
 }
 
 function tooltipContent(day: DayHeat) {
@@ -142,11 +135,6 @@ const DateGrid = () => {
                             );
                         })}
                     </div>
-                ))}
-            </div>
-            <div class="relitu-legend" aria-label="内容类型">
-                {KIND_ORDER.map((kind) => (
-                    <span><i style={`background: rgba(${KIND_META[kind].rgb}, 0.8)`} />{KIND_META[kind].label}</span>
                 ))}
             </div>
             <div class="relitu-count">
