@@ -127,10 +127,10 @@ function fullDate(time: number) {
     return `${dateKey(time)} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
-function excerptText(value: string | null | undefined, max = 160) {
+function excerptText(value: string | null | undefined, max = 150) {
     const text = (value ?? '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
     if (text.length <= max) return text;
-    return `${text.slice(0, max).replace(/[，。！？；、,.!?;：:].*$/, '')}…`;
+    return `${text.slice(0, max)}…`;
 }
 ---
 
@@ -715,6 +715,41 @@ function excerptText(value: string | null | undefined, max = 160) {
 
     .timeline-post {
         margin-block-end: 0;
+    }
+
+    .timeline-post .book-title {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 600;
+        line-height: 1.45;
+        letter-spacing: -0.01em;
+    }
+
+    .timeline-post .book-title a {
+        color: var(--color-link);
+    }
+
+    .timeline-post .book-post-meta {
+        margin-block-start: 0.35rem;
+        color: var(--gray-500);
+        font-family: inherit;
+        font-size: 0.75rem;
+        font-style: normal;
+        line-height: 1.4;
+    }
+
+    .timeline-post .book-post-tags {
+        margin-block-start: 0.15rem;
+        color: var(--gray-500);
+        font-size: 0.75rem;
+        line-height: 1.4;
+    }
+
+    .timeline-post p {
+        margin: 0.5rem 0 0;
+        color: var(--gray-700);
+        font-size: 0.875rem;
+        line-height: 1.7;
     }
 
     .ledger-post {

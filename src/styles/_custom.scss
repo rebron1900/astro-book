@@ -1937,11 +1937,47 @@ $page-sequence-max-items: 12;
 }
 
 
+.relitu-tooltip-date {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-block-end: 0.35rem;
+    padding-block-end: 0.35rem;
+    border-block-end: 1px solid var(--gray-200);
+    color: var(--body-font-color);
+}
+
+.relitu-tooltip-calendar {
+    display: inline-flex;
+    flex: 0 0 auto;
+    inline-size: 0.85rem;
+    block-size: 0.85rem;
+    color: var(--gray-500);
+}
+
+.relitu-tooltip-calendar svg {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+}
+
+.relitu-tooltip-date strong {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.relitu-tooltip-weekday {
+    color: var(--gray-500);
+    font-size: 0.68rem;
+}
+
 .relitu-tooltip-list {
     inline-size: min(16rem, 70vw);
     max-inline-size: 100%;
-    margin: 0.35rem 0 0;
-    padding-inline-start: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 .relitu-tooltip-icon {
@@ -1960,8 +1996,15 @@ $page-sequence-max-items: 12;
 
 .relitu-tooltip-list li {
     display: flex;
+    align-items: center;
     min-inline-size: 0;
-    margin-block: 0.15rem;
+    margin: 0;
+    padding: 0.18rem 0.25rem;
+    border-radius: 0.25rem;
+}
+
+.relitu-tooltip-list li:hover {
+    background: var(--gray-100);
 }
 
 .relitu-tooltip-list a {
@@ -1969,6 +2012,14 @@ $page-sequence-max-items: 12;
     display: block;
     min-inline-size: 0;
     overflow: hidden;
+    color: var(--color-link);
+    font-size: 0.78rem;
+    line-height: 1.45;
+    text-decoration: none;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.relitu-tooltip-list a:hover {
+    text-decoration: underline;
 }
