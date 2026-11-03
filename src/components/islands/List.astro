@@ -1040,30 +1040,17 @@ function excerptText(value: string | null | undefined, max = 150) {
             0 1px 2px rgb(0 0 0 / 0.045);
     }
 
-    .memo-block::before,
-    .memo-block::after {
-        content: '';
+    .memo-tail {
         position: absolute;
-        clip-path: polygon(100% 0, 100% 100%, 0 50%);
-    }
-
-    /* 外层画描边，内层用气泡背景盖住中间，只留下三角形边缘。 */
-    .memo-block::before {
-        top: 0.95rem;
-        left: -0.72em;
         z-index: 0;
-        inline-size: 0.72rem;
-        block-size: 1.1rem;
-        background: var(--gray-200);
-    }
-
-    .memo-block::after {
-        top: 1.04rem;
-        left: -0.58em;
-        z-index: 2;
-        inline-size: 0.58rem;
-        block-size: 0.92rem;
-        background: var(--bubble-bg);
+        top: 0.95rem;
+        left: -0.72rem;
+        display: block;
+        inline-size: 0.8rem;
+        block-size: 1.4rem;
+        overflow: visible;
+        pointer-events: none;
+        shape-rendering: geometricPrecision;
     }
 
     .memo-text-wrap {
