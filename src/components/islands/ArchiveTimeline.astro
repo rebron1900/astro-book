@@ -316,7 +316,7 @@ function visibleTags(post: ArchivePost) {
 
     @media (max-width: 34rem) {
         .archive-timeline {
-            --archive-rail-x: calc(0.35rem + 1.5rem);
+            --archive-rail-x: 1.5rem;
         }
 
         .archive-page .archive-month-section {
@@ -324,6 +324,7 @@ function visibleTags(post: ArchivePost) {
             grid-template-rows: auto auto;
             column-gap: 0.55rem;
             row-gap: 0;
+            padding: 0;
         }
 
         .archive-page .archive-month-date {
