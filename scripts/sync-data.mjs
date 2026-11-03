@@ -445,7 +445,7 @@ async function syncNeodb(env) {
                 stoppedEarly = true;
                 break;
             }
-            fetched.push(...pageNew);
+            fetched.push(...(fullSync ? pageMarks : pageNew));
             pageNew.forEach((mark) => known.add(neodbKey(mark)));
             pages = Math.max(1, Number(data.pages) || 1);
             page += 1;
@@ -621,7 +621,7 @@ async function syncGtsMemos(env) {
             stoppedEarly = true;
             break;
         }
-        fetched.push(...newStatuses.map((status) => gtsStatusToMemo(status, owner)));
+        fetched.push(...(fullSync ? statuses : newStatuses).map((status) => gtsStatusToMemo(status, owner)));
         statuses.forEach((status) => status.id && known.add(String(status.id)));
         const lastId = statuses[statuses.length - 1]?.id;
         if (!lastId || lastId === maxId) break;
