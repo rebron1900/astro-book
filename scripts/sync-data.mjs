@@ -834,7 +834,7 @@ async function syncMap(env) {
 
     const outputFile = path.join(DATA_DIR, 'geojson.json');
     const headers = { 'User-Agent': 'astro-book-map-sync' };
-    if (env.SYNC_FULL !== '1' && existsSync(outputFile)) headers['If-Modified-Since'] = statSync(outputFile).toUTCString();
+    if (env.SYNC_FULL !== '1' && existsSync(outputFile)) headers['If-Modified-Since'] = statSync(outputFile).mtime.toUTCString();
 
     const response = await fetch(env.MAP_KMZ_URL, {
         signal: AbortSignal.timeout(30000),
