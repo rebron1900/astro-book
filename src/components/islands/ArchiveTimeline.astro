@@ -1,0 +1,370 @@
+---
+import type { Post } from '@ts-ghost/content-api';
+import { BookOpenText } from '@lucide/astro';
+import { normalizeData, normalizeSlug } from '../../lib/utils/help';
+
+type ArchivePost = Post & { type?: string };
+
+const { posts } = Astro.props as { posts: ArchivePost[] };
+
+type MonthGroup = {
+    key: string;
+    year: string;
+    month: string;
+    items: ArchivePost[];
+};
+
+const groups = new Map<string, MonthGroup>();
+
+posts.forEach((post) => {
+    const date = new Date(post.published_at ?? post.created_at);
+    if (Number.isNaN(date.getTime())) return;
+    const year = String(date.getFullYear());
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const key = `${year}-${month}`;
+    let group = groups.get(key);
+    if (!group) {
+        group = { key, year, month, items: [] };
+        groups.set(key, group);
+    }
+    group.items.push(post);
+});
+
+const months = [...groups.values()]
+    .map((group) => ({
+        ...group,
+        items: [...group.items].sort(
+            (a, b) => new Date(b.published_at ?? b.created_at).getTime() - new Date(a.published_at ?? a.created_at).getTime()
+        )
+    }))
+    .sort((a, b) => {
+        if (a.year !== b.year) return Number(b.year) - Number(a.year);
+        return Number(b.month) - Number(a.month);
+    });
+
+function cardDate(post: ArchivePost) {
+    return normalizeData(post.published_at ?? post.created_at) ?? '';
+}
+
+function visibleTags(post: ArchivePost) {
+    return (post.tags ?? []).filter((tag) => tag.visibility !== 'internal');
+}
+---
+
+<div class="archive-timeline" data-archive-timeline>
+    {months.map((group) => (
+        <section class="archive-month-section" data-month-key={group.key}>
+            <div class="archive-month-date">
+                <span class="archive-month-year">{group.year}</span>
+                <span class="archive-month-value">{group.month}月</span>
+                <span class="archive-month-count">{group.items.length} 篇</span>
+            </div>
+            <div class="archive-month-rail" aria-hidden="true">
+                <span class="rail-marker"><BookOpenText /></span>
+            </div>
+            <div class="archive-month-content">
+                <div class="archive-card-grid">
+                    {group.items.map((post) => (
+                        <a class="archive-card" href={normalizeSlug(post.slug)} data-full-title={post.title}>
+                            <h2 class="archive-card-title" data-archive-title data-full-title={post.title}>{post.title}</h2>
+                            <div class="archive-card-meta">
+                                <time datetime={cardDate(post)}>{cardDate(post)}</time>
+                                {visibleTags(post).length > 0 && (
+                                    <span class="archive-card-tags">
+                                        {visibleTags(post).map((tag) => (
+                                            <span class="archive-tag">#{tag.name}</span>
+                                        ))}
+                                    </span>
+                                )}
+                            </div>
+                        </a>
+                    ))}
+                </div>
+            </div>
+        </section>
+    ))}
+</div>
+
+<script>
+    const markClippedArchiveTitles = () => {
+        document.querySelectorAll<HTMLElement>('[data-archive-title]').forEach((title) => {
+            const card = title.closest<HTMLElement>('.archive-card');
+            if (!card) return;
+            const mark = () => {
+                if (title.scrollHeight > title.clientHeight + 1) card.dataset.titleClipped = 'true';
+            };
+            mark();
+            card.addEventListener('pointerenter', mark);
+            card.addEventListener('focusin', mark);
+        });
+    };
+
+    const bootArchiveTitleClipping = () => requestAnimationFrame(markClippedArchiveTitles);
+    bootArchiveTitleClipping();
+    document.addEventListener('astro:page-load', bootArchiveTitleClipping);
+</script>
+
+<style is:global>
+    .archive-timeline {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        --archive-rail-x: calc(0.35rem + 3.8rem + 1rem + 0.625rem);
+    }
+
+    /* 整条归档时间线由父级画一条连续的线，避免 content-visibility 的分段裁切造成断点。 */
+    .archive-timeline::before {
+        content: '';
+        position: absolute;
+        z-index: 0;
+        inset-block: 1.1rem 1rem;
+        inset-inline-start: var(--archive-rail-x);
+        inline-size: 1px;
+        background: var(--gray-200);
+        pointer-events: none;
+    }
+
+    .archive-page .archive-month-section {
+        display: grid;
+        grid-template-columns: 3.8rem 1.25rem minmax(0, 1fr);
+        gap: 1rem;
+        align-items: start;
+        /* 文章数量较多：跳过屏外月份的内容渲染，同时保留全部标题在 DOM 中供浏览器 Ctrl+F 检索。 */
+        content-visibility: auto;
+        contain-intrinsic-size: auto 20rem;
+        /* content-visibility 会建立绘制 containment，留出阴影/提示空间避免裁切。 */
+        padding: 0.45rem 0.35rem 1.8rem;
+    }
+
+    .archive-page .archive-month-section + .archive-month-section {
+        margin-block-start: 2.4rem;
+    }
+
+    .archive-month-date {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.08rem;
+        padding-block-start: 0.1rem;
+        color: var(--gray-700);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .archive-month-year {
+        color: var(--gray-500);
+        font-size: 0.5625rem;
+        line-height: 1.15;
+    }
+
+    .archive-month-value {
+        color: var(--body-font-color);
+        font-size: 0.875rem;
+        font-weight: 600;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+    }
+
+    .archive-month-count {
+        color: var(--gray-500);
+        font-size: 0.5625rem;
+        line-height: 1.2;
+    }
+
+    .archive-month-rail {
+        position: relative;
+        display: flex;
+        align-self: stretch;
+        justify-content: center;
+    }
+
+    .archive-month-rail::before {
+        display: none;
+    }
+
+    .archive-month-rail .rail-marker {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        place-items: center;
+        inline-size: 0.95rem;
+        block-size: 0.95rem;
+        margin-block-start: 0.3rem;
+        background: var(--body-background);
+        color: var(--color-link);
+    }
+
+    .archive-month-rail .rail-marker svg {
+        inline-size: 0.72rem;
+        block-size: 0.72rem;
+        stroke-width: 1.8;
+    }
+
+    .archive-month-content {
+        min-inline-size: 0;
+    }
+
+    .archive-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+        gap: 0.75rem;
+        align-items: start;
+    }
+
+    .archive-page .archive-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-inline-size: 0;
+        padding: 0.8rem 0.9rem 0.7rem;
+        border: 1px solid var(--gray-200);
+        border-radius: 0.65rem;
+        background: color-mix(in srgb, var(--body-background) 94%, var(--body-font-color));
+        box-shadow: 0 1px 2px rgb(0 0 0 / 0.03);
+        color: inherit;
+        text-decoration: none;
+        transition:
+            border-color 160ms ease,
+            box-shadow 160ms ease,
+            transform 160ms ease;
+    }
+
+    .archive-page .archive-card:hover {
+        border-color: color-mix(in srgb, var(--color-link) 38%, var(--gray-200));
+        box-shadow: 0 5px 18px rgb(0 0 0 / 0.06);
+        transform: translateY(-1px);
+    }
+
+    .archive-page .archive-card-title {
+        display: -webkit-box;
+        overflow: hidden;
+        margin: 0;
+        color: var(--body-font-color);
+        font-size: 0.92rem;
+        font-weight: 600;
+        line-height: 1.45;
+        letter-spacing: -0.01em;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+    }
+
+    .archive-page .archive-card-meta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.3rem 0.5rem;
+        margin-block-start: 0.55rem;
+        color: var(--gray-500);
+        font-size: 0.625rem;
+        line-height: 1.4;
+    }
+
+    .archive-page .archive-card-meta time {
+        flex: 0 0 auto;
+        order: 2;
+        margin-inline-start: auto;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .archive-page .archive-card-tags {
+        display: flex;
+        flex-wrap: wrap;
+        order: 1;
+        min-inline-size: 0;
+    }
+
+    .archive-page .archive-tag {
+        overflow: hidden;
+        max-inline-size: 9rem;
+        color: var(--gray-700);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .archive-page .archive-card[data-title-clipped='true']::after {
+        content: attr(data-full-title);
+        position: absolute;
+        z-index: 20;
+        top: calc(100% + 0.4rem);
+        left: 50%;
+        inline-size: max-content;
+        max-inline-size: min(24rem, 70vw);
+        padding: 0.4rem 0.55rem;
+        border-radius: 0.35rem;
+        background: var(--body-font-color);
+        box-shadow: 0 5px 18px rgb(0 0 0 / 0.12);
+        color: var(--body-background);
+        font-size: 0.7rem;
+        font-weight: 400;
+        line-height: 1.45;
+        text-align: left;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        pointer-events: none;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateX(-50%);
+        transition: opacity 120ms ease, visibility 120ms ease;
+    }
+
+    .archive-page .archive-card[data-title-clipped='true']:hover::after,
+    .archive-page .archive-card[data-title-clipped='true']:focus-visible::after {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    @media (max-width: 34rem) {
+        .archive-timeline {
+            --archive-rail-x: calc(0.35rem + 1.5rem);
+        }
+
+        .archive-page .archive-month-section {
+            grid-template-columns: 3rem minmax(0, 1fr);
+            grid-template-rows: auto auto;
+            column-gap: 0.55rem;
+            row-gap: 0;
+        }
+
+        .archive-page .archive-month-date {
+            grid-column: 1;
+            grid-row: 1;
+            justify-self: center;
+            align-items: center;
+            z-index: 2;
+            padding: 0 0.1rem 0.35rem;
+            background: var(--body-background);
+            text-align: center;
+        }
+
+        .archive-page .archive-month-rail {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .archive-month-rail::before {
+            inset-block: -1.7rem 0;
+        }
+
+        .archive-month-section:first-child .archive-month-rail::before {
+            inset-block-start: 0.45rem;
+        }
+
+        .archive-month-section:last-child .archive-month-rail::before {
+            inset-block-end: calc(100% - 0.8rem);
+        }
+
+        .archive-month-rail .rail-marker {
+            margin-block-start: 0;
+        }
+
+        .archive-page .archive-month-content {
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        .archive-card-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+</style>

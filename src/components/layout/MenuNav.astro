@@ -38,6 +38,19 @@ const menus = nav.map((rawItem) => {
     }
     return node;
 });
+
+// 站内路径统一去掉首尾差异；支持二级页面（如 /timeline/memo/2/）命中父级菜单。
+const normalizePath = (value: string) => {
+    const path = value.split(/[?#]/, 1)[0];
+    return path.replace(/\/+$/, '') || '/';
+};
+const isActiveUrl = (url: string) => {
+    if (!url.startsWith('/')) return false;
+    const current = normalizePath(Astro.url.pathname);
+    const target = normalizePath(url);
+    return current === target || (target !== '/' && current.startsWith(`${target}/`));
+};
+const hasActiveNav = menus.some(({ item }) => isActiveUrl(item.url));
 ---
 
 <ul class="book-menu-nav">
@@ -46,7 +59,7 @@ const menus = nav.map((rawItem) => {
 
         <ul class="book-collspan">
             {
-                title && (
+                title && !hasActiveNav && (
                     <li class="menu-flag-item">
                         <span class="menu-flag-marker" aria-hidden="true"></span>
                         {/* prettier-ignore */}
@@ -59,7 +72,7 @@ const menus = nav.map((rawItem) => {
 
             {
                 menus.map(({ icon: Icon, item, cleanLabel: CleanLabel }) => {
-                    const isCurrent = !title && Astro.url.pathname == item.url;
+                    const isCurrent = isActiveUrl(item.url);
                     return (
                         <li class="menu-flag-item">
                             {isCurrent && <span class="menu-flag-marker" aria-hidden="true"></span>}

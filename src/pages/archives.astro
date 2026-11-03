@@ -1,7 +1,6 @@
 ---
 import { postsAll, pages, settings } from '../api/store';
 
-import { groupByDate, normalizeData, normalizeSlug } from '../lib/utils/help';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/islands/Head.astro';
 import Comments from '../components/islands/Comments.astro';
@@ -10,6 +9,7 @@ import TocTagloop from '../components/islands/TocTagloop.astro';
 import Header from '../components/layout/Header.astro';
 import Top from '../components/ui/Top.astro';
 import Menu from '../components/layout/Menu.astro';
+import ArchiveTimeline from '../components/islands/ArchiveTimeline.astro';
 import { Markup } from 'astro-remote';
 import CodeSlot from '../components/islands/CodeSlot.astro';
 import IFrameSlot from '../components/ui/IFrameSlot.astro';
@@ -18,10 +18,13 @@ import Columns from '../components/shortcode/Columns.astro';
 import Details from '../components/shortcode/Details.astro';
 import Link from '../components/shortcode/Link.astro';
 import { Package } from '@lucide/astro';
-import ScrollReveal from '../components/islands/ScrollReveal.astro';
 
 const page = pages.find((post) => post.slug == 'archives');
-const groupdata = groupByDate(postsAll);
+
+const archivePosts = [...postsAll].sort(
+    (a, b) => new Date(b.published_at ?? b.created_at).getTime() - new Date(a.published_at ?? a.created_at).getTime()
+);
+
 ---
 
 <BaseLayout>
@@ -30,9 +33,8 @@ const groupdata = groupByDate(postsAll);
     <Header slot="header" title={page?.title} />
     <Menu slot="menu" />
 
-    <div slot="content" class="markdown book-article">
+    <div slot="content" class="markdown book-article archive-page">
         <h1 class="book-title page-title"><Package /> {page?.title}</h1>
-        <p></p>
         {
             page?.html && (
                 <Markup
@@ -42,35 +44,8 @@ const groupdata = groupByDate(postsAll);
                 />
             )
         }
-        <div>
-            {
-                groupdata.map((post) => (
-                    <div class="archive-year">
-                        <h2>{post.year}</h2>
-                        {post.data.map((month) => (
-                            <div class="archive-month">
-                                <h3 id={`${post.year}-${month.month}`}>
-                                    {post.year} / {month.month}
-                                </h3>
-                                {month.data && month.data.length > 0 && (
-                                    <ul>
-                                        {month.data.map((monthdata) => (
-                                            <li>
-                                                <div>
-                                                    <a href={normalizeSlug(monthdata.slug)}>{monthdata.title}</a>
-                                                    <span class="float-right">{normalizeData(monthdata.published_at)}号</span>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                ))
-            }
-        </div>
-        <ScrollReveal selector=".archive-year, .archive-month, .archive-month li" />
+
+        <ArchiveTimeline posts={archivePosts} />
     </div>
 
     <Comments slot="comments" />

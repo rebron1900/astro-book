@@ -17,12 +17,15 @@ type PostItem = Post & { type: string };
 type RawItem = TimelineEntry | PostItem | Memo;
 
 type FilterNavItem = { label: string; href: string; count: number; active?: boolean };
-const { page, filterKind = 'all', filterNav = null, groupBy = 'day', monthCategory = 'all' } = Astro.props as {
+const { page, filterKind = 'all', filterNav = null, groupBy = 'day', monthCategory = 'all', showIntro = true, showToolbar = true, autoLoad = true } = Astro.props as {
     page: { data: RawItem[]; url?: { next?: string; prev?: string; current?: string }; currentPage?: number };
     filterKind?: string;
     filterNav?: FilterNavItem[] | null;
     groupBy?: 'day' | 'month';
     monthCategory?: string;
+    showIntro?: boolean;
+    showToolbar?: boolean;
+    autoLoad?: boolean;
 };
 const url = new URL(Astro.request.url);
 const isHomePage = url.pathname === '/';
@@ -147,11 +150,14 @@ function excerptText(value: string | null | undefined, max = 150) {
 
 {isTimelinePage ? (
     <>
-        <header class="timeline-intro">
-            <h2 class="timeline-intro-title">{intro.title}</h2>
-            <p class="timeline-intro-copy">{intro.copy}</p>
-        </header>
+        {showIntro && (
+            <header class="timeline-intro">
+                <h2 class="timeline-intro-title">{intro.title}</h2>
+                <p class="timeline-intro-copy">{intro.copy}</p>
+            </header>
+        )}
 
+        {showToolbar && (
         <div class="timeline-toolbar" data-timeline-toolbar>
             {filterNav ? (
                 <div class="filter-chips" role="group" aria-label="时间线分类筛选">
@@ -174,11 +180,12 @@ function excerptText(value: string | null | undefined, max = 150) {
                 共 {filterNav ? (filterNav.find((item) => item.active)?.count ?? filterNav[0]?.count ?? 0) : (activeKind === 'all' ? timelineTotals.all : timelineTotals[activeKind as keyof typeof timelineTotals])} 条
             </p>
         </div>
+        )}
 
         {groupBy === 'month' ? (
-            <TimelineMonthList entries={entries} page={page} category={monthCategory} />
+            <TimelineMonthList entries={entries} page={page} category={monthCategory} autoLoad={autoLoad} />
         ) : (
-            <div class="tl tl-ledger timeline-list" data-timeline-list data-next={page.url?.next ?? ''}>
+            <div class="tl tl-ledger timeline-list" data-timeline-list data-auto-load={autoLoad ? 'true' : 'false'} data-next={page.url?.next ?? ''}>
         {entries.map((entry, index) => {
             if (stravaGroupMembers.has(index) || neodbGroupMembers.has(index)) return null;
             const showDate = index === 0 || dateKey(entries[index - 1].time) !== dateKey(entry.time);
@@ -278,6 +285,7 @@ function excerptText(value: string | null | undefined, max = 150) {
         const list = document.querySelector('[data-timeline-list]');
         if (!list || list.dataset.autoLoadReady === 'true') return;
         list.dataset.autoLoadReady = 'true';
+        if (list.dataset.autoLoad === 'false') return;
 
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         let loading = false;
@@ -953,6 +961,49 @@ function excerptText(value: string | null | undefined, max = 150) {
         object-fit: cover;
     }
 
+    /* 时间线卡片 hover：沿用友邻卡片的轻微上浮 + 柔和阴影。 */
+    .timeline-list .ledger-post,
+    .timeline-list .memo-block,
+    .timeline-list .neodb-card,
+    .timeline-list .strava-card,
+    .timeline-month-list .memo-block,
+    .timeline-month-list .neodb-card,
+    .timeline-month-list .strava-card {
+        transition:
+            transform 160ms ease,
+            box-shadow 160ms ease;
+    }
+
+    .timeline-list .ledger-post:hover,
+    .timeline-list .memo-block:hover,
+    .timeline-list .neodb-card:hover,
+    .timeline-list .strava-card:hover,
+    .timeline-month-list .memo-block:hover,
+    .timeline-month-list .neodb-card:hover,
+    .timeline-month-list .strava-card:hover,
+    .timeline-list .ledger-post:focus-within,
+    .timeline-list .memo-block:focus-within,
+    .timeline-list .neodb-card:focus-within,
+    .timeline-list .strava-card:focus-within,
+    .timeline-month-list .memo-block:focus-within,
+    .timeline-month-list .neodb-card:focus-within,
+    .timeline-month-list .strava-card:focus-within {
+        transform: translateY(-1px);
+        box-shadow:
+            inset 0 0 0 1px color-mix(in srgb, var(--color-link) 30%, var(--gray-200)),
+            0 5px 18px rgb(0 0 0 / 0.06);
+    }
+
+    .timeline-list .strava-card:hover,
+    .timeline-list .strava-card:focus-within,
+    .timeline-month-list .strava-card:hover,
+    .timeline-month-list .strava-card:focus-within {
+        box-shadow:
+            inset 3px 0 0 color-mix(in srgb, var(--strava-color) 55%, var(--gray-500)),
+            inset 0 0 0 1px color-mix(in srgb, var(--color-link) 30%, var(--gray-200)),
+            0 5px 18px rgb(0 0 0 / 0.06);
+    }
+
     .card-foot { display: flex; justify-content: flex-end; margin-block-start: 0.55rem; }
     .card-time { color: var(--gray-500); font-size: 0.625rem; font-variant-numeric: tabular-nums; opacity: 0; transition: opacity 120ms ease-out; }
     .ledger-row:hover .card-time,
@@ -998,19 +1049,19 @@ function excerptText(value: string | null | undefined, max = 150) {
 
     /* 外层画描边，内层用气泡背景盖住中间，只留下三角形边缘。 */
     .memo-block::before {
-        top: 1.05rem;
-        left: -0.76em;
+        top: 0.95rem;
+        left: -0.72em;
         z-index: 0;
-        inline-size: 0.74rem;
-        block-size: 1.04rem;
+        inline-size: 0.72rem;
+        block-size: 1.1rem;
         background: var(--gray-200);
     }
 
     .memo-block::after {
-        top: 1.11rem;
-        left: -0.68em;
+        top: 1.04rem;
+        left: -0.58em;
         z-index: 2;
-        inline-size: 0.72rem;
+        inline-size: 0.58rem;
         block-size: 0.92rem;
         background: var(--bubble-bg);
     }

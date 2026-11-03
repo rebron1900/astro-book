@@ -4,10 +4,11 @@ import { LibraryBig } from '@lucide/astro';
 import LedgerNeodb from './LedgerNeodb.astro';
 import NeodbCategoryIcon from '../ui/NeodbCategoryIcon.astro';
 
-const { entries, page, category = 'all' } = Astro.props as {
+const { entries, page, category = 'all', autoLoad = true } = Astro.props as {
     entries: TimelineEntry[];
     page: { url?: { next?: string } };
     category?: string;
+    autoLoad?: boolean;
 };
 
 type MonthGroup = {
@@ -30,7 +31,7 @@ entries.forEach((entry) => {
 });
 ---
 
-<div class="timeline-month-list" data-timeline-list data-group-by="month" data-next={page.url?.next ?? ''}>
+<div class="timeline-month-list" data-timeline-list data-auto-load={autoLoad ? 'true' : 'false'} data-group-by="month" data-next={page.url?.next ?? ''}>
     {groups.map((group) => (
         <section class="timeline-month-row" data-month-key={group.key}>
             <div class="timeline-month-date">
@@ -137,8 +138,47 @@ entries.forEach((entry) => {
 
     @media (max-width: 34rem) {
         .timeline-month-row {
-            grid-template-columns: 3rem 0.9rem minmax(0, 1fr);
-            gap: 0.6rem;
+            grid-template-columns: 3rem minmax(0, 1fr);
+            grid-template-rows: auto auto;
+            column-gap: 0.55rem;
+            row-gap: 0;
+        }
+
+        .timeline-month-date {
+            grid-column: 1;
+            grid-row: 1;
+            justify-self: center;
+            align-items: center;
+            z-index: 2;
+            padding: 0 0.1rem 0.35rem;
+            background: var(--body-background);
+            text-align: center;
+        }
+
+        .timeline-month-rail {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .timeline-month-rail::before {
+            inset-block: -1.7rem 0;
+        }
+
+        .timeline-month-row:first-child .timeline-month-rail::before {
+            inset-block-start: 0.45rem;
+        }
+
+        .timeline-month-row:last-child .timeline-month-rail::before {
+            inset-block-end: calc(100% - 0.8rem);
+        }
+
+        .timeline-month-rail .rail-marker {
+            margin-block-start: 0;
+        }
+
+        .timeline-month-content {
+            grid-column: 2;
+            grid-row: 2;
         }
 
         .timeline-month-grid {
