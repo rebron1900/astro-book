@@ -33,14 +33,17 @@ function getSize(raw: string | undefined): Size | undefined {
 const { src, alt, class: className, classNames, ...attrs } = Astro.props;
 const resolvedClass = className ?? classNames;
 // Memos 旧域名会 302 到对象存储；直接使用最终 CDN 地址，避免图片在部分网络下长时间卡住。
-const mediaSrc = src.replace(/^https:\/\/social\.1900\.live\/fileserver\//, 'https://s3.996288.xyz/');
+const mediaSrc = src
+    .replace(/^https:\/\/social\.1900\.live\/fileserver\//, 'https://s3.996288.xyz/')
+    .replace(/!\d+w$/, '');
 
+const cdnUrl = import.meta.env.CDN_URL ?? '';
 const generateImageSrcset = (image: string) => {
-    image = encodeURI(image);
+    image = encodeURI(image.replace(/!\d+w$/, ''));
     let imageSrcset = [];
     const imageWidths = [400, 600, 800, 1000, 1200, 1400, 1600, 1800];
 
-    if (image.match(import.meta.env.CDN_URL)) {
+    if (cdnUrl && image.startsWith(cdnUrl)) {
         // If image is local, determine the width of the image and then generate
         // markup for images at sizes smaller than the image
         imageWidths.forEach((width) => {
