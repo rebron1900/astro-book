@@ -32,11 +32,9 @@ interface ImportMetaEnv {
     readonly GHOST_API_URL: string;
     readonly GHOST_API_KEY: string;
     readonly GHOST_API_POST_LIMIT: number;
-    readonly NEODB_URL: string;
     readonly FLUX_URL: string;
     readonly FLUX_KEY: string;
     readonly CDN_URL: string;
-    readonly PUBLIC_MAP_URL: string;
     readonly PUBLIC_MAP_KEY: string;
     readonly SITE: string;
 }

@@ -7,13 +7,17 @@
  *   node scripts/sync-data.mjs            # 全量同步所有源
  *   node scripts/sync-data.mjs ghost      # 只同步指定源(逗号分隔)
  *   node scripts/sync-data.mjs --dry-run  # 预览将要写入的文件(不写盘)
+ *   node scripts/sync-data.mjs --full      # 忽略增量缓存，全量同步
  *
  * 需要环境变量(或 .env 文件): GHOST_API_URL, GHOST_API_KEY,
- *   NEODB_URL, FLUX_URL, FLUX_KEY
+ *   NEODB_TOKEN, FLUX_URL, FLUX_KEY, MAP_KMZ_URL,
+ *   GOTOSOCIAL_URL, GOTOSOCIAL_TOKEN
  * 非密钥配置从 src/config/site.ts 读取。
  */
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, unlinkSync, statSync } from 'node:fs';
 import { existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildFluxSnapshot, PARSING_ERROR_LIMIT } from '../src/lib/flux-snapshot.ts';
@@ -37,7 +41,7 @@ function loadEnv() {
     }
     // 进程环境变量优先
     for (const [k, v] of Object.entries(process.env)) {
-        if (k.startsWith('GHOST_') || k.startsWith('NEODB_') || k.startsWith('FLUX_') || k.startsWith('MAP_') || k.startsWith('CDN_') || k.startsWith('INTERVALS_')) {
+        if ((k.startsWith('GHOST_') || k.startsWith('NEODB_') || k.startsWith('FLUX_') || k.startsWith('MAP_') || k.startsWith('CDN_') || k.startsWith('INTERVALS_') || k.startsWith('GOTOSOCIAL_')) && v !== undefined && v !== '') {
             env[k] = v;
         }
     }
@@ -273,7 +277,7 @@ function trimEntry(entry, type) {
 
 // NeoDB 条目消费字段（douban 页）
 const NEODB_ITEM_FIELDS = ['id', 'title', 'category', 'cover_image_url', 'url', 'uuid', 'localized_title', 'type'];
-const NEODB_MARK_FIELDS = ['shelf', 'type', 'title', 'comment_text', 'rating_grade', 'item', 'created_time', 'visibility'];
+const NEODB_MARK_FIELDS = ['post_id', 'shelf', 'type', 'title', 'comment_text', 'rating_grade', 'item', 'created_time', 'visibility'];
 
 // 提取中文标题：优先简体中文 localized_title，找不到时回退到其他中文标题和 title。
 // TVSeason 常把“第 1 季”放在 zh-cn 中，不能把它当作品名；应继续找其他中文译名。
@@ -381,22 +385,81 @@ async function syncGhost(env) {
     };
 }
 
+function neodbKey(mark) {
+    return String(mark?.post_id ?? `${mark?.item?.uuid || ''}|${mark?.created_time || ''}`);
+}
+
 async function syncNeodb(env) {
-    const data = await fetchJson(env.NEODB_URL);
-    if (data && Array.isArray(data.data)) {
-        const previousPath = path.join(DATA_DIR, 'neodb.json');
-        let previousItems = new Map();
-        if (existsSync(previousPath)) {
-            try {
-                const previous = JSON.parse(readFileSync(previousPath, 'utf8'));
-                previousItems = new Map((previous.data || []).filter((m) => m.item?.uuid).map((m) => [m.item.uuid, m.item]));
-            } catch (e) {
-                console.warn(`[neodb] 读取已有缓存失败，将不使用旧标题回退: ${e.message}`);
-            }
+    const token = env.NEODB_TOKEN;
+    if (!token) throw new Error('缺少 NEODB_TOKEN，无法直连 NeoDB API');
+
+    const apiBase = (env.NEODB_API_URL || 'https://neodb.social/api').replace(/\/$/, '');
+    const shelves = (env.NEODB_SHELVES || 'complete').split(',').map((item) => item.trim()).filter(Boolean);
+    const fullSync = env.SYNC_FULL === '1';
+    const previousPath = path.join(DATA_DIR, 'neodb.json');
+    let previous = { data: [] };
+    if (existsSync(previousPath)) {
+        try {
+            previous = JSON.parse(readFileSync(previousPath, 'utf8'));
+        } catch (e) {
+            console.warn(`[neodb] 读取已有缓存失败，将执行全量同步: ${e.message}`);
         }
-        return { ...data, data: trimNeodb(data.data, previousItems) };
     }
-    return data;
+    const previousMarks = Array.isArray(previous.data) ? previous.data : [];
+    const previousItems = new Map(previousMarks.filter((m) => m.item?.uuid).map((m) => [m.item.uuid, m.item]));
+    const known = new Set(previousMarks.map(neodbKey));
+    const fetched = [];
+    let stoppedEarly = false;
+
+    for (const shelf of shelves) {
+        let page = 1;
+        let pages = 1;
+        do {
+            let data;
+            let lastError;
+            for (let attempt = 1; attempt <= 3; attempt += 1) {
+                try {
+                    data = await fetchJson(
+                        `${apiBase}/me/shelf/${encodeURIComponent(shelf)}?page=${page}`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                                Accept: 'application/json',
+                                'User-Agent': 'astro-book-sync'
+                            }
+                        },
+                        30000
+                    );
+                    break;
+                } catch (error) {
+                    lastError = error;
+                    if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+                }
+            }
+            if (!data) throw new Error(`[neodb] ${shelf} 第 ${page} 页获取失败: ${lastError?.message || '未知错误'}`);
+            if (!Array.isArray(data.data)) throw new Error(`[neodb] ${shelf} 第 ${page} 页响应缺少 data 数组`);
+
+            const pageMarks = data.data.map((mark) => ({ ...mark, shelf: mark.shelf ?? mark.shelf_type }));
+            const pageNew = pageMarks.filter((mark) => !known.has(neodbKey(mark)));
+            if (!fullSync && previousMarks.length > 0 && pageNew.length === 0) {
+                stoppedEarly = true;
+                break;
+            }
+            fetched.push(...pageNew);
+            pageNew.forEach((mark) => known.add(neodbKey(mark)));
+            pages = Math.max(1, Number(data.pages) || 1);
+            page += 1;
+            if (page <= pages) await new Promise((resolve) => setTimeout(resolve, 150));
+        } while (page <= pages);
+    }
+
+    const merged = fullSync ? fetched : [...previousMarks, ...fetched];
+    if (merged.length === 0) throw new Error('[neodb] API 返回 0 条记录，拒绝覆盖已有数据');
+    const deduped = [...new Map(merged.map((mark) => [neodbKey(mark), mark])).values()];
+    deduped.sort((a, b) => new Date(b.created_time).getTime() - new Date(a.created_time).getTime());
+    console.log(`[neodb] ${fullSync ? '全量' : '增量'}同步：拉取 ${fetched.length} 条，合并后 ${deduped.length} 条`);
+
+    return { data: trimNeodb(deduped, previousItems) };
 }
 
 async function syncFlux(env) {
@@ -488,8 +551,99 @@ async function syncFlux(env) {
     });
 }
 
-async function syncMemos(siteConfig) {
-    // 全量拉取（分页）
+function gtsTimestamp(value) {
+    const time = new Date(value || 0).getTime();
+    return Number.isFinite(time) ? Math.floor(time / 1000) : 0;
+}
+
+function gtsResourceList(status) {
+    const attachments = Array.isArray(status.media_attachments) ? status.media_attachments : [];
+    return attachments
+        .filter((attachment) => attachment && (attachment.type === 'image' || attachment.type === 'video' || attachment.type === 'gifv' || attachment.type === 'audio'))
+        .map((attachment) => ({
+            type: attachment.type === 'gifv' ? 'video' : attachment.type,
+            filename: attachment.url || attachment.remote_url || '',
+            externalLink: attachment.remote_url || attachment.url || '',
+            link: attachment.text_url || attachment.url || ''
+        }));
+}
+
+function gtsStatusToMemo(status, owner) {
+    const source = status.reblog || status;
+    const author = status.account || owner || {};
+    const sourceAuthor = source.account || author;
+    const boostContent = status.reblog
+        ? `${author.display_name || author.username || '我'} 转嘟 <a href="${sourceAuthor.url || '#'}" target="_blank" rel="noopener noreferrer">@${sourceAuthor.acct || sourceAuthor.username || '未知'}</a>:\n${source.content || ''}`
+        : status.content || '';
+
+    return {
+        id: status.id,
+        content: boostContent,
+        createdTs: gtsTimestamp(status.created_at),
+        updatedTs: gtsTimestamp(status.edited_at || status.created_at),
+        creatorName: author.display_name || author.username || '1900',
+        resourceList: gtsResourceList(source),
+        visibility: String(status.visibility || 'public').toUpperCase(),
+        pinned: Boolean(status.pinned),
+        type: 'memo'
+    };
+}
+
+async function syncGtsMemos(env) {
+    const base = env.GOTOSOCIAL_URL.replace(/\/$/, '');
+    const headers = {
+        Authorization: `Bearer ${env.GOTOSOCIAL_TOKEN}`,
+        Accept: 'application/json',
+        'User-Agent': 'astro-book-sync'
+    };
+    let accountId = env.GOTOSOCIAL_ACCOUNT_ID;
+    let owner = null;
+    if (!accountId) {
+        owner = await fetchJson(`${base}/api/v1/accounts/verify_credentials`, { headers }, 20000);
+        accountId = owner?.id;
+        if (!accountId) throw new Error('[memos] GoToSocial 未能返回当前账号 ID');
+    }
+
+    const fullSync = env.SYNC_FULL === '1';
+    const previous = readJson('memos.json', []);
+    const known = new Set(previous.map((memo) => String(memo.id)));
+    const fetched = [];
+    let maxId = '';
+    let stoppedEarly = false;
+
+    for (let page = 0; page < 200; page += 1) {
+        const url = `${base}/api/v1/accounts/${encodeURIComponent(accountId)}/statuses?limit=40${maxId ? `&max_id=${encodeURIComponent(maxId)}` : ''}`;
+        const statuses = await fetchJson(url, { headers }, 30000);
+        if (!Array.isArray(statuses) || statuses.length === 0) break;
+
+        const newStatuses = statuses.filter((status) => status.id && !known.has(String(status.id)));
+        if (!fullSync && previous.length > 0 && newStatuses.length === 0) {
+            stoppedEarly = true;
+            break;
+        }
+        fetched.push(...newStatuses.map((status) => gtsStatusToMemo(status, owner)));
+        statuses.forEach((status) => status.id && known.add(String(status.id)));
+        const lastId = statuses[statuses.length - 1]?.id;
+        if (!lastId || lastId === maxId) break;
+        maxId = lastId;
+        if (statuses.length < 40) break;
+        await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+
+    const merged = fullSync ? fetched : [...previous, ...fetched];
+    if (merged.length === 0) throw new Error('[memos] GoToSocial 返回 0 条动态，拒绝覆盖已有数据');
+    const deduped = [...new Map(merged.map((memo) => [String(memo.id), memo])).values()];
+    deduped.sort((a, b) => Number(b.createdTs) - Number(a.createdTs));
+    console.log(`[memos] ${fullSync ? '全量' : '增量'}同步：拉取 ${fetched.length} 条，合并后 ${deduped.length} 条`);
+    return trimMemos(deduped);
+}
+
+async function syncMemos(env, siteConfig) {
+    if (env.GOTOSOCIAL_URL && env.GOTOSOCIAL_TOKEN) {
+        return syncGtsMemos(env);
+    }
+
+    // 兼容旧的 Memos API；新配置应优先使用 GOTOSOCIAL_URL + GOTOSOCIAL_TOKEN。
     const all = [];
     let offset = 0;
     const PAGE = 50;
@@ -675,6 +829,47 @@ async function syncIntervals(env) {
     });
 }
 
+async function syncMap(env) {
+    if (!env.MAP_KMZ_URL) throw new Error('缺少 MAP_KMZ_URL，无法同步地图数据');
+
+    const outputFile = path.join(DATA_DIR, 'geojson.json');
+    const headers = { 'User-Agent': 'astro-book-map-sync' };
+    if (env.SYNC_FULL !== '1' && existsSync(outputFile)) headers['If-Modified-Since'] = statSync(outputFile).toUTCString();
+
+    const response = await fetch(env.MAP_KMZ_URL, {
+        signal: AbortSignal.timeout(30000),
+        headers
+    });
+    if (response.status === 304 && existsSync(outputFile)) {
+        console.log('[map] 未修改，复用本地 geojson.json');
+        return JSON.parse(readFileSync(outputFile, 'utf8'));
+    }
+    if (!response.ok) throw new Error(`[map] KMZ 下载失败: HTTP ${response.status}`);
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (buffer.length === 0) throw new Error('[map] KMZ 文件为空');
+
+    const tempFile = path.join(tmpdir(), `astro-book-map-${Date.now()}.kmz`);
+    writeFileSync(tempFile, buffer);
+    try {
+        execFileSync(process.env.PYTHON || 'python3', [
+            path.join(__dirname, 'map', 'convert_kmz_to_geojson.py'),
+            tempFile,
+            outputFile
+        ], { stdio: 'inherit' });
+    } finally {
+        try {
+            if (existsSync(tempFile)) unlinkSync(tempFile);
+        } catch {
+            // 临时文件清理失败不影响同步结果。
+        }
+    }
+
+    const geojson = JSON.parse(readFileSync(outputFile, 'utf8'));
+    if (!Array.isArray(geojson.features)) throw new Error('[map] 转换结果缺少 features');
+    return geojson;
+}
+
 async function syncRank() {
     try {
         return await fetchJson('https://divine-cell-831a.me-d1b.workers.dev/', {}, 10000);
@@ -749,8 +944,9 @@ const SOURCES = {
             { file: 'flux-lost.json', data: data.lost, allowEmpty: true }
         ]
     },
-    memos: { run: (env, site) => syncMemos(site), file: 'memos.json' },
+    memos: { run: (env, site) => syncMemos(env, site), file: 'memos.json' },
     intervals: { run: (env) => syncIntervals(env), file: 'strava.json' },
+    map: { run: (env) => syncMap(env), file: 'geojson.json' },
     rank: { run: () => syncRank(), file: 'rank.json' },
     imagemeta: { run: () => syncImageMeta(), file: 'image-meta.json' }
 };
@@ -761,10 +957,12 @@ function sourceFiles(src, data) {
 
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
+const fullSync = args.includes('--full') || process.env.SYNC_FULL === '1';
 const only = args.filter((a) => !a.startsWith('--'));
 
 async function main() {
     const env = loadEnv();
+    env.SYNC_FULL = fullSync ? '1' : '0';
     const site = await loadSiteConfig();
 
     const sources = only.length ? only.filter((s) => SOURCES[s]) : Object.keys(SOURCES);
@@ -772,7 +970,7 @@ async function main() {
         console.warn('未知源:', only.filter((s) => !SOURCES[s]).join(', '), '（可用:', Object.keys(SOURCES).join(','), '）');
     }
 
-    console.log(`开始同步 [${sources.join(', ')}]${dryRun ? ' (dry-run)' : ''}`);
+    console.log(`开始同步 [${sources.join(', ')}]${dryRun ? ' (dry-run)' : ''}${fullSync ? ' (full)' : ' (incremental)'}`);
 
     let changed = 0;
     let failed = 0;

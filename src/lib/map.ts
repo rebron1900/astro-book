@@ -384,16 +384,19 @@ class FilterControl {
     }
 }
 
-export default function initMap(url: string, key: string) {
+export default function initMap(source: string | GeoFeatureCollection, key: string) {
     const mapContainer = document.querySelector('#map');
-    if (mapContainer) {
-        fetch(url)
-            .then((response) => response.json())
-            .then((data: GeoFeatureCollection) => {
-                (window as unknown as { mapboxi: MapHandler }).mapboxi = new MapHandler({ data, key });
-            })
-            .catch((err) => {
-                console.warn('[map] 加载地图数据失败:', err);
-            });
-    }
+    if (!mapContainer) return;
+
+    const loadData = typeof source === 'string'
+        ? fetch(source).then((response) => response.json() as Promise<GeoFeatureCollection>)
+        : Promise.resolve(source);
+
+    loadData
+        .then((data) => {
+            (window as unknown as { mapboxi: MapHandler }).mapboxi = new MapHandler({ data, key });
+        })
+        .catch((err) => {
+            console.warn('[map] 加载地图数据失败:', err);
+        });
 }

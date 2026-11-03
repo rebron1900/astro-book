@@ -2,8 +2,14 @@ name: CI
 
 on:
     workflow_dispatch:
+        inputs:
+            full:
+                description: 全量同步数据
+                type: boolean
+                default: false
     schedule:
-        - cron: '17 */3 * * *'  # 每 3 小时：同步外部数据，有变化才构建部署
+        - cron: '17 */3 * * *'  # 每 3 小时：增量同步外部数据
+        - cron: '47 4 * * 0'      # 每周日 04:47：全量同步，校正历史数据变更
     push:
         branches:
             - main
@@ -41,14 +47,31 @@ jobs:
               run: |
                   yarn add sharp --ignore-engines
                   yarn install
+                  python3 -m pip install --upgrade pip -r scripts/map/requirements.txt
 
             # 定时触发时：同步外部数据到 src/data/*.json（数据无变化则 writeJson 跳过写盘）
+            - name: Determine sync mode
+              if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+              run: |
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.full }}" = "true" ]; then
+                      echo "SYNC_FULL=1" >> "$GITHUB_ENV"
+                  elif [ "${{ github.event.schedule }}" = "47 4 * * 0" ]; then
+                      echo "SYNC_FULL=1" >> "$GITHUB_ENV"
+                  else
+                      echo "SYNC_FULL=0" >> "$GITHUB_ENV"
+                  fi
+
             - name: Sync data (scheduled)
               if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
               env:
                   CONFIG_FILE: ${{ secrets.CONFIG_FILE }}
                   INTERVALS_ICU_API_KEY: ${{ secrets.INTERVALS_ICU_API_KEY }}
                   INTERVALS_ICU_ATHLETE_ID: ${{ secrets.INTERVALS_ICU_ATHLETE_ID }}
+                  NEODB_TOKEN: ${{ secrets.NEODB_TOKEN }}
+                  GOTOSOCIAL_URL: ${{ secrets.GOTOSOCIAL_URL }}
+                  GOTOSOCIAL_TOKEN: ${{ secrets.GOTOSOCIAL_TOKEN }}
+                  GOTOSOCIAL_ACCOUNT_ID: ${{ secrets.GOTOSOCIAL_ACCOUNT_ID }}
+                  MAP_KMZ_URL: ${{ secrets.MAP_KMZ_URL }}
               run: |
                   echo "$CONFIG_FILE" > ./.env
                   node scripts/sync-data.mjs
@@ -81,7 +104,7 @@ jobs:
                   CONFIG_FILE: ${{ secrets.CONFIG_FILE }}
               run: |
                   echo "$CONFIG_FILE" > ./.env
-                  sed -i -e 's/^MAP_URL=/PUBLIC_MAP_URL=/' -e 's/^MAP_KEY=/PUBLIC_MAP_KEY=/' ./.env
+                  sed -i -e 's/^MAP_KEY=/PUBLIC_MAP_KEY=/' ./.env
 
             - name: Build Astro project
               run: yarn build

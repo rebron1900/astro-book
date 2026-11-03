@@ -1,0 +1,1592 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "羊湖",
+        "description": "[人活着总要干几件能吹牛逼的事吧？<br>](https://1900.live/extraordinary-life/)(https://cdn.1900.live/202207/psb-1.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          90.67166039110788,
+          29.028293398431686
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "布达拉宫",
+        "description": "[人活着总要干几件能吹牛逼的事吧？<br>](https://1900.live/extraordinary-life/)(https://cdn.1900.live/202207/psb-1.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.11715801557325,
+          29.65809554809338
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "哲蚌寺",
+        "description": "[人活着总要干几件能吹牛逼的事吧？<br>](https://1900.live/extraordinary-life/)(https://cdn.1900.live/202207/psb-1.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.04546239922418,
+          29.673803412448482
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "色拉寺",
+        "description": "[人活着总要干几件能吹牛逼的事吧？<br>](https://1900.live/extraordinary-life/)(https://cdn.1900.live/202207/psb-1.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.1314221553073,
+          29.696732281970178
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "大昭寺&八角街",
+        "description": "[人活着总要干几件能吹牛逼的事吧？<br>](https://1900.live/extraordinary-life/)(https://cdn.1900.live/202207/psb-1.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.13219673825272,
+          29.652929033538285
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "2015年8月骑行到拉萨",
+        "description": "[人活着总要干几件能吹牛逼的事吧？<br>](https://1900.live/extraordinary-life/)(https://cdn.1900.live/202207/psb-1.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          91.16857197684664,
+          29.66220004438767
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "九子寨",
+        "description": "[川西笔架山，冬季雪山登山实操<br>](https://1900.live/chuan-xi-bi-jia-shan-dong-ji-xue-shan-deng-shan-shi-cao/)(https://cdn.1900.live/assets/2024/12/19retouch_2024121614591706.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.32379423281355,
+          31.58288103566512
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "笔架山",
+        "description": "[川西笔架山，冬季雪山登山实操<br>](https://1900.live/chuan-xi-bi-jia-shan-dong-ji-xue-shan-deng-shan-shi-cao/)(https://cdn.1900.live/assets/2024/12/19retouch_2024121614591706.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.29630384273301,
+          31.592023370194056
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "坞瓦布露营地",
+        "description": "[川西笔架山，冬季雪山登山实操<br>](https://1900.live/chuan-xi-bi-jia-shan-dong-ji-xue-shan-deng-shan-shi-cao/)(https://cdn.1900.live/assets/2024/12/19retouch_2024121614591706.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.33691598301925,
+          31.583571503689644
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "峨眉山",
+        "description": "[用峨眉山的第一缕阳光给25年开个好头【一】<br>](https://1900.live/yong-e-mei-shan-de-di-yi-lu-yang-guang-gei-25nian-kai-ge-hao-tou-yi/)(https://cdn.1900.live/assets/2024/12/27bd4a48c0-c158-48d6-af0e-9ea0ba42c1b0.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.33258228244483,
+          29.51867109729386
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "合江门",
+        "description": "[宜宾李庄、僰王山一日游](https://1900.live/yi-bin-li-zhuang-bo-wang-shan-yi-ri-you/)(https://cdn.1900.live/assets/2025/04/12MVIMG_20250407_151921.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.63012290006593,
+          28.770998347448497
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "冠英街",
+        "description": "[宜宾李庄、僰王山一日游](https://1900.live/yi-bin-li-zhuang-bo-wang-shan-yi-ri-you/)(https://cdn.1900.live/assets/2025/04/12MVIMG_20250407_151921.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.62760833452877,
+          28.76884282499869
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "飞雾谷",
+        "description": "[宜宾李庄、僰王山一日游](https://1900.live/yi-bin-li-zhuang-bo-wang-shan-yi-ri-you/)(https://cdn.1900.live/assets/2025/04/12MVIMG_20250407_151921.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.04971599395621,
+          28.312067824365197
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "僰王山",
+        "description": "[宜宾李庄、僰王山一日游](https://1900.live/yi-bin-li-zhuang-bo-wang-shan-yi-ri-you/)(https://cdn.1900.live/assets/2025/04/12MVIMG_20250407_151921.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.0531893317379,
+          28.314173027925904
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "李庄古镇",
+        "description": "[宜宾李庄、僰王山一日游](https://1900.live/yi-bin-li-zhuang-bo-wang-shan-yi-ri-you/)(https://cdn.1900.live/assets/2025/04/12MVIMG_20250407_151921.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.79756745853489,
+          28.80511250524458
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "瓦屋山",
+        "description": "[用户外活动填满五一：瓦屋山篇](https://1900.live/yong-hu-wai-huo-dong-tian-man-wu-yi-wa-wu-shan-pian/)(https://cdn.1900.live/assets/2025/05/11IMG_20250430_120144_compressed.jpeg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.92913178971013,
+          29.643534727638897
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "勒多曼因",
+        "description": "[用户外活动填满五一：勒多曼因篇](https://1900.live/yong-hu-wai-huo-dong-tian-man-wu-yi-wa-wu-shan-pian-2/)(https://cdn.1900.live/assets/2025/05/1830af5832-5c6c-46c2-b888-ee5c57b46870.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          101.8425073344881,
+          29.803119847227187
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "康定情歌广场",
+        "description": "[端午再游康定+看高山海子<br>](https://1900.live/duan-wu-zai-you-kang-ding-kan-gao-shan-hai-zi/)(https://cdn.1900.live/assets/2025/06/3IMG_20250531_163643_compressed.jpeg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          101.97568120088307,
+          30.056125976700983
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "白海子",
+        "description": "[端午再游康定+看高山海子<br>](https://1900.live/duan-wu-zai-you-kang-ding-kan-gao-shan-hai-zi/)(https://cdn.1900.live/assets/2025/06/3IMG_20250531_163643_compressed.jpeg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.00629849006953,
+          29.96798885436193
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "野马海子",
+        "description": "[端午再游康定+看高山海子<br>](https://1900.live/duan-wu-zai-you-kang-ding-kan-gao-shan-hai-zi/)(https://cdn.1900.live/assets/2025/06/3IMG_20250531_163643_compressed.jpeg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.00879913630976,
+          29.91740075822095
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "观音岩",
+        "description": "[追晚霞的人<br>](https://1900.live/zhui-wan-xia-de-ren/)(https://cdn.1900.live/assets/2025/06/15mmexport1749864516196_compressed.jpeg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.48504143188204,
+          29.57852730122702
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "四人同",
+        "description": "[还是成品NAS好+徒步散心](https://1900.live/huan-shi-cheng-pin-nashao-tu-bu-san-xin/)(https://cdn.1900.live/assets/2026/03/29%C3%A5%C2%BE%C2%AE%C3%A4%C2%BF%C2%A1%C3%A5%C2%9B%C2%BE%C3%A7%C2%89%C2%87_20260328185916_28790_1.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.38857008755382,
+          29.81669119524686
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "青城后山",
+        "description": "[还是成品NAS好+徒步散心](https://1900.live/huan-shi-cheng-pin-nashao-tu-bu-san-xin/)(https://cdn.1900.live/assets/2026/03/29%C3%A5%C2%BE%C2%AE%C3%A4%C2%BF%C2%A1%C3%A5%C2%9B%C2%BE%C3%A7%C2%89%C2%87_20260328185916_28790_1.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.49198508312116,
+          30.92144544393008
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "磨西古镇"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.12515131988866,
+          29.644926603122634
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "大草坝"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          101.86537382951737,
+          30.015375244401575
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "红海子"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.37878561227676,
+          30.438134003452443
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "龙华山"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.09827208537125,
+          29.726133446288816
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "五台山"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.58974406299407,
+          39.00696326169494
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "山城步道",
+        "description": "[重庆特种兵大作战两日游：2](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-2/)(https://cdn.1900.live/assets/2024/08/141723562357313.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.56519160430688,
+          29.55283175830431
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "十八梯",
+        "description": "[重庆一日游](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-2/)(https://cdn.1900.live/assets/2024/08/141723562357056.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.56892668745675,
+          29.55412776728037
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "李子坝站B口",
+        "description": "[重庆特种兵大作战两日游：1](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-1/)(https://cdn.1900.live/assets/2024/08/131723562357826.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.53436156414669,
+          29.55582145112728
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "解放碑",
+        "description": "[重庆特种兵大作战两日游：1](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-1/)(https://cdn.1900.live/assets/2024/08/131723562357731.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.57343139740439,
+          29.560104596953543
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "地下之城火锅",
+        "description": "[重庆一日游](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-2/)(https://cdn.1900.live/assets/2024/08/141723562357111.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.54946275106764,
+          29.588230452708196
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "魁星楼",
+        "description": "[重庆一日游](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-2/)(https://cdn.1900.live/assets/2024/08/141723562357192.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.56985487036859,
+          29.562525759457802
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "重庆洪崖洞",
+        "description": "[重庆一日游](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-2/)(https://cdn.1900.live/assets/2024/08/141723562357084.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.57543723599949,
+          29.565164554562035
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "重庆国际会议展览中心",
+        "description": "[重庆特种兵大作战两日游：1](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-1/)(https://cdn.1900.live/assets/2024/08/131723562357534.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.55787335291865,
+          29.5365713819425
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "二厂文创公园",
+        "description": "[重庆特种兵大作战两日游：1](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-1/)(https://cdn.1900.live/assets/2024/08/131723562357639.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.53620983208427,
+          29.553807613370733
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "朝天门",
+        "description": "[重庆特种兵大作战两日游：1](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-1/)(https://cdn.1900.live/assets/2024/08/131723562357654.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.57987061692229,
+          29.55729320304687
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "重庆南山鲜龙井火锅"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.00077654271763,
+          29.823584461632834
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "洋人街"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.59898972062864,
+          29.605234132304204
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "鹅岭公园",
+        "description": "[重庆特种兵大作战两日游：1](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-1/)(https://cdn.1900.live/assets/2024/08/131723562357684.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.53241125162086,
+          29.552558863501332
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "重庆来福士广场",
+        "description": "[重庆特种兵大作战两日游：2](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-2/)(https://cdn.1900.live/assets/2024/08/141723562357031.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.58482334139339,
+          29.56632155709212
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "千厮门大桥",
+        "description": "[重庆特种兵大作战两日游：1](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-1/)(https://cdn.1900.live/assets/2024/08/141723562357480.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.57510752476078,
+          29.568099850218783
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "悦来国际会议中心",
+        "description": "[重庆特种兵大作战两日游：1](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-1/)(https://cdn.1900.live/assets/2024/08/131723562357534.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.53818261078369,
+          29.721622172332225
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "回民街"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.94033247834048,
+          34.261425490917574
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "钟楼",
+        "description": "[馄饨、饺子和抄手](https://1900.live/hun-tun-jiao-zi-he-chao-shou/)(https://images.unsplash.com/photo-1476240070072-d734bba9f6c1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTc3M3wwfDF8c2VhcmNofDE3fHwlRTklQTUlQkElRTUlQUQlOTB8ZW58MHx8fHwxNzI0NTYwMzE4fDA&ixlib=rb-4.0.3&q=80&w=1800)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.9423503470974,
+          34.26104545448119
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "鼓楼博物馆"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.93903727739045,
+          34.26175977039931
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "永兴坊"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.96537693305922,
+          34.26637035109405
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "古城楼"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.96692717550992,
+          34.26403829396576
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "大雁塔"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.95942839943098,
+          34.219798922069096
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "华清池"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.20802186624705,
+          34.363063413717164
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "大唐芙蓉园"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.96997474281065,
+          34.21383939364202
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "秦始皇帝陵博物院"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.27340939863247,
+          34.385474382733626
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "黄帝陵"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.26892061628611,
+          35.582362244240194
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "壶口瀑布"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.44610941084245,
+          36.14777451444956
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "延安市"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.4843536332262,
+          36.58534799753382
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "延安保育院"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.44722103069019,
+          36.61914611453998
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "华山"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.07934591819755,
+          34.47898255200597
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "半坡博物馆"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.04610394172553,
+          34.27453422517067
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "少年的你打卡点"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.57052874585821,
+          29.564006351303203
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "西安碑林"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.94812215033814,
+          34.25402856003926
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "韶山市"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.52125943232075,
+          27.918408192822938
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "华丽服装批发大市场"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.15118450473813,
+          27.835140496822266
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "火宫殿"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.96812187620249,
+          28.193723481038866
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "王府井百货"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.97050246728413,
+          28.19607793048633
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "太平老街"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          112.96626978756966,
+          28.198583720880457
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "蜈支洲"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.76183510154637,
+          18.314188059439072
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "亚龙湾海底世界"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.65348992798324,
+          18.232681556503895
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "槟榔谷"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.65735025666112,
+          18.399475558009975
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "呀诺达雨林"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.65758512367007,
+          18.456077627000248
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "南海海上观音苑"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.3301133770882,
+          18.300041162304943
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "天涯海角"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.34432332840198,
+          18.293421973171323
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "白马井镇"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.21464325858946,
+          19.69828162641202
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "博鳌镇"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.58244492911203,
+          19.161686140081766
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "儋州市",
+        "description": "[海南环岛行の红皮烧猪炼成记 - 缓慢更新中...](https://1900.live/san-ya-xing/)(https://cdn.1900.live/201901/p1000477.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.57680136256226,
+          19.523107778539742
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "东方市",
+        "description": "[海南环岛行の红皮烧猪炼成记 - 缓慢更新中...](https://1900.live/san-ya-xing/)(https://cdn.1900.live/201901/p1000477.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          108.64819774267605,
+          19.097207177086922
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "海口市"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.1939909485597,
+          20.046523758030055
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "完美大海客栈",
+        "description": "[海南环岛行の红皮烧猪炼成记 - 缓慢更新中...](https://1900.live/san-ya-xing/)(https://cdn.1900.live/201901/p1000477.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.72597666600947,
+          18.276244427538746
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "加井岛",
+        "description": "[海南环岛行の红皮烧猪炼成记 - 缓慢更新中...](https://1900.live/san-ya-xing/)(https://cdn.1900.live/201901/p1000477.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.28638093443352,
+          18.64989152453051
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "石梅湾旅游度假区",
+        "description": "[海南环岛行の红皮烧猪炼成记 - 缓慢更新中...](https://1900.live/san-ya-xing/)(https://cdn.1900.live/201901/p1000477.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.24828845161026,
+          18.655019380542686
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "铜鼓岭"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          111.01929703309338,
+          19.670078512025206
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "海口美兰国际机场",
+        "description": "[海南环岛行の红皮烧猪炼成记 - 缓慢更新中...](https://1900.live/san-ya-xing/)(https://cdn.1900.live/201901/p1000477.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.45771898282956,
+          19.94050190556083
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "柳侯公园"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.41120279895586,
+          24.317644994903777
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "马鞍山公园"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.40978176640856,
+          24.303815841591856
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "柳州立鱼峰风景区",
+        "description": "[Github 年度统计表和过往青葱岁月<br>](https://1900.live/github-annual-statistics-and-past-green-years/)(https://cdn.1900.live/assets/2023/12/22psc.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.40482787851924,
+          24.30401947113391
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "爱民螺蛳粉"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.40457215336791,
+          24.301258888368594
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "龙潭公园"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.4098641465673,
+          24.281152309261646
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "银滩公园"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.15213469148375,
+          21.404093880168915
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "园博园餐馆"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.55266361815474,
+          24.381152211039623
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "遵义会议会址"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.91676446573629,
+          27.691804538296935
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "牛角塘"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          107.33363704043998,
+          27.689042657491555
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "青海湖风景名胜区"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          101.0650858646486,
+          36.68078430741802
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "黑马河乡"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          99.77812966180741,
+          36.72919047558905
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "敦煌市"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          94.66092199276122,
+          40.141501069139316
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "月牙泉"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          94.66925581589088,
+          40.08734270329158
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "西宁市",
+        "description": "[青海游・图志 / 更新中](https://1900.live/qing-hai-you-tu-zhi/)(https://cdn.1900.live/image/0/30/8984424a49388756ddd665066a969.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          101.77629056668606,
+          36.6172156648172
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "茶卡盐湖"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          99.11115607968803,
+          36.70133820313091
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "柴达木湖"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          95.5280488931155,
+          37.5097627381761
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "莫高窟"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          94.80800948411634,
+          40.04079744649789
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "瞿昙寺"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.2921954417678,
+          36.35743766290741
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "张掖市"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          100.44811601243721,
+          38.92523671525599
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "天府绿道·锦城绿道",
+        "description": "[五一我也成都游一趟把！](https://1900.live/wo-ye-cheng-du-you-yi-tang-ba/)(https://cdn.1900.live/assets/2024/05/31714725554075.webp!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.05608149655961,
+          30.567289608881435
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "圣水寺"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.9830431211979,
+          31.589091102926265
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "圣水寺",
+        "description": "[内江甜城一日游<br>](https://1900.live/day-trip-to-neijiang-sweet-city/)(https://cdn.1900.live/assets/2024/04/61712382782053.webp!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.03751327693787,
+          29.59509509641871
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "张大千美术馆",
+        "description": "[内江甜城一日游<br>](https://1900.live/day-trip-to-neijiang-sweet-city/)(https://cdn.1900.live/assets/2024/04/61712382781757.webp!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.05447427203238,
+          29.59565330664393
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "魏明伦碑文馆",
+        "description": "[内江甜城一日游<br>](https://1900.live/day-trip-to-neijiang-sweet-city/)(https://cdn.1900.live/assets/2024/04/61712382781925.webp!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.05721547016913,
+          29.597927860500164
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "滇池",
+        "description": "[昆明，来了便不想走的城市 (更新中)<br>](https://1900.live/kun-ming-lai-liao-bian-bu-xiang-zou-de-cheng-shi/)(https://cdn.1900.live/11amcam/20190735/366dc2f380d696106c683e4929c32bef.jpeg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.73502397439108,
+          24.856481223924526
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "丽江古城"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          100.23472401007497,
+          26.875351885946937
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "大理古城"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          100.21053330837681,
+          25.615533159337442
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "洱海",
+        "description": "[大理旅拍<br>](https://1900.live/da-li-lu-pai/)(https://cdn.1900.live/assets/2023/06/12IZAjm4Zt_83804501_647c99370d62ee1ce05b4cb284d702c0764d9e58_647c9937ed8634edced6465bb90bbe7f8b23b279.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          100.19158227736708,
+          25.8037507160201
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "圆通禅寺"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.71034305353463,
+          25.053922866209504
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "昆明斗南花市"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.78207276599174,
+          24.90099865475345
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "南屏街"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.70944190420653,
+          25.03975367350125
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "正义坊购物中心南馆"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.70812869327422,
+          25.042542453094836
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "玉龙雪山国家级风景名胜区"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          100.21861105266807,
+          27.131115557158708
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "丽江宋城旅游区"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          100.22112063026626,
+          26.83167406523132
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "公园1903",
+        "description": "[昆明，来了便不想走的城市 (更新中)<br>](https://1900.live/kun-ming-lai-liao-bian-bu-xiang-zou-de-cheng-shi/)(https://cdn.1900.live/11amcam/20190798/285de53b9d799b9644461c5a84430cc5.jpeg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.6757090049143,
+          24.98735547847435
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "蓝月谷"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          100.2435567325078,
+          27.129323100026205
+        ]
+      }
+    }
+  ]
+}
