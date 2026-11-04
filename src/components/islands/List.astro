@@ -6,7 +6,6 @@ import { normalizeSlug } from '../../lib/utils/help';
 import { timeline } from '../../api/store';
 import { BookOpenText, Footprints, LibraryBig, MessageCircle } from '@lucide/astro';
 import PostMeta from '../ui/PostMeta.astro';
-import Hero from '../layout/Hero.astro';
 import LedgerMemo from './LedgerMemo.astro';
 import LedgerNeodb from './LedgerNeodb.astro';
 import LedgerStrava from './LedgerStrava.astro';
@@ -28,7 +27,6 @@ const { page, filterKind = 'all', filterNav = null, groupBy = 'day', monthCatego
     autoLoad?: boolean;
 };
 const url = new URL(Astro.request.url);
-const isHomePage = url.pathname === '/';
 const isTimelinePage = page.data.some((item) => 'kind' in item);
 
 function isTimelineEntry(raw: RawItem): raw is TimelineEntry {
@@ -146,14 +144,19 @@ function excerptText(value: string | null | undefined, max = 150) {
 }
 ---
 
-{isHomePage && <Hero />}
-
 {isTimelinePage ? (
     <>
         {showIntro && (
             <header class="timeline-intro">
                 <h2 class="timeline-intro-title">{intro.title}</h2>
-                <p class="timeline-intro-copy">{intro.copy}</p>
+                <p class="timeline-intro-copy">
+                    {intro.copy}
+                    {activeKind === 'strava' && (
+                        <a class="timeline-intro-link" href="/exercise/">
+                            在地图上看看这些路线 →
+                        </a>
+                    )}
+                </p>
             </header>
         )}
 
@@ -228,13 +231,17 @@ function excerptText(value: string | null | undefined, max = 150) {
                             )}
 
                             {neodbGroup ? (
-                                <div class="neodb-cards is-group">
+                                <div class="neodb-cards">
                                     {neodbGroup.map((groupEntry) => (
                                         <LedgerNeodb mark={groupEntry.data} />
                                     ))}
                                 </div>
                             ) : (
-                                entry.kind === 'neodb' && <LedgerNeodb mark={entry.data} />
+                                entry.kind === 'neodb' && (
+                                    <div class="neodb-cards">
+                                        <LedgerNeodb mark={entry.data} />
+                                    </div>
+                                )
                             )}
                             {stravaGroup ? (
                                 <div class="strava-cards is-group">
@@ -586,6 +593,11 @@ function excerptText(value: string | null | undefined, max = 150) {
         line-height: 1.85;
     }
 
+    .timeline-intro-link {
+        margin-inline-start: 0.35rem;
+        white-space: nowrap;
+    }
+
     .timeline-intro-note {
         margin: 0.5rem 0 0;
         color: var(--gray-500);
@@ -740,12 +752,12 @@ function excerptText(value: string | null | undefined, max = 150) {
     }
 
     @media (prefers-reduced-motion: no-preference) {
-        .ledger-row.reveal-ready {
+        .ledger-row.reveal-ready .ledger-body {
             opacity: 0.45;
             transform: translateY(14px);
         }
 
-        .ledger-row.reveal-ready.is-visible {
+        .ledger-row.reveal-ready.is-visible .ledger-body {
             opacity: 1;
             transform: translateY(0);
             transition:
@@ -763,30 +775,49 @@ function excerptText(value: string | null | undefined, max = 150) {
         margin-block: 0.5rem 1.5rem;
     }
 
-    .tl-ledger {
-        position: relative;
-    }
-
     .ledger-row {
+        position: relative;
+        --ledger-row-gap: 1.7rem;
         display: grid;
-        grid-template-columns: 2.4rem 1.25rem minmax(0, 1fr);
-        gap: 1rem;
+        grid-template-columns: 3rem minmax(0, 1fr);
+        grid-template-rows: auto auto;
+        column-gap: 0.55rem;
+        row-gap: 0;
         align-items: start;
         min-inline-size: 0;
     }
 
     .ledger-row + .ledger-row {
-        margin-block-start: 1.7rem;
+        margin-block-start: var(--ledger-row-gap);
+    }
+
+    /* 每行只在日期与图标之间的空隙画线，避免竖线穿过文字和 SVG。 */
+    .ledger-row + .ledger-row::before {
+        content: '';
+        position: absolute;
+        z-index: 0;
+        inset-block-start: calc(-1 * var(--ledger-row-gap));
+        inset-inline-start: calc(1.5rem - 0.5px);
+        block-size: var(--ledger-row-gap);
+        inline-size: 1px;
+        background: var(--gray-200);
+        pointer-events: none;
     }
 
     .ledger-date {
+        position: relative;
         display: flex;
+        grid-column: 1;
+        grid-row: 1;
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
+        justify-self: center;
         gap: 0.08rem;
-        padding-block-start: 0.03rem;
+        z-index: 2;
+        padding: 0 0.1rem 0.35rem;
         color: var(--gray-700);
         font-variant-numeric: tabular-nums;
+        text-align: center;
     }
 
     .ledger-date .ledger-year {
@@ -809,13 +840,23 @@ function excerptText(value: string | null | undefined, max = 150) {
         line-height: 1.2;
     }
 
-    .ledger-row.is-repeat .ledger-date > * {
+    .ledger-row.is-repeat .ledger-date {
         display: none;
+    }
+
+    .ledger-row.is-repeat .ledger-rail {
+        grid-row: 1 / span 2;
+    }
+
+    .ledger-row.is-repeat .ledger-body {
+        grid-row: 1 / span 2;
     }
 
     .ledger-rail {
         position: relative;
         display: flex;
+        grid-column: 1;
+        grid-row: 2;
         align-self: stretch;
         justify-content: center;
     }
@@ -823,17 +864,12 @@ function excerptText(value: string | null | undefined, max = 150) {
     .ledger-rail::before {
         content: '';
         position: absolute;
-        inset-block: -1.7rem 0;
+        z-index: 0;
+        inset-block: 0.95rem 0;
+        inset-inline-start: calc(1.5rem - 0.5px);
         inline-size: 1px;
         background: var(--gray-200);
-    }
-
-    .ledger-row:first-child .ledger-rail::before {
-        inset-block-start: 0.45rem;
-    }
-
-    .ledger-row:last-child .ledger-rail::before {
-        inset-block-end: calc(100% - 0.85rem);
+        pointer-events: none;
     }
 
     .rail-marker {
@@ -843,22 +879,28 @@ function excerptText(value: string | null | undefined, max = 150) {
         place-items: center;
         inline-size: 0.95rem;
         block-size: 0.95rem;
-        margin-block-start: 0.3rem;
-        background: var(--body-background);
-        color: var(--gray-500);
+        margin-block-start: 0;
+        color: var(--gray-700);
     }
 
     .rail-marker svg {
-        inline-size: 0.72rem;
-        block-size: 0.72rem;
-        stroke-width: 1.8;
+        position: relative;
+        z-index: 1;
+        inline-size: 0.78rem;
+        block-size: 0.78rem;
+        stroke-width: 2;
+        overflow: visible;
     }
 
     .ledger-row[data-kind='post'] .rail-marker { color: var(--color-link); }
     .ledger-row[data-kind='neodb'] .rail-marker { color: color-mix(in srgb, #b37a00 68%, var(--gray-500)); }
     .ledger-row[data-kind='strava'] .rail-marker { color: color-mix(in srgb, #18794e 55%, var(--gray-500)); }
 
-    .ledger-body { min-inline-size: 0; }
+    .ledger-body {
+        grid-column: 2;
+        grid-row: 2;
+        min-inline-size: 0;
+    }
     .ledger-content { min-inline-size: 0; }
 
     .ledger-post.timeline-post-card {
@@ -997,31 +1039,13 @@ function excerptText(value: string | null | undefined, max = 150) {
             0 5px 18px rgb(0 0 0 / 0.06);
     }
 
-    .timeline-list .strava-card:hover,
-    .timeline-list .strava-card:focus-within,
-    .timeline-month-list .strava-card:hover,
-    .timeline-month-list .strava-card:focus-within {
-        box-shadow:
-            inset 3px 0 0 color-mix(in srgb, var(--strava-color) 55%, var(--gray-500)),
-            inset 0 0 0 1px color-mix(in srgb, var(--color-link) 30%, var(--gray-200)),
-            0 5px 18px rgb(0 0 0 / 0.06);
-    }
-
     .card-foot { display: flex; justify-content: flex-end; margin-block-start: 0.55rem; }
     .card-time { color: var(--gray-500); font-size: 0.625rem; font-variant-numeric: tabular-nums; opacity: 0; transition: opacity 120ms ease-out; }
     .ledger-row:hover .card-time,
     .ledger-row:focus-within .card-time { opacity: 1; }
 
     @media (max-width: 34rem) {
-        .ledger-row { grid-template-columns: 3rem minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 0.55rem; row-gap: 0; }
-        .ledger-date { grid-column: 1; grid-row: 1; justify-self: center; align-items: center; z-index: 2; padding: 0 0.1rem 0.35rem; background: var(--body-background); text-align: center; }
-        .ledger-rail { grid-column: 1; grid-row: 2; }
-        .ledger-rail::before { inset-block: -1.7rem 0; }
-        .ledger-rail .rail-marker { margin-block-start: 0; }
-        .ledger-body { grid-column: 2; grid-row: 2; }
-        .ledger-row.is-repeat .ledger-rail { grid-row: 1 / span 2; }
-        .ledger-row.is-repeat .ledger-body { grid-row: 1 / span 2; }
-        .ledger-row + .ledger-row { margin-block-start: 1.4rem; }
+        .ledger-row { --ledger-row-gap: 1.4rem; }
         .ledger-post.has-thumb { padding-inline-end: calc(7rem + 0.75rem); }
         .ledger-post .post-thumb { inline-size: 7rem; }
     }
@@ -1044,17 +1068,20 @@ function excerptText(value: string | null | undefined, max = 150) {
             0 1px 2px rgb(0 0 0 / 0.045);
     }
 
-    .memo-tail {
+    .memo-block::before {
+        content: '';
         position: absolute;
         z-index: 0;
-        top: 0.95rem;
-        left: -0.72rem;
-        display: block;
-        inline-size: 0.8rem;
-        block-size: 1.4rem;
-        overflow: visible;
+        top: 1.1rem;
+        left: -0.42rem;
+        inline-size: 0.7rem;
+        block-size: 0.7rem;
+        background: var(--bubble-bg);
+        border-left: 1px solid var(--memo-border-color);
+        border-bottom: 1px solid var(--memo-border-color);
+        border-bottom-left-radius: 2px;
+        transform: rotate(45deg);
         pointer-events: none;
-        shape-rendering: geometricPrecision;
     }
 
     .memo-text-wrap {
@@ -1269,16 +1296,12 @@ function excerptText(value: string | null | undefined, max = 150) {
 
     .neodb-cards {
         display: grid;
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.8rem;
     }
 
-    .neodb-cards.is-group {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
     @media (max-width: 64rem) {
-        .neodb-cards.is-group {
+        .neodb-cards {
             grid-template-columns: minmax(0, 1fr);
         }
     }
@@ -1410,9 +1433,7 @@ function excerptText(value: string | null | undefined, max = 150) {
         padding: 0.8rem 0.9rem 0.85rem;
         border-radius: 0.375rem;
         background: color-mix(in srgb, var(--body-background) 92%, var(--strava-color));
-        box-shadow:
-            inset 3px 0 0 color-mix(in srgb, var(--strava-color) 48%, var(--gray-500)),
-            inset 0 0 0 1px var(--gray-200);
+        box-shadow: inset 0 0 0 1px var(--gray-200);
     }
     .strava-card.sport-ride { --strava-color: #2563eb; }
     .strava-card.sport-walk { --strava-color: #b45309; }
@@ -1434,11 +1455,17 @@ function excerptText(value: string | null | undefined, max = 150) {
     .strava-title-row .entry-title { margin: 0; }
     .strava-sport-icon { flex: none; inline-size: 0.9rem; block-size: 0.9rem; color: var(--strava-color); }
     .strava-sport-name { color: var(--strava-color); font-size: 0.6875rem; font-weight: 600; }
-    .strava-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 1.2rem; row-gap: 0.4rem; margin-block-start: 0.6rem; }
+    .strava-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.2rem; row-gap: 0.4rem; margin-block: 0.6rem 0; }
     .strava-stats > div { display: flex; align-items: baseline; gap: 0.3rem; min-inline-size: 0; }
-    .strava-stats dt { color: var(--gray-500); font-size: 0.6875rem; }
+    .strava-stats dt { color: var(--gray-500); font-size: 0.6875rem; white-space: nowrap; }
     .strava-stats dd { margin: 0; color: var(--body-font-color); font-size: 0.78rem; font-weight: 600; white-space: nowrap; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
     .strava-stats .is-primary dd { color: var(--strava-color); }
+
+    /* 超窄屏（≤352px）卡片里的两列统计收紧列间距与数值字号，标签不折行 */
+    @media (max-width: 22rem) {
+        .strava-stats { column-gap: 0.35rem; }
+        .strava-stats dd { font-size: 0.72rem; }
+    }
 
     @media (max-width: 34rem) {
         .memo-photo-stack { overflow-x: auto; padding: 0.9rem 0.35rem 1rem; }

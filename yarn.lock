@@ -980,10 +980,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@lucide/astro@^0.562.0":
-  version "0.562.0"
-  resolved "https://registry.yarnpkg.com/@lucide/astro/-/astro-0.562.0.tgz#052b78a7f27371898827f1fbf0ddc702ccf7248e"
-  integrity sha512-Rdtykh/VmH3M7n4ckBWY2X7wTMyJX/At5MuJDZ+5M+QZNebxAa75TU7xmM0OVmQj60UsHvdmqRIRNTqEYIieKg==
+"@lucide/astro@^1.68.0":
+  version "1.68.0"
+  resolved "https://registry.yarnpkg.com/@lucide/astro/-/astro-1.68.0.tgz#18d64ea13fcbe273825fa702b812fb2196ddcc28"
+  integrity sha512-gRSV2aoSL13kdJiJkCr1LFL8whh4LZvDC321u+xLXG8rWAoXByJLFwvy1SSufjiX5hghe8HPK6rObZdeBqg25Q==
 
 "@mapbox/extent@0.4.0":
   version "0.4.0"

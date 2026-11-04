@@ -1,0 +1,170 @@
+---
+import { getSvg } from '../../lib/utils/help';
+import { authors } from '../../api/store';
+import { socialLinks } from '../../config';
+
+const author = authors.authors[0];
+---
+
+<div class="profile-card">
+    <div class="profile-head">
+        <div class="profile-headline">
+            <p class="profile-hello">Hello，</p>
+            <strong class="profile-name"><a href="/about/">我是 {author.name}！</a></strong>
+        </div>
+        <svg class="sprout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path class="sprout-ground" d="M7 20h10" />
+            <g class="sprout-stem">
+                <path d="M10 20c5.5-2.5.8-6.4 3-10" />
+            </g>
+            <g class="sprout-leaf sprout-leaf-left">
+                <path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z" />
+            </g>
+            <g class="sprout-leaf sprout-leaf-right">
+                <path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z" />
+            </g>
+        </svg>
+    </div>
+
+    <p class="profile-tagline">🏄 一个孤独的互联网冲浪大师！</p>
+
+    <div class="profile-social">
+        {
+            socialLinks.map((e) => (
+                <a class="icon-rotate-shake" title={e.title} target="_blank" href={e.url} rel="me noopener noreferrer" aria-label={e.title}>
+                    <Fragment set:html={getSvg(e.name, '0 0 30 30')} />
+                </a>
+            ))
+        }
+    </div>
+</div>
+
+<style>
+    .profile-card {
+        margin: 0 0 1.4rem;
+        font-style: italic;
+    }
+
+    /* 标题区：两行文字靠左，树苗贴在右侧 */
+    .profile-head {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+    }
+
+    .profile-headline {
+        min-width: 0;
+        text-align: left;
+    }
+
+    .profile-hello {
+        margin: 0;
+        color: var(--gray-500);
+        font-family: Snell-Bold, ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+        font-size: 1.5rem;
+        font-style: italic;
+        line-height: 1.25;
+    }
+
+    .profile-name {
+        display: block;
+        margin-top: 0.1rem;
+        color: var(--body-font-color);
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        line-height: 1.35;
+    }
+
+    .profile-name a {
+        color: inherit;
+    }
+
+    .sprout {
+        flex: 0 0 auto;
+        inline-size: 4.5rem;
+        block-size: 4.5rem;
+        color: var(--color-link);
+    }
+
+    /* 只有茎和两片叶摇摆，地面横线保持静止 */
+    .sprout-stem {
+        transform-box: view-box;
+        transform-origin: 11px 20px;
+        animation: sprout-sway 4.6s ease-in-out 0.3s infinite;
+    }
+
+    .sprout-leaf {
+        transform-box: view-box;
+    }
+
+    .sprout-leaf-left {
+        transform-origin: 11.8px 13px;
+        animation: leaf-sway-left 3.1s ease-in-out 0.5s infinite;
+    }
+
+    .sprout-leaf-right {
+        transform-origin: 13px 10px;
+        animation: leaf-sway-right 2.6s ease-in-out 1.1s infinite;
+    }
+
+    @keyframes sprout-sway {
+        0% { transform: rotate(0deg); }
+        32% { transform: rotate(2.4deg); }
+        58% { transform: rotate(-1.8deg); }
+        82% { transform: rotate(1.2deg); }
+        100% { transform: rotate(0deg); }
+    }
+
+    @keyframes leaf-sway-left {
+        0% { transform: rotate(0deg); }
+        35% { transform: rotate(-5.5deg); }
+        62% { transform: rotate(3.2deg); }
+        100% { transform: rotate(0deg); }
+    }
+
+    @keyframes leaf-sway-right {
+        0% { transform: rotate(0deg); }
+        40% { transform: rotate(6deg); }
+        70% { transform: rotate(-3.5deg); }
+        100% { transform: rotate(0deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .sprout-stem,
+        .sprout-leaf-left,
+        .sprout-leaf-right {
+            animation: none;
+        }
+    }
+
+    .profile-tagline {
+        margin: 0;
+        color: var(--gray-700);
+        font-size: 0.8125rem;
+        line-height: 1.6;
+    }
+
+    .profile-social {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        align-items: center;
+
+        a {
+            display: inline-flex;
+            color: var(--gray-700);
+
+            &:hover {
+                color: var(--color-hover-link);
+            }
+        }
+
+        /* book-icon 自带 0.5em 右边距，撑到换行，这里去掉，改用 space-between 均分一行 */
+        :global(svg.book-icon) {
+            inline-size: 1.3rem;
+            block-size: 1.3rem;
+            margin-inline-end: 0;
+        }
+    }
+</style>

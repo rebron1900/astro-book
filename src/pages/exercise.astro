@@ -1,0 +1,95 @@
+---
+import { pages, settings } from '../api/store';
+import stravaJson from '../data/strava.json';
+import type { StravaActivity } from '../lib/strava-types';
+import { buildRecords, compactRecords, defaultScope, groupByMonth } from '../lib/exercise';
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Head from '../components/islands/Head.astro';
+import Comments from '../components/islands/Comments.astro';
+import Header from '../components/layout/Header.astro';
+import Menu from '../components/layout/Menu.astro';
+import ExerciseStyles from '../components/pages/ExerciseStyles.astro';
+import ExerciseMapStyles from '../components/pages/ExerciseMapStyles.astro';
+import ExerciseStatsStyles from '../components/pages/ExerciseStatsStyles.astro';
+import ExerciseTimeline from '../components/islands/ExerciseTimeline.astro';
+import ExerciseSidebar from '../components/islands/ExerciseSidebar';
+import ExerciseMapPanel from '../components/islands/ExerciseMapPanel';
+
+// Ghost 里的页面 slug 仍是 strava；如果以后跟着路径一起改成 exercise，这里也能直接接住
+const page = pages.find((post) => post.slug == 'exercise') ?? pages.find((post) => post.slug == 'strava');
+
+if (!page) {
+    throw new Error('exercise page not found');
+}
+
+// 构建期把 strava.json 整理成页面数据；轨迹不内嵌，地图初始化时再拉 /exercise-routes.json
+const allRecords = buildRecords(stravaJson as unknown as StravaActivity[]);
+const groups = groupByMonth(allRecords);
+const initialScope = defaultScope(allRecords);
+const records = compactRecords(allRecords);
+
+// Ghost 里的「运动」页带 fullwidth 标签，这里改用常规 page 布局（中间时间线 + 右侧地图/统计）
+const layoutPage = { ...page, tags: (page.tags ?? []).filter((tag) => tag.slug !== 'hash-page-fullwidth') };
+
+// Ghost 页面没有摘要，这里用页面导语补上 meta description
+const seoPage = { ...layoutPage, excerpt: '跑步、徒步、骑行和攀爬的运动轨迹：按月分组的记录、地图预览和日历/周/月/年统计。' };
+
+const mapToken = import.meta.env.PUBLIC_MAP_KEY;
+const title = page.title || '运动';
+const intro =
+    '这里是我跑步、徒步、骑行和攀爬留下的轨迹。谈不上什么成绩，只是每一次出门、流汗和回来的证据；点开每一条记录，右边的地图会亮起那一次的路线。';
+---
+
+<BaseLayout post={layoutPage}>
+    <Head
+        slot="head"
+        post={seoPage}
+        site={settings}
+        title={`${title} | ${settings?.title} - ${settings?.description}`}
+        og_url={`${import.meta.env.SITE}/exercise/`}
+    />
+
+    <Header slot="header" title={title} />
+    <Menu slot="menu" />
+
+    <article slot="content" class="exercise-page">
+        <header class="ex-hero">
+            <h1 class="ex-title">用身体，把日子往前推一点。</h1>
+            <p class="ex-intro">{intro}</p>
+        </header>
+
+        {
+            groups.length > 0 ? (
+                <div class="ex-main">
+                    <ExerciseMapPanel
+                        client:load
+                        records={records}
+                        initialScope={initialScope}
+                        token={mapToken}
+                        routesUrl="/exercise-routes.json"
+                    />
+                    <ExerciseTimeline groups={groups} scope={initialScope} />
+                </div>
+            ) : (
+                <p class="ex-empty">还没有同步到运动记录。</p>
+            )
+        }
+    </article>
+
+    <Fragment slot="toc">
+        <ExerciseSidebar client:media="(min-width: 47.85rem)" records={records} initialScope={initialScope} />
+    </Fragment>
+
+    <Fragment slot="h-toc">
+        <aside class="hidden clearfix ex-mobile-toc">
+            <ExerciseSidebar client:media="(max-width: 47.84rem)" records={records} initialScope={initialScope} />
+        </aside>
+    </Fragment>
+
+    <Comments slot="comments" />
+
+    <ExerciseStyles />
+    <ExerciseMapStyles />
+    <ExerciseStatsStyles />
+</BaseLayout>

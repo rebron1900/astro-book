@@ -1,0 +1,66 @@
+---
+import { Footprints } from '@lucide/astro';
+import type { ExerciseScope, MonthGroup } from '../../lib/exercise';
+import { scopeKey, toStravaActivity } from '../../lib/exercise';
+import LedgerStrava from './LedgerStrava.astro';
+
+interface Props {
+    groups: MonthGroup[];
+    scope: ExerciseScope;
+}
+
+const { groups, scope } = Astro.props as Props;
+
+const scopeMonth = scope.kind === 'month' ? `${scope.year}-${String(scope.month).padStart(2, '0')}` : '';
+---
+
+<div
+    class="tl tl-ledger timeline-list ex-timeline"
+    data-exercise-timeline
+    data-scope={scopeKey(scope)}
+    data-initial-scope={JSON.stringify(scope)}
+>
+    {
+        groups.map((group) => (
+            <article
+                class:list={['ledger-row', 'ex-month-row', { 'is-active': scopeMonth === group.key }]}
+                data-kind="strava"
+                data-month-key={group.key}
+                data-date-key={group.key}
+            >
+                <div class="ledger-date" title={`${group.label} · ${group.records.length} 次`}>
+                    <span class="ledger-year">{group.year}</span>
+                    <time class="ledger-date-value" datetime={group.key}>{group.month}月</time>
+                    <span class="ledger-weekday">{group.records.length} 次</span>
+                </div>
+                <div class="ledger-rail">
+                    <span class="rail-marker">
+                        <Footprints />
+                    </span>
+                </div>
+                <div class="ledger-body">
+                    <div class="ledger-content">
+                        <div class="strava-cards ex-cards">
+                            {group.records.map((record) => (
+                                <LedgerStrava
+                                    activity={toStravaActivity(record)}
+                                    dataId={record.id}
+                                    dataSport={record.sport}
+                                    dataDate={record.date}
+                                    sketchMaxPoints={48}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </article>
+        ))
+    }
+</div>
+
+<script>
+    import { initExerciseTimeline } from '../../lib/client/exercise-timeline';
+
+    document.addEventListener('astro:page-load', initExerciseTimeline);
+    if (document.readyState !== 'loading') initExerciseTimeline();
+</script>

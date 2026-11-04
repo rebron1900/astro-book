@@ -11,10 +11,15 @@ interface Props {
         label: string;
         stats: Array<{ label: string; value: string; primary?: boolean }>;
     };
-    href: string;
+    /** 可选：运动记录 id（渲染为 data-exercise-id，供运动页面做联动） */
+    dataId?: string;
+    /** 可选：记录日期（渲染为 data-date） */
+    dataDate?: string;
+    /** 可选：运动类型（渲染为 data-sport，供筛选器使用） */
+    dataSport?: string;
 }
 
-const { activity, route, meta, href } = Astro.props as Props;
+const { activity, route, meta, dataId, dataDate, dataSport } = Astro.props as Props;
 
 const SPORT_ICONS: Record<SportKey, any> = {
     run: Footprints,
@@ -29,7 +34,7 @@ const SPORT_ICONS: Record<SportKey, any> = {
 const SportIcon = SPORT_ICONS[meta.key] ?? Footprints;
 ---
 
-<div class:list={['strava-card', `sport-${meta.key}`]}>
+<div class:list={['strava-card', `sport-${meta.key}`]} data-exercise-id={dataId} data-date={dataDate} data-sport={dataSport}>
     {route && (
         <svg class="strava-route" viewBox="0 0 620 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
             <path d={route.path} />
@@ -42,12 +47,7 @@ const SportIcon = SPORT_ICONS[meta.key] ?? Footprints;
             <div class="strava-title-row">
                 <SportIcon class="strava-sport-icon" size={14} aria-hidden="true" />
                 <span class="strava-sport-name">{meta.label}</span>
-                <h2 class="entry-title">
-                    <a href={href}>
-                        {activity.name}
-                        <span class="ext">↗</span>
-                    </a>
-                </h2>
+                <h2 class="entry-title">{activity.name}</h2>
             </div>
         </div>
         <dl class="stats strava-stats">

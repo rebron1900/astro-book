@@ -1223,8 +1223,22 @@ h3.card-title {
 .tippy-box {
     background-color: var(--body-background) !important;
     color: var(--body-font-color) !important;
-    box-shadow: 0 0 0.1rem var(--gray-100) !important;
-    border: solid 1px var(--gray-200) !important;
+    /* 和日历 tooltip 共用的卡片外观：更明确的边界、更大的圆角与投影 */
+    border: solid 1px color-mix(in srgb, var(--body-font-color) 16%, var(--gray-200)) !important;
+    border-radius: 0.7rem !important;
+    box-shadow:
+        0 18px 44px -16px rgb(0 0 0 / 0.36),
+        0 3px 10px rgb(0 0 0 / 0.08) !important;
+    font-size: 0.7813rem !important;
+    line-height: 1.6 !important;
+    /* 保留箭头，同时让内容自身按圆角裁切，避免溢出卡片 */
+    overflow: visible !important;
+}
+
+.tippy-box .tippy-content {
+    padding: 0.55rem 0.75rem;
+    overflow: hidden;
+    border-radius: calc(0.7rem - 1px);
 }
 
 .aspect-ratio {
@@ -2032,10 +2046,27 @@ $page-sequence-max-items: 12;
     text-underline-offset: 0.3em;
 }
 
-/* 所有 page 页面标题统一对齐 /douban/ 的标题层级。 */
+/* 所有 page 页面标题统一对齐 /exercise/ 的标题层级：一句标题 + 一段引言。 */
 .book-article h1.page-title {
-    font-size: clamp(1.3rem, 1.55vw, 1.55rem);
+    font-size: clamp(1.5rem, 2.4vw, 1.85rem);
     font-weight: 600;
-    line-height: 1.4;
-    letter-spacing: -0.025em;
+    line-height: 1.32;
+    letter-spacing: -0.022em;
+}
+
+/* 页面标题区统一：标题 + 简介，尺度与 /exercise/ 的 ex-hero 完全一致。 */
+.page-head {
+    margin: 0 0 1.75rem;
+}
+
+.page-head .page-title {
+    margin: 0;
+}
+
+.page-intro {
+    max-inline-size: 40rem;
+    margin: 0.65rem 0 0;
+    color: var(--gray-700);
+    font-size: 0.875rem;
+    line-height: 1.85;
 }

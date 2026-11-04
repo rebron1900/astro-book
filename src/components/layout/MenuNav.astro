@@ -1,10 +1,11 @@
 ---
 import { settings } from '../../api/store';
-import { StickyNote, HouseHeart, MessageCircleHeart, Sparkles, Sprout, Images, TentTree, Package, Tags, Flower2, DoorOpen } from '@lucide/astro';
+import { StickyNote, HouseHeart, MessageCircleHeart, Sparkles, Sprout, Images, TentTree, Package, Tags, Flower2, DoorOpen, SportShoe } from '@lucide/astro';
 
 const { title } = Astro.props;
 
-const EMOJI_SEQ = /(\p{RI}\p{RI}|\p{Emoji}(\p{Emoji_Modifier}|\u200D\p{Emoji})*)$/u;
+// 末尾 emoji 序列：支持 ZWJ 组合（如 🧗‍♂️ = 🧗 + ZWJ + ♂ + VS16）与肤色修饰符
+const EMOJI_SEQ = /(\p{RI}\p{RI}|\p{Emoji}[\uFE0F\uFE0E]?(\p{Emoji_Modifier}|\u200D\p{Emoji}[\uFE0F\uFE0E]?)*)$/u;
 
 const ICON_MAP: Record<string, typeof StickyNote> = {
     '📄': StickyNote,
@@ -14,6 +15,8 @@ const ICON_MAP: Record<string, typeof StickyNote> = {
     '😎': Sprout, // ← 这里一定要“复制粘贴”
     '🚧': Images,
     '👣': TentTree,
+    '🧗‍♂️': SportShoe,
+    '🧗': SportShoe,
     '🪴': Flower2,
     '📦': Package,
     '📌': Tags,

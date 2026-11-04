@@ -2,14 +2,26 @@
 import { stravaMetaFor, routeSketch } from '../../lib/strava-preview';
 import StravaCardPreview from './StravaCardPreview.astro';
 
-const { activity } = Astro.props;
-const activityUrl = activity.url || `https://www.strava.com/activities/${activity.run_id}`;
-const href = `/golink?target=${btoa(unescape(encodeURIComponent(activityUrl)))}`;
+interface Props {
+    activity: any;
+    /** 可选：把运动记录 id 透传到卡片根节点，方便页面做选中联动（首页不传） */
+    dataId?: string;
+    /** 可选：运动类型（data-sport，供筛选） */
+    dataSport?: string;
+    /** 可选：轨迹缩略图最大点数（列表页卡片多时用来控制 HTML 体积） */
+    sketchMaxPoints?: number;
+    /** 可选：记录日期（渲染为 data-date，供页面做日期联动） */
+    dataDate?: string;
+}
+
+const { activity, dataId, dataSport, sketchMaxPoints, dataDate } = Astro.props as Props;
 ---
 
 <StravaCardPreview
     activity={activity}
-    route={routeSketch(activity.summary_polyline)}
+    route={routeSketch(activity.summary_polyline, { maxPoints: sketchMaxPoints ?? 0 })}
     meta={stravaMetaFor(activity)}
-    href={href}
+    dataId={dataId}
+    dataSport={dataSport}
+    dataDate={dataDate}
 />

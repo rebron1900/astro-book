@@ -61,6 +61,7 @@
     .pv-page .pv-friend-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+        align-items: start;
         gap: 0.85rem;
     }
 
@@ -160,7 +161,16 @@
         border-block-start: 1px solid var(--gray-200);
     }
 
+    .pv-page .pv-latest-meta {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.5rem;
+        min-inline-size: 0;
+    }
+
     .pv-page .pv-latest-label {
+        flex: 0 0 auto;
         color: var(--gray-500);
         font-size: 0.6rem;
         letter-spacing: 0.06em;
@@ -181,9 +191,12 @@
     }
 
     .pv-page .pv-friend-date {
+        flex: 0 0 auto;
+        margin-inline-start: auto;
         color: var(--gray-500);
         font-size: 0.625rem;
         line-height: 1.35;
+        white-space: nowrap;
     }
 
     .pv-page .pv-lost {
@@ -927,11 +940,6 @@
         color: var(--body-font-color);
     }
 
-    .pv-page .pv-friend-card {
-        block-size: 9.2rem;
-        overflow: hidden;
-    }
-
     .pv-page .pv-friend-top {
         flex: 0 0 auto;
     }
@@ -951,7 +959,7 @@
 
     .pv-page .pv-friend-date {
         flex: 0 0 auto;
-        margin-block-start: auto;
+        margin-block-start: 0;
     }
 
     .pv-page .pv-lost-item {
@@ -963,10 +971,6 @@
     }
 
     @media (max-width: 34rem) {
-        .pv-page .pv-friend-card {
-            block-size: 8.9rem;
-        }
-
         .pv-page .pv-month-grid {
             grid-template-columns: 1fr;
         }

@@ -58,24 +58,46 @@ entries.forEach((entry) => {
     }
 
     .timeline-month-row {
+        position: relative;
+        --timeline-month-gap: 2.2rem;
         display: grid;
-        grid-template-columns: 3.4rem 1.25rem minmax(0, 1fr);
-        gap: 1rem;
+        grid-template-columns: 3rem minmax(0, 1fr);
+        grid-template-rows: auto auto;
+        column-gap: 0.55rem;
+        row-gap: 0;
         align-items: start;
     }
 
     .timeline-month-row + .timeline-month-row {
-        margin-block-start: 2.2rem;
+        margin-block-start: var(--timeline-month-gap);
+    }
+
+    .timeline-month-row + .timeline-month-row::before {
+        content: '';
+        position: absolute;
+        z-index: 0;
+        inset-block-start: calc(-1 * var(--timeline-month-gap));
+        inset-inline-start: calc(1.5rem - 0.5px);
+        block-size: var(--timeline-month-gap);
+        inline-size: 1px;
+        background: var(--gray-200);
+        pointer-events: none;
     }
 
     .timeline-month-date {
+        position: relative;
         display: flex;
+        grid-column: 1;
+        grid-row: 1;
         flex-direction: column;
-        align-items: flex-end;
+        align-items: center;
+        justify-self: center;
         gap: 0.08rem;
-        padding-block-start: 0.1rem;
+        z-index: 2;
+        padding: 0 0.1rem 0.35rem;
         color: var(--gray-700);
         font-variant-numeric: tabular-nums;
+        text-align: center;
     }
 
     .timeline-month-year {
@@ -95,6 +117,8 @@ entries.forEach((entry) => {
     .timeline-month-rail {
         position: relative;
         display: flex;
+        grid-column: 1;
+        grid-row: 2;
         align-self: stretch;
         justify-content: center;
     }
@@ -102,17 +126,22 @@ entries.forEach((entry) => {
     .timeline-month-rail::before {
         content: '';
         position: absolute;
-        inset-block: -2.2rem 0;
+        z-index: 0;
+        inset-block: 0.95rem 0;
+        inset-inline-start: calc(1.5rem - 0.5px);
         inline-size: 1px;
         background: var(--gray-200);
+        pointer-events: none;
     }
 
-    .timeline-month-row:first-child .timeline-month-rail::before {
-        inset-block-start: 0.45rem;
+    .timeline-month-rail .rail-marker {
+        margin-block-start: 0;
     }
 
-    .timeline-month-row:last-child .timeline-month-rail::before {
-        inset-block-end: calc(100% - 0.8rem);
+    .timeline-month-content {
+        grid-column: 2;
+        grid-row: 2;
+        min-inline-size: 0;
     }
 
     .timeline-load-status {
@@ -137,62 +166,18 @@ entries.forEach((entry) => {
     }
 
     @media (max-width: 34rem) {
-        .timeline-month-row {
-            grid-template-columns: 3rem minmax(0, 1fr);
-            grid-template-rows: auto auto;
-            column-gap: 0.55rem;
-            row-gap: 0;
-        }
-
-        .timeline-month-date {
-            grid-column: 1;
-            grid-row: 1;
-            justify-self: center;
-            align-items: center;
-            z-index: 2;
-            padding: 0 0.1rem 0.35rem;
-            background: var(--body-background);
-            text-align: center;
-        }
-
-        .timeline-month-rail {
-            grid-column: 1;
-            grid-row: 2;
-        }
-
-        .timeline-month-rail::before {
-            inset-block: -1.7rem 0;
-        }
-
-        .timeline-month-row:first-child .timeline-month-rail::before {
-            inset-block-start: 0.45rem;
-        }
-
-        .timeline-month-row:last-child .timeline-month-rail::before {
-            inset-block-end: calc(100% - 0.8rem);
-        }
-
-        .timeline-month-rail .rail-marker {
-            margin-block-start: 0;
-        }
-
-        .timeline-month-content {
-            grid-column: 2;
-            grid-row: 2;
-        }
-
         .timeline-month-grid {
             grid-template-columns: minmax(0, 1fr);
         }
     }
 
     @media (prefers-reduced-motion: no-preference) {
-        .timeline-month-row.reveal-ready {
+        .timeline-month-row.reveal-ready .timeline-month-content {
             opacity: 0.45;
             transform: translateY(14px);
         }
 
-        .timeline-month-row.reveal-ready.is-visible {
+        .timeline-month-row.reveal-ready.is-visible .timeline-month-content {
             opacity: 1;
             transform: translateY(0);
             transition:

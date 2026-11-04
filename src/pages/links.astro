@@ -93,9 +93,11 @@ const lostReasonLabels = { error: '抓取失败', empty: '暂无文章', disable
                         <span class="pv-arrow">↗</span>
                     </div>
                     <div class="pv-friend-latest">
-                        <span class="pv-latest-label">最近更新</span>
+                        <div class="pv-latest-meta">
+                            <span class="pv-latest-label">最近更新</span>
+                            <time class="pv-friend-date">{normalizeData(item.published_at || item.created_at || (item.date as string | number))}</time>
+                        </div>
                         <span class="pv-friend-title pv-clip-target">{item.title || 'Untitled'}</span>
-                        <time class="pv-friend-date">{normalizeData(item.published_at || item.created_at || (item.date as string | number))}</time>
                     </div>
                 </a>
             ))}
@@ -125,9 +127,11 @@ const lostReasonLabels = { error: '抓取失败', empty: '暂无文章', disable
                                     <span class="pv-arrow">↗</span>
                                 </div>
                                 <div class="pv-friend-latest">
-                                    <span class="pv-latest-label">订阅状态</span>
+                                    <div class="pv-latest-meta">
+                                        <span class="pv-latest-label">订阅状态</span>
+                                        <time class="pv-friend-date">{normalizeData(item.last_entry_at) || '暂无文章'}</time>
+                                    </div>
                                     <span class="pv-friend-title pv-clip-target">{lostReasonLabels[item.reason]}</span>
-                                    <time class="pv-friend-date">{normalizeData(item.last_entry_at) || '暂无文章'}</time>
                                 </div>
                             </a>
                         </li>
