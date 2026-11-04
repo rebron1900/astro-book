@@ -10,6 +10,16 @@
     "last_entry_at": "2025-07-13T07:23:00.000Z"
   },
   {
+    "id": 109,
+    "title": "吉吉如律令",
+    "site_url": "https://type.nivo.life",
+    "reason": "error",
+    "first_seen_at": "2026-11-04T06:22:49.518Z",
+    "feed_url": "https://type.nivo.life/feed/",
+    "error": "由于意外的 HTTP 状态码 530，网站暂不可用。这不是 Miniflux 的问题，请稍后重试。",
+    "last_entry_at": "2026-10-22T06:41:00.000Z"
+  },
+  {
     "id": 35,
     "title": "叶小明的博客 XIAOMING'S BLOG",
     "site_url": "https://vimin.cc",
