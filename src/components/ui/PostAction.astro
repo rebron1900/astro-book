@@ -1,13 +1,9 @@
 ---
 import { Heart } from '@lucide/astro';
-
-import config from '../../config';
-
-const { post } = Astro.props;
 ---
 
 <div class="post_action flex flex-wrap justify-center">
-    <div class="post_like" data-postid={post.id} data-apiurl={config.apiUrl}>
+    <div class="post_like">
         <Heart class="book-icon" />
 
         <div class="post_like_desc">「 觉得本文不错？点个赞把！... 」</div>
@@ -16,106 +12,93 @@ const { post } = Astro.props;
 
 <script>
     import cocoMessage from '../../lib/coco-message';
+    import { artalkPageKey, fetchArtalkPageStats, hasLiked, markLiked, voteArtalkPageUp } from '../../lib/artalk-stats';
 
-    document.addEventListener('astro:page-load', () => {
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    document.addEventListener('astro:page-load', async () => {
         cocoMessage.insertCSS();
+
         const likeNode = document.querySelector<HTMLElement>('.post_like');
-        if (likeNode) {
-            const post_id = likeNode.dataset.postid ?? '';
-            const apiUrl = likeNode.dataset.apiurl ?? '';
+        if (!likeNode) return;
 
-            const postAction = {
-                like: (post_id: string, apiUrl: string) => {
-                    var likelist = localStorage.getItem('lieklist') || '';
-                    var likeButton = document.querySelector<HTMLElement>('.post_like');
-                    var likeText = document.querySelector<HTMLElement>('.post_likes');
+        const likeText = document.querySelector<HTMLElement>('.post_likes');
+        const pageKey = artalkPageKey();
+        let pageId = 0;
+        let voting = false;
+        let votedInThisView = false;
 
-                    if (likelist.indexOf(post_id + ',') != -1) {
-                        cocoMessage.success('你已经点过赞了 ❤️');
-                        likeButton?.classList.add('active');
-                    } else {
-                        fetch(`${apiUrl}/action?type=like&post_id=${post_id}`, { method: 'post' })
-                            .then((res) => {
-                                return res.json();
-                            })
-                            .then((data: { likes: number }) => {
-                                cocoMessage.success('点赞成功，谢谢你的 ❤️');
-                                localStorage.setItem('lieklist', likelist + post_id + ',');
-                                likeButton?.classList.add('active');
-                                if (likeText) likeText.innerText = String(data.likes);
-                            })
-                            .catch((error) => {
-                                console.error('There was a problem with the fetch operation:', error);
-                            });
+        const setActive = () => likeNode.classList.add('active');
+
+        if (hasLiked(pageKey)) setActive();
+
+        const loadStats = async () => {
+            let stats = await fetchArtalkPageStats(pageKey).catch(() => null);
+            // 新文章第一次访问时，Artalk 的 PV 初始化可能还没来得及创建 page 记录，稍后重试一次
+            if (!stats || stats.id === 0) {
+                await sleep(800);
+                stats = await fetchArtalkPageStats(pageKey).catch(() => null);
+            }
+            if (!stats) return;
+
+            pageId = stats.id;
+            // 避免慢请求在用户已经点赞之后把数字覆盖回旧值
+            if (likeText && !votedInThisView) likeText.innerText = String(stats.voteUp);
+        };
+
+        const handleLike = async () => {
+            if (voting) return;
+
+            if (hasLiked(pageKey)) {
+                setActive();
+                cocoMessage.success('你已经点过赞了 ❤️');
+                return;
+            }
+
+            voting = true;
+
+            try {
+                if (pageId <= 0) {
+                    const stats = await fetchArtalkPageStats(pageKey).catch(() => null);
+                    if (stats) {
+                        pageId = stats.id;
+                        if (likeText) likeText.innerText = String(stats.voteUp);
                     }
-                },
-                initLike: (post_id: string, apiUrl: string) => {
-                    var likelist = localStorage.getItem('lieklist') || '';
-                    var likeButton = document.querySelector<HTMLElement>('.post_like');
-                    var likeText = document.querySelector<HTMLElement>('.post_likes');
-                    if (likelist.indexOf(post_id + ',') != -1) {
-                        likeButton?.classList.add('active');
-                    }
-                    fetch(`${apiUrl}/action?type=like&post_id=${post_id}`)
-                        .then((res) => {
-                            return res.json();
-                        })
-                        .then((data: { likes?: number }) => {
-                            if (data.likes) {
-                                if (likeButton) likeButton.dataset.like = String(data.likes);
-                                if (likeText) likeText.innerText = String(data.likes);
-                            } else {
-                                if (likeButton) likeButton.dataset.like = '0';
-                                if (likeText) likeText.innerText = '0';
-                            }
-                        })
-                        .catch((error) => {
-                            if (likeButton) likeButton.dataset.like = '0';
-                            if (likeText) likeText.innerText = '0';
-                            console.error('There was a problem with the fetch operation:', error);
-                        });
-                    return true;
-                },
-                initViews: (post_id: string, apiUrl: string) => {
-                    var viewlist = localStorage.getItem('viewlist') || '';
-                    var viewText = document.querySelector<HTMLElement>('.post_views');
-
-                    if (viewlist.indexOf(post_id + ',') != -1) {
-                        fetch(`${apiUrl}/action?type=view&post_id=${post_id}`)
-                            .then((res) => {
-                                return res.json();
-                            })
-                            .then((data: { Views?: number }) => {
-                                if (data.Views) {
-                                    if (viewText) viewText.innerText = String(data.Views);
-                                } else {
-                                    if (viewText) viewText.innerText = '0';
-                                }
-                            });
-                    } else {
-                        fetch(`${apiUrl}/action?type=view&post_id=${post_id}`, { method: 'post' })
-                            .then((res) => {
-                                return res.json();
-                            })
-                            .then((data: { Views: number }) => {
-                                localStorage.setItem('viewlist', viewlist + post_id + ',');
-                                if (viewText) viewText.innerText = String(data.Views);
-                            })
-                            .catch((error) => {
-                                if (viewText) viewText.innerText = '0';
-                                console.error('There was a problem with the fetch operation:', error);
-                            });
-                    }
-
-                    return true;
                 }
-            };
+                if (pageId <= 0) {
+                    cocoMessage.error('点赞失败，请稍后再试');
+                    return;
+                }
 
-            postAction.initLike(post_id, apiUrl);
-            postAction.initViews(post_id, apiUrl);
-            likeNode.addEventListener('click', () => {
-                postAction.like(post_id, apiUrl);
-            });
+                const previousUp = Number(likeText?.innerText || 0);
+                const { up } = await voteArtalkPageUp(pageId);
+                votedInThisView = true;
+
+                if (up < previousUp) {
+                    // Artalk 按 IP 去重：这次点击实际取消了此前的点赞
+                    likeNode.classList.remove('active');
+                    if (likeText) likeText.innerText = String(up);
+                    cocoMessage.info('已取消此前的点赞');
+                    return;
+                }
+
+                markLiked(pageKey);
+                setActive();
+                if (likeText) likeText.innerText = String(up);
+                cocoMessage.success('点赞成功，谢谢你的 ❤️');
+            } catch (error) {
+                console.error('Artalk vote failed:', error);
+                cocoMessage.error('点赞失败，请稍后再试');
+            } finally {
+                voting = false;
+            }
+        };
+
+        if (likeNode.dataset.bound !== 'true') {
+            likeNode.dataset.bound = 'true';
+            likeNode.addEventListener('click', handleLike);
         }
+
+        await loadStats();
     });
 </script>

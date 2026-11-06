@@ -28,8 +28,9 @@ const { postID } = Astro.props;
     import Artalk from 'artalk';
     import cocoMessage from '../../lib/coco-message';
     import loadInteractions from '../../lib/activitypub';
+    import { ARTALK_SERVER, ARTALK_SITE, artalkPageKey, hasCountedPv, markPvCounted } from '../../lib/artalk-stats';
 
-    const commentinfo = { type: 'artalk', name: "1900'Blog", server: 'https://artalk.1900.live', el: '.at-comments' };
+    const commentinfo = { type: 'artalk', name: ARTALK_SITE, server: ARTALK_SERVER, el: '.at-comments' };
 
     const isExternalLink = (url: string): boolean => {
         try {
@@ -45,12 +46,22 @@ const { postID } = Astro.props;
     };
     document.addEventListener('astro:page-load', () => {
         if (!document.querySelector(commentinfo.el)) return;
+
+        const pageKey = artalkPageKey();
+        // 与旧版自建计数保持一致：同一浏览器对同一页面只贡献一次 PV。
+        // 想改成“每天首次访问计一次”，把 hasCountedPv 换成带时间戳 TTL 的判断即可。
+        const pvAdd = !hasCountedPv(pageKey);
+
         const artalk = Artalk.init({
             el: commentinfo.el, // 绑定元素的 Selector
             server: commentinfo.server, // 后端地址
             site: commentinfo.name, // 你的站点名
-            pageKey: document.location.pathname.replace(/\/?$/, '/')
+            pageKey,
+            pvEl: '.post_views', // 页脚浏览量展示位置
+            pvAdd // 已有本地记录时只拉取、不再 +1
         });
+
+        if (pvAdd) markPvCounted(pageKey);
 
         loadInteractions();
 
