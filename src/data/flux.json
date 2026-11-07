@@ -1,5 +1,57 @@
 [
   {
+    "title": "ChatGPT Dot 日常使用记录",
+    "url": "https://anotherdayu.com/how-i-use-dots/",
+    "published_at": "2026-11-07T12:27:00Z",
+    "created_at": "2026-11-07T12:53:54.248135Z",
+    "feed": {
+      "id": 101,
+      "site_url": "https://anotherdayu.com",
+      "title": "Another Dayu"
+    },
+    "feed_id": 101,
+    "update_timestamp": 1794054420000
+  },
+  {
+    "title": "沃尔玛好无聊：初到商场时天气非常晒，空间虽然很大但路很窄",
+    "url": "https://090909.top/2026/11/07/%E6%B2%83%E5%B0%94%E7%8E%9B%E5%A5%BD%E6%97%A0%E8%81%8A/",
+    "published_at": "2026-11-07T09:20:37Z",
+    "created_at": "2026-11-07T10:53:57.411591Z",
+    "feed": {
+      "id": 208,
+      "site_url": "http://090909.top",
+      "title": "Liang's Dyog"
+    },
+    "feed_id": 208,
+    "update_timestamp": 1794043237000
+  },
+  {
+    "title": "碎片2026年11月7日",
+    "url": "https://acevs.com/5349/",
+    "published_at": "2026-11-07T09:18:18Z",
+    "created_at": "2026-11-07T10:54:01.870629Z",
+    "feed": {
+      "id": 149,
+      "site_url": "https://acevs.com",
+      "title": "ACEVS"
+    },
+    "feed_id": 149,
+    "update_timestamp": 1794043098000
+  },
+  {
+    "title": "2026年11月07日",
+    "url": "http://www.lopwon.com",
+    "published_at": "2026-11-07T04:00:00Z",
+    "created_at": "2026-11-07T11:53:52.748286Z",
+    "feed": {
+      "id": 65,
+      "site_url": "http://www.lopwon.com",
+      "title": "立云图志"
+    },
+    "feed_id": 65,
+    "update_timestamp": 1794024000000
+  },
+  {
     "title": "Vercel deployments-storage 空间告急！",
     "url": "https://www.suiyan.cc/blog/20261107092952",
     "published_at": "2026-11-07T01:29:52Z",
@@ -13,6 +65,19 @@
     "update_timestamp": 1794014992000
   },
   {
+    "title": "[转] Apple 官网排版细节鉴赏",
+    "url": "https://blog.viki.moe/translation-apple-website-typography-details",
+    "published_at": "2026-11-07T00:00:00Z",
+    "created_at": "2026-11-07T06:53:54.854764Z",
+    "feed": {
+      "id": 205,
+      "site_url": "https://blog.viki.moe",
+      "title": "Viki 写东西的地方"
+    },
+    "feed_id": 205,
+    "update_timestamp": 1794009600000
+  },
+  {
     "title": "正定访古",
     "url": "https://fatesinger.com/106533",
     "published_at": "2026-11-06T16:47:34Z",
@@ -24,6 +89,19 @@
     },
     "feed_id": 13,
     "update_timestamp": 1793983654000
+  },
+  {
+    "title": "那些不肯好好说话的「作精」",
+    "url": "https://blog.solazy.me/1936/",
+    "published_at": "2026-11-06T15:00:00Z",
+    "created_at": "2026-11-07T06:53:57.362655Z",
+    "feed": {
+      "id": 172,
+      "site_url": "https://blog.solazy.me",
+      "title": "So!azy"
+    },
+    "feed_id": 172,
+    "update_timestamp": 1793977200000
   },
   {
     "title": "每夫吐槽（121）",
@@ -63,19 +141,6 @@
     },
     "feed_id": 86,
     "update_timestamp": 1793950546000
-  },
-  {
-    "title": "二宝的问题和历史上灭佛记录",
-    "url": "https://acevs.com/5347/",
-    "published_at": "2026-11-06T06:39:53Z",
-    "created_at": "2026-11-06T06:54:02.88082Z",
-    "feed": {
-      "id": 149,
-      "site_url": "https://acevs.com",
-      "title": "ACEVS"
-    },
-    "feed_id": 149,
-    "update_timestamp": 1793947193000
   },
   {
     "title": "三年目标纽约老炮（重拾英语十）",
@@ -154,32 +219,6 @@
     },
     "feed_id": 158,
     "update_timestamp": 1793913595000
-  },
-  {
-    "title": "在网页上滚雪球：不知道是不是开源的，但玩起来还挺有意思的",
-    "url": "https://090909.top/2026/11/05/%E5%9C%A8%E7%BD%91%E9%A1%B5%E4%B8%8A%E6%BB%9A%E9%9B%AA%E7%90%83/",
-    "published_at": "2026-11-05T15:21:03Z",
-    "created_at": "2026-11-05T16:53:54.290442Z",
-    "feed": {
-      "id": 208,
-      "site_url": "http://090909.top",
-      "title": "Liang's Dyog"
-    },
-    "feed_id": 208,
-    "update_timestamp": 1793892063000
-  },
-  {
-    "title": "人体的说明书",
-    "url": "https://blog.solazy.me/20261105/",
-    "published_at": "2026-11-05T15:00:00Z",
-    "created_at": "2026-11-06T02:53:56.716708Z",
-    "feed": {
-      "id": 172,
-      "site_url": "https://blog.solazy.me",
-      "title": "So!azy"
-    },
-    "feed_id": 172,
-    "update_timestamp": 1793890800000
   },
   {
     "title": "清水洗头",
@@ -440,19 +479,6 @@
     },
     "feed_id": 196,
     "update_timestamp": 1793585263000
-  },
-  {
-    "title": "定期更新丨我的 App Defaults",
-    "url": "https://blog.viki.moe/app-defaults",
-    "published_at": "2026-11-02T00:00:00Z",
-    "created_at": "2026-11-03T03:31:07.846446Z",
-    "feed": {
-      "id": 205,
-      "site_url": "https://blog.viki.moe",
-      "title": "Viki 写东西的地方"
-    },
-    "feed_id": 205,
-    "update_timestamp": 1793577600000
   },
   {
     "title": "一代版本一代神",
@@ -791,32 +817,6 @@
     },
     "feed_id": 212,
     "update_timestamp": 1792745201000
-  },
-  {
-    "title": "2026年10月23日",
-    "url": "http://www.lopwon.com",
-    "published_at": "2026-10-23T04:00:00Z",
-    "created_at": "2026-10-23T14:20:41.757251Z",
-    "feed": {
-      "id": 65,
-      "site_url": "http://www.lopwon.com",
-      "title": "立云图志"
-    },
-    "feed_id": 65,
-    "update_timestamp": 1792728000000
-  },
-  {
-    "title": "QuietSearch:支持 Kagi 和 DeepSeek API 的轻量搜索界面",
-    "url": "https://anotherdayu.com/quietsearch-kagi-deepseek-api/",
-    "published_at": "2026-10-22T15:30:00Z",
-    "created_at": "2026-10-22T16:20:42.875795Z",
-    "feed": {
-      "id": 101,
-      "site_url": "https://anotherdayu.com",
-      "title": "Another Dayu"
-    },
-    "feed_id": 101,
-    "update_timestamp": 1792683000000
   },
   {
     "title": "从PHP漏洞聊聊AI时代的网站安全",
@@ -1629,8 +1629,7 @@
   {
     "title": "移动打不通联通，提示对方手机无法接通",
     "url": "https://blog.dngz.net/841.htm",
-    "published_at": "2025-11-26T04:30:02Z",
-    "created_at": "2026-09-07T09:20:42.785233Z",
+    "published_at": "Wed, 26 Nov 2025 12:30:02 +0800",
     "feed": {
       "id": 46,
       "site_url": "http://blog.dngz.net",
