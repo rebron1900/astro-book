@@ -16,7 +16,7 @@
     "reason": "error",
     "first_seen_at": "2026-11-01T13:25:04.411Z",
     "feed_url": "https://vimin.cc/feed/",
-    "error": "直连订阅源失败: HTTP 403 Forbidden"
+    "error": "直连订阅源失败: Reader HTTP 422 Unprocessable Entity"
   },
   {
     "id": 148,
