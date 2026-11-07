@@ -16,7 +16,7 @@
     "reason": "error",
     "first_seen_at": "2026-11-01T13:25:04.411Z",
     "feed_url": "https://vimin.cc/feed/",
-    "error": "直连订阅源失败: HTTP 403 Forbidden"
+    "error": "由于网络错误，Miniflux 无法访问此网站：Get \"https://vimin.cc/feed/\": EOF。"
   },
   {
     "id": 148,
