@@ -391,14 +391,13 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "山城步道",
-        "description": "[重庆特种兵大作战两日游：2](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-2/)(https://cdn.1900.live/assets/2024/08/141723562357313.jpg!1800w)"
+        "name": "太原市"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          106.56519160430688,
-          29.55283175830431
+          112.54437501902814,
+          37.87006835210183
         ]
       }
     },
@@ -413,6 +412,20 @@
         "coordinates": [
           106.56892668745675,
           29.55412776728037
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "山城步道",
+        "description": "[重庆特种兵大作战两日游：2](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-2/)(https://cdn.1900.live/assets/2024/08/141723562357313.jpg!1800w)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          106.56519160430688,
+          29.55283175830431
         ]
       }
     },
