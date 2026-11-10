@@ -1,7 +1,10 @@
 ---
-import { pages, settings } from '../api/store';
+import { pages, postsAll, settings } from '../api/store';
 import activitiesJson from '../data/activities.json';
+import geojsonJson from '../data/geojson.json';
 import type { Activity } from '../lib/activity-types';
+import type { FootprintFeature, FootprintPost } from '../lib/footprint';
+import { buildFootprint } from '../lib/footprint';
 import { buildRecords, compactRecords, defaultScope, groupByMonth } from '../lib/exercise';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -13,6 +16,7 @@ import '../styles/pages/exercise.scss';
 import ExerciseTimeline from '../components/islands/ExerciseTimeline.astro';
 import ExerciseSidebar from '../components/islands/ExerciseSidebar';
 import ExerciseMapPanel from '../components/islands/ExerciseMapPanel';
+import ExerciseFootprint from '../components/islands/ExerciseFootprint';
 
 // Ghost 里的页面 slug 仍是 strava；如果以后跟着路径一起改成 exercise，这里也能直接接住
 const page = pages.find((post) => post.slug == 'exercise') ?? pages.find((post) => post.slug == 'strava');
@@ -26,6 +30,9 @@ const allRecords = buildRecords(activitiesJson as unknown as Activity[]);
 const groups = groupByMonth(allRecords);
 const initialScope = defaultScope(allRecords);
 const records = compactRecords(allRecords);
+
+// 「足迹」用的标点来自 Google Maps 导出的 geojson；游记按 Ghost 的 #地点- 标签匹配（构建期算好，页面不内嵌原始数据）
+const footprint = buildFootprint(geojsonJson.features as unknown as FootprintFeature[], postsAll as unknown as FootprintPost[]);
 
 // Ghost 里的「运动」页带 fullwidth 标签，这里改用常规 page 布局（中间时间线 + 右侧地图/统计）
 const layoutPage = { ...page, tags: (page.tags ?? []).filter((tag) => tag.slug !== 'hash-page-fullwidth') };
@@ -74,6 +81,7 @@ const intro =
             )
         }
 
+        <ExerciseFootprint client:load data={footprint} token={mapToken} />
     </article>
 
     <Fragment slot="toc">

@@ -1,0 +1,1290 @@
+@import '../../blocks/ledger';
+
+/* ==========================================================================
+   足迹模式（从运动页预览地图上方的「足迹」按钮进入）
+   布局和友邻页类似：左侧导航保留，中间地图占掉「标题 / 副标题」之外的剩余高度，
+   右侧时间线宽度和 TOC 列一致（16rem）并自己内部滚动；桌面端整页不滚动，
+   窄屏退回运动页的做法：地图在上吸顶，时间线在下面，页面正常滚动。
+   ========================================================================== */
+
+/* 打开足迹时把运动页原本的内容和右侧统计栏藏起来，版面让给足迹 */
+body.is-footprint {
+    .ex-hero,
+    .ex-main,
+    .ex-empty,
+    .book-toc {
+        display: none;
+    }
+
+    /* 移动端 TOC 抽屉里放的是运动统计，足迹模式下不需要；导航按钮保留 */
+    .ex-mobile-toc {
+        display: none !important;
+    }
+
+    label[for='toc-control'] {
+        visibility: hidden;
+    }
+}
+
+.ex-fp {
+    display: flex;
+    flex-direction: column;
+    color: var(--body-font-color);
+
+    /* 和预览地图共用一套玻璃表面语言 */
+    --ex-fp-glass: color-mix(in srgb, var(--body-background) 82%, transparent);
+    --ex-fp-line: color-mix(in srgb, var(--body-font-color) 13%, transparent);
+    --ex-fp-shadow: 0 2px 10px rgb(0 0 0 / 0.14);
+    --ex-fp-blur: blur(10px) saturate(1.12);
+}
+
+/* 桌面端：整页锁到一屏，页内边距交给足迹自己的头部 / 舞台控制 */
+@media screen and (min-width: 47.85rem) {
+    body.is-footprint {
+        overflow: hidden;
+    }
+
+    body.is-footprint .container {
+        /* 和友邻页的 full-width 一样，让内容占满 95% 宽 */
+        max-width: 95%;
+    }
+
+    body.is-footprint .book-page {
+        block-size: 100svh;
+        padding: 0;
+    }
+
+    body.is-footprint .exercise-page,
+    body.is-footprint .ex-fp {
+        block-size: 100%;
+    }
+}
+
+.ex-fp[hidden] {
+    display: none;
+}
+
+/* ---------- 顶部：标题 + 副标题 + 操作 ---------- */
+.ex-fp-head {
+    display: flex;
+    flex: none;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.05rem 1.25rem 0.85rem;
+}
+
+.ex-fp-heading {
+    min-inline-size: 0;
+}
+
+.ex-fp-kicker {
+    margin: 0;
+    color: var(--color-link);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.ex-fp-title {
+    margin: 0.25rem 0 0;
+    font-size: clamp(1.3rem, 2vw, 1.6rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+}
+
+.ex-fp-sub {
+    margin: 0.35rem 0 0;
+    color: var(--gray-700);
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+.ex-fp-actions {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.ex-fp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    block-size: 2rem;
+    padding: 0 0.8rem;
+    border: 1px solid var(--ex-fp-line);
+    border-radius: 999px;
+    background: var(--ex-fp-glass);
+    color: var(--body-font-color);
+    font-size: 0.75rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: var(--ex-fp-shadow);
+    backdrop-filter: var(--ex-fp-blur);
+    -webkit-backdrop-filter: var(--ex-fp-blur);
+    transition:
+        color 160ms ease,
+        border-color 160ms ease,
+        background 160ms ease;
+}
+
+.ex-fp-btn:hover {
+    border-color: color-mix(in srgb, var(--color-link) 50%, var(--ex-fp-line));
+    color: var(--color-link);
+}
+
+.ex-fp-btn:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+.ex-fp-close {
+    padding-inline-start: 0.6rem;
+}
+
+/* 整层自己接管初始焦点，不要焦点环 */
+.ex-fp:focus {
+    outline: none;
+}
+
+.ex-fp-close svg {
+    inline-size: 0.9rem;
+    block-size: 0.9rem;
+}
+
+/* ---------- 中部：地图 + 时间线 ---------- */
+.ex-fp-stage {
+    display: flex;
+    flex: 1 1 auto;
+    gap: 0.85rem;
+    min-block-size: 0;
+    padding: 0 1.25rem 1.25rem;
+}
+
+.ex-fp-map-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.9rem;
+    background: var(--gray-100);
+}
+
+.ex-fp-map {
+    /* Mapbox 会给容器加 .mapboxgl-map（position: relative），这里只负责占满外层 */
+    position: relative;
+    inline-size: 100%;
+    block-size: 100%;
+}
+
+/* 右下角的版权 / 左下角 logo 和运动页预览地图保持一致，不显示 */
+.ex-fp-map .mapboxgl-ctrl-logo,
+.ex-fp-map .mapboxgl-ctrl-attrib {
+    display: none !important;
+}
+
+.ex-fp-map .mapboxgl-canvas {
+    outline: none;
+}
+
+.ex-fp-map .mapboxgl-canvas:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: -2px;
+}
+
+.ex-fp-hud {
+    position: absolute;
+    z-index: 3;
+    inset-block-start: 0.7rem;
+    inset-inline-start: 0.7rem;
+    display: flex;
+    gap: 0.4rem;
+}
+
+.ex-fp-hud-btn {
+    display: inline-flex;
+    align-items: center;
+    block-size: 1.8rem;
+    padding: 0 0.7rem;
+    border: 1px solid var(--ex-fp-line);
+    border-radius: 999px;
+    background: var(--ex-fp-glass);
+    color: var(--body-font-color);
+    font-size: 0.6875rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: var(--ex-fp-shadow);
+    backdrop-filter: var(--ex-fp-blur);
+    -webkit-backdrop-filter: var(--ex-fp-blur);
+    transition:
+        color 160ms ease,
+        border-color 160ms ease;
+}
+
+.ex-fp-hud-btn:hover {
+    border-color: color-mix(in srgb, var(--color-link) 50%, var(--ex-fp-line));
+    color: var(--color-link);
+}
+
+.ex-fp-hud-btn:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+.ex-fp-map-state {
+    position: absolute;
+    z-index: 4;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-inline-size: 22rem;
+    margin: auto;
+    padding: 2rem;
+    color: var(--gray-700);
+    font-size: 0.875rem;
+    line-height: 1.75;
+    text-align: center;
+    pointer-events: none;
+}
+
+.ex-fp-map-state[hidden] {
+    display: none;
+}
+
+/* ---------- 右侧时间线：站点标准时间轴（日期 + 竖线圆点 + 内容），只在这里滚动 ---------- */
+.ex-fp-panel {
+    /* 和 TOC 列同宽（book.scss 的 $toc-width = 16rem，页面级 scss 拿不到变量） */
+    flex: 0 0 16rem;
+    min-inline-size: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-inline-end: 0.15rem;
+    /* 滚动条跟随主题：沿用首页时间线那组 --sb-* 变量，不写死颜色 */
+    scrollbar-width: thin;
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+}
+
+.ex-fp-panel::-webkit-scrollbar {
+    inline-size: var(--sb-size);
+    block-size: var(--sb-size);
+}
+
+.ex-fp-panel::-webkit-scrollbar-track {
+    border-radius: 3px;
+    background: var(--sb-track-color);
+}
+
+.ex-fp-panel::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+    background: var(--sb-thumb-color);
+}
+
+.ex-fp-panel::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--sb-thumb-color) 72%, var(--body-font-color));
+}
+
+/* 时间轴：和首页 ledger / 友邻页月份轴同一套「日期 + 竖线圆点 + 内容」栅格 */
+.ex-fp-rows {
+    padding-block: 0.1rem 0.5rem;
+}
+
+/* 右栏只有 16rem：只收日期列宽和行距，竖线位置从 --ledger-date-col 派生，不会错轴 */
+.ex-fp-panel .ledger-row {
+    --ledger-date-col: 2.6rem;
+    --ledger-row-gap: 1.35rem;
+}
+
+/* 时间轴最后一行不往下画线：轴在最后一个图标处收住 */
+.ex-fp-panel .ledger-row:last-child .ledger-rail::before {
+    display: none;
+}
+
+/* 内容列：标题 / 摘要 / 图片 / 地点 chip；几何全部来自共享块 blocks/_ledger */
+.ledger-body.ex-fp-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-inline-size: 0;
+    padding-block-end: 0.15rem;
+}
+
+.ex-fp-row-title {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.45;
+}
+
+.ex-fp-row-title a {
+    color: inherit;
+}
+
+.ex-fp-panel .ledger-row:hover .ex-fp-row-title a,
+.ex-fp-panel .ledger-row:focus-within .ex-fp-row-title a {
+    color: var(--color-link);
+}
+
+.ex-fp-row-text {
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    color: var(--gray-700);
+    font-size: 0.75rem;
+    line-height: 1.7;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+.ex-fp-row-media {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(3.4rem, 1fr));
+    gap: 0.25rem;
+}
+
+.ex-fp-row-media img {
+    display: block;
+    inline-size: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 0.35rem;
+    background: var(--gray-100);
+    object-fit: cover;
+}
+
+.ex-fp-row-places {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-block-start: 0.05rem;
+}
+
+/* 从地图点标点跳过来时点亮对应那一行（日期、图标、标题一起变） */
+.ex-fp-panel .ledger-row.is-flash .ledger-date-value,
+.ex-fp-panel .ledger-row.is-flash .ex-fp-row-title a {
+    color: var(--color-link);
+}
+
+.ex-fp-panel .ledger-row.is-flash .rail-marker {
+    color: var(--color-link);
+    filter: drop-shadow(0 0 3px color-mix(in srgb, var(--color-link) 45%, transparent));
+}
+
+/* ---------- 标签 / 地点 chip ---------- */
+.ex-fp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    max-inline-size: 100%;
+    padding: 0.15rem 0.5rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--gray-700);
+    font-size: 0.6875rem;
+    line-height: 1.6;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        color 140ms ease,
+        border-color 140ms ease;
+}
+
+.ex-fp-chip::before {
+    flex: none;
+    inline-size: 0.3rem;
+    block-size: 0.3rem;
+    border-radius: 50%;
+    background: var(--color-link);
+    opacity: 0.55;
+    content: '';
+}
+
+.ex-fp-chip:hover,
+.ex-fp-chip.is-active {
+    border-color: color-mix(in srgb, var(--color-link) 45%, var(--gray-200));
+    color: var(--color-link);
+}
+
+.ex-fp-chip:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+/* 还没落到地图标点上的标签：只做提示，不假装能点 */
+.ex-fp-chip.is-muted {
+    border-style: dashed;
+    color: var(--gray-500);
+    cursor: default;
+}
+
+.ex-fp-rest {
+    margin-block-start: 1.1rem;
+    padding: 0.9rem 0.95rem 1rem;
+    border: 1px dashed var(--gray-200);
+    border-radius: 0.8rem;
+}
+
+.ex-fp-rest-title {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.ex-fp-rest-sub {
+    margin: 0.25rem 0 0.65rem;
+    color: var(--gray-700);
+    font-size: 0.6875rem;
+    line-height: 1.6;
+}
+
+.ex-fp-rest-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+/* ---------- 足迹标点：几何全部复用 /map 页的 .marker / .img-post / .no-post ----------
+   那套在 _custom.scss 里全局加载（book.scss 引入）：.marker 20px 圆壳、.img-post 30px 封面、
+   .no-post 蓝灰渐变。足迹只挂 .ex-fp-point 做状态修饰，不再自己画尺寸。
+   注意：不要给标点元素加 transform 过渡——Mapbox 会往同一节点写内联 transform，
+   过渡会让标点在平移/缩放时滞后、漂移。 */
+.ex-fp-point {
+    /* 覆盖 .marker 里带 !important 的 width/height 过渡，只保留尺寸和明暗，不带 transform */
+    transition:
+        width 0.2s ease-out,
+        height 0.2s ease-out,
+        opacity 180ms ease,
+        border-color 160ms ease,
+        box-shadow 160ms ease !important;
+}
+
+/* 预览小地图比 /map 页小：hover 别撑到 80px 盖住周边 */
+.ex-fp-map .img-post.marker.ex-fp-point:hover {
+    inline-size: 44px;
+    block-size: 44px;
+}
+
+.ex-fp-map .no-post.marker.ex-fp-point:hover {
+    inline-size: 30px;
+    block-size: 30px;
+}
+
+/* 暗色主题：/map 那套品牌色写死，这里只覆盖足迹地图里的两个变量和描边，
+   几何/交互仍与 /map 完全一致。新增主题要同步这份类名列表（见 src/config/theme.ts）。 */
+:where(.dark, .yayu, .yuhang, .herblue, .dbushell) .ex-fp-map .marker {
+    --map-marker-bg: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-link) 76%, var(--body-background)),
+        color-mix(in srgb, var(--color-link) 48%, var(--body-background))
+    );
+    --map-marker-bg-empty: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--gray-500) 55%, var(--body-background)),
+        color-mix(in srgb, var(--gray-700) 65%, var(--body-background))
+    );
+    border-color: var(--body-background);
+}
+
+/* 被筛掉：压暗到 13%。Mapbox 会给 marker 写内联 opacity，必须 !important */
+.ex-fp-point.is-dimmed {
+    opacity: 0.13 !important;
+}
+
+/* hover / 卡片联动 / 选中的点要压过压暗，否则看着像「点没了」 */
+.ex-fp-point.is-dimmed:hover,
+.ex-fp-point.is-dimmed:focus-visible,
+.ex-fp-point.is-highlighted,
+.ex-fp-point.is-active {
+    opacity: 1 !important;
+}
+
+.ex-fp-point.is-highlighted {
+    z-index: 4;
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, var(--color-link) 55%, transparent),
+        0 6px 14px rgb(0 0 0 / 0.28);
+}
+
+.ex-fp-point.is-active {
+    z-index: 5;
+    box-shadow:
+        0 0 0 3px color-mix(in srgb, var(--color-link) 60%, transparent),
+        0 6px 16px rgb(0 0 0 / 0.3);
+}
+
+.ex-fp-point:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 3px;
+}
+
+/* ---------- 聚合点：外观和单点标点对齐，只是内容换成数字 ---------- */
+.ex-fp-cluster {
+    display: grid;
+    min-inline-size: 2.15rem;
+    block-size: 2.15rem;
+    padding: 0 0.45rem;
+    border: 2px solid var(--body-background);
+    border-radius: 999px;
+    background: var(--ex-fp-glass);
+    color: var(--body-font-color);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow:
+        0 0 0 1px var(--ex-fp-line),
+        0 3px 8px rgb(0 0 0 / 0.24);
+    backdrop-filter: var(--ex-fp-blur);
+    -webkit-backdrop-filter: var(--ex-fp-blur);
+    place-items: center;
+    transition:
+        opacity 180ms ease,
+        color 160ms ease,
+        border-color 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.ex-fp-cluster:hover,
+.ex-fp-cluster.is-highlighted {
+    border-color: color-mix(in srgb, var(--color-link) 55%, var(--body-background));
+    color: var(--color-link);
+    box-shadow:
+        0 0 0 3px color-mix(in srgb, var(--color-link) 18%, transparent),
+        0 5px 14px rgb(0 0 0 / 0.28);
+}
+
+.ex-fp-cluster:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+/* ---------- 地图 tooltip：单点地名 + 游记摘要 / 聚合点的全部标点 ---------- */
+.ex-fp-tip {
+    position: absolute;
+    z-index: 20;
+    max-inline-size: 15.5rem;
+    padding: 0.55rem 0.7rem 0.6rem;
+    border: 1px solid var(--ex-fp-line);
+    border-radius: 0.6rem;
+    background: var(--ex-fp-glass);
+    color: var(--body-font-color);
+    font-size: 0.72rem;
+    line-height: 1.5;
+    box-shadow: var(--ex-fp-shadow);
+    backdrop-filter: var(--ex-fp-blur);
+    -webkit-backdrop-filter: var(--ex-fp-blur);
+    pointer-events: auto;
+}
+
+.ex-fp-tip[hidden] {
+    display: none;
+}
+
+.ex-fp-tip-head {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.ex-fp-tip-meta {
+    margin: 0.12rem 0 0;
+    color: var(--gray-500);
+    font-size: 0.65rem;
+    line-height: 1.45;
+}
+
+.ex-fp-tip-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.22rem;
+    margin: 0.4rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.7rem;
+    line-height: 1.5;
+}
+
+.ex-fp-tip-list li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-inline-size: 0;
+}
+
+/* 聚合点的完整列表：限高可滚，滚动条跟主题走 */
+.ex-fp-tip-list.is-scroll {
+    max-block-size: 9.5rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-inline-end: 0.25rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+}
+
+/* 聚合 tooltip 里的地名是可点按钮：点了直接飞到那个标点 */
+.ex-fp-tip-place {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: baseline;
+    gap: 0.4rem;
+    min-inline-size: 0;
+    padding: 0.18rem 0.28rem;
+    margin: 0;
+    border: 0;
+    border-radius: 0.3rem;
+    background: transparent;
+    color: inherit;
+    font-size: 0.7rem;
+    line-height: 1.5;
+    text-align: start;
+    cursor: pointer;
+    transition: background 140ms ease;
+}
+
+.ex-fp-tip-place:hover {
+    background: color-mix(in srgb, var(--body-font-color) 6%, transparent);
+    color: var(--color-link);
+}
+
+.ex-fp-tip-place:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 1px;
+}
+
+.ex-fp-tip-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ex-fp-tip-count {
+    flex: none;
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    white-space: nowrap;
+}
+
+.ex-fp-tip-action {
+    display: block;
+    inline-size: 100%;
+    margin-block-start: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--ex-fp-line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-link);
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.ex-fp-tip-action:hover {
+    border-color: color-mix(in srgb, var(--color-link) 55%, var(--ex-fp-line));
+}
+
+.ex-fp-tip-action:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+/* ---------- 地图内右上角筛选 HUD（按钮 + 桌面面板） ---------- */
+.ex-fp-filter {
+    position: absolute;
+    z-index: 12;
+    inset-block: 0.7rem;
+    inset-inline-end: 0.7rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    inline-size: 14.5rem;
+    /* 容器本身透明，只让按钮和面板接管指针，别挡住地图拖拽 */
+    pointer-events: none;
+}
+
+.ex-fp-filter-btn {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.32rem;
+    block-size: 1.8rem;
+    padding: 0 0.7rem;
+    border: 1px solid var(--ex-fp-line);
+    border-radius: 999px;
+    background: var(--ex-fp-glass);
+    color: var(--body-font-color);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: var(--ex-fp-shadow);
+    backdrop-filter: var(--ex-fp-blur);
+    -webkit-backdrop-filter: var(--ex-fp-blur);
+    transition:
+        color 160ms ease,
+        border-color 160ms ease;
+}
+
+.ex-fp-filter-btn svg {
+    inline-size: 0.85rem;
+    block-size: 0.85rem;
+}
+
+.ex-fp-filter-btn:hover,
+.ex-fp-filter-btn[aria-expanded='true'] {
+    border-color: color-mix(in srgb, var(--color-link) 50%, var(--ex-fp-line));
+    color: var(--color-link);
+}
+
+.ex-fp-filter-btn:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+.ex-fp-filter-badge {
+    display: inline-grid;
+    place-items: center;
+    min-inline-size: 1rem;
+    block-size: 1rem;
+    padding: 0 0.2rem;
+    border-radius: 999px;
+    background: var(--color-link);
+    color: var(--body-background);
+    font-size: 0.625rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* 桌面面板：从按钮正下方展开，一直撑到地图底部，内容自己滚 */
+.ex-fp-filter-panel {
+    display: flex;
+    /* 0 1 auto：内容少就只占内容高，内容多才被容器压到上限并在树内部滚动 */
+    flex: 0 1 auto;
+    flex-direction: column;
+    inline-size: 100%;
+    min-block-size: 0;
+    margin-block-start: 0.5rem;
+    overflow: hidden;
+    border: 1px solid var(--ex-fp-line);
+    border-radius: 0.8rem;
+    /* 列表信息密度高：直接给实色，别让底图文字透上来 */
+    background: var(--body-background);
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.18);
+    pointer-events: auto;
+    backdrop-filter: var(--ex-fp-blur);
+    -webkit-backdrop-filter: var(--ex-fp-blur);
+}
+
+.ex-fp-filter-panel:focus {
+    outline: none;
+}
+
+.ex-fp-filter-head {
+    flex: none;
+    padding: 0.6rem 0.75rem 0.35rem;
+}
+
+.ex-fp-filter-title {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.ex-fp-filter-meta {
+    margin: 0.15rem 0 0;
+    color: var(--gray-700);
+    font-size: 0.65rem;
+    line-height: 1.45;
+}
+
+.ex-fp-filter-actions {
+    display: flex;
+    flex: none;
+    gap: 0.35rem;
+    padding: 0 0.75rem 0.5rem;
+}
+
+.ex-fp-filter-action {
+    padding: 0.15rem 0.55rem;
+    border: 1px solid var(--ex-fp-line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--gray-700);
+    font-size: 0.65rem;
+    line-height: 1.6;
+    cursor: pointer;
+    transition:
+        color 140ms ease,
+        border-color 140ms ease;
+}
+
+.ex-fp-filter-action:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-link) 50%, var(--ex-fp-line));
+    color: var(--color-link);
+}
+
+.ex-fp-filter-action:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.ex-fp-filter-action:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+/* ---------- 两级筛选树：省份行 + 展开后的标点 ---------- */
+.ex-fp-tree {
+    flex: 1 1 auto;
+    min-block-size: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 0.4rem 0.55rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+}
+
+.ex-fp-tree::-webkit-scrollbar {
+    inline-size: var(--sb-size);
+}
+
+.ex-fp-tree::-webkit-scrollbar-track {
+    border-radius: 3px;
+    background: var(--sb-track-color);
+}
+
+.ex-fp-tree::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+    background: var(--sb-thumb-color);
+}
+
+.ex-fp-province + .ex-fp-province {
+    border-block-start: 1px solid color-mix(in srgb, var(--ex-fp-line) 70%, transparent);
+}
+
+.ex-fp-province-row {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    min-inline-size: 0;
+}
+
+.ex-fp-check {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 0.4rem;
+    min-inline-size: 0;
+    padding: 0.32rem 0.35rem;
+    border-radius: 0.4rem;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: background 140ms ease;
+}
+
+.ex-fp-check:hover {
+    background: color-mix(in srgb, var(--body-font-color) 5%, transparent);
+}
+
+.ex-fp-check input {
+    flex: none;
+    inline-size: 0.85rem;
+    block-size: 0.85rem;
+    margin: 0;
+    accent-color: var(--color-link);
+    cursor: pointer;
+}
+
+.ex-fp-check input:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+.ex-fp-check-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ex-fp-check-count {
+    flex: none;
+    margin-inline-start: auto;
+    /* gray-500 在浅色下只有 2.07:1，计数是信息不是装饰，改用 gray-700 */
+    color: var(--gray-700);
+    font-size: 0.625rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.ex-fp-check-badge {
+    flex: none;
+    margin-inline-start: auto;
+    color: var(--color-link);
+    font-size: 0.6rem;
+    white-space: nowrap;
+}
+
+.ex-fp-province-toggle {
+    display: grid;
+    flex: none;
+    place-items: center;
+    inline-size: 1.4rem;
+    block-size: 1.4rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0.35rem;
+    background: transparent;
+    color: var(--gray-500);
+    cursor: pointer;
+}
+
+.ex-fp-province-toggle svg {
+    inline-size: 0.8rem;
+    block-size: 0.8rem;
+    transition: transform 160ms ease;
+}
+
+.ex-fp-province.is-open .ex-fp-province-toggle svg {
+    transform: rotate(180deg);
+}
+
+.ex-fp-province-toggle:hover {
+    color: var(--color-link);
+    background: color-mix(in srgb, var(--body-font-color) 6%, transparent);
+}
+
+.ex-fp-province-toggle:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 1px;
+}
+
+.ex-fp-place-list {
+    display: flex;
+    flex-direction: column;
+    padding-block: 0.05rem 0.3rem;
+    padding-inline-start: 0.9rem;
+}
+
+.ex-fp-check-place {
+    color: var(--gray-700);
+    font-size: 0.6875rem;
+}
+
+.ex-fp-check-place.is-active {
+    color: var(--body-font-color);
+}
+
+/* ---------- 时间线空态 ---------- */
+.ex-fp-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    padding: 1.1rem 0.2rem;
+}
+
+.ex-fp-empty-title {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.ex-fp-empty-text {
+    margin: 0;
+    color: var(--gray-700);
+    font-size: 0.72rem;
+    line-height: 1.65;
+}
+
+.ex-fp-empty-btn {
+    margin-block-start: 0.2rem;
+    padding: 0.2rem 0.65rem;
+    border: 1px solid var(--ex-fp-line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-link);
+    font-size: 0.6875rem;
+    line-height: 1.6;
+    cursor: pointer;
+}
+
+.ex-fp-empty-btn:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+/* 头部筛选摘要 */
+.ex-fp-selection {
+    margin: 0;
+    color: var(--gray-700);
+    font-size: 0.6875rem;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.ex-fp-selection-short {
+    display: none;
+}
+
+/* ---------- 窄屏筛选全屏模态 ---------- */
+body.is-fp-modal {
+    overflow: hidden;
+}
+
+.ex-fp-modal {
+    position: fixed;
+    z-index: 60;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0.9rem 1rem 1rem;
+    background: var(--body-background);
+    color: var(--body-font-color);
+}
+
+.ex-fp-modal:focus {
+    outline: none;
+}
+
+.ex-fp-modal-head {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.ex-fp-modal-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.ex-fp-modal-close {
+    display: grid;
+    flex: none;
+    place-items: center;
+    inline-size: 2rem;
+    block-size: 2rem;
+    padding: 0;
+    border: 1px solid var(--ex-fp-line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--body-font-color);
+    cursor: pointer;
+}
+
+.ex-fp-modal-close svg {
+    inline-size: 0.9rem;
+    block-size: 0.9rem;
+}
+
+.ex-fp-modal-close:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+.ex-fp-modal .ex-fp-filter-actions {
+    padding: 0.55rem 0 0;
+}
+
+.ex-fp-modal-body {
+    display: flex;
+    flex: 1 1 auto;
+    min-block-size: 0;
+    margin-block-start: 0.6rem;
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.8rem;
+}
+
+.ex-fp-modal-body .ex-fp-tree {
+    padding: 0.35rem 0.45rem 0.6rem;
+}
+
+.ex-fp-modal-foot {
+    flex: none;
+    padding-block-start: 0.85rem;
+}
+
+.ex-fp-filter-done {
+    inline-size: 100%;
+    block-size: 2.5rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--color-link);
+    color: var(--body-background);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ex-fp-filter-done:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 3px;
+}
+
+/* 被筛掉的标点压暗到 13%：留在原位保留地理感，hover/focus 时恢复可读。
+   Mapbox 会给 marker 元素写内联 `opacity: 1`，普通声明盖不住，这里必须 !important。 */
+.ex-fp-point.is-dimmed,
+.ex-fp-cluster.is-dimmed {
+    opacity: 0.13 !important;
+}
+
+.ex-fp-point.is-dimmed:hover,
+.ex-fp-point.is-dimmed:focus-visible,
+.ex-fp-point.is-highlighted,
+.ex-fp-point.is-active,
+.ex-fp-cluster.is-dimmed:hover,
+.ex-fp-cluster.is-dimmed:focus-visible,
+.ex-fp-cluster.is-dimmed.is-highlighted {
+    opacity: 1 !important;
+}
+
+/* ---------- 预览地图上方的入口按钮 ---------- */
+.ex-map-tools {
+    display: flex;
+    justify-content: flex-end;
+    margin-block-end: 0.45rem;
+}
+
+.ex-footprint-entry {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.22rem 0.7rem 0.24rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 999px;
+    background: var(--body-background);
+    color: var(--body-font-color);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.5;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+    transition:
+        color 160ms ease,
+        border-color 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.ex-footprint-entry svg {
+    inline-size: 0.85rem;
+    block-size: 0.85rem;
+    color: var(--color-link);
+}
+
+.ex-footprint-entry:hover {
+    border-color: color-mix(in srgb, var(--color-link) 50%, var(--gray-200));
+    color: var(--color-link);
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.1);
+}
+
+.ex-footprint-entry:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+/* ---------- 窄屏：地图在上（吸顶）、时间线在下 ---------- */
+@media screen and (max-width: 47.84rem) {
+    body.is-footprint .container {
+        max-width: 100%;
+    }
+
+    .ex-fp {
+        display: block;
+        block-size: auto;
+    }
+
+    /* 页面本身有 1rem 内边距，这里只留标题和地图之间的间距 */
+    .ex-fp-head {
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0 0 0.7rem;
+    }
+
+    /* 窄屏只留一个圆形返回按钮，别让标题区被按钮挤成三行 */
+    .ex-fp-close {
+        justify-content: center;
+        inline-size: 2rem;
+        padding: 0;
+    }
+
+    .ex-fp-close-label {
+        display: none;
+    }
+
+    .ex-fp-stage {
+        display: block;
+        padding: 0 0 1.4rem;
+    }
+
+    .ex-fp-map-wrap {
+        position: sticky;
+        z-index: 3;
+        inset-block-start: 0;
+        block-size: 42svh;
+        min-block-size: 15rem;
+        border-radius: 0 0 0.9rem 0.9rem;
+    }
+
+    .ex-fp-panel {
+        overflow: visible;
+        padding-block-start: 0.75rem;
+        /* 窄屏整宽排版，右侧留一点，正文和图片别贴着屏幕边 */
+        padding-inline-end: 0.5rem;
+    }
+
+    .ex-fp-hud {
+        inset-block-start: 0.55rem;
+        inset-inline-start: 0.55rem;
+    }
+
+    /* 窄屏只留地图内的筛选按钮，面板换成全屏模态 */
+    .ex-fp-filter {
+        inset-block-start: 0.55rem;
+        inset-inline-end: 0.55rem;
+        inset-block-end: auto;
+        inline-size: auto;
+    }
+
+    .ex-fp-filter-btn {
+        block-size: 1.7rem;
+        padding: 0 0.6rem;
+    }
+
+    .ex-fp-selection-full {
+        display: none;
+    }
+
+    .ex-fp-selection-short {
+        display: inline;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ex-fp-btn,
+    .ex-fp-hud-btn,
+    .ex-fp-chip,
+    .ex-fp-point,
+    .ex-fp-cluster,
+    .ex-fp-tip-action,
+    .ex-fp-filter-btn,
+    .ex-fp-filter-action,
+    .ex-fp-check,
+    .ex-fp-province-toggle svg,
+    .ex-footprint-entry {
+        transition: none;
+    }
+}
