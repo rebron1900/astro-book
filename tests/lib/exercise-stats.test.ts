@@ -31,7 +31,6 @@ function record(partial: Partial<ExerciseRecord> & { id: string; date: string })
         elevation: partial.elevation ?? 40,
         speed: null,
         hr: null,
-        location: '',
         hasRoute: partial.hasRoute ?? true
     };
 }
@@ -119,22 +118,43 @@ describe('sportSlices', () => {
 
 describe('barHeights', () => {
     it('按最大值归一化，并保留最小高度', () => {
-        const items = [{ d: 100, c: 1 }, { d: 50, c: 1 }, { d: 0, c: 0 }];
-        const heights = barHeights(items, (item) => item.d, (item) => item.c, 4);
+        const items = [
+            { d: 100, c: 1 },
+            { d: 50, c: 1 },
+            { d: 0, c: 0 }
+        ];
+        const heights = barHeights(
+            items,
+            (item) => item.d,
+            (item) => item.c,
+            4
+        );
         expect(heights[0]).toBe(100);
         expect(heights[1]).toBe(50);
         expect(heights[2]).toBe(0);
     });
 
     it('有记录但距离为 0 时给最小高度', () => {
-        const items = [{ d: 0, c: 2 }, { d: 5000, c: 1 }];
-        const heights = barHeights(items, (item) => item.d, (item) => item.c, 5);
+        const items = [
+            { d: 0, c: 2 },
+            { d: 5000, c: 1 }
+        ];
+        const heights = barHeights(
+            items,
+            (item) => item.d,
+            (item) => item.c,
+            5
+        );
         expect(heights[0]).toBe(5);
         expect(heights[1]).toBeGreaterThan(0);
     });
 
     it('全为 0 时不产生 NaN', () => {
-        const heights = barHeights([{ d: 0, c: 0 }], (item) => item.d, (item) => item.c);
+        const heights = barHeights(
+            [{ d: 0, c: 0 }],
+            (item) => item.d,
+            (item) => item.c
+        );
         expect(heights[0]).toBe(0);
     });
 });

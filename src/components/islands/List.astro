@@ -86,7 +86,8 @@ const timelineIntros = {
 const intro = timelineIntros[activeKind as keyof typeof timelineIntros] ?? timelineIntros.all;
 const currentYear = new Date().getFullYear();
 
-const stravaGroupLeads = new Map<number, TimelineEntry[]>();
+// 按真实类型收窄：分组后的条目一定是 strava 那条分支，data 才能当 Activity 用
+const stravaGroupLeads = new Map<number, Array<Extract<TimelineEntry, { kind: 'strava' }>>>();
 const stravaGroupMembers = new Set<number>();
 entries.forEach((entry, index) => {
     if (entry.kind !== 'strava' || stravaGroupMembers.has(index)) return;

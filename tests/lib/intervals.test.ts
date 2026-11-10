@@ -40,8 +40,9 @@ function decodeLatLng(encoded: string): Array<[number, number]> {
     return points;
 }
 
-function raw(partial: Partial<IntervalsActivity> = {}): IntervalsActivity {
-    return { id: 'i204300274', ...partial };
+// intervals 的 id 在个别源里是 number，这里允许传数字，运行时归一化由 toActivity 负责
+function raw(partial: Omit<Partial<IntervalsActivity>, 'id'> & { id?: string | number } = {}): IntervalsActivity {
+    return { id: 'i204300274', ...partial } as IntervalsActivity;
 }
 
 function activity(partial: Partial<Activity> & { id: string }): Activity {
