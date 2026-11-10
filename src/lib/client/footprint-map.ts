@@ -15,9 +15,10 @@ import Supercluster from 'supercluster';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 import type { FootprintPlace } from '../footprint';
-import { INITIAL_CENTER, INITIAL_ZOOM, MAP_STYLES } from './exercise-map/constants';
+import { DEM_SOURCE, HILLSHADE_LAYER, INITIAL_CENTER, INITIAL_ZOOM, MAP_STYLES } from './exercise-map/constants';
 import type { MapTheme } from './exercise-map/constants';
 import { motionDuration, readTheme } from './exercise-map/geometry';
+import { prefersReducedMotion } from './dom';
 
 /** 单个标点的 tooltip 补充信息（由岛从游记数据里算好传进来） */
 export interface FootprintPlaceInfo {
@@ -25,8 +26,17 @@ export interface FootprintPlaceInfo {
     count: number;
     /** 最近一篇的展示日期（2026.11.02），没有游记时为 null */
     latest: string | null;
-    /** 游记标题，按时间从新到旧 */
-    titles: readonly string[];
+    /** 关联游记，按时间从新到旧；tooltip 里渲染成真链接 */
+    articles: ReadonlyArray<{ title: string; url: string; dateLabel: string }>;
+}
+
+/** 地图视角：平面 / 3D（pitch），唯一来源在控制器里 */
+export type FootprintPitchMode = 'flat' | 'tilt';
+
+export interface FootprintMapState {
+    pitchMode: FootprintPitchMode;
+    /** 当前激活的标点，null 表示没有激活（卡片、地图点、气泡都从它派生） */
+    activePlaceId: string | null;
 }
 
 export interface FootprintMapOptions {
@@ -41,6 +51,8 @@ export interface FootprintMapOptions {
     onError?: () => void;
     /** 底图就绪（用于清掉之前的失败提示） */
     onReady?: () => void;
+    /** 视角或激活态变化：组件只用它来驱动按钮/高亮的视觉，不另存状态 */
+    onStateChange?: (state: FootprintMapState) => void;
 }
 
 export interface FootprintMapController {
@@ -58,6 +70,10 @@ export interface FootprintMapController {
     clearHighlight(): void;
     /** 随机去一个没被看过的地点 */
     random(): void;
+    /** 3D / 平面 切换（按钮用） */
+    togglePitch(): void;
+    /** 取消激活：回平面并清高亮 */
+    clearActive(): void;
 }
 
 interface FootprintPointFeature {
@@ -92,6 +108,9 @@ interface MarkerEntry {
 /** 聚合半径：118 个点在全国尺度下要稍微松一点，避免一开始就挤成两个球 */
 const CLUSTER_RADIUS = 46;
 const CLUSTER_MAX_ZOOM = 15;
+/** 3D 视角参数：卡片激活和按钮切换共用同一套，保证两种入口视觉一致 */
+const TILT_PITCH = 55;
+const TILT_BEARING = -20;
 /** tooltip 悬停延迟：进得快一点，出得慢一点，鼠标扫过一排标点不会闪 */
 const TIP_SHOW_DELAY = 70;
 const TIP_HIDE_DELAY = 150;
@@ -119,6 +138,8 @@ class FootprintMapInstance implements FootprintMapController {
     private selectedId: string | null = null;
     /** 按地名筛选：null 表示不过滤；中标点保持原样，其余压暗到 13% */
     private filterNames: ReadonlySet<string> | null = null;
+    /** 视角唯一来源：焦点动画、按钮、卡片高亮都从它派生 */
+    private pitchMode: FootprintPitchMode = 'flat';
 
     private theme: MapTheme = 'light';
     private started = false;
@@ -134,6 +155,10 @@ class FootprintMapInstance implements FootprintMapController {
     /** 地图 tooltip：单点显示地名 + 游记摘要，聚合点列出它包含的所有标点 */
     private tooltip: HTMLDivElement | null = null;
     private tooltipOwner: HTMLElement | null = null;
+    /** 气泡标题 id：aria-labelledby 指过去 */
+    private tipHeadId = `ex-fp-tip-head-${++tipSeq}`;
+    /** 焦点从气泡还给标点的那一下不要再弹开气泡 */
+    private suppressOwnerFocus: HTMLElement | null = null;
     private tipShowTimer: ReturnType<typeof setTimeout> | null = null;
     private tipHideTimer: ReturnType<typeof setTimeout> | null = null;
     /** 上一次按下时是鼠标还是触摸：触屏没有 hover，点击要能点开 tooltip */
@@ -220,6 +245,8 @@ class FootprintMapInstance implements FootprintMapController {
         }
         this.hideTooltip();
         this.clearTimers();
+        this.selectedId = null;
+        this.pitchMode = 'flat';
         this.tooltip?.remove();
         this.tooltip = null;
 
@@ -230,6 +257,16 @@ class FootprintMapInstance implements FootprintMapController {
 
         this.clearMarkers();
         const map = this.map;
+        // 退出足迹必须把地形收掉，否则地图层级会留给下一次进入
+        if (map) {
+            try {
+                map.setTerrain(null as unknown as undefined);
+                if (map.getLayer(HILLSHADE_LAYER)) map.removeLayer(HILLSHADE_LAYER);
+                if (map.getSource(DEM_SOURCE)) map.removeSource(DEM_SOURCE);
+            } catch {
+                // 样式已销毁时忽略
+            }
+        }
         this.map = null;
         if (!map) return;
         try {
@@ -270,13 +307,130 @@ class FootprintMapInstance implements FootprintMapController {
     focusPlace(placeId: string): void {
         const place = this.placeById.get(placeId);
         if (!place || !this.map) return;
+        // 再次点同一张卡 = 取消激活，回平面
+        if (this.selectedId === placeId) {
+            this.clearActive();
+            return;
+        }
         this.select(placeId);
-        this.map.flyTo({
+        // 先取消在途动画，避免连续点两张卡时 pitch/bearing 互相当作起点而跳变
+        this.map.stop();
+        this.setPitchMode('tilt');
+        this.map.easeTo({
             center: [place.lng, place.lat],
             zoom: this.zoomForSinglePlace(place),
-            duration: motionDuration(900),
+            pitch: TILT_PITCH,
+            bearing: TILT_BEARING,
+            // 带一点上移：pitch 55° 时点会掉到视口下缘，抬到中上部才看得出「聚焦」的是它
+            offset: this.focusOffset(),
+            duration: prefersReducedMotion() ? 0 : 700,
             essential: true
         });
+    }
+
+    /**
+     * 聚焦点在屏幕上的纵向偏移。俯仰到 55° 后，正中的目标会被地形和透视推到画面下缘，
+     * 这里按容器高度往上抬 12%（offset 的 y 为负 = 让目标落在容器中心上方），
+     * 窄屏和桌面用同一比例，避免写死像素在 390 上过头。
+     */
+    private focusOffset(): [number, number] {
+        const height = this.map?.getContainer().clientHeight ?? 0;
+        return [0, -Math.round(height * 0.12)];
+    }
+
+    togglePitch(): void {
+        this.map?.stop();
+        this.setPitchMode(this.pitchMode === 'tilt' ? 'flat' : 'tilt');
+        if (!this.map) return;
+        const active = this.selectedId ? this.placeById.get(this.selectedId) : null;
+        // 手动开关和聚焦共用同一份 pitchMode：开着激活点时切回 3D，仍要落在那个点上
+        if (this.pitchMode === 'tilt' && active) {
+            this.map.easeTo({
+                center: [active.lng, active.lat],
+                zoom: this.zoomForSinglePlace(active),
+                pitch: TILT_PITCH,
+                bearing: TILT_BEARING,
+                offset: this.focusOffset(),
+                duration: prefersReducedMotion() ? 0 : 650
+            });
+            return;
+        }
+        this.map.easeTo({
+            pitch: this.pitchMode === 'tilt' ? TILT_PITCH : 0,
+            bearing: this.pitchMode === 'tilt' ? TILT_BEARING : 0,
+            offset: [0, 0],
+            duration: prefersReducedMotion() ? 0 : 650
+        });
+    }
+
+    /** 取消激活：清选中/高亮，回平面。点空白、Esc、「全部」、同一张卡再点都走这里 */
+    clearActive(): void {
+        const hadSelection = this.selectedId !== null;
+        this.selectedId = null;
+        this.applySelection();
+        this.options.onSelect?.(null);
+        if (hadSelection) this.emitState();
+        this.setPitchMode('flat');
+        // 地形收掉的同时把镜头放回平面，否则只关了地形、俯仰还停在 3D
+        this.map?.stop();
+        this.map?.easeTo({
+            pitch: 0,
+            bearing: 0,
+            // 清掉聚焦时的上移偏移，否则回平面后画面仍偏向一边
+            offset: [0, 0],
+            duration: prefersReducedMotion() ? 0 : 650
+        });
+    }
+
+    /** 改视角模式并同步按钮视觉；只在这里改 pitchMode，别处一律调它 */
+    private setPitchMode(mode: FootprintPitchMode): void {
+        this.options.container.dataset.pitch = mode;
+        if (this.pitchMode === mode) return;
+        this.pitchMode = mode;
+        this.emitState();
+        // 3D = 真切地形（和运动地图聚焦单条轨迹一致），按钮和卡片激活共用这一份状态
+        this.applyTerrain(mode === 'tilt');
+    }
+
+    /**
+     * 开/关真地形：raster-dem + hillshade + setTerrain，参数与运动地图的 applyTerrain 一致，
+     * 常量直接复用 exercise-map/constants，不在足迹里重写字面量。样式不支持时静默退化成纯俯仰。
+     */
+    private applyTerrain(on: boolean): void {
+        const map = this.map;
+        if (!map || this.destroyed || !this.styleReady) return;
+        try {
+            if (!map.getSource(DEM_SOURCE)) {
+                map.addSource(DEM_SOURCE, {
+                    type: 'raster-dem',
+                    url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                    tileSize: 512,
+                    maxzoom: 14
+                });
+            }
+            if (!map.getLayer(HILLSHADE_LAYER)) {
+                map.addLayer({
+                    id: HILLSHADE_LAYER,
+                    type: 'hillshade',
+                    source: DEM_SOURCE,
+                    layout: { visibility: 'none' },
+                    paint: { 'hillshade-exaggeration': 0.35, 'hillshade-shadow-color': '#4a4a4a' }
+                });
+            }
+            map.setLayoutProperty(HILLSHADE_LAYER, 'visibility', on ? 'visible' : 'none');
+            map.setTerrain(on ? { source: DEM_SOURCE, exaggeration: 1.4 } : (null as unknown as undefined));
+        } catch {
+            // 样式不支持地形时退化为纯俯仰视角
+        }
+    }
+
+    /** 样式（含主题切换）重新加载后，地形和图层都会丢，按当前模式补回来 */
+    private restoreTerrain(): void {
+        this.applyTerrain(this.pitchMode === 'tilt');
+    }
+
+    private emitState(): void {
+        this.options.onStateChange?.({ pitchMode: this.pitchMode, activePlaceId: this.selectedId });
     }
 
     /**
@@ -382,6 +536,7 @@ class FootprintMapInstance implements FootprintMapController {
         if (places.length === 0) return;
         const pool = places.length > 1 ? places.filter((place) => place.id !== this.selectedId) : places;
         const place = pool[Math.floor(Math.random() * pool.length)];
+        // 3D 状态下只换目标点：focusPlace 会保持 tilt，不会回平面
         if (place) this.focusPlace(place.id);
     }
 
@@ -395,6 +550,14 @@ class FootprintMapInstance implements FootprintMapController {
         }
         this.options.onReady?.();
         this.updateMarkers();
+        // 主题切换会重放 style，但 setStyle 本身不动相机：有激活点时只要不 fitAll，
+        // 镜头和聚焦点就原样保留。别再补一次 easeTo，否则会把用户手动缩放的 zoom 夹回去
+        const active = this.selectedId ? this.placeById.get(this.selectedId) : null;
+        this.restoreTerrain();
+        if (active) {
+            this.applySelection();
+            return;
+        }
         this.fitAll();
     };
 
@@ -404,16 +567,16 @@ class FootprintMapInstance implements FootprintMapController {
     };
 
     private handleMapClick = (): void => {
-        this.selectedId = null;
-        this.applySelection();
+        this.returnFocusToOwner();
         this.hideTooltip();
-        this.options.onSelect?.(null);
+        this.clearActive();
     };
 
     private select(placeId: string): void {
         this.selectedId = placeId;
         this.applySelection();
         this.options.onSelect?.(placeId);
+        this.emitState();
     }
 
     private applySelection(): void {
@@ -508,6 +671,8 @@ class FootprintMapInstance implements FootprintMapController {
         const info = this.options.placeInfo?.(place);
         const count = info?.count ?? 0;
         element.setAttribute('aria-label', count > 0 ? `${place.name}，${count} 篇游记` : `${place.name}，还没有游记`);
+        element.setAttribute('aria-haspopup', 'dialog');
+        element.setAttribute('aria-expanded', 'false');
 
         // `.marker::before` 用 --photo 铺封面：不改元素尺寸，锚点就不会漂
         if (place.cover) element.style.setProperty('--photo', `url("${place.cover}")`);
@@ -531,8 +696,11 @@ class FootprintMapInstance implements FootprintMapController {
     private createClusterEntry(clusterId: number, coordinates: [number, number]): MarkerEntry {
         const element = document.createElement('button');
         element.type = 'button';
-        element.className = 'ex-fp-cluster';
+        // 和 /map 页同一个聚合点样式：.marker.cluster，数字由 .cluster:after 读 data-cardinality
+        element.className = 'marker cluster ex-fp-point';
         element.setAttribute('aria-label', '聚合点，展开查看');
+        element.setAttribute('aria-haspopup', 'dialog');
+        element.setAttribute('aria-expanded', 'false');
 
         const entry: MarkerEntry = {
             marker: null as unknown as mapboxgl.Marker,
@@ -544,7 +712,7 @@ class FootprintMapInstance implements FootprintMapController {
             leaves: []
         };
 
-        const build = () => this.buildClusterTooltip(entry.count ?? 0, entry.leaves ?? [], () => this.expandClusterEntry(entry));
+        const build = () => this.buildClusterTooltip(entry.count ?? 0, entry.leaves ?? []);
         this.bindTooltip(element, build);
         element.addEventListener('pointerdown', this.trackPointerType);
         element.addEventListener('click', (event) => {
@@ -565,8 +733,6 @@ class FootprintMapInstance implements FootprintMapController {
     private syncCluster(entry: MarkerEntry, count: number, leaves: string[]): void {
         entry.count = count;
         entry.leaves = leaves;
-        const label = String(count);
-        if (entry.element.textContent !== label) entry.element.textContent = label;
         entry.element.dataset.cardinality = String(Math.min(99, count));
         entry.element.setAttribute('aria-label', `${count} 个地点，展开查看`);
 
@@ -616,18 +782,11 @@ class FootprintMapInstance implements FootprintMapController {
         });
         element.addEventListener('pointerleave', () => this.scheduleHide());
         // 键盘 Tab 到标点时也要能看到信息
-        element.addEventListener('focus', () => this.showTooltip(element, build));
-        element.addEventListener('blur', () => this.scheduleHide());
-        // tooltip 挂在容器末尾，Tab 顺序到不了里面：从标点按 Tab 时直接把焦点交给
-        // tooltip 里第一个可操作元素（聚合点的地名按钮），键盘用户才能真正用上
-        element.addEventListener('keydown', (event) => {
-            if (event.key !== 'Tab' || event.shiftKey) return;
-            if (this.tooltipOwner !== element) return;
-            const first = this.tooltip?.querySelector<HTMLElement>('button');
-            if (!first) return;
-            event.preventDefault();
-            first.focus();
+        element.addEventListener('focus', () => {
+            if (this.suppressOwnerFocus === element) return;
+            this.showTooltip(element, build);
         });
+        element.addEventListener('blur', () => this.scheduleHide());
     }
 
     private scheduleShow(owner: HTMLElement, build: () => Node[]): void {
@@ -665,13 +824,19 @@ class FootprintMapInstance implements FootprintMapController {
             this.tipHideTimer = null;
         }
         const tip = this.ensureTooltip();
-        if (this.tooltipOwner !== owner) {
+        const changed = this.tooltipOwner !== owner;
+        if (changed) {
             tip.replaceChildren(...build());
-            if (this.tooltipOwner) this.tooltipOwner.removeAttribute('aria-describedby');
-            owner.setAttribute('aria-describedby', tip.id);
             this.tooltipOwner = owner;
         }
+        // 放进 DOM 顺序里紧跟在标点之后：从标点按一下 Tab 就能进气泡
+        if (changed) {
+            owner.insertAdjacentElement('afterend', tip);
+            tip.setAttribute('aria-labelledby', this.tipHeadId);
+        }
         tip.hidden = false;
+        tip.setAttribute('aria-labelledby', this.tipHeadId);
+        owner.setAttribute('aria-expanded', 'true');
         this.positionTooltip(owner);
     }
 
@@ -684,19 +849,35 @@ class FootprintMapInstance implements FootprintMapController {
         if (this.tooltip) {
             this.tooltip.hidden = true;
             this.tooltip.replaceChildren();
+            // 移回地图容器末尾：标点重建/销毁时气泡不会跟着没了
+            if (this.tooltip.parentElement !== this.options.container) this.options.container.append(this.tooltip);
         }
         if (this.tooltipOwner) {
-            this.tooltipOwner.removeAttribute('aria-describedby');
+            this.tooltipOwner.setAttribute('aria-expanded', 'false');
             this.tooltipOwner = null;
         }
     };
+
+    /** 把焦点还给当前气泡的触发标点（Esc、点外部关闭时用） */
+    private returnFocusToOwner(): void {
+        const owner = this.tooltipOwner;
+        if (!owner) return;
+        const active = document.activeElement;
+        if (!active || !this.tooltip?.contains(active)) return;
+        // 焦点回标点时会触发 focus → 重新打开气泡：用一次性标记跳过这次
+        this.suppressOwnerFocus = owner;
+        owner.focus({ preventScroll: true });
+        this.suppressOwnerFocus = null;
+    }
 
     private ensureTooltip(): HTMLDivElement {
         if (this.tooltip) return this.tooltip;
         const tip = document.createElement('div');
         tip.className = 'ex-fp-tip';
         tip.id = `ex-fp-tip-${++tipSeq}`;
-        tip.setAttribute('role', 'tooltip');
+        // 气泡里有链接和按钮：按 dialog 处理，标题由 aria-labelledby 指向气泡内的 .ex-fp-tip-head。
+        // 不做 aria-modal、打开也不抢焦点（hover 时焦点留在标点上）。
+        tip.setAttribute('role', 'dialog');
         tip.hidden = true;
         // 鼠标从标点挪进 tooltip 时不要收起来（聚合列表可能要在里面滚动）
         tip.addEventListener('pointerenter', () => {
@@ -716,13 +897,13 @@ class FootprintMapInstance implements FootprintMapController {
             }
         });
         tip.addEventListener('focusout', () => this.scheduleHide());
+        // Esc 关气泡并把焦点还给标点；stopPropagation 免得同一次 Esc 又去退足迹
         tip.addEventListener('keydown', (event) => {
-            if (event.key !== 'Tab' || !event.shiftKey) return;
-            if (!this.tooltipOwner) return;
-            const first = tip.querySelector<HTMLElement>('button');
-            if (!first || document.activeElement !== first) return;
+            if (event.key !== 'Escape') return;
             event.preventDefault();
-            this.tooltipOwner.focus({ preventScroll: true });
+            event.stopPropagation();
+            this.returnFocusToOwner();
+            this.hideTooltip();
         });
         this.options.container.append(tip);
         this.tooltip = tip;
@@ -738,37 +919,77 @@ class FootprintMapInstance implements FootprintMapController {
         if (box.width === 0 || box.height === 0) return;
 
         const margin = 8;
-        let left = rect.left - host.left + rect.width / 2 - box.width / 2;
-        left = Math.min(Math.max(left, margin), Math.max(margin, host.width - box.width - margin));
-        // 默认在标点上方；上方放不下就翻到下方
-        let top = rect.top - host.top - box.height - 10;
-        if (top < margin) top = rect.bottom - host.top + 10;
+        const gap = 12;
+        const spaceAbove = rect.top - host.top;
+        const spaceBelow = host.bottom - rect.bottom;
+        const spaceLeft = rect.left - host.left;
+        const spaceRight = host.right - rect.right;
 
+        // 四向择一：优先上下（箭头指得准），上下都放不下再看左右；
+        // 气泡被边界钳制时，箭头位置由 --tip-arrow 跟随标点，不会指错方向
+        let placement: 'top' | 'bottom' | 'left' | 'right';
+        if (spaceAbove >= box.height + gap) placement = 'top';
+        else if (spaceBelow >= box.height + gap) placement = 'bottom';
+        else if (spaceRight >= box.width + gap) placement = 'right';
+        else if (spaceLeft >= box.width + gap) placement = 'left';
+        else placement = spaceAbove >= spaceBelow ? 'top' : 'bottom';
+
+        let left: number;
+        let top: number;
+        if (placement === 'top' || placement === 'bottom') {
+            const centerX = rect.left - host.left + rect.width / 2;
+            left = Math.min(Math.max(centerX - box.width / 2, margin), Math.max(margin, host.width - box.width - margin));
+            top = placement === 'top' ? rect.top - host.top - box.height - gap : rect.bottom - host.top + gap;
+            const arrowX = Math.min(Math.max(centerX - left, 14), box.width - 14);
+            tip.style.setProperty('--tip-arrow', `${Math.round(arrowX)}px`);
+        } else {
+            const centerY = rect.top - host.top + rect.height / 2;
+            top = Math.min(Math.max(centerY - box.height / 2, margin), Math.max(margin, host.height - box.height - margin));
+            left = placement === 'right' ? rect.right - host.left + gap : rect.left - host.left - box.width - gap;
+            const arrowY = Math.min(Math.max(centerY - top, 14), box.height - 14);
+            tip.style.setProperty('--tip-arrow', `${Math.round(arrowY)}px`);
+        }
+
+        tip.dataset.placement = placement;
         tip.style.left = `${Math.round(left)}px`;
         tip.style.top = `${Math.round(top)}px`;
     }
 
     private buildPlaceTooltip(place: FootprintPlace): Node[] {
         const info = this.options.placeInfo?.(place);
-        const nodes: Node[] = [createNode('p', 'ex-fp-tip-head', place.name)];
+        const head = createNode('p', 'ex-fp-tip-head', place.name);
+        head.id = this.tipHeadId;
+        const nodes: Node[] = [head];
         const meta = !info || info.count === 0 ? '还没有写游记' : `${info.count} 篇游记${info.latest ? ` · 最近 ${info.latest}` : ''}`;
         nodes.push(createNode('p', 'ex-fp-tip-meta', meta));
 
-        if (info && info.titles.length > 0) {
+        if (info && info.articles.length > 0) {
             const list = createNode('ul', 'ex-fp-tip-list');
-            for (const title of info.titles.slice(0, 6)) list.append(createNode('li', undefined, title));
+            for (const article of info.articles.slice(0, 6)) {
+                const item = createNode('li');
+                // 真锚点：中键新开、右键复制、键盘回车都是浏览器原生行为
+                const link = createNode('a', 'ex-fp-tip-article', article.title);
+                link.href = article.url;
+                // 气泡不是页面过渡的命名元素，不需要额外处理；点击别穿透到地图（会清选中态）
+                link.addEventListener('click', (event) => event.stopPropagation());
+                item.append(link);
+                list.append(item);
+            }
             nodes.push(list);
+            if (info.articles.length > 6) nodes.push(createNode('p', 'ex-fp-tip-more', `还有 ${info.articles.length - 6} 篇`));
         }
         return nodes;
     }
 
-    private buildClusterTooltip(count: number, leaves: readonly string[], onExpand: () => void): Node[] {
-        const nodes: Node[] = [createNode('p', 'ex-fp-tip-head', `${count} 个地点`)];
+    private buildClusterTooltip(count: number, leaves: readonly string[]): Node[] {
+        const head = createNode('p', 'ex-fp-tip-head', `${count} 个地点`);
+        head.id = this.tipHeadId;
+        const nodes: Node[] = [head];
         const matched = leaves.filter((id) => {
             const place = this.placeById.get(id);
             return place ? (this.options.placeInfo?.(place)?.count ?? 0) > 0 : false;
         }).length;
-        nodes.push(createNode('p', 'ex-fp-tip-meta', matched > 0 ? `${matched} 个写过游记 · 点两下放大` : '这些地方还没有游记'));
+        nodes.push(createNode('p', 'ex-fp-tip-meta', matched > 0 ? `${matched} 个写过游记 · 点地名飞过去` : '这些地方还没有游记'));
 
         const list = createNode('ul', 'ex-fp-tip-list is-scroll');
         for (const id of leaves) {
@@ -792,13 +1013,6 @@ class FootprintMapInstance implements FootprintMapController {
         }
         nodes.push(list);
 
-        const action = createNode('button', 'ex-fp-tip-action', '放大这一片');
-        action.type = 'button';
-        action.addEventListener('click', (event) => {
-            event.stopPropagation();
-            onExpand();
-        });
-        nodes.push(action);
         return nodes;
     }
 

@@ -7,6 +7,15 @@
    窄屏退回运动页的做法：地图在上吸顶，时间线在下面，页面正常滚动。
    ========================================================================== */
 
+/* 页内切换用 View Transition：地图和时间线各自起名，其余走根节点交叉淡入 */
+html[data-fp-transition] .ex-fp-map-wrap {
+    view-transition-name: fp-map;
+}
+
+html[data-fp-transition] .ex-fp-panel {
+    view-transition-name: fp-panel;
+}
+
 /* 打开足迹时把运动页原本的内容和右侧统计栏藏起来，版面让给足迹 */
 body.is-footprint {
     .ex-hero,
@@ -117,7 +126,7 @@ body.is-footprint {
     padding: 0 0.8rem;
     border: 1px solid var(--ex-fp-line);
     border-radius: 999px;
-    background: var(--ex-fp-glass);
+    background: var(--body-background);
     color: var(--body-font-color);
     font-size: 0.75rem;
     line-height: 1;
@@ -223,6 +232,12 @@ body.is-footprint {
     transition:
         color 160ms ease,
         border-color 160ms ease;
+}
+
+.ex-fp-hud-btn[aria-pressed='true'] {
+    border-color: color-mix(in srgb, var(--color-link) 55%, var(--ex-fp-line));
+    background: color-mix(in srgb, var(--color-link) 12%, var(--ex-fp-glass));
+    color: var(--color-link);
 }
 
 .ex-fp-hud-btn:hover {
@@ -415,11 +430,25 @@ body.is-footprint {
     outline-offset: 2px;
 }
 
-/* 还没落到地图标点上的标签：只做提示，不假装能点 */
-.ex-fp-chip.is-muted {
-    border-style: dashed;
-    color: var(--gray-500);
-    cursor: default;
+/* 同一篇里没落到地图标点的标签：只是补充信息，纯文本、不可点、不做告警样式 */
+.ex-fp-tag {
+    display: inline-flex;
+    align-items: center;
+    max-inline-size: 100%;
+    overflow: hidden;
+    color: var(--gray-700);
+    font-size: 0.6875rem;
+    line-height: 1.6;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 整篇一个标点都没命中时的提示 */
+.ex-fp-row-note {
+    margin: 0;
+    color: var(--gray-700);
+    font-size: 0.6875rem;
+    line-height: 1.6;
 }
 
 .ex-fp-rest {
@@ -461,6 +490,51 @@ body.is-footprint {
         opacity 180ms ease,
         border-color 160ms ease,
         box-shadow 160ms ease !important;
+}
+
+/* 两类标点统一：不要边框（尺寸由 width/height 的 border-box 决定，去掉 border 不变小），
+   2px 环用 box-shadow 画在最外侧，cover 在 ::before 之上盖不到它；圆角统一 50%，
+   封面、圆点、环三者同心，不会再出现 30% 百分比盒子不一致的月牙缝。 */
+.ex-fp-map .marker.ex-fp-point {
+    border: 0;
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 2px var(--body-background),
+        0 16px 60px 0 rgb(0 0 0 / 0.08),
+        0 6px 12px 0 rgb(0 0 0 / 0.1);
+}
+
+.ex-fp-map .img-post.marker.ex-fp-point::before {
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    border-radius: 50%;
+}
+
+/* 聚合点：预览地图里比 /map 大一号，数字也大一档；/map 仍是 20px / 12px */
+.ex-fp-map .cluster.ex-fp-point {
+    inline-size: 28px;
+    block-size: 28px;
+}
+
+.ex-fp-map .cluster.ex-fp-point:hover {
+    inline-size: 36px;
+    block-size: 36px;
+}
+
+.ex-fp-map .cluster.ex-fp-point::after {
+    font-size: 13px;
+}
+
+.ex-fp-map .cluster.ex-fp-point:hover::after {
+    font-size: 18px;
+}
+
+/* 3D 时 DOM marker 不会跟着倾斜，看起来像浮在斜面上：加深投影做一点落地感补偿 */
+.ex-fp-map[data-pitch='tilt'] .ex-fp-point {
+    box-shadow:
+        0 0 0 2px var(--body-background),
+        0 10px 22px rgb(0 0 0 / 0.32);
 }
 
 /* 预览小地图比 /map 页小：hover 别撑到 80px 盖住周边 */
@@ -522,46 +596,7 @@ body.is-footprint {
     outline-offset: 3px;
 }
 
-/* ---------- 聚合点：外观和单点标点对齐，只是内容换成数字 ---------- */
-.ex-fp-cluster {
-    display: grid;
-    min-inline-size: 2.15rem;
-    block-size: 2.15rem;
-    padding: 0 0.45rem;
-    border: 2px solid var(--body-background);
-    border-radius: 999px;
-    background: var(--ex-fp-glass);
-    color: var(--body-font-color);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    line-height: 1;
-    cursor: pointer;
-    box-shadow:
-        0 0 0 1px var(--ex-fp-line),
-        0 3px 8px rgb(0 0 0 / 0.24);
-    backdrop-filter: var(--ex-fp-blur);
-    -webkit-backdrop-filter: var(--ex-fp-blur);
-    place-items: center;
-    transition:
-        opacity 180ms ease,
-        color 160ms ease,
-        border-color 160ms ease,
-        box-shadow 160ms ease;
-}
-
-.ex-fp-cluster:hover,
-.ex-fp-cluster.is-highlighted {
-    border-color: color-mix(in srgb, var(--color-link) 55%, var(--body-background));
-    color: var(--color-link);
-    box-shadow:
-        0 0 0 3px color-mix(in srgb, var(--color-link) 18%, transparent),
-        0 5px 14px rgb(0 0 0 / 0.28);
-}
-
-.ex-fp-cluster:focus-visible {
-    outline: 2px solid var(--color-link);
-    outline-offset: 2px;
-}
+/* ---------- 聚合点：几何和数字都用 /map 的 .marker.cluster（见 _custom.scss 的 .cluster:after） ---------- */
 
 /* ---------- 地图 tooltip：单点地名 + 游记摘要 / 聚合点的全部标点 ---------- */
 .ex-fp-tip {
@@ -628,6 +663,98 @@ body.is-footprint {
     scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
 }
 
+/* tooltip 箭头：四向三角，描边 + 内层实色两层叠出 1px 边；--tip-arrow 由脚本按标点位置写 */
+.ex-fp-tip::before,
+.ex-fp-tip::after {
+    content: '';
+    position: absolute;
+    inline-size: 11px;
+    block-size: 11px;
+}
+
+.ex-fp-tip::before {
+    background: var(--ex-fp-line);
+}
+
+.ex-fp-tip::after {
+    background: var(--body-background);
+}
+
+.ex-fp-tip[data-placement='top']::before {
+    inset-block-end: -10px;
+    inset-inline-start: calc(var(--tip-arrow, 50%) - 5.5px);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.ex-fp-tip[data-placement='top']::after {
+    inset-block-end: -8.5px;
+    inset-inline-start: calc(var(--tip-arrow, 50%) - 5.5px);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.ex-fp-tip[data-placement='bottom']::before {
+    inset-block-start: -10px;
+    inset-inline-start: calc(var(--tip-arrow, 50%) - 5.5px);
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.ex-fp-tip[data-placement='bottom']::after {
+    inset-block-start: -8.5px;
+    inset-inline-start: calc(var(--tip-arrow, 50%) - 5.5px);
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.ex-fp-tip[data-placement='left']::before {
+    inset-inline-end: -10px;
+    inset-block-start: calc(var(--tip-arrow, 50%) - 5.5px);
+    clip-path: polygon(0 0, 0 100%, 100% 50%);
+}
+
+.ex-fp-tip[data-placement='left']::after {
+    inset-inline-end: -8.5px;
+    inset-block-start: calc(var(--tip-arrow, 50%) - 5.5px);
+    clip-path: polygon(0 0, 0 100%, 100% 50%);
+}
+
+.ex-fp-tip[data-placement='right']::before {
+    inset-inline-start: -10px;
+    inset-block-start: calc(var(--tip-arrow, 50%) - 5.5px);
+    clip-path: polygon(100% 0, 100% 100%, 0 50%);
+}
+
+.ex-fp-tip[data-placement='right']::after {
+    inset-inline-start: -8.5px;
+    inset-block-start: calc(var(--tip-arrow, 50%) - 5.5px);
+    clip-path: polygon(100% 0, 100% 100%, 0 50%);
+}
+
+/* 单点 tooltip 里的游记链接 */
+.ex-fp-tip-article {
+    color: inherit;
+    text-decoration: none;
+    text-underline-offset: 2px;
+    transition: color 140ms ease;
+}
+
+.ex-fp-tip-article:hover,
+.ex-fp-tip-article:focus-visible {
+    color: var(--color-link);
+    text-decoration: underline;
+}
+
+.ex-fp-tip-article:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 1px;
+}
+
+/* 超过 6 条的提示文字 */
+.ex-fp-tip-more {
+    margin: 0.35rem 0 0;
+    color: var(--gray-700);
+    font-size: 0.65rem;
+    line-height: 1.5;
+}
+
 /* 聚合 tooltip 里的地名是可点按钮：点了直接飞到那个标点 */
 .ex-fp-tip-place {
     display: flex;
@@ -669,29 +796,6 @@ body.is-footprint {
     color: var(--gray-500);
     font-size: 0.625rem;
     white-space: nowrap;
-}
-
-.ex-fp-tip-action {
-    display: block;
-    inline-size: 100%;
-    margin-block-start: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid var(--ex-fp-line);
-    border-radius: 999px;
-    background: transparent;
-    color: var(--color-link);
-    font-size: 0.6875rem;
-    line-height: 1.5;
-    cursor: pointer;
-}
-
-.ex-fp-tip-action:hover {
-    border-color: color-mix(in srgb, var(--color-link) 55%, var(--ex-fp-line));
-}
-
-.ex-fp-tip-action:focus-visible {
-    outline: 2px solid var(--color-link);
-    outline-offset: 2px;
 }
 
 /* ---------- 地图内右上角筛选 HUD（按钮 + 桌面面板） ---------- */
@@ -1136,18 +1240,14 @@ body.is-fp-modal {
 
 /* 被筛掉的标点压暗到 13%：留在原位保留地理感，hover/focus 时恢复可读。
    Mapbox 会给 marker 元素写内联 `opacity: 1`，普通声明盖不住，这里必须 !important。 */
-.ex-fp-point.is-dimmed,
-.ex-fp-cluster.is-dimmed {
+.ex-fp-point.is-dimmed {
     opacity: 0.13 !important;
 }
 
 .ex-fp-point.is-dimmed:hover,
 .ex-fp-point.is-dimmed:focus-visible,
 .ex-fp-point.is-highlighted,
-.ex-fp-point.is-active,
-.ex-fp-cluster.is-dimmed:hover,
-.ex-fp-cluster.is-dimmed:focus-visible,
-.ex-fp-cluster.is-dimmed.is-highlighted {
+.ex-fp-point.is-active {
     opacity: 1 !important;
 }
 
@@ -1278,8 +1378,6 @@ body.is-fp-modal {
     .ex-fp-hud-btn,
     .ex-fp-chip,
     .ex-fp-point,
-    .ex-fp-cluster,
-    .ex-fp-tip-action,
     .ex-fp-filter-btn,
     .ex-fp-filter-action,
     .ex-fp-check,

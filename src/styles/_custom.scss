@@ -696,6 +696,27 @@ pre:focus-within > .copy-button {
     background: var(--map-marker-bg-empty, linear-gradient(180deg, #89a9cd 0, #485f81));
 }
 
+/* 聚合点：数字来自 data-cardinality，/map 与足迹共用（原来只写在 .footer-map 作用域里） */
+.cluster:after {
+    content: attr(data-cardinality);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    block-size: 100%;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    transition: font-size 0.2s ease-out;
+}
+
+.cluster:hover:after {
+    font-size: 23px;
+}
+
 .marker:before {
     position: absolute;
     content: '';
@@ -741,23 +762,6 @@ pre:focus-within > .copy-button {
     }
     button.filter-btn.active {
         background-color: var(--gray-500);
-    }
-
-    .cluster:after {
-        content: attr(data-cardinality);
-        color: #fff;
-        display: flex;
-        justify-content: center;
-        flex-direction: column;
-        text-align: center;
-        height: 100%;
-        font-size: 12px;
-        font-weight: 700;
-        transition: font-size 0.2s ease-out;
-    }
-
-    .cluster:hover:after {
-        font-size: 23px;
     }
 
     .mapbox-gl-draw_polygon {

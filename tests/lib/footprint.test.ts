@@ -185,6 +185,24 @@ describe('buildFootprint', () => {
         expect(data.articles[0].placeNames).toEqual(['五台山']);
     });
 
+    it('一篇文章只要有一个标签命中标点就算匹配，其余未匹配标签只留在 unmatchedTags', () => {
+        const matched = buildFootprint(
+            [feature('五台山', 113.59, 39.02)],
+            [
+                post({ slug: 'wutai', title: '走大朝台', published_at: '2026-05-01T00:00:00Z', tags: [{ name: '#地点-五台山' }, { name: '#地点-太原' }] }),
+                post({ slug: 'taiyuan', title: '只写了太原', published_at: '2026-04-01T00:00:00Z', tags: [{ name: '#地点-太原' }] })
+            ]
+        );
+        const article = matched.articles.find((item) => item.slug === 'wutai');
+        expect(article?.placeIds).toHaveLength(1);
+        expect(article?.placeNames).toEqual(['五台山']);
+        expect(article?.unmatchedTags).toEqual(['太原']);
+        // 没命中的那篇 placeIds 为空，但仍然是「带地点标签的游记」，计数不受影响
+        expect(matched.articles.find((item) => item.slug === 'taiyuan')?.placeIds).toEqual([]);
+        expect(matched.stats.articles).toBe(2);
+        expect(matched.stats.matchedPlaces).toBe(1);
+    });
+
     it('摘要和图片直接来自文章自身', () => {
         const article = data.articles.find((item) => item.slug === 'duan-wu-zai-you-kang-ding');
         expect(article?.excerpt).toBe('没想到这个月又来了一次康定。');

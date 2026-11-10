@@ -41,6 +41,8 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
     const [expanded, setExpanded] = createSignal<ReadonlySet<string>>(defaultExpanded());
     const [filterOpen, setFilterOpen] = createSignal(false);
     const [narrow, setNarrow] = createSignal(false);
+    /** 3D/平面按钮的视觉：真源在控制器，这里只接收 onStateChange 的镜像 */
+    const [pitchMode, setPitchMode] = createSignal<'flat' | 'tilt'>('flat');
 
     let overlay: HTMLDivElement | undefined;
     let mapHost: HTMLDivElement | undefined;
@@ -79,7 +81,12 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
 
     const placeInfo = (place: FootprintPlace): FootprintPlaceInfo => {
         const articles = articlesByPlace.get(place.id) ?? [];
-        return { count: articles.length, latest: articles[0]?.dateLabel ?? null, titles: articles.map((article) => article.title) };
+        return {
+            count: articles.length,
+            latest: articles[0]?.dateLabel ?? null,
+            // tooltip 里要能点进文章，所以直接给完整字段，不再只传标题
+            articles: articles.map((article) => ({ title: article.title, url: article.url, dateLabel: article.dateLabel }))
+        };
     };
 
     const subtitle = () => {
@@ -115,7 +122,8 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                 revealArticle(placeId);
             },
             onError: () => setMapError(true),
-            onReady: () => setMapError(false)
+            onReady: () => setMapError(false),
+            onStateChange: (state) => setPitchMode(state.pitchMode)
         });
         controller.start();
         // 地图可能是「筛选过之后才第一次打开」的，创建后立刻补一次当前筛选
@@ -199,13 +207,48 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
 
     /* ------------------------------ 开关足迹 ------------------------------ */
 
+    /**
+     * 用 View Transition 包住「运动页 ↔ 足迹」的页内切换。
+     * 地图和右侧时间线各自起名，其余部分走根节点淡入淡出；
+     * 减弱动画时直接切；退出/再进时清掉标记，避免和 ClientRouter 的页面过渡抢。
+     */
+    const runWithViewTransition = (apply: () => void) => {
+        const doc = document as Document & { startViewTransition?: (callback: () => void | Promise<void>) => { finished?: Promise<unknown> } };
+        if (prefersReducedMotion() || typeof doc.startViewTransition !== 'function') {
+            apply();
+            return;
+        }
+        document.documentElement.setAttribute('data-fp-transition', '');
+        try {
+            const transition = doc.startViewTransition(() => {
+                apply();
+                // Solid 的 DOM 更新走 effect 队列：让出两个宏任务再让浏览器取「新快照」，
+                // 否则可能拍到展开到一半的中间态。
+                // 不用 rAF：过渡的捕获阶段 rAF 可能被推迟，Chrome 会判 DOM update 超时并中止过渡。
+                return new Promise<void>((resolve) => {
+                    setTimeout(() => setTimeout(resolve, 0), 0);
+                });
+            });
+            void Promise.resolve(transition?.finished)
+                .catch(() => undefined)
+                .then(() => document.documentElement.removeAttribute('data-fp-transition'));
+        } catch {
+            document.documentElement.removeAttribute('data-fp-transition');
+            apply();
+        }
+    };
+
     const openMode = () => {
         if (open()) return;
         lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         // 页内切换会把上面一大段运动内容藏起来，先记下滚动位置，退出时再还回去
         lastScroll = window.scrollY;
         window.scrollTo({ top: 0, behavior: 'auto' });
-        setOpen(true);
+        runWithViewTransition(() => {
+            // 布局类在这里同步加，effect 里那次是幂等的兜底：过渡回调必须当场看到新布局
+            document.body.classList.add('is-footprint');
+            setOpen(true);
+        });
     };
 
     /** 退出足迹：筛选状态只在本次足迹会话里保留，退出即重置 */
@@ -213,7 +256,11 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
         setFilterOpen(false);
         setSelected(new Set<string>());
         setExpanded(defaultExpanded());
-        setOpen(false);
+        controller?.clearActive();
+        runWithViewTransition(() => {
+            document.body.classList.remove('is-footprint');
+            setOpen(false);
+        });
     };
 
     createEffect(() => {
@@ -274,11 +321,18 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
         const onOpenEvent = () => openMode();
         const onKeyDown = (event: KeyboardEvent) => {
             if (event.key !== 'Escape' || !open()) return;
-            // 先关筛选，再退足迹：面板开着时 Esc 只收起面板
+            // 顺序：筛选面板 → 激活的卡片/3D → 退足迹；每一步都只吃掉自己那一层
             if (filterOpen()) {
                 event.preventDefault();
                 event.stopPropagation();
                 closeFilter();
+                return;
+            }
+            // 用 HUD 单独开的 3D 也算一层：没有激活卡片时不跳过它，先收回平面再退足迹
+            if (activePlace() || pitchMode() === 'tilt') {
+                event.preventDefault();
+                event.stopPropagation();
+                controller?.clearActive();
                 return;
             }
             event.preventDefault();
@@ -323,6 +377,7 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
             window.removeEventListener('hashchange', onHashChange);
             media.removeEventListener('change', onMediaChange);
             document.body.classList.remove('is-footprint', 'is-fp-modal');
+            document.documentElement.removeAttribute('data-fp-transition');
             controller?.destroy();
             controller = undefined;
         });
@@ -462,7 +517,23 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                         }}
                     />
                     <div class="ex-fp-hud">
-                        <button class="ex-fp-hud-btn" type="button" onClick={() => controller?.fitAll()}>
+                        <button
+                            class="ex-fp-hud-btn"
+                            type="button"
+                            aria-pressed={pitchMode() === 'tilt'}
+                            title="切换 3D / 平面视角"
+                            onClick={() => controller?.togglePitch()}
+                        >
+                            3D
+                        </button>
+                        <button
+                            class="ex-fp-hud-btn"
+                            type="button"
+                            onClick={() => {
+                                controller?.clearActive();
+                                controller?.fitAll();
+                            }}
+                        >
                             全部
                         </button>
                         <button class="ex-fp-hud-btn" type="button" onClick={() => controller?.random()}>
@@ -529,6 +600,8 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                                     const repeat = () => repeatFlags()[index()] ?? false;
                                     const changedYear = () => filteredArticles()[index() - 1]?.year !== article.year;
                                     return (
+                                        // 激活只认地点 chip：卡片里已经有文章链接和 chip 两种可交互元素，
+                                        // 再给整行加 tabindex 会出现嵌套交互，Tab 顺序也会变差
                                         <article
                                             class="ledger-row"
                                             classList={{ 'is-repeat': repeat() }}
@@ -580,7 +653,7 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                                                         </For>
                                                     </div>
                                                 </Show>
-                                                <Show when={article.placeNames.length > 0 || article.unmatchedTags.length > 0}>
+                                                <Show when={article.placeIds.length > 0}>
                                                     <div class="ex-fp-row-places">
                                                         <For each={article.placeIds}>
                                                             {(placeId, placeIndex) => (
@@ -594,14 +667,13 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                                                                 </button>
                                                             )}
                                                         </For>
-                                                        <For each={article.unmatchedTags}>
-                                                            {(tag) => (
-                                                                <span class="ex-fp-chip is-muted" title="这个标签还没有对应的地图标点">
-                                                                    {tag}
-                                                                </span>
-                                                            )}
-                                                        </For>
+                                                        {/* 一个标签命中就算匹配：没落地的标签只是补充信息，纯文本不可点 */}
+                                                        <For each={article.unmatchedTags}>{(tag) => <span class="ex-fp-tag">{tag}</span>}</For>
                                                     </div>
+                                                </Show>
+                                                {/* 只有整篇一个标点都没命中，才是真的没匹配上 */}
+                                                <Show when={article.placeIds.length === 0 && article.tags.length > 0}>
+                                                    <p class="ex-fp-row-note">这篇的标签没有对应的地图标点：{article.tags.join('、')}</p>
                                                 </Show>
                                             </div>
                                         </article>
