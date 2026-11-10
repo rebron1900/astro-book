@@ -404,6 +404,110 @@
     {
       "type": "Feature",
       "properties": {
+        "name": "西岭雪山"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.2270117242986,
+          30.70803476107428
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "牛背山"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          102.83665936042435,
+          30.11927320702924
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "邛崃天台山"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.17031964561141,
+          30.305502604422248
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "平乐古镇"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.33458688065889,
+          30.346455517236883
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "蓥华山"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.9334966734376,
+          31.394966574465577
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "三星堆博物馆"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.2204427090257,
+          31.003771980729795
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "花水湾"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.2587697223818,
+          30.567269006205727
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "观音岩"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          104.33490160453151,
+          29.47648513511362
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
         "name": "十八梯",
         "description": "[重庆一日游](https://1900.live/zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-2/)(https://cdn.1900.live/assets/2024/08/141723562357056.jpg!1800w)"
       },
