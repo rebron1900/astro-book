@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { allContent, postsAll, timeline } from '../../src/api/store';
 import memosAll from '../../src/data/memos.json';
 import neodbData from '../../src/data/neodb.json';
-import stravaData from '../../src/data/strava.json';
+import activitiesData from '../../src/data/activities.json';
 import type { TimelineEntry } from '../../src/api/store';
 
 // store.ts 在模块顶层 import src/data/*.json（同步脚本产物），
@@ -68,7 +68,7 @@ describe('timeline (store.ts)', () => {
         expect(count('post')).toBe(postsAll.length);
         expect(count('memo')).toBe(memosAll.length);
         expect(count('neodb')).toBe(publicNeodb.length);
-        expect(count('strava')).toBe(stravaData.length);
+        expect(count('strava')).toBe(activitiesData.length);
     });
 
     it('is sorted by time descending', () => {
@@ -81,8 +81,8 @@ describe('timeline (store.ts)', () => {
         const strava = timeline.filter((e): e is Extract<TimelineEntry, { kind: 'strava' }> => e.kind === 'strava');
         expect(strava.length).toBeGreaterThan(0);
         // 与 store.ts 同样的解析口径独立复核
-        const a = stravaData[0];
+        const a = activitiesData[0];
         const expected = new Date(a.start_date_local.replace(' ', 'T')).getTime();
-        expect(strava.find((e) => e.data.run_id === a.run_id)?.time).toBe(expected);
+        expect(strava.find((e) => e.data.id === a.id)?.time).toBe(expected);
     });
 });

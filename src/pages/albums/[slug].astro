@@ -10,6 +10,7 @@ import Header from '../../components/layout/Header.astro';
 import Menu from '../../components/layout/Menu.astro';
 import RemotePicture from '../../components/ui/RemotePicture.astro';
 import { Masonry } from 'astro-masonry';
+import '../../styles/pages/albums.scss';
 
 export function getStaticPaths() {
     const albums = extractAlbumsFromPosts();

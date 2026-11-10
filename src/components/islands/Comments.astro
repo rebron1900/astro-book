@@ -1,5 +1,4 @@
 ---
-import Activitypub from './Activitypub.astro';
 const { postID } = Astro.props;
 ---
 
@@ -44,6 +43,12 @@ const { postID } = Astro.props;
             return false;
         }
     };
+    let currentArtalk: { destroy?: () => void } | null = null;
+    document.addEventListener('astro:before-swap', () => {
+        currentArtalk?.destroy?.();
+        currentArtalk = null;
+    });
+
     document.addEventListener('astro:page-load', () => {
         if (!document.querySelector(commentinfo.el)) return;
 
@@ -52,6 +57,7 @@ const { postID } = Astro.props;
         // 想改成“每天首次访问计一次”，把 hasCountedPv 换成带时间戳 TTL 的判断即可。
         const pvAdd = !hasCountedPv(pageKey);
 
+        currentArtalk?.destroy?.();
         const artalk = Artalk.init({
             el: commentinfo.el, // 绑定元素的 Selector
             server: commentinfo.server, // 后端地址
@@ -61,6 +67,7 @@ const { postID } = Astro.props;
             pvAdd // 已有本地记录时只拉取、不再 +1
         });
 
+        currentArtalk = artalk as unknown as { destroy?: () => void };
         if (pvAdd) markPvCounted(pageKey);
 
         loadInteractions();

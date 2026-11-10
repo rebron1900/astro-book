@@ -58,8 +58,8 @@ if (post) {
 
 <script is:inline>
     const changeTheme = () => {
-        const theme = localStorage.theme;
-        if (localStorage.theme !== 'auto') {
+        const theme = localStorage.theme || 'auto';
+        if (theme !== 'auto') {
             document.documentElement.classList.add(theme);
             document.documentElement.setAttribute('data-theme', theme);
 
@@ -82,15 +82,19 @@ if (post) {
 </script>
 
 <script>
-    import tippy from 'tippy.js';
+    import { createTippy } from '../../lib/client/tippy';
 
-    import { initVideo, initAudio, initToggle } from '../../lib/cards';
+    import { initCards } from '../../lib/client/cards-loader';
     import initZoom from '../../lib/client/zoom';
     import initBackToTop from '../../lib/client/back-to-top';
     import initGallery from '../../lib/client/gallery';
     import initToc from '../../lib/client/toc';
     import changeTheme from '../../lib/client/theme';
     import initHtmxPages from '../../lib/client/htmx-pages';
+    import { initTocViewTransition } from '../../lib/client/toc-view-transition';
+
+    // 右侧栏前后两页都有才独立成组，否则并回整页快照（见模块注释）
+    initTocViewTransition();
 
     document.addEventListener('astro:after-swap', () => {
         changeTheme();
@@ -101,12 +105,10 @@ if (post) {
         initBackToTop();
         initGallery();
         initHtmxPages();
-        initVideo();
-        initAudio();
-        initToggle();
+        void initCards();
         initToc();
 
-        tippy('.item-tippy', {
+        createTippy('.item-tippy', {
             allowHTML: true,
             interactive: true,
             maxWidth: 'none',

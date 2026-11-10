@@ -3,8 +3,8 @@
  * 两者逻辑保持一致。
  */
 export default function changeTheme() {
-    const theme = localStorage.theme;
-    if (localStorage.theme !== 'auto') {
+    const theme = localStorage.theme || 'auto';
+    if (theme !== 'auto') {
         document.documentElement.classList.add(theme);
         document.documentElement.setAttribute('data-theme', theme);
 

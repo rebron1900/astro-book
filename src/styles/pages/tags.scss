@@ -1,0 +1,144 @@
+/* ==========================================================================
+   标签页（tags.astro）：只留计数行；标题与简介走全站统一的 page-head。
+   ========================================================================== */
+/* 标题与简介走全站统一的 .page-head / .page-title / .page-intro，这里只留计数行 */
+.tags-page .tags-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 1rem;
+    margin-block-start: 0.6rem;
+    color: var(--gray-500);
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+.tags-page .tags-summary strong {
+    color: var(--body-font-color);
+    font-weight: 600;
+}
+
+.tags-page .tags-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: 0.8rem;
+}
+
+.tags-page .tag-card {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+    padding: 0.85rem 0.95rem 0.75rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.8rem;
+    background: color-mix(in srgb, var(--body-background) 94%, var(--body-font-color));
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.03);
+    color: inherit;
+    text-decoration: none;
+    transition:
+        border-color 160ms ease,
+        box-shadow 160ms ease,
+        transform 160ms ease;
+}
+
+.tags-page .tag-card:hover {
+    border-color: color-mix(in srgb, var(--color-link) 38%, var(--gray-200));
+    box-shadow: 0 5px 18px rgb(0 0 0 / 0.06);
+    transform: translateY(-1px);
+}
+
+.tags-page .tag-card-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    min-inline-size: 0;
+}
+
+.tags-page .tag-hash {
+    flex: 0 0 auto;
+    color: var(--color-link);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+}
+
+.tags-page .tag-name {
+    min-inline-size: 0;
+    margin: 0;
+    overflow: hidden;
+    color: var(--body-font-color);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tags-page .tag-count {
+    flex: 0 0 auto;
+    margin-inline-start: auto;
+    padding: 0.08rem 0.38rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--body-font-color) 6%, transparent);
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+}
+
+.tags-page .tag-latest {
+    display: flex;
+    flex-direction: column;
+    gap: 0.12rem;
+    min-inline-size: 0;
+    margin-block-start: 0.8rem;
+    padding-block-start: 0.55rem;
+    border-block-start: 1px solid var(--gray-200);
+}
+
+.tags-page .tag-latest-label {
+    color: var(--gray-500);
+    font-size: 0.6rem;
+    letter-spacing: 0.05em;
+}
+
+.tags-page .tag-latest-title {
+    overflow: hidden;
+    color: var(--gray-700);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tags-page .tag-date {
+    margin-block-start: 0.35rem;
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    line-height: 1.35;
+    font-variant-numeric: tabular-nums;
+}
+
+.tags-page .tags-empty {
+    margin-block: 1rem;
+    color: var(--gray-500);
+    font-size: 0.8rem;
+}
+
+@media (max-width: 34rem) {
+    .tags-page .tags-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.6rem;
+    }
+
+    .tags-page .tag-card {
+        padding: 0.7rem 0.75rem 0.65rem;
+    }
+
+    .tags-page .tag-name {
+        font-size: 0.85rem;
+    }
+
+    .tags-page .tag-latest-title {
+        font-size: 0.72rem;
+    }
+}

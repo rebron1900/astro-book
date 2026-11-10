@@ -1,7 +1,7 @@
 ---
 import { pages, settings } from '../api/store';
-import stravaJson from '../data/strava.json';
-import type { StravaActivity } from '../lib/strava-types';
+import activitiesJson from '../data/activities.json';
+import type { Activity } from '../lib/activity-types';
 import { buildRecords, compactRecords, defaultScope, groupByMonth } from '../lib/exercise';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -9,9 +9,7 @@ import Head from '../components/islands/Head.astro';
 import Comments from '../components/islands/Comments.astro';
 import Header from '../components/layout/Header.astro';
 import Menu from '../components/layout/Menu.astro';
-import ExerciseStyles from '../components/pages/ExerciseStyles.astro';
-import ExerciseMapStyles from '../components/pages/ExerciseMapStyles.astro';
-import ExerciseStatsStyles from '../components/pages/ExerciseStatsStyles.astro';
+import '../styles/pages/exercise.scss';
 import ExerciseTimeline from '../components/islands/ExerciseTimeline.astro';
 import ExerciseSidebar from '../components/islands/ExerciseSidebar';
 import ExerciseMapPanel from '../components/islands/ExerciseMapPanel';
@@ -23,8 +21,8 @@ if (!page) {
     throw new Error('exercise page not found');
 }
 
-// 构建期把 strava.json 整理成页面数据；轨迹不内嵌，地图初始化时再拉 /exercise-routes.json
-const allRecords = buildRecords(stravaJson as unknown as StravaActivity[]);
+// 构建期把 activities.json（intervals.icu 同步结果）整理成页面数据；轨迹不内嵌，地图初始化时再拉 /exercise-routes.json
+const allRecords = buildRecords(activitiesJson as unknown as Activity[]);
 const groups = groupByMonth(allRecords);
 const initialScope = defaultScope(allRecords);
 const records = compactRecords(allRecords);
@@ -75,6 +73,7 @@ const intro =
                 <p class="ex-empty">还没有同步到运动记录。</p>
             )
         }
+
     </article>
 
     <Fragment slot="toc">
@@ -89,7 +88,4 @@ const intro =
 
     <Comments slot="comments" />
 
-    <ExerciseStyles />
-    <ExerciseMapStyles />
-    <ExerciseStatsStyles />
 </BaseLayout>

@@ -1,0 +1,144 @@
+/* ==========================================================================
+   一列式时间轴（ledger）：首页 / 时间线 / 足迹右栏共用同一套几何。
+   同一窄列从上到下是「日期 → 类型图标 → 竖线」，内容在右侧列。
+   被 timeline.scss 与 exercise/_footprint.scss 一起 @import，改一处两处同时生效；
+   日期列宽由 --ledger-date-col 控制，竖线位置从它算出来。
+   ========================================================================== */
+
+.ledger-row {
+    position: relative;
+    --ledger-row-gap: 1.7rem;
+    /* 日期列宽：足迹右栏更窄，只覆盖这个变量，竖线位置会跟着算，不会错轴 */
+    --ledger-date-col: 3rem;
+    display: grid;
+    grid-template-columns: var(--ledger-date-col) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 0.55rem;
+    row-gap: 0;
+    align-items: start;
+    min-inline-size: 0;
+}
+
+.ledger-row + .ledger-row {
+    margin-block-start: var(--ledger-row-gap);
+}
+
+/* 每行只在日期与图标之间的空隙画线，避免竖线穿过文字和 SVG。 */
+.ledger-row + .ledger-row::before {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    inset-block-start: calc(-1 * var(--ledger-row-gap));
+    inset-inline-start: calc(var(--ledger-date-col) / 2 - 0.5px);
+    block-size: var(--ledger-row-gap);
+    inline-size: 1px;
+    background: var(--gray-200);
+    pointer-events: none;
+}
+
+.ledger-date {
+    position: relative;
+    display: flex;
+    grid-column: 1;
+    grid-row: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-self: center;
+    gap: 0.08rem;
+    z-index: 2;
+    padding: 0 0.1rem 0.35rem;
+    color: var(--gray-700);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+
+.ledger-date .ledger-year {
+    color: var(--gray-500);
+    font-size: 0.5625rem;
+    line-height: 1.15;
+}
+
+.ledger-date .ledger-date-value {
+    color: var(--body-font-color);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.ledger-date .ledger-weekday {
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    line-height: 1.2;
+}
+
+.ledger-row.is-repeat .ledger-date {
+    display: none;
+}
+
+.ledger-row.is-repeat .ledger-rail {
+    grid-row: 1 / span 2;
+}
+
+.ledger-row.is-repeat .ledger-body {
+    grid-row: 1 / span 2;
+}
+
+.ledger-rail {
+    position: relative;
+    display: flex;
+    grid-column: 1;
+    grid-row: 2;
+    align-self: stretch;
+    justify-content: center;
+}
+
+.ledger-rail::before {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    inset-block: 0.95rem 0;
+    inset-inline-start: calc(var(--ledger-date-col) / 2 - 0.5px);
+    inline-size: 1px;
+    background: var(--gray-200);
+    pointer-events: none;
+}
+
+.rail-marker {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    inline-size: 0.95rem;
+    block-size: 0.95rem;
+    margin-block-start: 0;
+    color: var(--gray-700);
+}
+
+.rail-marker svg {
+    position: relative;
+    z-index: 1;
+    inline-size: 0.78rem;
+    block-size: 0.78rem;
+    stroke-width: 2;
+    overflow: visible;
+}
+
+.ledger-row[data-kind='post'] .rail-marker {
+    color: var(--color-link);
+}
+.ledger-row[data-kind='neodb'] .rail-marker {
+    color: color-mix(in srgb, #b37a00 68%, var(--gray-500));
+}
+.ledger-row[data-kind='strava'] .rail-marker {
+    color: color-mix(in srgb, #18794e 55%, var(--gray-500));
+}
+
+.ledger-body {
+    grid-column: 2;
+    grid-row: 2;
+    min-inline-size: 0;
+}
+.ledger-content {
+    min-inline-size: 0;
+}

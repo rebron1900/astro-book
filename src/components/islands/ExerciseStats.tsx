@@ -1,4 +1,5 @@
 import { For, Show, createEffect, onCleanup, onMount } from 'solid-js';
+import { escapeHtml } from '../../lib/client/dom';
 import { delegate } from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 import 'tippy.js/themes/light.css';
@@ -16,8 +17,11 @@ import {
     weekBuckets,
     weekdayLabel
 } from '../../lib/exercise';
+import type { MetricIconKind } from '../../lib/metric-icons';
+import { metricIconHtml } from '../../lib/metric-icons';
 import type { SportSlice } from '../../lib/exercise-stats';
 import { averageParts, distanceParts, elevationParts, formatElevation, hoursParts, shiftMonth, spanLabel, sportSlices } from '../../lib/exercise-stats';
+import MetricIcon from '../ui/MetricIcon';
 
 /**
  * 运动页面右侧统计：
@@ -26,7 +30,7 @@ import { averageParts, distanceParts, elevationParts, formatElevation, hoursPart
  * 2. 全部运动总览卡——总次数 / 总里程 / 总时长 / 总爬升 / 出勤 / 平均，运动类型与纪录用两列网格。
  *
  * 组件只负责「给定 scope 时怎么呈现」——选中范围的唯一状态源在 `ExerciseSidebar`。
- * 样式在 `src/components/pages/ExerciseStatsStyles.astro`。
+ * 样式在 `src/styles/pages/exercise/_stats.scss`。
  */
 export interface ExerciseStatsProps {
     records: ExerciseRecord[];
@@ -116,10 +120,6 @@ function RecordIcon(props: { kind: MarkKind }) {
 /* 日历格子 + tooltip 内容                                             */
 /* ------------------------------------------------------------------ */
 
-function escapeHtml(value: string): string {
-    return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] ?? char);
-}
-
 /** 把一天的运动类型占比画成 conic-gradient 圆环 */
 function donutGradient(slices: SportSlice[]): string {
     if (!slices.length) return '';
@@ -134,9 +134,9 @@ function donutGradient(slices: SportSlice[]): string {
 
 /* ---- tooltip 内部使用的 HTML 片段（对应之前被移除的日/月/年卡片结构） ---- */
 
-function tipGrid(items: Array<[string, string]>): string {
+function tipGrid(items: Array<[string, string, MetricIconKind]>): string {
     return `<div class="ex-cal-tip-grid">${items
-        .map(([label, value]) => `<span><em>${escapeHtml(label)}</em><b>${escapeHtml(value)}</b></span>`)
+        .map(([label, value, kind]) => `<span><em>${metricIconHtml(kind)}${escapeHtml(label)}</em><b>${escapeHtml(value)}</b></span>`)
         .join('')}</div>`;
 }
 
@@ -227,10 +227,10 @@ export default function ExerciseStats(props: ExerciseStatsProps) {
             dateLabel(date),
             `${weekdayLabel(date)} · 当天运动`,
             tipGrid([
-                ['次数', `${total.count}`],
-                ['距离', formatRecordDistance(total.distance)],
-                ['时长', formatDuration(total.seconds)],
-                ['爬升', formatElevation(total.elevation)]
+                ['次数', `${total.count}`, 'count'],
+                ['距离', formatRecordDistance(total.distance), 'distance'],
+                ['时长', formatDuration(total.seconds), 'duration'],
+                ['爬升', formatElevation(total.elevation), 'elevation']
             ]) + list
         );
     };
@@ -257,10 +257,10 @@ export default function ExerciseStats(props: ExerciseStatsProps) {
             monthLabel(year, month),
             `出勤 ${total.activeDays} 天`,
             tipGrid([
-                ['距离', formatRecordDistance(total.distance)],
-                ['时长', formatDuration(total.seconds)],
-                ['次数', `${total.count}`],
-                ['出勤天数', `${total.activeDays}`]
+                ['距离', formatRecordDistance(total.distance), 'distance'],
+                ['时长', formatDuration(total.seconds), 'duration'],
+                ['次数', `${total.count}`, 'count'],
+                ['出勤天数', `${total.activeDays}`, 'days']
             ]) +
                 tipSports(sportSlices(total.sports)) +
                 weekList +
@@ -281,10 +281,10 @@ export default function ExerciseStats(props: ExerciseStatsProps) {
             `${year} 年`,
             `出勤 ${total.activeDays} 天 · 覆盖 ${months.length} 个月`,
             tipGrid([
-                ['总距离', formatRecordDistance(total.distance)],
-                ['总时长', formatDuration(total.seconds)],
-                ['次数', `${total.count}`],
-                ['出勤天数', `${total.activeDays}`]
+                ['总距离', formatRecordDistance(total.distance), 'distance'],
+                ['总时长', formatDuration(total.seconds), 'duration'],
+                ['次数', `${total.count}`, 'count'],
+                ['出勤天数', `${total.activeDays}`, 'days']
             ]) +
                 monthList +
                 tipSports(sportSlices(total.sports))
@@ -306,10 +306,27 @@ export default function ExerciseStats(props: ExerciseStatsProps) {
 
     const monthSummary = () => {
         const current = monthAnchor();
-        if (!current) return '';
+        if (!current) return null;
         const key = `${current.year}-${String(current.month).padStart(2, '0')}`;
         const totals = totalsOf(props.records.filter((record) => record.date.slice(0, 7) === key));
-        return totals.count ? `本月 ${totals.count} 次 · ${formatRecordDistance(totals.distance)} · ${formatDuration(totals.seconds)}` : '本月还没有运动记录';
+        if (!totals.count) return '本月还没有运动记录';
+        return (
+            <>
+                <span class="ex-stats-summary-label">本月</span>
+                <span class="ex-stats-summary-item">
+                    <MetricIcon kind="count" />
+                    {totals.count} 次
+                </span>
+                <span class="ex-stats-summary-item">
+                    <MetricIcon kind="distance" />
+                    {formatRecordDistance(totals.distance)}
+                </span>
+                <span class="ex-stats-summary-item">
+                    <MetricIcon kind="duration" />
+                    {formatDuration(totals.seconds)}
+                </span>
+            </>
+        );
     };
 
     /* ---------------- 全部运动 ---------------- */
@@ -330,13 +347,13 @@ export default function ExerciseStats(props: ExerciseStatsProps) {
         const hours = hoursParts(totals.seconds);
         const elevation = elevationParts(totals.elevation);
         const average = averageParts(totals.distance, totals.count);
-        const metrics = [
-            { label: '总次数', value: `${totals.count}`, unit: '次' },
-            { label: '总里程', value: distance.value, unit: distance.unit },
-            { label: '总时长', value: hours.value, unit: hours.unit },
-            { label: '总爬升', value: elevation.value, unit: elevation.unit },
-            { label: '出勤天数', value: `${totals.activeDays}`, unit: '天' },
-            { label: '平均每次', value: average.value, unit: average.unit }
+        const metrics: Array<{ label: string; value: string; unit: string; kind: MetricIconKind }> = [
+            { label: '总次数', value: `${totals.count}`, unit: '次', kind: 'count' },
+            { label: '总里程', value: distance.value, unit: distance.unit, kind: 'distance' },
+            { label: '总时长', value: hours.value, unit: hours.unit, kind: 'duration' },
+            { label: '总爬升', value: elevation.value, unit: elevation.unit, kind: 'elevation' },
+            { label: '出勤天数', value: `${totals.activeDays}`, unit: '天', kind: 'days' },
+            { label: '平均每次', value: average.value, unit: average.unit, kind: 'average' }
         ];
 
         return (
@@ -350,7 +367,10 @@ export default function ExerciseStats(props: ExerciseStatsProps) {
                     <For each={metrics}>
                         {(item) => (
                             <div class="ex-ov-metric">
-                                <dt>{item.label}</dt>
+                                <dt>
+                                    <MetricIcon kind={item.kind} />
+                                    {item.label}
+                                </dt>
                                 <dd>
                                     {item.value}
                                     {item.unit ? <small>{item.unit}</small> : null}

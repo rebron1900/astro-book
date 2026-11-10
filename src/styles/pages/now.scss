@@ -1,0 +1,260 @@
+/* ==========================================================================
+   Now 页面（src/pages/now/[...page].astro）
+   动态列表 + 页头 + 加载动画；只在 /now/ 分页加载。
+   ========================================================================== */
+
+/** memos **/
+
+.page-memos {
+    .atk-content > :nth-last-child(2) {
+        margin-bottom: 0px;
+    }
+    .atk-body {
+        overflow: visible !important;
+        display: flex !important;
+
+        &:hover {
+            .atk-content-footer {
+                opacity: 1;
+            }
+        }
+
+        .atk-content-footer {
+            font-size: 12px;
+            text-align: right;
+            position: absolute;
+            bottom: -21px;
+            right: 0;
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+    }
+    /* memos header */
+    .memo-header {
+        height: 19.25rem;
+        background-position: center;
+        background-size: cover;
+        position: relative;
+        margin-bottom: 4rem;
+        display: flex;
+        justify-content: center;
+
+        .memo-info {
+            position: absolute;
+            flex-direction: column;
+            bottom: -50px;
+            width: 90%;
+            margin: 0 auto;
+            display: flex;
+            align-items: flex-end;
+            .memo-title {
+                margin-right: 1.25rem;
+                margin-bottom: 1.5rem;
+                color: white;
+            }
+            .memo-avartar img {
+                height: 3.75rem;
+                width: 3.75rem;
+            }
+            .memo-desc {
+                font-size: 0.75rem;
+                color: var(--gray-700);
+            }
+        }
+    }
+
+    .og-card {
+        margin-top: 0;
+    }
+    .atk-comment {
+        .atk-avatar img {
+            width: 40px;
+            height: 40px;
+        }
+        .atk-main {
+            margin-left: 50px;
+        }
+    }
+
+    /* ===== Threads 风格列表 ===== */
+    .threads-item {
+        display: flex;
+        gap: 0.75rem;
+        padding: 1rem 0.25rem;
+        border-bottom: 1px solid var(--gray-200);
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background-color: color-mix(in srgb, var(--gray-100) 60%, transparent);
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        .threads-avatar {
+            flex-shrink: 0;
+            img {
+                width: 42px;
+                height: 42px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid var(--gray-200);
+                background: var(--gray-100);
+            }
+        }
+
+        .threads-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .threads-head {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+
+            .threads-name {
+                font-weight: 700;
+                color: var(--body-font-color, inherit);
+                font-size: 0.95rem;
+            }
+            .threads-time {
+                font-size: 0.78rem;
+                color: var(--gray-700);
+                white-space: nowrap;
+            }
+        }
+
+        .threads-body {
+            color: inherit;
+            line-height: 1.6;
+            word-break: break-word;
+
+            .og-card {
+                margin-top: 0.5rem;
+            }
+
+            .image-grid {
+                display: grid;
+                gap: 4px;
+                margin-top: 0.5rem;
+
+                .image-container {
+                    position: relative;
+                    width: 100%;
+                    aspect-ratio: 1;
+                    overflow: hidden;
+                    border-radius: 0.25rem;
+                }
+                .image-container img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    object-position: center;
+                }
+                &.image-count-1 { grid-template-columns: 1fr; .image-container { aspect-ratio: auto; } }
+                &.image-count-2 { grid-template-columns: repeat(2, 1fr); }
+                &.image-count-3 { grid-template-columns: repeat(3, 1fr); }
+                &.image-count-4 { grid-template-columns: repeat(2, 1fr); }
+                &.image-count-5, &.image-count-6, &.image-count-7, &.image-count-8, &.image-count-9 {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+            }
+        }
+    }
+    .atk-content {
+        border-radius: 0.25rem;
+        border-width: 1px;
+        padding: 0.75rem 1rem;
+        max-width: 100%;
+        position: relative;
+        border: solid 1px var(--gray-200);
+        background-color: var(--gray-100);
+
+        p,
+        ol,
+        ul,
+        blockquote {
+            margin: 7px 0px;
+        }
+
+        :last-child {
+            margin-bottom: 0;
+        }
+        :first-child {
+            margin-top: 0;
+        }
+        .atk-height-limit:after {
+            left: 0;
+        }
+
+        .image-grid {
+            display: grid;
+            gap: 5px;
+            width: 100%;
+
+            margin-bottom: 1.5em;
+        }
+
+        .image-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1; /* 默认1:1正方形 */
+            overflow: hidden;
+        }
+
+        /* 单图时使用16:9比例更美观 */
+        .image-grid.image-count-1 .image-container {
+            aspect-ratio: auto;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        /* 布局定义保持不变 */
+        .image-grid.image-count-1 {
+            grid-template-columns: 1fr;
+        }
+        .image-grid.image-count-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .image-grid.image-count-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .image-grid.image-count-4 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .image-grid.image-count-5,
+        .image-grid.image-count-6,
+        .image-grid.image-count-7,
+        .image-grid.image-count-8,
+        .image-grid.image-count-9 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+}
+
+.btn-more {
+    margin: 1.5rem 0;
+}
+
+/* HTML: <div class="loader"></div> */
+.loader {
+    width: 20px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--color-link);
+    box-shadow: 0 0 0 0 var(--color-link);
+    animation: l1 1s infinite;
+}
+@keyframes l1 {
+    100% {
+        box-shadow: 0 0 0 30px #0000;
+    }
+}

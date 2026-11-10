@@ -1,0 +1,279 @@
+/* ==========================================================================
+   运动页：预览地图内部（Mapbox DOM 细节、地图浮层玻璃表面）
+   骨架尺寸 / 角标 /「全部」按钮在 `_base.scss`，这里只补 `ex-map-` 内部细节。
+   ========================================================================== */
+/* ---------- 地图容器 ---------- */
+.ex-map-canvas {
+    position: relative;
+}
+
+.ex-map-canvas.mapboxgl-map {
+    background: var(--gray-100);
+}
+
+.ex-map-canvas .mapboxgl-canvas {
+    outline: none;
+}
+
+.ex-map-canvas .mapboxgl-canvas:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: -2px;
+}
+
+/* ---------- 底部浮层：指标卡 + 重播按钮始终同一行 ---------- */
+.ex-map-bottom {
+    position: absolute;
+    z-index: 2;
+    inset-inline: 0.5rem;
+    inset-block-end: 0.5rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.45rem;
+    /* 空白区域不挡地图拖拽，只有下面的卡片和按钮接事件 */
+    pointer-events: none;
+}
+
+.ex-map-bottom > * {
+    pointer-events: auto;
+}
+
+/* 「全部」按钮的最小点击区（表面样式由 `_base.scss` 的 --ex-map-* 统一提供） */
+.ex-map-card .ex-map-reset {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: 1.4rem;
+    padding: 0.1rem 0.55rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+/* 单条轨迹的重播按钮：放在信息卡右侧同一行，不再绝对定位到卡片右下角 */
+.ex-map-card .ex-map-play {
+    flex: none;
+    display: grid;
+    place-items: center;
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    margin-inline-start: auto;
+    padding: 0;
+    border: 1px solid var(--ex-map-line);
+    border-radius: 999px;
+    background: var(--ex-map-glass);
+    box-shadow: var(--ex-map-shadow);
+    color: var(--body-font-color);
+    cursor: pointer;
+    backdrop-filter: var(--ex-map-blur);
+    -webkit-backdrop-filter: var(--ex-map-blur);
+    transition:
+        color 140ms ease,
+        border-color 140ms ease,
+        background 140ms ease,
+        transform 140ms ease;
+}
+
+.ex-map-card .ex-map-play:hover {
+    border-color: color-mix(in srgb, var(--color-link) 60%, transparent);
+    color: var(--color-link);
+}
+
+.ex-map-card .ex-map-play:active {
+    transform: scale(0.92);
+}
+
+.ex-map-card .ex-map-play:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+.ex-map-card .ex-map-play.is-playing {
+    border-color: color-mix(in srgb, var(--color-link) 55%, transparent);
+    background: color-mix(in srgb, var(--color-link) 12%, var(--body-background));
+    color: var(--color-link);
+}
+
+.ex-map-play-icon {
+    inline-size: 0.8rem;
+    block-size: 0.8rem;
+}
+
+/* 第一视角重播时镜头自己在动，期间不让画布接管鼠标 / 触摸手势 */
+.ex-map-card.is-replaying .mapboxgl-canvas-container {
+    pointer-events: none;
+}
+
+.ex-map-card.is-replaying {
+    cursor: default;
+}
+
+/* ---------- 控件：11.5rem 高的小卡片里尽量克制，但不隐藏版权信息 ---------- */
+.ex-map-canvas .mapboxgl-ctrl {
+    margin: 0.25rem;
+}
+
+.ex-map-canvas .mapboxgl-ctrl-group {
+    border-radius: 0.3rem;
+}
+
+.ex-map-canvas .mapboxgl-ctrl-attrib,
+.ex-map-canvas .mapboxgl-ctrl-attrib a {
+    font-size: 0.5625rem;
+    line-height: 1.4;
+}
+
+.ex-map-canvas .mapboxgl-ctrl-logo {
+    margin: 0 0 0.3rem 0.3rem;
+}
+
+/* 底部提示条出现时把 logo / attribution 抬到提示条上方，避免被遮住 */
+.ex-map-canvas.has-state .mapboxgl-ctrl-bottom-left,
+.ex-map-canvas.has-state .mapboxgl-ctrl-bottom-right {
+    margin-block-end: 1.5rem;
+}
+
+
+/* ---------- 单条路线的运动指标卡（只放四项指标；运动类型和时间在左上角角标里） ---------- */
+.ex-map-info {
+    min-inline-size: 0;
+    max-inline-size: 15rem;
+    padding: 0.42rem 0.55rem 0.45rem;
+    border: 1px solid var(--ex-map-line);
+    border-radius: 0.5rem;
+    background: var(--ex-map-glass);
+    box-shadow: var(--ex-map-shadow);
+    backdrop-filter: var(--ex-map-blur);
+    -webkit-backdrop-filter: var(--ex-map-blur);
+    /* 数据卡只负责展示，不挡住地图拖拽（重播按钮仍可点击） */
+    pointer-events: none;
+}
+
+.ex-map-info-stats {
+    display: flex;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ex-map-info-stats li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.02rem;
+}
+
+.ex-map-info-stats b {
+    color: var(--body-font-color);
+    font-size: 0.625rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ex-map-info-stats span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.16rem;
+    color: var(--gray-500);
+    font-size: 0.5rem;
+}
+
+/* 标签文字单独包一层：窄屏只收起文字、保留前面的图标 */
+.ex-map-info-label em {
+    font-style: normal;
+}
+
+@media screen and (max-width: 47.84rem) {
+    /* 手机上把指标卡摊成贴底的长条：四项数值 + 右侧重播按钮同一行；
+       运动类型和时间由顶部角标负责，不在这里重复。 */
+    .ex-map-bottom {
+        inset-inline: 0.4rem;
+        inset-block-end: 0.4rem;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .ex-map-info {
+        flex: 1 1 auto;
+        max-inline-size: none;
+        padding: 0.26rem 0.5rem 0.3rem;
+        white-space: nowrap;
+    }
+
+    .ex-map-info-stats {
+        align-items: baseline;
+        gap: 0.4rem;
+    }
+
+    .ex-map-info-stats li {
+        flex-direction: row;
+        align-items: baseline;
+        gap: 0.14rem;
+    }
+
+    /* 较宽的移动端保留数值后的小标签；更窄时标签让位给名称（见下方） */
+    .ex-map-info-stats b {
+        font-size: 0.5938rem;
+    }
+
+    .ex-map-info-stats span {
+        font-size: 0.5rem;
+    }
+}
+
+/* 手机窄屏：标签让位给名称，四项数值（带单位）全部保留，用图标标识每项 */
+@media screen and (max-width: 30rem) {
+    .ex-map-info {
+        gap: 0.35rem;
+        padding-inline: 0.4rem;
+    }
+
+    .ex-map-info-stats {
+        gap: 0.3rem;
+    }
+
+    /* 标签文字视觉上收起（保留给读屏），把宽度让给名称；
+       图标不跟着收起，改成排在数值前面，窄屏也能看懂每项是什么。
+       有了图标就不再需要「·」分隔，省下的宽度全部让给名称。 */
+    .ex-map-info-label {
+        order: -1;
+    }
+
+    .ex-map-info-label em {
+        position: absolute;
+        overflow: hidden;
+        inline-size: 1px;
+        block-size: 1px;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .ex-map-info-stats .metric-icon {
+        inline-size: 0.6rem;
+        block-size: 0.6rem;
+        opacity: 0.7;
+    }
+}
+
+/* 360px 级别的窄屏：间距和数值再压一档，四项指标 + 重播按钮仍能挤在一行 */
+@media screen and (max-width: 23.5rem) {
+    .ex-map-info-stats {
+        gap: 0.22rem;
+    }
+
+    .ex-map-info-stats b {
+        font-size: 0.5625rem;
+    }
+}
+
+/* 右下角的版权信息 / 左下角 logo 不显示 */
+.ex-map-canvas .mapboxgl-ctrl-logo,
+.ex-map-canvas .mapboxgl-ctrl-attrib {
+    display: none !important;
+}
+
+/* 触屏上单指滑动滚页面时不再弹全屏黑色提示；双指手势本身就能拖动地图 */
+.ex-map-canvas .mapboxgl-touch-pan-blocker {
+    display: none !important;
+}
+
+/* 拖拽平移时的抓手光标由 Mapbox 自己写在 canvas 的内联样式上，这里不用干预 */

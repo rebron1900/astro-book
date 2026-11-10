@@ -1,7 +1,9 @@
 ---
 import { Bike, Dumbbell, Footprints, Mountain, Waves } from '@lucide/astro';
+import type { StravaStat } from '../../lib/strava-preview';
+import MetricIcon from '../ui/MetricIcon.astro';
 
-type SportKey = 'run' | 'ride' | 'walk' | 'hike' | 'climb' | 'swim' | 'other';
+type SportKey = 'run' | 'ride' | 'walk' | 'hike' | 'climb' | 'swim' | 'stair' | 'other';
 
 interface Props {
     activity: { name: string };
@@ -9,7 +11,7 @@ interface Props {
     meta: {
         key: SportKey;
         label: string;
-        stats: Array<{ label: string; value: string; primary?: boolean }>;
+        stats: StravaStat[];
     };
     /** 可选：运动记录 id（渲染为 data-exercise-id，供运动页面做联动） */
     dataId?: string;
@@ -17,9 +19,11 @@ interface Props {
     dataDate?: string;
     /** 可选：运动类型（渲染为 data-sport，供筛选器使用） */
     dataSport?: string;
+    /** 可选：是否在每项指标标签前显示小图标（运动页开启，首页保持原有排版） */
+    metricIcons?: boolean;
 }
 
-const { activity, route, meta, dataId, dataDate, dataSport } = Astro.props as Props;
+const { activity, route, meta, dataId, dataDate, dataSport, metricIcons = false } = Astro.props as Props;
 
 const SPORT_ICONS: Record<SportKey, any> = {
     run: Footprints,
@@ -28,6 +32,7 @@ const SPORT_ICONS: Record<SportKey, any> = {
     hike: Mountain,
     climb: Mountain,
     swim: Waves,
+    stair: Footprints,
     other: Dumbbell
 };
 
@@ -53,7 +58,7 @@ const SportIcon = SPORT_ICONS[meta.key] ?? Footprints;
         <dl class="stats strava-stats">
             {meta.stats.map((stat) => (
                 <div class:list={{ 'is-primary': stat.primary }}>
-                    <dt>{stat.label}</dt>
+                    <dt>{metricIcons && <MetricIcon kind={stat.kind} />}{stat.label}</dt>
                     <dd>{stat.value}</dd>
                 </div>
             ))}

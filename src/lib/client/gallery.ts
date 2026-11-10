@@ -16,7 +16,7 @@ export default function initGallery() {
         if (e.complete) {
             fix();
         } else {
-            e.addEventListener('load', fix);
+            e.addEventListener('load', fix, { once: true });
         }
     });
 }

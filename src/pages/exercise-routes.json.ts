@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
-import stravaJson from '../data/strava.json';
-import type { StravaActivity } from '../lib/strava-types';
+import activitiesJson from '../data/activities.json';
+import type { Activity } from '../lib/activity-types';
 import { buildRecords, buildRouteIndex } from '../lib/exercise';
 
 /**
@@ -8,7 +8,7 @@ import { buildRecords, buildRouteIndex } from '../lib/exercise';
  * 页面 HTML 里不内嵌轨迹，地图初始化时再按需拉取一次。
  */
 export const GET: APIRoute = () => {
-    const records = buildRecords(stravaJson as unknown as StravaActivity[]);
+    const records = buildRecords(activitiesJson as unknown as Activity[]);
     const body = JSON.stringify(buildRouteIndex(records));
     return new Response(body, {
         headers: {

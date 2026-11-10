@@ -11,7 +11,7 @@ import Header from '../components/layout/Header.astro';
 import Top from '../components/ui/Top.astro';
 import Menu from '../components/layout/Menu.astro';
 import Footer from '../components/layout/Footer.astro';
-import TagsStyles from '../components/pages/TagsStyles.astro';
+import '../styles/pages/tags.scss';
 import { normalizeSlug } from '../lib/utils/help';
 
 const page = pages.find((post) => post.slug == 'tags');
@@ -52,7 +52,6 @@ const postTotal = postIds.size;
     <Menu slot="menu" />
 
     <div slot="content" class="markdown book-article tags-page">
-        <TagsStyles />
         <header class="page-head">
             <h1 class="book-title page-title">{page?.title || '标签集'}</h1>
             <p class="page-intro">散落在各处的落点。技术、生活、路上看见的东西，都被收进这些词里，顺着一个标签点进去，能读到一段连起来的时间。</p>

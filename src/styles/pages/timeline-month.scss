@@ -1,0 +1,136 @@
+/* ==========================================================================
+   时间线「按月」视图（TimelineMonthList.astro），在时间线页面随组件加载。
+   ========================================================================== */
+.timeline-month-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.timeline-month-row {
+    position: relative;
+    --timeline-month-gap: 2.2rem;
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 0.55rem;
+    row-gap: 0;
+    align-items: start;
+}
+
+.timeline-month-row + .timeline-month-row {
+    margin-block-start: var(--timeline-month-gap);
+}
+
+.timeline-month-row + .timeline-month-row::before {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    inset-block-start: calc(-1 * var(--timeline-month-gap));
+    inset-inline-start: calc(1.5rem - 0.5px);
+    block-size: var(--timeline-month-gap);
+    inline-size: 1px;
+    background: var(--gray-200);
+    pointer-events: none;
+}
+
+.timeline-month-date {
+    position: relative;
+    display: flex;
+    grid-column: 1;
+    grid-row: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-self: center;
+    gap: 0.08rem;
+    z-index: 2;
+    padding: 0 0.1rem 0.35rem;
+    color: var(--gray-700);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+
+.timeline-month-year {
+    color: var(--gray-500);
+    font-size: 0.5625rem;
+    line-height: 1.15;
+}
+
+.timeline-month-value {
+    color: var(--body-font-color);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.timeline-month-rail {
+    position: relative;
+    display: flex;
+    grid-column: 1;
+    grid-row: 2;
+    align-self: stretch;
+    justify-content: center;
+}
+
+.timeline-month-rail::before {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    inset-block: 0.95rem 0;
+    inset-inline-start: calc(1.5rem - 0.5px);
+    inline-size: 1px;
+    background: var(--gray-200);
+    pointer-events: none;
+}
+
+.timeline-month-rail .rail-marker {
+    margin-block-start: 0;
+}
+
+.timeline-month-content {
+    grid-column: 2;
+    grid-row: 2;
+    min-inline-size: 0;
+}
+
+.timeline-load-status {
+    margin: 1.4rem 0 0;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.timeline-month-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+    gap: 0.8rem;
+    align-items: start;
+}
+
+@media (max-width: 64rem) {
+    .timeline-month-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 34rem) {
+    .timeline-month-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .timeline-month-row.reveal-ready .timeline-month-content {
+        opacity: 0.45;
+        transform: translateY(14px);
+    }
+
+    .timeline-month-row.reveal-ready.is-visible .timeline-month-content {
+        opacity: 1;
+        transform: translateY(0);
+        transition:
+            opacity 520ms ease-out,
+            transform 620ms cubic-bezier(0.2, 0.6, 0.2, 1);
+    }
+}

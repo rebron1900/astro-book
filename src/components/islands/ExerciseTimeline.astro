@@ -1,7 +1,7 @@
 ---
 import { Footprints } from '@lucide/astro';
 import type { ExerciseScope, MonthGroup } from '../../lib/exercise';
-import { scopeKey, toStravaActivity } from '../../lib/exercise';
+import { scopeKey, toActivity } from '../../lib/exercise';
 import LedgerStrava from './LedgerStrava.astro';
 
 interface Props {
@@ -43,11 +43,12 @@ const scopeMonth = scope.kind === 'month' ? `${scope.year}-${String(scope.month)
                         <div class="strava-cards ex-cards">
                             {group.records.map((record) => (
                                 <LedgerStrava
-                                    activity={toStravaActivity(record)}
+                                    activity={toActivity(record)}
                                     dataId={record.id}
                                     dataSport={record.sport}
                                     dataDate={record.date}
                                     sketchMaxPoints={48}
+                                    metricIcons
                                 />
                             ))}
                         </div>
@@ -59,8 +60,8 @@ const scopeMonth = scope.kind === 'month' ? `${scope.year}-${String(scope.month)
 </div>
 
 <script>
+    import { onPageLoad } from '../../lib/client/mount';
     import { initExerciseTimeline } from '../../lib/client/exercise-timeline';
 
-    document.addEventListener('astro:page-load', initExerciseTimeline);
-    if (document.readyState !== 'loading') initExerciseTimeline();
+    onPageLoad(initExerciseTimeline);
 </script>

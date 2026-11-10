@@ -7,7 +7,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Head from '../components/islands/Head.astro';
 import Header from '../components/layout/Header.astro';
 import Menu from '../components/layout/Menu.astro';
-import LinksStyles from '../components/pages/LinksStyles.astro';
+import '../styles/pages/links.scss';
 import ScrollReveal from '../components/islands/ScrollReveal.astro';
 import Comments from '../components/islands/Comments.astro';
 import { Unplug } from '@lucide/astro';
@@ -60,7 +60,6 @@ const lostReasonLabels = { error: '抓取失败', empty: '暂无文章', disable
     <Menu slot="menu" />
 
     <article slot="content" class="markdown book-article pv-page">
-        <LinksStyles />
         <header class="pv-header">
             <h1 class="pv-title page-title">去别人的院子里坐一会儿。</h1>
             <p class="pv-intro">这里是我常去逛逛的地方。有人写技术，有人写生活，有人只是偶尔记下一阵风。顺着这些名字点过去，看看他们最近在做什么。</p>
@@ -146,7 +145,7 @@ const lostReasonLabels = { error: '抓取失败', empty: '暂无文章', disable
 </BaseLayout>
 
 <script>
-    import tippy from 'tippy.js';
+    import { createTippy } from '../lib/client/tippy';
 
     const setupClippedTooltips = () => {
         document.querySelectorAll<HTMLElement>('.pv-clip-target').forEach((element) => {
@@ -159,7 +158,7 @@ const lostReasonLabels = { error: '抓取失败', empty: '暂无文章', disable
             const content = element.textContent?.trim();
             if (!content) return;
             element.dataset.clipReady = 'true';
-            tippy(element, {
+            createTippy(element, {
                 content,
                 allowHTML: false,
                 interactive: false,

@@ -46,7 +46,7 @@ const filterNav = [
 </BaseLayout>
 
 <script>
-    import tippy from 'tippy.js';
+    import { createTippy } from '../../lib/client/tippy';
 
     const setupCommentTooltips = () => {
         document.querySelectorAll<HTMLElement>('.neodb-card .excerpt').forEach((element) => {
@@ -55,7 +55,7 @@ const filterNav = [
             const content = element.textContent?.trim();
             if (!content) return;
             element.dataset.commentTip = 'true';
-            tippy(element, {
+            createTippy(element, {
                 content,
                 allowHTML: false,
                 interactive: false,

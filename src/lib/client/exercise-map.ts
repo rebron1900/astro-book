@@ -8,6 +8,13 @@
  * - 跟随站点深浅色主题切换底图样式；
  * - 出错时通过 onStatus 回调把提示交给组件，不影响页面其它部分。
  *
+ * 具体实现拆在同目录：
+ * - `exercise-map/constants.ts` 常量与图层 id
+ * - `exercise-map/types.ts`     公开类型与内部数据结构
+ * - `exercise-map/route-data.ts` 轨迹解码 / 包围盒 / 加载
+ * - `exercise-map/geometry.ts`  几何与动画数学
+ * - `exercise-map/layers.ts`    路线图层样式
+ *
  * SSR 安全：模块顶层只声明常量与函数，不访问 window / document；
  * 只有 createExerciseMap() 被调用（Solid 的 onMount）之后才会操作 DOM 与地图。
  */
@@ -15,416 +22,68 @@ import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js';
 import MapboxLanguage from '@mapbox/mapbox-gl-language';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-import type { ExerciseRecord, ExerciseScope } from '../exercise';
-import { SPORT_META, decodeRoute, recordsInScope, scopeKey } from '../exercise';
+import type { ExerciseScope } from '../exercise';
+import { recordsInScope, scopeKey } from '../exercise';
 
-/* ------------------------------------------------------------------ */
-/* 常量                                                                */
-/* ------------------------------------------------------------------ */
+import {
+    DEM_SOURCE,
+    HILLSHADE_LAYER,
+    INITIAL_CENTER,
+    INITIAL_ZOOM,
+    LAYER_BASE,
+    LAYER_FOCUS,
+    LAYER_FOCUS_GLOW,
+    LAYER_HALO,
+    LAYER_HOVER,
+    MAP_STYLES,
+    MIN_BOUNDS_SPAN,
+    NO_MATCH,
+    PRIVACY_CITIES,
+    REPLAY_BEARING_TAU_MS,
+    REPLAY_CENTER_AHEAD_METERS,
+    REPLAY_GLOW_LAYER,
+    REPLAY_HEAD_LAYER,
+    REPLAY_HEADING_AHEAD_METERS,
+    REPLAY_HEADING_BEHIND_METERS,
+    REPLAY_HEAD_SOURCE,
+    REPLAY_HIDDEN_LAYERS,
+    REPLAY_INTRO_MS,
+    REPLAY_LAYER,
+    REPLAY_MAX_TURN_PER_FRAME,
+    REPLAY_OUTRO_MS,
+    REPLAY_PITCH,
+    REPLAY_SOURCE,
+    REPLAY_TRANSPARENT,
+    REPLAY_ZOOM,
+    ROTATE_PAUSE_MS,
+    ROTATE_RESUME_AFTER_REPLAY_MS,
+    ROUTE_LAYERS,
+    SOURCE_ID
+} from './exercise-map/constants';
+import type { MapTheme } from './exercise-map/constants';
+import type { Bounds, ExerciseMapController, ExerciseMapOptions, ExerciseMapStatus, PendingFit, RouteData } from './exercise-map/types';
+import { loadRoutes } from './exercise-map/route-data';
+import {
+    bearingBetween,
+    distanceMeters,
+    easeInOutCubic,
+    lerpAngle,
+    motionDuration,
+    readTheme,
+    replayGradient,
+    smoothCoordinates
+} from './exercise-map/geometry';
+import {
+    baseLayerSpecification,
+    focusGlowLayerSpecification,
+    focusLayerSpecification,
+    hoverHaloLayerSpecification,
+    hoverLayerSpecification
+} from './exercise-map/layers';
 
-const SOURCE_ID = 'ex-routes';
-const LAYER_BASE = 'ex-routes-base';
-const LAYER_FOCUS_GLOW = 'ex-routes-focus-glow';
-const LAYER_FOCUS = 'ex-routes-focus';
-const LAYER_HALO = 'ex-routes-hover-halo';
-const LAYER_HOVER = 'ex-routes-hover';
+export type { ExerciseMapController, ExerciseMapOptions, ExerciseMapStatus } from './exercise-map/types';
+export { PRIVACY_CITIES } from './exercise-map/constants';
 
-/** 单条轨迹重播：单独的 source / layer，画完后整体移除，不影响正常路线图层 */
-const REPLAY_SOURCE = 'ex-replay';
-const REPLAY_HEAD_SOURCE = 'ex-replay-head';
-const REPLAY_GLOW_LAYER = 'ex-replay-glow';
-const REPLAY_LAYER = 'ex-replay';
-const REPLAY_HEAD_LAYER = 'ex-replay-head';
-
-const REPLAY_TRANSPARENT = 'rgba(0, 0, 0, 0)';
-/** 重播时隐藏的正常路线图层（画完恢复） */
-const REPLAY_HIDDEN_LAYERS = [LAYER_BASE, LAYER_FOCUS_GLOW, LAYER_FOCUS, LAYER_HALO, LAYER_HOVER];
-
-/** 用户操作地图后自动旋转暂停的时长；重播结束后稍晚一点恢复 */
-const ROTATE_PAUSE_MS = 4200;
-const ROTATE_RESUME_AFTER_REPLAY_MS = 1200;
-
-/** 第一视角重播：镜头压低、朝行进方向看，并稍微看向前方 */
-const REPLAY_PITCH = 66;
-const REPLAY_ZOOM = 13.6;
-/** 镜头中心比绘制点再往前一点，画出来的轨迹落在画面下半部 */
-const REPLAY_CENTER_AHEAD_METERS = 120;
-/** 计算镜头朝向时用更长的前后窗口，避免 GPS 小抖动让镜头左右摆 */
-const REPLAY_HEADING_BEHIND_METERS = 80;
-const REPLAY_HEADING_AHEAD_METERS = 160;
-/** 朝向低通的等效时间常数，以及单帧最大转角（防止过弯时猛甩） */
-const REPLAY_BEARING_TAU_MS = 700;
-const REPLAY_MAX_TURN_PER_FRAME = 0.5;
-const REPLAY_INTRO_MS = 1100;
-const REPLAY_OUTRO_MS = 1000;
-
-/** 可以点击 / 悬停出 pointer 的路线图层 */
-const ROUTE_LAYERS = [LAYER_BASE, LAYER_FOCUS, LAYER_HOVER];
-
-/** 用不到任何路线的 filter，用来清空某一层（比 setFilter(null) 更符合「保持过滤」的语义） */
-const NO_MATCH: mapboxgl.FilterSpecification = ['==', ['get', 'id'], '__ex-map-no-route__'];
-
-/**
- * 需要隐私过滤的城市：命中后地图会隐藏路名、道路、门牌、POI 与建筑等细节。
- * bounds = [minLng, minLat, maxLng, maxLat]，用轨迹范围判断，避免个别记录没有城市字段。
- */
-export const PRIVACY_CITIES: Array<{ name: string; bounds: [number, number, number, number] }> = [{ name: '自贡市', bounds: [104.6, 29.2, 105.0, 29.5] }];
-
-/** 3D 地形（单条轨迹视角） */
-const DEM_SOURCE = 'ex-terrain-dem';
-const HILLSHADE_LAYER = 'ex-terrain-hillshade';
-
-const MAP_STYLES = {
-    light: 'mapbox://styles/mapbox/light-v11',
-    dark: 'mapbox://styles/mapbox/dark-v11'
-} as const;
-
-type MapTheme = keyof typeof MAP_STYLES;
-
-const INITIAL_CENTER: [number, number] = [108.14, 33.87];
-const INITIAL_ZOOM = 3.2;
-
-/** 单条轨迹的最小跨度（约 60 米），避免极短轨迹在 fitBounds 时算出极端缩放 */
-const MIN_BOUNDS_SPAN = 0.0006;
-
-/** 地图容器不可见（display:none / 宽度为 0）时，把视野操作挂起，等可见后再执行 */
-interface PendingFit {
-    ids: string[];
-    duration: number;
-    maxZoom: number;
-}
-
-/* ------------------------------------------------------------------ */
-/* 轨迹数据                                                            */
-/* ------------------------------------------------------------------ */
-
-type RouteFeatureProperties = {
-    id: string;
-    sport: string;
-    color: string;
-    date: string;
-    month: string;
-    year: number;
-};
-
-type Bounds = [[number, number], [number, number]];
-
-interface RouteData {
-    collection: GeoJSON.FeatureCollection<GeoJSON.LineString, RouteFeatureProperties>;
-    /** 有轨迹的记录 id */
-    ids: Set<string>;
-    /** 每条轨迹的 bbox（含最小跨度），切换 scope 时只用祖先 135 个包围盒 */
-    bounds: Map<string, Bounds>;
-}
-
-/** url -> 轨迹数据（成功和失败都缓存：只请求一次，失败也不反复重试） */
-const routeCache = new Map<string, Promise<RouteData>>();
-
-function boundsOfCoordinates(coordinates: Array<[number, number]>): Bounds {
-    let minLng = Number.POSITIVE_INFINITY;
-    let minLat = Number.POSITIVE_INFINITY;
-    let maxLng = Number.NEGATIVE_INFINITY;
-    let maxLat = Number.NEGATIVE_INFINITY;
-
-    for (const [lng, lat] of coordinates) {
-        if (!Number.isFinite(lng) || !Number.isFinite(lat)) continue;
-        if (lng < minLng) minLng = lng;
-        if (lng > maxLng) maxLng = lng;
-        if (lat < minLat) minLat = lat;
-        if (lat > maxLat) maxLat = lat;
-    }
-
-    if (!Number.isFinite(minLng) || !Number.isFinite(minLat))
-        return [
-            [0, 0],
-            [0, 0]
-        ];
-
-    const centerLng = (minLng + maxLng) / 2;
-    const centerLat = (minLat + maxLat) / 2;
-    const halfLng = Math.max((maxLng - minLng) / 2, MIN_BOUNDS_SPAN / 2);
-    const halfLat = Math.max((maxLat - minLat) / 2, MIN_BOUNDS_SPAN / 2);
-
-    return [
-        [centerLng - halfLng, centerLat - halfLat],
-        [centerLng + halfLng, centerLat + halfLat]
-    ];
-}
-
-function buildRouteData(raw: Record<string, string>, records: ExerciseRecord[]): RouteData {
-    const byId = new Map(records.map((record) => [record.id, record]));
-    const features: Array<GeoJSON.Feature<GeoJSON.LineString, RouteFeatureProperties>> = [];
-    const bounds = new Map<string, Bounds>();
-
-    for (const [id, encoded] of Object.entries(raw ?? {})) {
-        if (typeof encoded !== 'string' || encoded.length < 2) continue;
-        const record = byId.get(id);
-        // 只画页面上有对应记录的轨迹，保证点击路线能选中时间线里的那一条
-        if (!record) continue;
-
-        let coordinates: Array<[number, number]>;
-        try {
-            coordinates = decodeRoute(encoded);
-        } catch {
-            continue;
-        }
-        if (coordinates.length < 2) continue;
-
-        features.push({
-            type: 'Feature',
-            properties: {
-                id: record.id,
-                sport: record.sport,
-                color: SPORT_META[record.sport].color,
-                date: record.date,
-                month: record.month,
-                year: record.year
-            },
-            geometry: { type: 'LineString', coordinates }
-        });
-        bounds.set(record.id, boundsOfCoordinates(coordinates));
-    }
-
-    return {
-        collection: { type: 'FeatureCollection', features },
-        ids: new Set(bounds.keys()),
-        bounds
-    };
-}
-
-function loadRoutes(url: string, records: ExerciseRecord[]): Promise<RouteData> {
-    const cached = routeCache.get(url);
-    if (cached) return cached;
-
-    const request = fetch(url)
-        .then((response) => {
-            if (!response.ok) throw new Error(`轨迹数据请求失败：${response.status}`);
-            return response.json() as Promise<Record<string, string>>;
-        })
-        .then((raw) => buildRouteData(raw ?? {}, records));
-
-    routeCache.set(url, request);
-    return request;
-}
-
-/* ------------------------------------------------------------------ */
-/* 主题                                                                */
-/* ------------------------------------------------------------------ */
-
-/** 站点主题类型存在 localStorage.themetype（'light' | 'dark'），兜底看 html 的 class */
-function readTheme(): MapTheme {
-    try {
-        const stored = window.localStorage.getItem('themetype');
-        if (stored === 'light' || stored === 'dark') return stored;
-    } catch {
-        // 隐私模式等 localStorage 不可用的场景，直接看 class
-    }
-    return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-}
-
-/** 视野动画时长；用户开了「减少动态效果」时直接跳过去 */
-function motionDuration(duration: number): number {
-    if (!duration) return 0;
-    try {
-        return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : duration;
-    } catch {
-        return duration;
-    }
-}
-
-/** 从 a 到 b 的行进方向（度，正北为 0，顺时针） */
-function bearingBetween(a: [number, number], b: [number, number]): number {
-    const rad = Math.PI / 180;
-    const dLng = (b[0] - a[0]) * Math.cos(((a[1] + b[1]) / 2) * rad);
-    const dLat = b[1] - a[1];
-    return (Math.atan2(dLng, dLat) * (180 / Math.PI) + 360) % 360;
-}
-
-/** 角度插值：走最短的一边，跨过 0° / 360° 时不会突然转一圈 */
-function lerpAngle(from: number, to: number, amount: number): number {
-    const delta = ((to - from + 540) % 360) - 180;
-    return (from + delta * amount + 360) % 360;
-}
-
-function easeInOutCubic(value: number): number {
-    return value < 0.5 ? 4 * value * value * value : 1 - Math.pow(-2 * value + 2, 3) / 2;
-}
-
-/** 给镜头用的轻度平滑轨迹：只压掉 GPS 的横向小抖动，不改绘制用的原始线 */
-function smoothCoordinates(coordinates: Array<[number, number]>, radius: number): Array<[number, number]> {
-    if (coordinates.length < 3 || radius < 1) return coordinates.map(([lng, lat]) => [lng, lat]);
-    return coordinates.map((_, index) => {
-        let lng = 0;
-        let lat = 0;
-        let weight = 0;
-        for (let offset = -radius; offset <= radius; offset += 1) {
-            const point = coordinates[Math.min(coordinates.length - 1, Math.max(0, index + offset))];
-            const pointWeight = radius + 1 - Math.abs(offset);
-            lng += point[0] * pointWeight;
-            lat += point[1] * pointWeight;
-            weight += pointWeight;
-        }
-        return [lng / weight, lat / weight];
-    });
-}
-
-/** 两点间的大圆距离（米），用于按轨迹实际长度计算重播速度 */
-function distanceMeters(a: [number, number], b: [number, number]): number {
-    const rad = Math.PI / 180;
-    const dLat = (b[1] - a[1]) * rad;
-    const dLng = (b[0] - a[0]) * rad;
-    const lat = ((a[1] + b[1]) / 2) * rad;
-    const x = dLng * Math.cos(lat);
-    return Math.hypot(x, dLat) * 6371008.8;
-}
-
-/**
- * 轨迹重播的 `line-gradient`：progress 之前的部分用运动颜色，之后透明，
- * 视觉上就是一条线从起点被慢慢「画」出来。
- */
-function replayGradient(color: string, progress: number): unknown {
-    const stop = Math.min(0.9999, Math.max(0.0004, progress));
-    return ['step', ['line-progress'], color, stop, REPLAY_TRANSPARENT];
-}
-
-/* ------------------------------------------------------------------ */
-/* 对外接口                                                            */
-/* ------------------------------------------------------------------ */
-
-export interface ExerciseMapStatus {
-    /** 卡片底部提示条文案；null 表示隐藏 */
-    message: string | null;
-    /** 地图 / 轨迹数据不可用（卡片进入淡化态） */
-    unavailable: boolean;
-}
-
-export interface ExerciseMapOptions {
-    /** 地图挂载的容器（必须是已经渲染到 DOM 里的元素；吸顶时高度不变，只被外层裁切） */
-    container: HTMLElement;
-    /** 外层可视窗口：吸顶时比容器矮，会以中线为轴裁切；fitBounds 需要把裁掉的部分补进 padding */
-    viewport?: HTMLElement;
-    /** Mapbox public token */
-    token: string;
-    /** 轨迹数据接口，返回 { [记录 id]: encodedPolyline } */
-    routesUrl: string;
-    /** 页面内的精简运动记录 */
-    records: ExerciseRecord[];
-    /** 点击地图上的路线 */
-    onSelectRoute: (id: string) => void;
-    /** 地图状态变化（提示文案 / 是否可用） */
-    onStatus: (status: ExerciseMapStatus) => void;
-    /** 当前范围是否可以重播（单条记录且有轨迹） */
-    onReplayAvailable?: (available: boolean) => void;
-    /** 重播开始 / 结束 */
-    onReplayChange?: (replaying: boolean) => void;
-    /** 重播是否在自动播放（暂停 / 拖动进度后会变成 false） */
-    onReplayPlayback?: (playing: boolean) => void;
-    /** 当前绘制进度 0~1 */
-    onReplayProgress?: (progress: number) => void;
-}
-
-export interface ExerciseMapController {
-    /** 创建地图并加载轨迹；重复调用无副作用 */
-    start(): Promise<void>;
-    /** 更新当前选中范围 */
-    setScope(scope: ExerciseScope): void;
-    /** 更新悬停的记录（null 取消高亮） */
-    setHover(id: string | null): void;
-    /** 地图是否处于吸顶的紧凑状态（2D 范围需要在高度过渡结束后重新取景） */
-    setCompact(compact: boolean): void;
-    /** 重播当前单条记录的轨迹；正在重播时再次调用会停止并恢复 */
-    replay(): void;
-    /** 暂停自动绘制，保留当前进度和镜头 */
-    pauseReplay(): void;
-    /** 从当前进度继续绘制 */
-    resumeReplay(): void;
-    /** 跳到任意绘制进度（0~1），并同步第一视角镜头 */
-    seekReplay(progress: number): void;
-    /** 停止重播并恢复地图原有图层与自动旋转 */
-    stopReplay(restoreCamera?: boolean): void;
-    /** 销毁地图，之后所有方法都变成空操作 */
-    destroy(): void;
-}
-
-/* ------------------------------------------------------------------ */
-/* 图层样式                                                            */
-/* ------------------------------------------------------------------ */
-
-function baseLayerSpecification(): mapboxgl.LineLayerSpecification {
-    return {
-        id: LAYER_BASE,
-        type: 'line',
-        source: SOURCE_ID,
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-            'line-color': ['get', 'color'],
-            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 1.7, 8, 2.1, 13, 2.6],
-            'line-opacity': 0.3
-        }
-    };
-}
-
-function focusGlowLayerSpecification(): mapboxgl.LineLayerSpecification {
-    return {
-        id: LAYER_FOCUS_GLOW,
-        type: 'line',
-        source: SOURCE_ID,
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-            'line-color': ['get', 'color'],
-            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 6.5, 8, 7, 15, 8],
-            'line-opacity': 0.2,
-            'line-blur': 1.6
-        }
-    };
-}
-
-function focusLayerSpecification(): mapboxgl.LineLayerSpecification {
-    return {
-        id: LAYER_FOCUS,
-        type: 'line',
-        source: SOURCE_ID,
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-            'line-color': ['get', 'color'],
-            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 2.6, 8, 3, 15, 3.4],
-            'line-opacity': 0.94
-        }
-    };
-}
-
-function hoverHaloLayerSpecification(): mapboxgl.LineLayerSpecification {
-    return {
-        id: LAYER_HALO,
-        type: 'line',
-        source: SOURCE_ID,
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-            'line-color': ['get', 'color'],
-            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 6, 10, 7, 15, 8],
-            'line-opacity': 0.2,
-            'line-blur': 1.5
-        }
-    };
-}
-
-function hoverLayerSpecification(): mapboxgl.LineLayerSpecification {
-    return {
-        id: LAYER_HOVER,
-        type: 'line',
-        source: SOURCE_ID,
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-            'line-color': ['get', 'color'],
-            'line-width': ['interpolate', ['linear'], ['zoom'], 3, 3, 10, 3.6, 15, 4.2],
-            'line-opacity': 1
-        }
-    };
-}
-
-/* ------------------------------------------------------------------ */
-/* 控制器                                                              */
-/* ------------------------------------------------------------------ */
 
 class ExerciseMapInstance implements ExerciseMapController {
     private readonly options: ExerciseMapOptions;
@@ -1280,13 +939,12 @@ class ExerciseMapInstance implements ExerciseMapController {
 
     /* ------------------------------ 隐私 / 地形 ------------------------------ */
 
-    /** 当前范围里的记录是否来自需要隐私过滤的城市（优先看名称，没有名称就按轨迹范围判断） */
+    /** 当前范围里的记录是否来自需要隐私过滤的城市（按轨迹范围判断；intervals.icu 不提供城市名） */
     private shouldUsePrivacy(): boolean {
         if (!PRIVACY_CITIES.length) return false;
         const bounds = this.data?.bounds;
         const scoped = recordsInScope(this.options.records, this.scope);
         return scoped.some((record) => {
-            if (PRIVACY_CITIES.some((city) => record.location.includes(city.name))) return true;
             const box = bounds?.get(record.id);
             if (!box) return false;
             return PRIVACY_CITIES.some((city) => {

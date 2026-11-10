@@ -3,11 +3,10 @@
 ---
 
 <script>
+    import { onPageLoad } from '../../lib/client/mount';
     import search from '../../lib/search';
 
-    document.addEventListener('astro:page-load', () => {
-        search();
-    });
+    onPageLoad(search);
 </script>
 
 <div class="book-search">

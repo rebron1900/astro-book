@@ -1,7 +1,7 @@
 import { getSvg } from '../../lib/utils/help';
 import { createSignal, For, onMount } from 'solid-js';
 import config, { type ThemeConfig } from '../../config';
-import tippy from 'tippy.js';
+import { createTippy } from '../../lib/client/tippy';
 import 'tippy.js/dist/tippy.css';
 
 const MenuTheme = () => {
@@ -21,7 +21,7 @@ const MenuTheme = () => {
     const initThemeinfo = () => {
         document.querySelectorAll<HTMLElement>('.theme-item').forEach((item) => {
             if (item.dataset.themeinfo) {
-                tippy(item, {
+                createTippy(item, {
                     content: item.dataset.themeinfo,
                     allowHTML: true,
                     placement: 'right',
@@ -127,7 +127,6 @@ const MenuTheme = () => {
                                         </li>
                                     )}
                                 </For>
-                                {/* <For each={config.themes}>{(theme, index) => <li onClick={(e) => changeBtn(changeTheme, theme, e)}>{theme.desc}</li>}</For> */}
                             </ul>
                         </li>
                     </ul>

@@ -5,7 +5,7 @@ import cocoMessage from './coco-message';
 var scriptBundle = document.getElementById('script-bundle');
 var copyText = (scriptBundle && scriptBundle.getAttribute('data-copy')) || '复制';
 
-function createCopyButton2(highlightDiv: HTMLElement) {
+function createCopyButton(highlightDiv: HTMLElement) {
     const button = document.createElement('button');
     button.innerHTML = `
     <svg viewBox="0 0 24 24" aria-hidden="true" class="book-icon"><use xlink:href="/icons.svg#copy"></use></svg>
@@ -14,7 +14,7 @@ function createCopyButton2(highlightDiv: HTMLElement) {
     button.type = 'button';
     button.ariaLabel = copyText;
     button.addEventListener('click', () => copyCodeToClipboard(button, highlightDiv));
-    addCopyButtonToDom(button, highlightDiv);
+    prependControl(button, highlightDiv);
 }
 
 function createFoldButton(highlightDiv: HTMLElement) {
@@ -35,7 +35,7 @@ function createFoldButton(highlightDiv: HTMLElement) {
     });
     if (highlightDiv.scrollHeight > 400) {
         highlightDiv.classList.add('limit-hight');
-        addCopyButtonToDom(button, highlightDiv);
+        prependControl(button, highlightDiv);
     }
 }
 async function copyCodeToClipboard(button: HTMLElement, highlightDiv: HTMLElement) {
@@ -82,10 +82,9 @@ async function copyCodeBlockExecCommand(codeToCopy: string, _highlightDiv: HTMLE
 function codeWasCopied(button: HTMLElement) {
     cocoMessage.success('代码已复制 😊');
     button.blur();
-    setTimeout(function () {}, 2000);
 }
 
-function addCopyButtonToDom(button: HTMLElement, highlightDiv: HTMLElement) {
+function prependControl(button: HTMLElement, highlightDiv: HTMLElement) {
     highlightDiv.insertBefore(button, highlightDiv.firstChild);
 }
 
@@ -93,7 +92,7 @@ export function initCopyButton() {
     document.querySelectorAll<HTMLElement>('pre').forEach(function (highlightDiv) {
         if (!highlightDiv.querySelector('code') || highlightDiv.dataset.codeControlsInitialized === 'true') return;
         highlightDiv.dataset.codeControlsInitialized = 'true';
-        createCopyButton2(highlightDiv);
+        createCopyButton(highlightDiv);
         createFoldButton(highlightDiv);
     });
 }

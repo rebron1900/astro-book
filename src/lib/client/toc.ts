@@ -2,7 +2,11 @@
  * 初始化文章目录（TOC）滚动高亮。
  * 用 IntersectionObserver 监听标题进入视口，高亮对应目录链接及其祖先 <li>。
  */
+let activeObserver: IntersectionObserver | null = null;
+
 export default function initToc() {
+    activeObserver?.disconnect();
+    activeObserver = null;
     const links = document.querySelectorAll<HTMLAnchorElement>('.book-toc-content a');
     if (!links.length) return;
 
@@ -24,7 +28,7 @@ export default function initToc() {
         });
     }
 
-    const io = new IntersectionObserver(
+    const io = activeObserver = new IntersectionObserver(
         (entries) => {
             entries.forEach((en) => {
                 const map = headings.find((m) => m.el === en.target);

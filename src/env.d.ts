@@ -5,6 +5,8 @@ declare module 'supercluster' {
         load(points: unknown[]): void;
         getClusters(bbox: number[], zoom: number): unknown[];
         getLeaves(clusterId: number, limit?: number): unknown[];
+        /** 点开一个聚合点后应该缩放到的层级（足迹地图用） */
+        getClusterExpansionZoom(clusterId: number): number;
     };
     export default Supercluster;
 }

@@ -1,5 +1,6 @@
 // src/components/islands/Relitu.tsx
 import { timeline } from '../../api/store';
+import { escapeHtml } from '../../lib/client/dom';
 import type { TimelineEntry } from '../../api/store';
 import { normalizeSlug } from '../../lib/utils/help';
 
@@ -51,10 +52,6 @@ function stripHtml(value: unknown) {
         .trim();
 }
 
-function escapeHtml(value: string) {
-    return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
 function entryTitle(entry: TimelineEntry) {
     if (entry.kind === 'post') return entry.data.title;
     if (entry.kind === 'memo') return stripHtml(entry.data.content).slice(0, 38) || '一条随记';
@@ -72,8 +69,8 @@ function entryHref(entry: TimelineEntry) {
     if (entry.kind === 'post') return normalizeSlug(entry.data.slug);
     if (entry.kind === 'memo') return '/now/';
     if (entry.kind === 'neodb') return goLink(entry.data.item.id);
-    const stravaHref = entry.data.url || (entry.data.run_id ? `https://www.strava.com/activities/${entry.data.run_id}` : '#');
-    return goLink(stravaHref);
+    // 运动条目跳到 intervals.icu 的活动页；同步结果里已带 url，缺省时退回时间线页
+    return goLink(entry.data.url ?? '/exercise/');
 }
 
 type DayHeat = {

@@ -1,0 +1,1050 @@
+/* ==========================================================================
+   友链页（links.astro）
+   ========================================================================== */
+.pv-page {
+    max-inline-size: none;
+    inline-size: 100%;
+}
+
+.pv-page .pv-header {
+    margin-block: 0 2rem;
+}
+
+.pv-page .pv-kicker {
+    margin: 0;
+    color: var(--color-link);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.pv-page .pv-title {
+    margin: 0.35rem 0 0;
+    font-size: clamp(1.7rem, 3vw, 2.15rem);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+}
+
+.pv-page .pv-intro {
+    max-inline-size: 42rem;
+    margin: 0.75rem 0 0;
+    color: var(--gray-700);
+    font-size: 0.9rem;
+    line-height: 1.8;
+}
+
+.pv-page .pv-section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-block: 2rem 0.85rem;
+}
+
+.pv-page .pv-section-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+
+.pv-page .pv-count {
+    margin: 0;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+/* 友邻：先把“这是一个博客”放在第一层，最新文章作为次级信息。 */
+.pv-page .pv-friend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    align-items: start;
+    gap: 0.85rem;
+}
+
+.pv-page .pv-friend-card {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+    padding: 1rem 1.05rem 0.85rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.8rem;
+    background: color-mix(in srgb, var(--body-background) 94%, var(--body-font-color));
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.03);
+    text-decoration: none;
+    transition:
+        border-color 160ms ease,
+        box-shadow 160ms ease,
+        transform 160ms ease;
+}
+
+.pv-page .pv-friend-card:hover {
+    border-color: color-mix(in srgb, var(--color-link) 38%, var(--gray-200));
+    box-shadow: 0 5px 18px rgb(0 0 0 / 0.06);
+    transform: translateY(-1px);
+}
+
+.pv-page .pv-friend-top {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-inline-size: 0;
+}
+
+.pv-page .pv-avatar {
+    position: relative;
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    inline-size: 2rem;
+    block-size: 2rem;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    background: var(--gray-100);
+    color: var(--gray-500);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.pv-page .pv-avatar img {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+}
+
+.pv-page .pv-friend-copy {
+    min-inline-size: 0;
+}
+
+.pv-page .pv-friend-site-title {
+    overflow: hidden;
+    margin: 0;
+    color: var(--body-font-color);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pv-page .pv-friend-domain {
+    display: block;
+    overflow: hidden;
+    margin-block-start: 0.18rem;
+    color: var(--gray-500);
+    font-size: 0.65rem;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pv-page .pv-arrow {
+    margin-inline-start: auto;
+    color: var(--gray-500);
+    font-size: 0.8rem;
+}
+
+.pv-page .pv-friend-latest {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-inline-size: 0;
+    margin-block-start: 0.9rem;
+    padding-block-start: 0.7rem;
+    border-block-start: 1px solid var(--gray-200);
+}
+
+.pv-page .pv-latest-meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-inline-size: 0;
+}
+
+.pv-page .pv-latest-label {
+    flex: 0 0 auto;
+    color: var(--gray-500);
+    font-size: 0.6rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.pv-page .pv-friend-title {
+    display: block;
+    flex: 0 0 auto;
+    overflow: hidden;
+    margin: 0;
+    color: var(--gray-700);
+    font-size: 0.8rem;
+    font-weight: 400;
+    line-height: 1.5;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pv-page .pv-friend-date {
+    flex: 0 0 auto;
+    margin-inline-start: auto;
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    line-height: 1.35;
+    white-space: nowrap;
+}
+
+.pv-page .pv-lost {
+    margin-block-start: 2.8rem;
+    padding-block-start: 1.4rem;
+    border-block-start: 1px solid var(--gray-200);
+}
+
+.pv-page .pv-lost-title {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.pv-page .pv-lost-intro {
+    margin: 0.45rem 0 0;
+    color: var(--gray-500);
+    font-size: 0.75rem;
+    line-height: 1.6;
+}
+
+.pv-page .pv-lost-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    gap: 0.45rem;
+    margin: 0.85rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pv-page .pv-lost-item {
+    display: flex;
+    align-items: center;
+    min-inline-size: 0;
+    gap: 0.35rem;
+    color: var(--gray-500);
+    font-size: 0.72rem;
+}
+
+.pv-page .pv-lost-item a {
+    overflow: hidden;
+    color: var(--gray-700);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 书影音：像收藏室一样按媒介分架，封面是藏品，文字是标签。 */
+.pv-page .pv-collection-section {
+    margin-block-start: 2rem;
+}
+
+.pv-page .pv-collection-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 0 0.75rem;
+    padding-block-end: 0.5rem;
+    border-block-end: 1px solid var(--gray-200);
+}
+
+.pv-page .pv-collection-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.pv-page .pv-collection-count {
+    color: var(--gray-500);
+    font-size: 0.65rem;
+}
+
+.pv-page .pv-shelf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.8rem, 1fr));
+    gap: 1.1rem 0.9rem;
+    align-items: start;
+}
+
+.pv-page .pv-media-card {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+    text-decoration: none;
+}
+
+.pv-page .pv-media-cover {
+    position: relative;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.35rem;
+    background: var(--gray-100);
+    box-shadow: 0 5px 14px rgb(0 0 0 / 0.09);
+    transition:
+        box-shadow 180ms ease,
+        transform 180ms ease;
+}
+
+.pv-page .pv-media-cover img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    transition: transform 220ms ease;
+}
+
+.pv-page .pv-media-card:hover .pv-media-cover {
+    box-shadow: 0 10px 22px rgb(0 0 0 / 0.14);
+    transform: translateY(-2px);
+}
+
+.pv-page .pv-media-card:hover .pv-media-cover img {
+    transform: scale(1.025);
+}
+
+.pv-page .pv-media-body {
+    min-inline-size: 0;
+    padding: 0.55rem 0.05rem 0.2rem;
+}
+
+.pv-page .pv-media-kicker {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.3rem;
+    margin: 0;
+    overflow: hidden;
+    color: var(--gray-500);
+    font-size: 0.6rem;
+    line-height: 1.35;
+    white-space: nowrap;
+}
+
+.pv-page .pv-media-kicker span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pv-page .pv-media-title {
+    display: -webkit-box;
+    margin: 0.3rem 0 0;
+    overflow: hidden;
+    color: var(--body-font-color);
+    font-size: 0.86rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.pv-page .pv-media-card:hover .pv-media-title {
+    color: var(--color-hover-link);
+}
+
+.pv-page .pv-media-rating {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.15rem;
+    margin-block-start: 0.25rem;
+    color: #b37a00;
+    font-size: 0.65rem;
+    font-weight: 600;
+}
+
+.pv-page .pv-media-rating small {
+    color: var(--gray-500);
+    font-size: 0.6rem;
+    font-weight: 400;
+}
+
+.pv-page .pv-media-placeholder {
+    display: grid;
+    place-items: center;
+    inline-size: 100%;
+    block-size: 100%;
+    color: var(--gray-500);
+    font-size: 1.6rem;
+    font-weight: 600;
+    background: var(--gray-100);
+}
+
+.pv-page .pv-empty {
+    padding-block: 2rem;
+    color: var(--gray-500);
+    font-size: 0.85rem;
+}
+
+@media (max-width: 34rem) {
+    .pv-page .pv-title {
+        font-size: 1.55rem;
+    }
+
+    .pv-page .pv-friend-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pv-page .pv-shelf-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem 0.7rem;
+    }
+
+    .pv-page .pv-lost-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 收藏室：目录式藏品，而不是海报墙。 */
+.pv-page .pv-collection-index {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.9rem;
+    margin: 0 0 1.7rem;
+    padding-block: 0.7rem;
+    border-block: 1px solid var(--gray-200);
+}
+
+.pv-page .pv-collection-index a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    color: var(--gray-700);
+    font-size: 0.72rem;
+    text-decoration: none;
+}
+
+.pv-page .pv-collection-index a:hover {
+    color: var(--color-link);
+}
+
+.pv-page .pv-collection-index small {
+    color: var(--gray-500);
+    font-size: 0.6rem;
+}
+
+.pv-page .pv-collection-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+}
+
+.pv-page .pv-collection-item {
+    display: grid;
+    grid-template-columns: 4.2rem minmax(0, 1fr);
+    gap: 0.75rem;
+    min-inline-size: 0;
+    padding: 0.55rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.55rem;
+    background: color-mix(in srgb, var(--body-background) 95%, var(--body-font-color));
+    text-decoration: none;
+    transition:
+        border-color 160ms ease,
+        background 160ms ease;
+}
+
+.pv-page .pv-collection-item:hover {
+    border-color: color-mix(in srgb, var(--color-link) 36%, var(--gray-200));
+    background: color-mix(in srgb, var(--body-background) 91%, var(--color-link));
+}
+
+.pv-page .pv-collection-cover {
+    position: relative;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    border-radius: 0.3rem;
+    background: var(--gray-100);
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.08);
+}
+
+.pv-page .pv-collection-cover img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+}
+
+.pv-page .pv-collection-meta {
+    display: flex;
+    min-inline-size: 0;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 0.1rem;
+}
+
+.pv-page .pv-collection-kind {
+    color: var(--gray-500);
+    font-size: 0.6rem;
+    line-height: 1.3;
+}
+
+.pv-page .pv-collection-item-title {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 0.25rem 0 0;
+    color: var(--body-font-color);
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.4;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.pv-page .pv-collection-item:hover .pv-collection-item-title {
+    color: var(--color-hover-link);
+}
+
+.pv-page .pv-collection-year {
+    margin-block-start: 0.3rem;
+    color: var(--gray-500);
+    font-size: 0.6rem;
+}
+
+.pv-page .pv-collection-rating {
+    margin-block-start: 0.2rem;
+    color: #b37a00;
+    font-size: 0.62rem;
+    font-weight: 600;
+}
+
+.pv-page .pv-collection-rating small {
+    color: var(--gray-500);
+    font-size: 0.58rem;
+    font-weight: 400;
+}
+
+@media (max-width: 34rem) {
+    .pv-page .pv-collection-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pv-page .pv-collection-item {
+        grid-template-columns: 3.6rem minmax(0, 1fr);
+        gap: 0.6rem;
+    }
+}
+
+.pv-page .pv-lost-list {
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    gap: 0.5rem;
+}
+
+.pv-page .pv-lost-item {
+    min-block-size: 2.1rem;
+    padding: 0.45rem 0.55rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.45rem;
+    background: color-mix(in srgb, var(--body-background) 95%, var(--body-font-color));
+}
+
+.pv-page .pv-lost-item span {
+    margin-inline-start: auto;
+    font-size: 0.65rem;
+}
+
+@media (max-width: 34rem) {
+    .pv-page .pv-friend-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.55rem;
+    }
+
+    .pv-page .pv-friend-card {
+        padding: 0.7rem 0.7rem 0.65rem;
+    }
+
+    .pv-page .pv-avatar {
+        inline-size: 1.45rem;
+        block-size: 1.45rem;
+        font-size: 0.65rem;
+    }
+
+    .pv-page .pv-friend-top {
+        gap: 0.45rem;
+    }
+
+    .pv-page .pv-friend-site-title {
+        font-size: 0.82rem;
+    }
+
+    .pv-page .pv-friend-domain {
+        font-size: 0.58rem;
+    }
+
+    .pv-page .pv-friend-latest {
+        margin-block-start: 0.65rem;
+        padding-block-start: 0.5rem;
+    }
+
+    .pv-page .pv-latest-label {
+        font-size: 0.55rem;
+    }
+
+    .pv-page .pv-friend-title {
+        font-size: 0.72rem;
+        line-height: 1.45;
+    }
+
+    .pv-page .pv-friend-date {
+        font-size: 0.58rem;
+    }
+
+    .pv-page .pv-lost-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 失联订阅图标必须限制尺寸，避免被文章图片样式放大。 */
+.pv-page .pv-lost-item img {
+    inline-size: 1rem;
+    block-size: 1rem;
+    max-inline-size: 1rem;
+    flex: 0 0 auto;
+    object-fit: contain;
+}
+
+/* 书影音：月份轴 + 当月多列卡片。 */
+.pv-page .pv-month-list {
+    margin-block-start: 1.8rem;
+}
+
+.pv-page .pv-month-section {
+    display: grid;
+    grid-template-columns: 3.4rem 1.1rem minmax(0, 1fr);
+    gap: 0.85rem;
+    align-items: start;
+}
+
+.pv-page .pv-month-section + .pv-month-section {
+    margin-block-start: 2.2rem;
+}
+
+.pv-page .pv-month-date {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.05rem;
+    padding-block-start: 0.08rem;
+    color: var(--gray-700);
+    font-variant-numeric: tabular-nums;
+}
+
+.pv-page .pv-month-year {
+    color: var(--gray-500);
+    font-size: 0.58rem;
+    line-height: 1.2;
+}
+
+.pv-page .pv-month-value {
+    color: var(--body-font-color);
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.pv-page .pv-month-rail {
+    position: relative;
+    display: flex;
+    align-self: stretch;
+    justify-content: center;
+}
+
+.pv-page .pv-month-rail::before {
+    content: '';
+    position: absolute;
+    inset-block: -2.2rem 0;
+    inline-size: 1px;
+    background: var(--gray-200);
+}
+
+.pv-page .pv-month-section:first-child .pv-month-rail::before {
+    inset-block-start: 0.55rem;
+}
+
+.pv-page .pv-month-section:last-child .pv-month-rail::before {
+    inset-block-end: calc(100% - 0.9rem);
+}
+
+.pv-page .pv-month-marker {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    inline-size: 0.95rem;
+    block-size: 0.95rem;
+    margin-block-start: 0.35rem;
+    background: var(--body-background);
+    color: color-mix(in srgb, #b37a00 68%, var(--gray-500));
+}
+
+.pv-page .pv-month-marker svg {
+    inline-size: 0.72rem;
+    block-size: 0.72rem;
+    stroke-width: 1.8;
+}
+
+.pv-page .pv-month-content {
+    min-inline-size: 0;
+}
+
+.pv-page .pv-month-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 0.7rem;
+}
+
+.pv-page .pv-month-card {
+    display: grid;
+    grid-template-columns: 3.7rem minmax(0, 1fr);
+    gap: 0.7rem;
+    min-inline-size: 0;
+    padding: 0.5rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.55rem;
+    background: color-mix(in srgb, var(--body-background) 95%, var(--body-font-color));
+    text-decoration: none;
+    transition:
+        border-color 160ms ease,
+        background 160ms ease;
+}
+
+.pv-page .pv-month-card:hover {
+    border-color: color-mix(in srgb, var(--color-link) 36%, var(--gray-200));
+    background: color-mix(in srgb, var(--body-background) 91%, var(--color-link));
+}
+
+.pv-page .pv-month-cover {
+    position: relative;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    border-radius: 0.28rem;
+    background: var(--gray-100);
+    box-shadow: 0 2px 5px rgb(0 0 0 / 0.08);
+}
+
+.pv-page .pv-month-cover img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+}
+
+.pv-page .pv-month-body {
+    display: flex;
+    min-inline-size: 0;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 0.05rem;
+}
+
+.pv-page .pv-month-kicker {
+    overflow: hidden;
+    color: var(--gray-500);
+    font-size: 0.6rem;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pv-page .pv-month-title {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 0.2rem 0 0;
+    color: var(--body-font-color);
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.4;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.pv-page .pv-month-card:hover .pv-month-title {
+    color: var(--color-hover-link);
+}
+
+.pv-page .pv-month-rating {
+    margin-block-start: 0.2rem;
+    color: #b37a00;
+    font-size: 0.62rem;
+    font-weight: 600;
+}
+
+.pv-page .pv-month-rating small {
+    color: var(--gray-500);
+    font-size: 0.58rem;
+    font-weight: 400;
+}
+
+.pv-page .pv-month-placeholder {
+    display: grid;
+    place-items: center;
+    inline-size: 100%;
+    block-size: 100%;
+    color: var(--gray-500);
+    font-size: 1.15rem;
+    font-weight: 600;
+    background: var(--gray-100);
+}
+
+@media (max-width: 34rem) {
+    .pv-page .pv-month-section {
+        grid-template-columns: 3rem 0.85rem minmax(0, 1fr);
+        gap: 0.55rem;
+    }
+
+    .pv-page .pv-month-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 首页时间线同款 NeoDB 卡片（预览页使用同一套结构）。 */
+.pv-page .neodb-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3.8rem minmax(0, 1fr);
+    gap: 0.85rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background: var(--gray-100);
+    box-shadow: inset 0 0 0 1px var(--gray-200);
+}
+
+.pv-page .neodb-card .cover {
+    display: grid;
+    place-items: center;
+    inline-size: 3.8rem;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    border-radius: 0.25rem;
+    background: var(--gray-200);
+    color: var(--gray-700);
+    font-size: 1.1rem;
+    outline: 1px solid rgb(0 0 0 / 0.1);
+    outline-offset: -1px;
+}
+
+.pv-page .neodb-card .cover img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+}
+
+.pv-page .neodb-card .media-info {
+    min-inline-size: 0;
+    padding-inline-end: 3.4rem;
+}
+
+.pv-page .neodb-card .kicker {
+    margin: 0;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    line-height: 1.35;
+    letter-spacing: 0.035em;
+}
+
+.pv-page .neodb-card .entry-title {
+    margin: 0.25rem 0 0;
+    overflow: hidden;
+    color: var(--body-font-color);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.pv-page .neodb-card .entry-title a {
+    display: block;
+    overflow: hidden;
+    color: var(--body-font-color);
+    text-decoration: none;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.pv-page .neodb-card .entry-title a:hover {
+    color: var(--color-hover-link);
+}
+
+.pv-page .neodb-card .rating {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.8rem;
+    z-index: 2;
+    display: flex;
+    align-items: baseline;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0.1rem 0.25rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--gray-100) 82%, transparent);
+    color: #b37a00;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.pv-page .neodb-card .rating small {
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    font-weight: 400;
+}
+
+.pv-page .neodb-card .excerpt {
+    display: -webkit-box;
+    margin: 0.35rem 0 0;
+    overflow: hidden;
+    color: var(--gray-700);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.pv-page .pv-month-grid {
+    grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+}
+
+.pv-page .pv-month-item.is-hidden,
+.pv-page .pv-month-section.is-hidden {
+    display: none;
+}
+
+.pv-page .pv-load-more {
+    display: block;
+    margin: 1.4rem auto 0;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--gray-700);
+    font: inherit;
+    font-size: 0.72rem;
+    cursor: pointer;
+}
+
+.pv-page .pv-load-more:hover {
+    border-color: var(--body-font-color);
+    color: var(--body-font-color);
+}
+
+.pv-page .pv-friend-top {
+    flex: 0 0 auto;
+}
+
+.pv-page .pv-friend-latest {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    min-block-size: 0;
+    overflow: hidden;
+}
+
+.pv-page .pv-friend-title {
+    flex: 0 0 auto;
+    min-block-size: 0;
+}
+
+.pv-page .pv-friend-date {
+    flex: 0 0 auto;
+    margin-block-start: 0;
+}
+
+.pv-page .pv-lost-item {
+    flex-wrap: nowrap;
+}
+
+.pv-page .pv-lost-item span {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 34rem) {
+    .pv-page .pv-month-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.pv-page .pv-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-block: 1.4rem 1.2rem;
+}
+
+.pv-page .pv-filter {
+    padding: 0.3rem 0.65rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--gray-700);
+    font: inherit;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    cursor: pointer;
+    transition:
+        color 150ms ease,
+        background 150ms ease,
+        border-color 150ms ease;
+}
+
+.pv-page .pv-filter span {
+    margin-inline-start: 0.2rem;
+    font-size: 0.62rem;
+    opacity: 0.55;
+}
+
+.pv-page .pv-filter:hover,
+.pv-page .pv-filter.is-active {
+    border-color: var(--body-font-color);
+    background: var(--body-font-color);
+    color: var(--body-background);
+}
+
+.pv-page .pv-clip-target {
+    max-inline-size: 100%;
+    min-inline-size: 0;
+}
+
+/* 失联订阅使用与正常友邻相同的卡片结构。 */
+.pv-page .pv-lost-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    gap: 0.85rem;
+    margin: 0.85rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pv-page .pv-lost-item-card {
+    min-inline-size: 0;
+    list-style: none;
+}
+
+.pv-page .pv-lost-item-card .pv-friend-card {
+    filter: grayscale(1);
+    opacity: 0.68;
+}
+
+.pv-page .pv-lost-item-card .pv-friend-card:hover {
+    opacity: 0.82;
+}
+
+@media (max-width: 34rem) {
+    .pv-page .pv-lost-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

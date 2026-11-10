@@ -26,7 +26,7 @@ import {
     weekdayLabel
 } from '../../src/lib/exercise';
 import type { ExerciseRecord } from '../../src/lib/exercise';
-import type { StravaActivity } from '../../src/lib/strava-types';
+import type { Activity } from '../../src/lib/activity-types';
 
 function record(partial: Partial<ExerciseRecord> & { id: string; date: string }): ExerciseRecord {
     const [year, month] = partial.date.split('-').map(Number);
@@ -44,7 +44,6 @@ function record(partial: Partial<ExerciseRecord> & { id: string; date: string })
         elevation: partial.elevation ?? 40,
         speed: partial.speed ?? 2.7,
         hr: partial.hr ?? null,
-        location: partial.location ?? '',
         hasRoute: partial.hasRoute ?? true
     };
 }
@@ -120,36 +119,38 @@ describe('日期工具', () => {
 });
 
 describe('buildRecords', () => {
-    const raw = [
+    const raw: Activity[] = [
         {
-            run_id: 1,
+            id: 'i1',
             name: 'Morning Run',
             distance: 4810,
-            moving_time: '0:31:53',
+            moving_time: 1913,
             type: 'Run',
-            start_date: '2024-03-11 23:05:55+00:00',
+            start_date: '2024-03-11T23:05:55Z',
             start_date_local: '2024-03-12 07:05:55',
-            location_country: '恒大农贸市场, 恒大绿洲, 板仓街道, 沿滩区, 自贡市, 四川省, 643000, 中国',
-            summary_polyline: 'wc}qDw}r~REAIJ[~@QJOGIMEU?MV{ADK~BiDfBc',
+            polyline: 'wc}qDw}r~REAIJ[~@QJOGIMEU?MV{ADK~BiDfBc',
             average_heartrate: null,
             average_speed: 2.514,
-            elevation_gain: 238.4
+            elevation_gain: 238.4,
+            url: 'https://intervals.icu/activities/i1'
         },
         {
-            run_id: 2,
+            id: 'i2',
             name: 'Night Stair Stepper',
             distance: 0,
-            moving_time: '24:47',
+            moving_time: 1487,
             type: 'StairStepper',
-            start_date: '2026-09-30 12:00:00+00:00',
+            start_date: '2026-09-30T12:00:00Z',
             start_date_local: '2026-09-30 20:00:00',
+            average_heartrate: null,
+            average_speed: null,
             elevation_gain: 271
         }
-    ] as unknown as StravaActivity[];
+    ];
 
     it('整理字段并按时间倒序', () => {
         const records = buildRecords(raw);
-        expect(records.map((item) => item.id)).toEqual(['2', '1']);
+        expect(records.map((item) => item.id)).toEqual(['i2', 'i1']);
 
         const first = records[0];
         expect(first.date).toBe('2026-09-30');
@@ -164,15 +165,13 @@ describe('buildRecords', () => {
         expect(second.seconds).toBe(1913);
         expect(second.elevation).toBe(238);
         expect(second.hasRoute).toBe(true);
-        expect(second.location).toBe('自贡市 · 沿滩区');
-        expect(second.location).not.toContain('中国');
-        expect(second.location).not.toContain('643000');
+        expect(second.polyline).toHaveLength(39);
     });
 
     it('buildRouteIndex 只保留有轨迹的记录', () => {
         const index = buildRouteIndex(buildRecords(raw));
-        expect(Object.keys(index)).toEqual(['1']);
-        expect(typeof index['1']).toBe('string');
+        expect(Object.keys(index)).toEqual(['i1']);
+        expect(typeof index['i1']).toBe('string');
     });
 });
 

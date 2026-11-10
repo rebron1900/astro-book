@@ -1,7 +1,7 @@
 import type { Post, Page, Tag } from '@ts-ghost/content-api';
 import type { Memo, FluxEntry, FluxLostFeed, NeoDBMark, NeoDBResponse } from './types';
 import type { Settings } from './ghost';
-import type { StravaActivity } from '../lib/strava-types';
+import type { Activity } from '../lib/activity-types';
 
 // 从本地同步的 JSON 读取数据（方案 B：GitHub Action 定时同步，构建零网络依赖）。
 // JSON 由 scripts/sync-data.mjs 生成，提交进仓库。
@@ -12,7 +12,7 @@ import neodbJson from '../data/neodb.json';
 import fluxJson from '../data/flux.json';
 import fluxLostJson from '../data/flux-lost.json';
 import memosJson from '../data/memos.json';
-import stravaJson from '../data/strava.json';
+import activitiesJson from '../data/activities.json';
 
 interface GhostAuthor {
     id: string;
@@ -42,7 +42,7 @@ export const tags = ghost.tags;
 export const neodb = neodbJson as unknown as NeoDBResponse;
 export const flux = fluxJson as unknown as FluxEntry[];
 export const fluxLost = fluxLostJson as unknown as FluxLostFeed[];
-export const stravaActivities = stravaJson as unknown as StravaActivity[];
+export const stravaActivities = activitiesJson as unknown as Activity[];
 
 // 首页 Now 组件需要最新一条 memo
 const memosAll = memosJson as Memo[];
@@ -55,13 +55,14 @@ export const allContent = [...postsAll, ...memosAll].sort((a, b) => {
     return bTime - aTime;
 });
 
-// 首页信息流：聚合文章 / 微博客 / NeoDB 书影标记 / Strava 跑步，各取「发生时间」统一降序。
+// 首页信息流：聚合文章 / 微博客 / NeoDB 书影标记 / 运动记录，各取「发生时间」统一降序。
 // ponytail: 每条用 discriminated union 区分类型，渲染端按 kind 分支；后续新增源只需加一个分支。
 export type TimelineEntry =
     | { kind: 'post'; time: number; data: Post & { type: string } }
     | { kind: 'memo'; time: number; data: Memo }
     | { kind: 'neodb'; time: number; data: NeoDBMark }
-    | { kind: 'strava'; time: number; data: StravaActivity };
+    // 运动条目沿用 'strava' 这个 kind：/timeline/strava 路由和 strava-cards 样式是既有 UI 概念
+    | { kind: 'strava'; time: number; data: Activity };
 
 // neodb.visibility: 0=public 1=unlisted 2=private；只展示公开标记（值在 JSON 中是数字）
 const neodbMarks = (neodbJson as unknown as NeoDBResponse).data.filter((m) => Number(m.visibility ?? 0) === 0);

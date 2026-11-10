@@ -1,0 +1,49 @@
+/* ==========================================================================
+   类型筛选条（首页时间线 / 运动页共用）
+   结构由各自的列表组件输出，这里只负责外观。
+   ========================================================================== */
+    .filter-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        min-inline-size: 0;
+    }
+
+    .filter-chip {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.3rem;
+        margin: 0;
+        padding: 0.3rem 0.7rem;
+        border: 1px solid var(--gray-200);
+        border-radius: 999px;
+        background: transparent;
+        color: var(--gray-700);
+        font: inherit;
+        font-size: 0.75rem;
+        line-height: 1.25;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+    }
+
+    .filter-chip span {
+        color: var(--gray-500);
+        font-size: 0.625rem;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .filter-chip:hover {
+        border-color: var(--gray-400);
+        color: var(--body-font-color);
+    }
+
+    .filter-chip.is-active {
+        border-color: var(--body-font-color);
+        background: var(--body-font-color);
+        color: var(--body-background);
+    }
+
+    .filter-chip.is-active span {
+        color: color-mix(in srgb, var(--body-background) 65%, transparent);
+    }

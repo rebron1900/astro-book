@@ -39,7 +39,7 @@ import { Heart } from '@lucide/astro';
                 await sleep(800);
                 stats = await fetchArtalkPageStats(pageKey).catch(() => null);
             }
-            if (!stats) return;
+            if (!stats || !likeNode.isConnected) return;
 
             pageId = stats.id;
             // 避免慢请求在用户已经点赞之后把数字覆盖回旧值
@@ -58,6 +58,7 @@ import { Heart } from '@lucide/astro';
             voting = true;
 
             try {
+                if (!likeNode.isConnected) return;
                 if (pageId <= 0) {
                     const stats = await fetchArtalkPageStats(pageKey).catch(() => null);
                     if (stats) {

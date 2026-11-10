@@ -1,0 +1,27 @@
+---
+import { METRIC_ICONS, type MetricIconKind } from '../../lib/metric-icons';
+
+/**
+ * 指标小图标（Astro 版）：与 `MetricIcon.tsx`（Solid 版）共用 `src/lib/metric-icons.ts`
+ * 里的同一份路径，保证构建期渲染的时间线卡片和浏览器端 island 长得一样。
+ * 纯装饰，读屏由相邻的文字标签负责，所以固定 aria-hidden。
+ */
+interface Props {
+    kind: MetricIconKind;
+    class?: string;
+}
+
+const { kind, class: className = 'metric-icon' } = Astro.props as Props;
+---
+
+<svg
+    class={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+    set:html={METRIC_ICONS[kind]}
+/>

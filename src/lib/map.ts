@@ -150,6 +150,13 @@ class MapHandler {
         });
     }
 
+    /** 销毁地图及相关资源（SPA 来回切换到 /map/ 时避免叠加多份地图实例）。 */
+    destroy() {
+        this.tippyInstances?.forEach((instance) => instance.destroy());
+        this.markers?.forEach((marker) => marker.remove());
+        this.map?.remove();
+    }
+
     updateMarkersWithFilters(filters: { cluster: boolean; withPost: boolean; withoutPost: boolean }) {
         this.markers.forEach((marker) => marker.remove());
         this.tippyInstances.forEach((instance) => instance.destroy());
@@ -394,7 +401,9 @@ export default function initMap(source: string | GeoFeatureCollection, key: stri
 
     loadData
         .then((data) => {
-            (window as unknown as { mapboxi: MapHandler }).mapboxi = new MapHandler({ data, key });
+            const holder = window as unknown as { mapboxi?: MapHandler };
+            holder.mapboxi?.destroy();
+            holder.mapboxi = new MapHandler({ data, key });
         })
         .catch((err) => {
             console.warn('[map] 加载地图数据失败:', err);

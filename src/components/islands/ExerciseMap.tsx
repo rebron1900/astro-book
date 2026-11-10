@@ -1,7 +1,8 @@
 import { createEffect, createSignal, onCleanup, onMount } from 'solid-js';
 import type { ExerciseRecord, ExerciseScope } from '../../lib/exercise';
-import { SPORT_META, estimateCalories, formatDuration, formatRecordDistance, recordsInScope, scopeLabel } from '../../lib/exercise';
+import { estimateCalories, formatDuration, formatRecordDistance, recordsInScope, scopeLabel } from '../../lib/exercise';
 import { createExerciseMap, type ExerciseMapController, type ExerciseMapStatus } from '../../lib/client/exercise-map';
+import MetricIcon from '../ui/MetricIcon';
 
 export interface ExerciseMapProps {
     /** 页面内嵌的精简运动记录（无轨迹） */
@@ -72,7 +73,7 @@ export default function ExerciseMap(props: ExerciseMapProps) {
             onReplayProgress: (progress) => setReplayProgress(progress)
         });
 
-        // 先把当前 props 灌进去，再用 effect 跟随后续变化
+        // 先把当前 props 灌进去，再用 effect 跟随后变化
         controller.setScope(props.scope);
         controller.setHover(props.hoverId);
         void controller.start();
@@ -93,46 +94,54 @@ export default function ExerciseMap(props: ExerciseMapProps) {
             <button class="ex-map-reset" type="button" onClick={() => props.onReset()}>
                 全部
             </button>
-            {(() => {
-                const record = activeRecord();
-                if (!record) return null;
-                return (
-                    <div class="ex-map-info">
-                        <div class="ex-map-info-top">
-                            <span>
-                                {record.date.slice(5)} {record.time}
-                            </span>
-                            <span class="ex-map-info-sport">{SPORT_META[record.sport].label}</span>
+            {/* 底部同一行：左边是这次运动的指标，右边是重播按钮（窄屏也不会互相压住） */}
+            <div class="ex-map-bottom">
+                {(() => {
+                    const record = activeRecord();
+                    if (!record) return null;
+                    return (
+                        <div class="ex-map-info">
+                            <ul class="ex-map-info-stats">
+                                <li>
+                                    <b>{formatRecordDistance(record.distance)}</b>
+                                    <span class="ex-map-info-label">
+                                        <MetricIcon kind="distance" />
+                                        <em>距离</em>
+                                    </span>
+                                </li>
+                                <li>
+                                    <b>{formatDuration(record.seconds)}</b>
+                                    <span class="ex-map-info-label">
+                                        <MetricIcon kind="duration" />
+                                        <em>用时</em>
+                                    </span>
+                                </li>
+                                <li>
+                                    <b>{Math.round(record.elevation)} m</b>
+                                    <span class="ex-map-info-label">
+                                        <MetricIcon kind="elevation" />
+                                        <em>爬升</em>
+                                    </span>
+                                </li>
+                                <li>
+                                    <b>{estimateCalories(record.sport, record.seconds)} kcal</b>
+                                    <span class="ex-map-info-label">
+                                        <MetricIcon kind="calories" />
+                                        <em>消耗</em>
+                                    </span>
+                                </li>
+                            </ul>
                         </div>
-                        <p class="ex-map-info-name">{record.name}</p>
-                        <ul class="ex-map-info-stats">
-                            <li>
-                                <b>{formatRecordDistance(record.distance)}</b>
-                                <span>距离</span>
-                            </li>
-                            <li>
-                                <b>{formatDuration(record.seconds)}</b>
-                                <span>用时</span>
-                            </li>
-                            <li>
-                                <b>{Math.round(record.elevation)} m</b>
-                                <span>爬升</span>
-                            </li>
-                            <li>
-                                <b>{estimateCalories(record.sport, record.seconds)} kcal</b>
-                                <span>消耗</span>
-                            </li>
-                        </ul>
-                    </div>
-                );
-            })()}
-            {replayable() && !replayActive() ? (
-                <button class="ex-map-play" type="button" aria-label="重播这次轨迹" title="重播轨迹" onClick={() => controller?.replay()}>
-                    <svg class="ex-map-play-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M8.5 5.6v12.8l10-6.4z" fill="currentColor" />
-                    </svg>
-                </button>
-            ) : null}
+                    );
+                })()}
+                {replayable() && !replayActive() ? (
+                    <button class="ex-map-play" type="button" aria-label="重播这次轨迹" title="重播轨迹" onClick={() => controller?.replay()}>
+                        <svg class="ex-map-play-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M8.5 5.6v12.8l10-6.4z" fill="currentColor" />
+                        </svg>
+                    </button>
+                ) : null}
+            </div>
             <p class="ex-map-state" hidden={!hasState()}>
                 {status().message ?? ''}
             </p>

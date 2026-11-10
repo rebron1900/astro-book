@@ -61,24 +61,36 @@ function photoTilt(id, index) {
     </div>
 
     {visibleResources.length > 0 && (
-        <div class="memo-photo-stack">
-            {visibleResources.map((resource, index) => (
-                <figure class="memo-photo" style={`--tilt:${photoTilt(memo.id, index)};`}>
-                    {resource.type === 'image' && (
-                        <RemotePicture
-                            src={resource.externalLink}
-                            alt={`${memo.creatorName} 的动态图片 ${index + 1}`}
-                            classNames="memo-photo-image"
-                            referrerpolicy="no-referrer"
-                        />
-                    )}
-                    {resource.type === 'video' && (
-                        <video src={resource.externalLink} controls preload="metadata">
-                            您的浏览器不支持 HTML5 视频。
-                        </video>
-                    )}
-                </figure>
-            ))}
+        <div class="memo-photo-gallery" data-photo-gallery>
+            <div class="memo-photo-stack">
+                {visibleResources.map((resource, index) => (
+                    <figure class="memo-photo" style={`--tilt:${photoTilt(memo.id, index)};`}>
+                        {resource.type === 'image' && (
+                            <RemotePicture
+                                src={resource.externalLink}
+                                alt={`${memo.creatorName} 的动态图片 ${index + 1}`}
+                                classNames="memo-photo-image"
+                                referrerpolicy="no-referrer"
+                            />
+                        )}
+                        {resource.type === 'video' && (
+                            <video src={resource.externalLink} controls preload="metadata">
+                                您的浏览器不支持 HTML5 视频。
+                            </video>
+                        )}
+                    </figure>
+                ))}
+            </div>
+            <button class="memo-photo-nav is-prev" type="button" data-photo-nav="prev" aria-label="看上一张图片" title="上一张" hidden>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m15 18-6-6 6-6"></path>
+                </svg>
+            </button>
+            <button class="memo-photo-nav is-next" type="button" data-photo-nav="next" aria-label="看下一张图片" title="下一张" hidden>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m9 18 6-6-6-6"></path>
+                </svg>
+            </button>
         </div>
     )}
 </div>

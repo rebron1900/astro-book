@@ -255,7 +255,3 @@ export function initExerciseTimeline() {
     mountExerciseTimeline();
 }
 
-if (typeof document !== 'undefined') {
-    document.addEventListener('astro:page-load', initExerciseTimeline);
-    if (document.readyState !== 'loading') initExerciseTimeline();
-}

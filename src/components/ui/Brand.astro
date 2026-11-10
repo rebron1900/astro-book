@@ -9,10 +9,10 @@ const site = settings!;
 <h2 class="book-brand">
     <script>
         import initWebSocket from '../../lib/client/actives';
-        import tippy from 'tippy.js';
+        import { createTippy } from '../../lib/client/tippy';
 
         document.addEventListener('astro:page-load', () => {
-            const actives = tippy('.actives img', {
+            const actives = createTippy('.actives img', {
                 placement: 'right',
                 maxWidth: 300
             });

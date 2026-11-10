@@ -1,0 +1,940 @@
+/* ==========================================================================
+   首页 / 时间线列表（List.astro）
+   由 List.astro 引入，只在渲染时间线的页面加载。
+   ========================================================================== */
+@import '../blocks/filter-chips';
+@import '../blocks/strava-card';
+@import '../blocks/ledger';
+.timeline-intro {
+    max-inline-size: 44rem;
+    margin-block: 0.3rem 1.45rem;
+}
+
+.timeline-intro-kicker {
+    margin: 0;
+    color: var(--gray-500);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    line-height: 1.4;
+    text-transform: uppercase;
+}
+
+.timeline-intro-title {
+    margin: 0.38rem 0 0.55rem;
+    color: var(--body-font-color);
+    font-size: clamp(1.3rem, 1.55vw, 1.55rem);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.4;
+}
+
+.timeline-intro-copy {
+    margin: 0;
+    color: var(--gray-700);
+    font-size: 0.875rem;
+    line-height: 1.85;
+}
+
+.timeline-intro-link {
+    margin-inline-start: 0.35rem;
+    white-space: nowrap;
+}
+
+.timeline-intro-note {
+    margin: 0.5rem 0 0;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    letter-spacing: 0.01em;
+    line-height: 1.5;
+}
+
+.timeline-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-block: 0 1.25rem;
+}
+
+.timeline-count {
+    margin: 0;
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    white-space: nowrap;
+}
+
+.timeline-empty {
+    margin: 1.5rem 0;
+    color: var(--gray-500);
+    font-size: 0.8125rem;
+}
+
+.timeline-load-more {
+    display: block;
+    margin: 1.2rem auto 0;
+    padding: 0.35rem 0.9rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--gray-700);
+    font: inherit;
+    font-size: 0.72rem;
+    line-height: 1.3;
+    cursor: pointer;
+}
+
+.timeline-load-more:hover:not(:disabled) {
+    border-color: var(--body-font-color);
+    color: var(--body-font-color);
+}
+
+.timeline-load-more:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
+.book-pagination[hidden] {
+    display: none !important;
+}
+
+.timeline-sentinel {
+    block-size: 1px;
+}
+
+@media (max-width: 34rem) {
+    .timeline-intro {
+        margin-block-end: 1.2rem;
+    }
+
+    .timeline-intro-title {
+        font-size: 1.15rem;
+    }
+
+    .timeline-intro-copy {
+        font-size: 0.8125rem;
+        line-height: 1.75;
+    }
+
+    .timeline-toolbar {
+        align-items: center;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+        margin-block-end: 1rem;
+    }
+
+    .filter-chips {
+        flex: 1 1 0;
+        flex-wrap: nowrap;
+        inline-size: 0;
+        min-inline-size: 0;
+        overflow-x: auto;
+        padding-block-end: 0.2rem;
+        scrollbar-width: none;
+    }
+
+    .filter-chips::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-chip {
+        flex: none;
+    }
+
+    .timeline-count {
+        flex: none;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ledger-row.reveal-ready .ledger-body {
+        opacity: 0.45;
+        transform: translateY(14px);
+    }
+
+    .ledger-row.reveal-ready.is-visible .ledger-body {
+        opacity: 1;
+        transform: translateY(0);
+        transition:
+            opacity 520ms ease-out,
+            transform 620ms cubic-bezier(0.2, 0.6, 0.2, 1);
+    }
+}
+
+.ledger-row[hidden] {
+    display: none;
+}
+
+.timeline-list {
+    inline-size: 100%;
+    margin-block: 0.5rem 1.5rem;
+}
+
+.ledger-post.timeline-post-card {
+    max-block-size: none;
+}
+
+.timeline-post-content {
+    min-inline-size: 0;
+}
+
+.timeline-post-card .book-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+}
+
+.timeline-post-card .book-title a {
+    color: var(--body-font-color);
+}
+
+.timeline-post-card .book-post-meta {
+    margin-block-start: 0.35rem;
+    color: var(--gray-500);
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-style: normal;
+    line-height: 1.4;
+}
+
+.timeline-post-card .book-post-tags {
+    margin-block-start: 0.15rem;
+    color: var(--gray-500);
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+.timeline-post-card p {
+    margin: 0.5rem 0 0;
+    color: var(--gray-700);
+    font-size: 0.875rem;
+    line-height: 1.7;
+}
+
+.ledger-post {
+    position: relative;
+    overflow: hidden;
+    max-block-size: 11rem;
+    padding: 1rem 1.25rem 0.9rem;
+    border-radius: 0.5rem;
+    box-shadow: inset 0 0 0 1px var(--gray-200);
+}
+
+.ledger-post.has-thumb {
+    min-block-size: 7rem;
+    padding-inline-end: calc(clamp(8.5rem, 30%, 15rem) + 1rem);
+}
+
+.ledger-post .kicker,
+.ledger-post .entry-title,
+.ledger-post .excerpt {
+    margin: 0;
+}
+
+.ledger-post .entry-title {
+    margin-block-start: 0.35rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.ledger-post .entry-title a {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.ledger-post .post-summary {
+    margin-block-start: 0.55rem;
+}
+.ledger-post .post-summary .excerpt {
+    min-block-size: 0;
+    max-block-size: 4.9rem;
+    overflow: hidden;
+    color: var(--gray-700);
+    font-size: 0.85rem;
+    line-height: 1.65;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+.ledger-post .post-thumb {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    display: block;
+    inline-size: clamp(8.5rem, 30%, 15rem);
+    block-size: 100%;
+    overflow: hidden;
+}
+.ledger-post .post-thumb img {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+}
+
+/* 时间线卡片 hover：沿用友邻卡片的轻微上浮 + 柔和阴影。 */
+.timeline-list .ledger-post,
+.timeline-list .memo-block,
+.timeline-list .neodb-card,
+.timeline-list .strava-card,
+.timeline-month-list .memo-block,
+.timeline-month-list .neodb-card,
+.timeline-month-list .strava-card {
+    transition:
+        transform 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.timeline-list .memo-block:hover,
+.timeline-list .memo-block:focus-within,
+.timeline-list .ledger-post:hover,
+.timeline-list .ledger-post:focus-within,
+.timeline-list .neodb-card:hover,
+.timeline-list .strava-card:hover,
+.timeline-month-list .memo-block:hover,
+.timeline-month-list .neodb-card:hover,
+.timeline-month-list .strava-card:hover,
+.timeline-list .ledger-post:focus-within,
+.timeline-list .memo-block:focus-within,
+.timeline-list .neodb-card:focus-within,
+.timeline-list .strava-card:focus-within,
+.timeline-month-list .memo-block:focus-within,
+.timeline-month-list .neodb-card:focus-within,
+.timeline-month-list .strava-card:focus-within {
+    --memo-border-color: color-mix(in srgb, var(--color-link) 30%, var(--gray-200));
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--color-link) 30%, var(--gray-200)),
+        0 5px 18px rgb(0 0 0 / 0.06);
+}
+
+.card-foot {
+    display: flex;
+    justify-content: flex-end;
+    margin-block-start: 0.55rem;
+}
+.card-time {
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    font-variant-numeric: tabular-nums;
+    opacity: 0;
+    transition: opacity 120ms ease-out;
+}
+.ledger-row:hover .card-time,
+.ledger-row:focus-within .card-time {
+    opacity: 1;
+}
+
+@media (max-width: 34rem) {
+    .ledger-row {
+        --ledger-row-gap: 1.4rem;
+    }
+    .ledger-post.has-thumb {
+        padding-inline-end: calc(7rem + 0.75rem);
+    }
+    .ledger-post .post-thumb {
+        inline-size: 7rem;
+    }
+}
+
+/* Ledger memo bubble */
+.memo-block {
+    --bubble-bg: color-mix(in srgb, var(--body-font-color) 6%, var(--body-background));
+    --memo-border-color: var(--gray-200);
+    position: relative;
+    inline-size: fit-content;
+    max-inline-size: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 0.7rem 0.85rem 0.75rem;
+    border-radius: 0.9rem 1.2rem 1.2rem 0.9rem;
+    background: var(--bubble-bg);
+    box-shadow:
+        inset 0 0 0 1px var(--memo-border-color),
+        0 1px 2px rgb(0 0 0 / 0.045);
+}
+
+.memo-block::before {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    top: 1.1rem;
+    left: -0.42rem;
+    inline-size: 0.7rem;
+    block-size: 0.7rem;
+    background: var(--bubble-bg);
+    border-left: 1px solid var(--memo-border-color);
+    border-bottom: 1px solid var(--memo-border-color);
+    border-bottom-left-radius: 2px;
+    transform: rotate(45deg);
+    pointer-events: none;
+}
+
+.memo-text-wrap {
+    position: relative;
+}
+
+.memo-text-wrap:has(.memo-text.is-expanded) {
+    padding-block-end: 2.2rem;
+}
+
+.memo-text {
+    position: relative;
+    max-block-size: 10rem;
+    overflow: hidden;
+    transition: max-block-size 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.memo-text.is-expanded {
+    max-block-size: var(--memo-expanded-height, 100rem);
+    animation: memo-expand 260ms ease-out both;
+}
+
+.memo-text.is-collapsed::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    block-size: 4rem;
+    background: linear-gradient(to bottom, transparent 0%, var(--bubble-bg) 82%, var(--bubble-bg) 100%);
+    pointer-events: none;
+}
+
+.memo-text-wrap > .memo-more {
+    position: absolute;
+    right: auto;
+    bottom: 0.15rem;
+    left: 50%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2rem;
+    block-size: 1.35rem;
+    margin: 0 0 0 -1rem;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--body-font-color) 12%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--body-font-color) 4%, transparent);
+    color: var(--body-font-color);
+    cursor: pointer;
+    transform: none;
+}
+
+.memo-text-wrap > .memo-more:hover {
+    background: color-mix(in srgb, var(--body-font-color) 8%, transparent);
+    border-color: color-mix(in srgb, var(--body-font-color) 22%, transparent);
+}
+
+.memo-text-wrap > .memo-more:active {
+    transform: scale(0.97);
+}
+
+.memo-text-wrap > .memo-more:not([hidden]) {
+    animation: memo-more-fade 180ms ease-out both;
+}
+
+.memo-text-wrap > .memo-more[hidden] {
+    display: none;
+}
+
+.memo-more svg {
+    inline-size: 0.875rem;
+    block-size: 0.875rem;
+    transition: transform 180ms ease;
+}
+
+.memo-more[aria-expanded='true'] svg {
+    transform: rotate(180deg);
+}
+
+@keyframes memo-more-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes memo-expand {
+    from {
+        opacity: 0.72;
+        transform: translateY(-2px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.memo-block .memo-content {
+    color: var(--body-font-color);
+    overflow-wrap: anywhere;
+}
+
+.memo-block .memo-content :first-child {
+    margin-block-start: 0;
+}
+.memo-block .memo-content :last-child {
+    margin-block-end: 0;
+}
+.memo-block .memo-content p:first-child {
+    margin-block-start: 0;
+}
+.memo-block .memo-content p:last-child {
+    margin-block-end: 0;
+}
+
+.memo-photo-gallery {
+    position: relative;
+    max-inline-size: 100%;
+}
+
+.memo-photo-stack {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    max-inline-size: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* 图片会按 --tilt 随机旋转，overflow 会在 padding box 边缘裁剪：
+       上下留出旋转角外扩（约 6px）和悬停阴影（最大 14px）所需的空间，
+       气泡自身不再重复叠加下内边距，照片下方就不会出现一圈被切掉的硬阴影。 */
+    padding: 1rem 0.5rem 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+}
+
+/* 照片组是气泡最后一块内容时，气泡的下内边距收窄：
+   真正撑开底部空间的交给照片栈自己的 padding（阴影和旋转角都在里面）。 */
+.memo-block:has(.memo-photo-stack) {
+    padding-block-end: 0.2rem;
+}
+
+/* 原生滚动条只在没有 JS（按钮不可用）时作为兜底；JS 接管后隐藏，改用两侧按钮翻页 */
+.memo-photo-gallery[data-gallery-ready='true'] .memo-photo-stack {
+    scrollbar-width: none;
+}
+
+.memo-photo-gallery[data-gallery-ready='true'] .memo-photo-stack::-webkit-scrollbar {
+    display: none;
+}
+
+.memo-photo-stack::-webkit-scrollbar {
+    block-size: var(--sb-size);
+    background: var(--sb-track-color);
+}
+
+.memo-photo-stack::-webkit-scrollbar-track {
+    background: var(--sb-track-color);
+    border-radius: 3px;
+}
+
+.memo-photo-stack::-webkit-scrollbar-thumb {
+    background: var(--sb-thumb-color);
+    border-radius: 3px;
+}
+
+/* 两侧翻页按钮：半透明磨砂圆钮，只在照片溢出时出现 */
+.memo-photo-nav {
+    position: absolute;
+    inset-block-start: 50%;
+    z-index: 6;
+    display: grid;
+    place-items: center;
+    inline-size: 1.65rem;
+    block-size: 1.65rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--body-background) 68%, transparent);
+    box-shadow:
+        0 2px 12px rgb(0 0 0 / 0.16),
+        inset 0 0 0 1px color-mix(in srgb, var(--gray-500) 32%, transparent);
+    color: var(--gray-700);
+    cursor: pointer;
+    transform: translateY(-50%);
+    backdrop-filter: blur(9px) saturate(1.25);
+    -webkit-backdrop-filter: blur(9px) saturate(1.25);
+    transition:
+        background 140ms ease,
+        color 140ms ease;
+}
+
+.memo-photo-nav.is-prev {
+    inset-inline-start: 0.3rem;
+}
+
+.memo-photo-nav.is-next {
+    inset-inline-end: 0.3rem;
+}
+
+.memo-photo-nav[hidden] {
+    display: none;
+}
+
+.memo-photo-nav:hover {
+    background: color-mix(in srgb, var(--body-background) 88%, transparent);
+    color: var(--body-font-color);
+}
+
+.memo-photo-nav:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+.memo-photo-nav svg {
+    inline-size: 0.9rem;
+    block-size: 0.9rem;
+}
+
+.memo-photo {
+    position: relative;
+    flex: 0 0 auto;
+    inline-size: var(--photo-width, 9rem);
+    block-size: var(--photo-height, 5.56rem);
+    margin: 0;
+    padding: 0;
+}
+
+.memo-photo + .memo-photo {
+    margin-inline-start: -0.45rem;
+}
+
+.memo-photo img {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    border-radius: 0.55rem;
+    outline: 1px solid rgb(0 0 0 / 0.1);
+    outline-offset: -1px;
+    box-shadow:
+        0 1px 2px rgb(0 0 0 / 0.06),
+        0 4px 8px rgb(0 0 0 / 0.05);
+    transform: rotate(var(--tilt, 0deg));
+    transform-origin: center;
+    transition:
+        transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
+        box-shadow 260ms ease;
+    cursor: zoom-in;
+    will-change: transform;
+}
+
+.memo-photo:first-child img {
+    transform: rotate(0deg);
+    transform-origin: left center;
+}
+
+.memo-photo.is-right img {
+    transform: translateX(1.25rem) rotate(var(--tilt, 0deg));
+}
+
+.memo-photo.is-active {
+    z-index: 4;
+}
+
+.memo-photo.is-active img,
+.memo-photo:hover img {
+    transform: translateY(-1px) rotate(0deg) scale(1.035);
+    /* 放大以图片自身中心为原点，而不是从左边缘往右撑开 */
+    transform-origin: center;
+    box-shadow:
+        0 4px 10px rgb(0 0 0 / 0.1),
+        0 1px 3px rgb(0 0 0 / 0.06);
+}
+
+.memo-photo:hover {
+    z-index: 4;
+}
+
+.memo-photo:hover ~ .memo-photo img {
+    transform: translateX(1.25rem) rotate(var(--tilt, 0deg));
+}
+
+.memo-photo:first-child:hover img,
+.memo-photo:only-child:hover img {
+    transform: translateY(-1px) rotate(0deg) scale(1.025);
+    transform-origin: center;
+}
+
+.memo-photo video {
+    display: block;
+    block-size: 100%;
+    inline-size: auto;
+    max-inline-size: 20rem;
+    border-radius: 0.55rem;
+}
+
+/* NeoDB card */
+.neodb-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3.8rem minmax(0, 1fr);
+    gap: 0.85rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background: var(--gray-100);
+    box-shadow: inset 0 0 0 1px var(--gray-200);
+}
+
+.neodb-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+}
+
+@media (max-width: 64rem) {
+    .neodb-cards {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.neodb-card .cover {
+    display: grid;
+    place-items: center;
+    inline-size: 3.8rem;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    border-radius: 0.25rem;
+    background: var(--gray-200);
+    color: var(--gray-700);
+    font-size: 1.1rem;
+    outline: 1px solid rgb(0 0 0 / 0.1);
+    outline-offset: -1px;
+}
+
+.neodb-card .cover img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+}
+
+.neodb-card .media-info {
+    min-inline-size: 0;
+    padding-inline-end: 3.4rem;
+}
+.neodb-card .kicker {
+    display: flex;
+    align-items: center;
+    gap: 0.28rem;
+    margin: 0;
+}
+
+.neodb-card .kicker svg {
+    flex: 0 0 auto;
+    inline-size: 0.72rem;
+    block-size: 0.72rem;
+    stroke-width: 1.8;
+}
+.neodb-card .entry-title {
+    margin-block-start: 0.25rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.neodb-card .entry-title a {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.neodb-card .rating {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.8rem;
+    z-index: 2;
+    margin: 0;
+    background: color-mix(in srgb, var(--gray-100) 82%, transparent);
+    border-radius: 999px;
+    padding: 0.1rem 0.25rem;
+}
+.neodb-card .excerpt {
+    display: -webkit-box;
+    margin: 0.35rem 0 0;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.kicker {
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    line-height: 1.35;
+    letter-spacing: 0.035em;
+}
+
+.entry-title {
+    margin: 0;
+    color: var(--body-font-color);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+}
+
+.entry-title a {
+    color: var(--body-font-color);
+    text-decoration: none;
+}
+
+.entry-title a:hover {
+    color: var(--color-hover-link);
+}
+.ext {
+    margin-inline-start: 0.15rem;
+    color: var(--gray-500);
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+.excerpt {
+    max-inline-size: 40rem;
+    margin: 0.35rem 0 0;
+    color: var(--gray-700);
+    font-size: 0.875rem;
+    line-height: 1.7;
+}
+
+/* 时间线统一层级：日期 < 辅助信息 < 标题 < 正文 */
+.timeline-list .ledger-date-value {
+    font-size: 0.875rem;
+}
+.timeline-list .ledger-date .ledger-year,
+.timeline-list .ledger-date .ledger-weekday {
+    font-size: 0.5625rem;
+}
+.timeline-list .kicker {
+    font-size: 0.6875rem;
+    line-height: 1.35;
+    letter-spacing: 0.035em;
+}
+.timeline-list .entry-title,
+.timeline-list .book-title {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+}
+.timeline-list .excerpt {
+    font-size: 0.875rem;
+    line-height: 1.7;
+}
+.timeline-list .neodb-card .excerpt {
+    font-size: 0.8125rem;
+    line-height: 1.6;
+}
+.timeline-list .memo-block .memo-content.markdown {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+}
+.timeline-list .memo-block .memo-content.markdown h1,
+.timeline-list .memo-block .memo-content.markdown h2,
+.timeline-list .memo-block .memo-content.markdown h3,
+.timeline-list .memo-block .memo-content.markdown h4,
+.timeline-list .memo-block .memo-content.markdown h5,
+.timeline-list .memo-block .memo-content.markdown h6 {
+    margin-block: 1rem 0.35rem;
+    font-size: 1rem;
+    line-height: 1.4;
+}
+.timeline-list .memo-block .memo-content.markdown h1:first-child,
+.timeline-list .memo-block .memo-content.markdown h2:first-child,
+.timeline-list .memo-block .memo-content.markdown h3:first-child {
+    margin-block-start: 0;
+}
+.rating {
+    display: flex;
+    align-items: baseline;
+    gap: 0.15rem;
+    color: #b37a00;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.rating small {
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    font-weight: 400;
+}
+
+/* Strava card：外观与运动页时间线共用，见 blocks/_strava-card.scss */
+.strava-cards {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.8rem;
+}
+.strava-cards.is-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.strava-cards.is-group .strava-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 0.9rem;
+}
+
+@media (max-width: 64rem) {
+    .strava-cards.is-group {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 34rem) {
+    .memo-photo-stack {
+        overflow-x: auto;
+        padding: 0.9rem 0.35rem 1rem;
+    }
+    .memo-photo {
+        inline-size: var(--photo-width, 7.5rem);
+        block-size: var(--photo-height, 4.64rem);
+    }
+    .memo-photo + .memo-photo {
+        margin-inline-start: -1.2rem;
+    }
+    .memo-photo.is-right img {
+        transform: translateX(0.8rem) rotate(var(--tilt, 0deg));
+    }
+    .neodb-card {
+        grid-template-columns: 3.8rem minmax(0, 1fr);
+        gap: 0.65rem;
+        padding: 0.6rem 0.65rem;
+    }
+    .neodb-card .cover {
+        inline-size: 3.8rem;
+    }
+    .neodb-card .kicker {
+        font-size: 0.625rem;
+    }
+    .neodb-card .entry-title {
+        font-size: 0.95rem;
+        line-height: 1.35;
+    }
+    .timeline-post-card p {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+    }
+    .neodb-card .rating {
+        margin-block-start: 0.15rem;
+        font-size: 0.6875rem;
+    }
+    .neodb-card .excerpt {
+        display: -webkit-box;
+        margin-block-start: 0.25rem;
+        overflow: hidden;
+        font-size: 0.8125rem;
+        line-height: 1.55;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+    .strava-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

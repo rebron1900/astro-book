@@ -1,109 +1,72 @@
-import type { StravaActivity } from './strava-types';
-import { estimateCalories } from './exercise';
+/**
+ * 运动卡片的数据整形与轨迹缩略图。
+ *
+ * 数据来自 `Activity`（intervals.icu 同步结果）。模块/组件名里的「strava」是历史命名，
+ * 对应的是这套卡片视觉（strava-cards / /timeline/strava），不再代表数据来源。
+ */
+import type { Activity } from './activity-types';
+import type { MetricIconKind } from './metric-icons';
+import { decodeRoute, estimateCalories, formatDuration, formatPaceFromSpeed, formatSpeed, parseDuration, sportOf } from './exercise';
+import type { SportKey } from './exercise';
 
-export type SportKey = 'run' | 'ride' | 'walk' | 'hike' | 'climb' | 'swim' | 'other';
+export type { SportKey } from './exercise';
 
+/** 运动类型 -> 卡片主题（与运动页共用同一套映射，stair 也在内） */
 export function sportKey(type: string): SportKey {
-    const value = type.toLowerCase();
-    if (value.includes('ride') || value.includes('bike') || value.includes('cycle')) return 'ride';
-    if (value.includes('run')) return 'run';
-    if (value.includes('hike')) return 'hike';
-    if (value.includes('walk')) return 'walk';
-    if (value.includes('climb')) return 'climb';
-    if (value.includes('swim')) return 'swim';
-    return 'other';
+    return sportOf(type);
 }
 
-export function formatPace(speed?: number | null) {
-    if (!speed || speed <= 0) return null;
-    const secondsPerKm = 1000 / speed;
-    const minutes = Math.floor(secondsPerKm / 60);
-    const seconds = Math.round(secondsPerKm % 60);
-    return `${minutes}'${String(seconds).padStart(2, '0')}"/km`;
+/** 卡片里的一项指标：`kind` 决定前面显示哪枚小图标（见 `src/lib/metric-icons.ts`） */
+export interface StravaStat {
+    label: string;
+    value: string;
+    primary?: boolean;
+    kind: MetricIconKind;
 }
 
-export function formatSpeed(speed?: number | null) {
-    if (!speed || speed <= 0) return null;
-    return `${(speed * 3.6).toFixed(1)} km/h`;
-}
-
-/** "0:31:53" -> 秒 */
-function movingSeconds(value: string): number {
-    const parts = value.split(':').map((part) => Number(part) || 0);
-    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
-    if (parts.length === 2) return parts[0] * 60 + parts[1];
-    return parts[0] ?? 0;
-}
-
-export function stravaMetaFor(activity: StravaActivity): { key: SportKey; label: string; stats: Array<{ label: string; value: string; primary?: boolean }> } {
+export function stravaMetaFor(activity: Activity): { key: SportKey; label: string; stats: StravaStat[] } {
     const key = sportKey(activity.type);
-    const distance = { label: '距离', value: `${(activity.distance / 1000).toFixed(2)} km` };
-    const duration = { label: '用时', value: activity.moving_time.replace(/^0:/, '') };
-    const elevation = { label: '爬升', value: `${Math.round(activity.elevation_gain ?? 0)} m` };
-    const heartrate = activity.average_heartrate ? { label: '心率', value: `${Math.round(activity.average_heartrate)} bpm` } : null;
-    let stats: Array<{ label: string; value: string; primary?: boolean }> = [];
+    const distance: StravaStat = { label: '距离', value: `${(activity.distance / 1000).toFixed(2)} km`, kind: 'distance' };
+    const duration: StravaStat = { label: '用时', value: formatDuration(activity.moving_time), kind: 'duration' };
+    const elevation: StravaStat = { label: '爬升', value: `${Math.round(activity.elevation_gain ?? 0)} m`, kind: 'elevation' };
+    const heartrate: StravaStat | null = activity.average_heartrate
+        ? { label: '心率', value: `${Math.round(activity.average_heartrate)} bpm`, kind: 'heartrate' }
+        : null;
+    let stats: StravaStat[] = [];
 
     if (key === 'run') {
-        const pace = formatPace(activity.average_speed);
+        const pace = formatPaceFromSpeed(activity.average_speed);
         stats = [distance];
-        if (pace) stats.push({ label: '配速', value: pace, primary: true });
+        if (pace) stats.push({ label: '配速', value: pace, primary: true, kind: 'pace' });
         stats.push(duration, elevation);
     } else if (key === 'ride') {
         const speed = formatSpeed(activity.average_speed);
         stats = [distance];
-        if (speed) stats.push({ label: '均速', value: speed, primary: true });
+        if (speed) stats.push({ label: '均速', value: speed, primary: true, kind: 'speed' });
         stats.push(duration, elevation);
     } else if (key === 'walk') {
-        const pace = formatPace(activity.average_speed);
+        const pace = formatPaceFromSpeed(activity.average_speed);
         stats = [distance, duration];
-        if (pace) stats.push({ label: '配速', value: pace, primary: true });
+        if (pace) stats.push({ label: '配速', value: pace, primary: true, kind: 'pace' });
         stats.push(elevation);
     } else if (key === 'hike') {
         stats = [distance, { ...elevation, primary: true }, duration];
     } else if (key === 'climb') {
         stats = [duration, { ...elevation, primary: true }, distance];
     } else if (key === 'swim') {
-        const pace = formatPace(activity.average_speed);
+        const pace = formatPaceFromSpeed(activity.average_speed);
         stats = [distance];
-        if (pace) stats.push({ label: '配速', value: pace, primary: true });
+        if (pace) stats.push({ label: '配速', value: pace, primary: true, kind: 'pace' });
         stats.push(duration);
     } else {
         stats = [distance, duration, elevation];
     }
 
     if (heartrate) stats.push(heartrate);
-    const calories = estimateCalories(key, movingSeconds(activity.moving_time));
-    if (calories > 0) stats.push({ label: '消耗', value: `${calories} kcal` });
-    const labels: Record<SportKey, string> = { run: '跑步', ride: '骑行', walk: '步行', hike: '徒步', climb: '攀岩', swim: '游泳', other: '运动' };
+    const calories = estimateCalories(key, parseDuration(activity.moving_time));
+    if (calories > 0) stats.push({ label: '消耗', value: `${calories} kcal`, kind: 'calories' });
+    const labels: Record<SportKey, string> = { run: '跑步', ride: '骑行', walk: '步行', hike: '徒步', climb: '攀岩', swim: '游泳', stair: '爬楼', other: '运动' };
     return { key, label: labels[key], stats };
-}
-
-export function decodePolyline(encoded: string) {
-    let index = 0;
-    let lat = 0;
-    let lng = 0;
-    const points: Array<[number, number]> = [];
-    while (index < encoded.length) {
-        let result = 0;
-        let shift = 0;
-        let byte: number;
-        do {
-            byte = encoded.charCodeAt(index++) - 63;
-            result |= (byte & 0x1f) << shift;
-            shift += 5;
-        } while (byte >= 0x20);
-        lat += result & 1 ? ~(result >> 1) : result >> 1;
-        result = 0;
-        shift = 0;
-        do {
-            byte = encoded.charCodeAt(index++) - 63;
-            result |= (byte & 0x1f) << shift;
-            shift += 5;
-        } while (byte >= 0x20);
-        lng += result & 1 ? ~(result >> 1) : result >> 1;
-        points.push([lat / 1e5, lng / 1e5]);
-    }
-    return points;
 }
 
 /**
@@ -114,7 +77,8 @@ export function decodePolyline(encoded: string) {
 export function routeSketch(encoded: string | undefined, options: { maxPoints?: number; precision?: number } = {}) {
     if (!encoded) return null;
     const { maxPoints = 0, precision = 1 } = options;
-    let points = decodePolyline(encoded);
+    // decodeRoute 返回 [lng, lat]，这里统一成 [lat, lng] 供缩略图投影使用
+    let points = decodeRoute(encoded).map(([lng, lat]) => [lat, lng] as [number, number]);
     if (maxPoints > 0 && points.length > maxPoints) {
         const step = Math.ceil(points.length / maxPoints);
         const sampled = points.filter((_, index) => index % step === 0);

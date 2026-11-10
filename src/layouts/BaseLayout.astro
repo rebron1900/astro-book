@@ -18,6 +18,8 @@ const isFullWidth = post && (post.slug?.includes('albums') || post.tags?.some((t
     </head>
 
     <body dir="ltr">
+        {/* 固定装饰背景（gradientback mixin 上色）：单独成组，切页面时不跟着内容动 */}
+        <div class="page-bg" aria-hidden="true"></div>
         <input aria-label="menu-control" type="checkbox" class="hidden toggle" id="menu-control" />
         <input aria-label="toc-control" type="checkbox" class="hidden toggle" id="toc-control" />
         <main class=`container flex ${isFullWidth ? 'full-width' : ''} `>
@@ -47,7 +49,9 @@ const isFullWidth = post && (post.slug?.includes('albums') || post.tags?.some((t
 
             {!hideToc && !isFullWidth && (
                 <aside class={`book-toc ${isFullWidth ? 'full-width' : ''}`}>
-                    <div class="book-toc-content">
+                    {/* 与左侧菜单同样的处理：给右侧栏单独命名，让它退出 root 快照，
+                        页面切换时不再跟着内容一起淡入/上滑；内容完全相同的页面之间视觉上就是静止的。 */}
+                    <div class="book-toc-content" transition:name="astro-toc">
                         <slot name="toc" />
                     </div>
                 </aside>

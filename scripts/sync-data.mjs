@@ -11,8 +11,13 @@
  *
  * 需要环境变量(或 .env 文件): GHOST_API_URL, GHOST_API_KEY,
  *   NEODB_TOKEN, FLUX_URL, FLUX_KEY, MAP_KMZ_URL,
- *   GOTOSOCIAL_URL, GOTOSOCIAL_TOKEN
+ *   GOTOSOCIAL_URL, GOTOSOCIAL_TOKEN,
+ *   INTERVALS_ICU_API_KEY, INTERVALS_ICU_ATHLETE_ID
  * 非密钥配置从 src/config/site.ts 读取。
+ *
+ * intervals 源：每次同步都从 intervals.icu 全量拉取活动（数据量小，按自然年分段请求），
+ * 只有轨迹（地图折线）走增量缓存——复用上一版 activities.json 里已有的 polyline，
+ * 缺失时才请求 /activity/{id}/map。`--full` 会让轨迹也全部重拉。
  */
 import { readFileSync, writeFileSync, mkdirSync, unlinkSync, statSync } from 'node:fs';
 import { existsSync } from 'node:fs';
@@ -22,6 +27,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildFluxSnapshot, PARSING_ERROR_LIMIT } from '../src/lib/flux-snapshot.ts';
 import { discoverFeedUrl, parseFeedXml } from '../src/lib/feed-xml.ts';
+import { applyRouteCache, pendingRouteIds, polylineFromMap, sortActivities, toActivity, yearWindows } from '../src/lib/intervals.ts';
 
 // ---------- 路径 ----------
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -664,169 +670,100 @@ async function syncMemos(env, siteConfig) {
     return trimMemos(all.map((m) => ({ ...m, type: 'memo' })));
 }
 
-function formatDuration(totalSeconds) {
-    const seconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
-}
+// ---------- intervals.icu（运动记录） ----------
+const INTERVALS_BASE = 'https://intervals.icu/api/v1';
+// 从这一年开始拉取活动；更早的活动即使账号里有也不会出现在页面上。
+const INTERVALS_FIRST_YEAR = 2015;
+const INTERVALS_ACTIVITY_FIELDS =
+    'id,name,type,sub_type,start_date,start_date_local,distance,moving_time,elapsed_time,average_heartrate,average_speed,total_elevation_gain,source,external_id';
+// 地图请求用小并发，避免被上游限流；单个失败只 warn，不中断整次同步。
+const ROUTE_CONCURRENCY = 5;
 
-function addDays(dateString, days) {
-    const date = new Date(`${dateString}T00:00:00Z`);
-    date.setUTCDate(date.getUTCDate() + days);
-    return date.toISOString().slice(0, 10);
-}
-
-function encodePolyline(points) {
-    const encodeValue = (value) => {
-        let current = value < 0 ? ~(value << 1) : value << 1;
-        let result = '';
-        while (current >= 0x20) {
-            result += String.fromCharCode((0x20 | (current & 0x1f)) + 63);
-            current >>= 5;
-        }
-        return result + String.fromCharCode(current + 63);
-    };
-
-    let lastLat = 0;
-    let lastLng = 0;
-    let encoded = '';
-    for (const point of points) {
-        const lat = Math.round(Number(point[0]) * 1e5);
-        const lng = Math.round(Number(point[1]) * 1e5);
-        if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
-        encoded += encodeValue(lat - lastLat) + encodeValue(lng - lastLng);
-        lastLat = lat;
-        lastLng = lng;
-    }
-    return encoded;
-}
-
+/** 拉取单个活动的轨迹；返回 { polyline } 或 { error }，两者都没有表示上游确实没有 GPS 数据。 */
 async function fetchIntervalsMap(id, authorization) {
     try {
-        const data = await fetchJson(`https://intervals.icu/api/v1/activity/${encodeURIComponent(id)}/map`, { headers: { Authorization: authorization } }, 20000);
-        const rawPoints = Array.isArray(data?.latlngs)
-            ? data.latlngs.filter((point) => Array.isArray(point) && point.length >= 2 && Number.isFinite(point[0]) && Number.isFinite(point[1]))
-            : [];
-        if (rawPoints.length < 2) return undefined;
-        // 地图折线只用于卡片背景，不需要把几万个点完整写进数据文件。
-        const step = Math.max(1, Math.ceil(rawPoints.length / 1500));
-        const points = rawPoints.filter((_, index) => index % step === 0 || index === rawPoints.length - 1);
-        return points.length > 1 ? encodePolyline(points) : undefined;
+        const data = await fetchJson(`${INTERVALS_BASE}/activity/${encodeURIComponent(id)}/map`, { headers: { Authorization: authorization } }, 20000);
+        return { polyline: polylineFromMap(data) };
     } catch (error) {
         console.warn(`[intervals] 活动 ${id} 地图获取失败: ${error.message}`);
-        return undefined;
+        return { error: error.message };
     }
 }
 
-function toStravaActivity(activity, summaryPolyline) {
-    const local = String(activity.start_date_local || '').replace('T', ' ').slice(0, 19);
-    return {
-        run_id: String(activity.id),
-        name: activity.name || '运动记录',
-        distance: Number(activity.distance ?? 0),
-        moving_time: formatDuration(activity.moving_time),
-        type: activity.type || 'Other',
-        subtype: activity.sub_type || activity.type || 'Other',
-        start_date: activity.start_date || `${local.replace(' ', 'T')}Z`,
-        start_date_local: local,
-        average_heartrate: activity.average_heartrate ?? null,
-        average_speed: Number(activity.average_speed ?? 0),
-        elevation_gain: Number(activity.total_elevation_gain ?? 0),
-        summary_polyline: summaryPolyline,
-        url: `https://intervals.icu/activities/${activity.id}`,
-        source: 'intervals'
-    };
-}
-
-function sameActivity(left, right) {
-    if (String(left.type).toLowerCase() !== String(right.type).toLowerCase()) return false;
-    const leftTime = new Date(String(left.start_date_local).replace(' ', 'T')).getTime();
-    const rightTime = new Date(String(right.start_date_local).replace(' ', 'T')).getTime();
-    if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime) || Math.abs(leftTime - rightTime) > 120000) return false;
-    const leftDistance = Number(left.distance ?? 0);
-    const rightDistance = Number(right.distance ?? 0);
-    return Math.abs(leftDistance - rightDistance) <= Math.max(50, Math.max(leftDistance, rightDistance) * 0.02);
-}
-
-function dedupeActivities(items) {
-    const unique = [];
-    for (const item of items) {
-        if (!item) continue;
-        if (!unique.some((existing) => sameActivity(existing, item))) unique.push(item);
-    }
-    return unique;
-}
-
+/**
+ * 运动记录同步：数据源只有 intervals.icu。
+ * 1) 按自然年窗口全量拉取活动（每窗口 limit=500，按 id 去重）；
+ * 2) 用上一版 activities.json 的轨迹做增量缓存，只有缺失轨迹（且距离 > 0）的活动才请求 /map；
+ * 3) 按 start_date_local 升序输出 Activities 契约数组。
+ */
 async function syncIntervals(env) {
     const apiKey = env.INTERVALS_ICU_API_KEY;
     if (!apiKey) throw new Error('缺少 INTERVALS_ICU_API_KEY');
     const athleteId = env.INTERVALS_ICU_ATHLETE_ID || '0';
-
-    // 历史数据只读基线，当前 strava.json 可能包含上一次同步的新活动。
-    const history = readJson('strava-history.json', []);
-    const current = readJson('strava.json', []);
-    const known = dedupeActivities([...history, ...current]);
-    const latest = known.reduce((max, item) => {
-        const value = item?.start_date_local?.slice(0, 10) || '';
-        return value > max ? value : max;
-    }, '');
-    const missingRoutes = known
-        .filter((item) => item?.source === 'intervals' && !item.summary_polyline && Number(item.distance ?? 0) > 0)
-        .map((item) => item.start_date_local?.slice(0, 10))
-        .filter(Boolean)
-        .sort();
-    const oldest = missingRoutes.length ? addDays(missingRoutes[0], -1) : latest ? addDays(latest, -90) : '2024-01-01';
-    const newest = new Date().toISOString().slice(0, 10);
-
-    const params = new URLSearchParams({
-        oldest,
-        newest,
-        limit: '500',
-        fields: 'id,name,type,sub_type,start_date_local,start_date,distance,moving_time,elapsed_time,average_heartrate,average_speed,total_elevation_gain'
-    });
-    const url = `https://intervals.icu/api/v1/athlete/${encodeURIComponent(athleteId)}/activities?${params}`;
+    const fullSync = env.SYNC_FULL === '1';
     const authorization = `Basic ${Buffer.from(`API_KEY:${apiKey}`).toString('base64')}`;
-    const data = await fetchJson(url, { headers: { Authorization: authorization } }, 30000);
-    if (!Array.isArray(data)) throw new Error('Intervals.icu 返回了非数组活动数据');
 
-    const merged = [...known];
-    for (const activity of data) {
-        if (!activity?.id) continue;
-        const candidate = toStravaActivity(activity);
-        const existing = merged.find((item) => String(item.run_id) === String(activity.id));
-        if (existing) {
-            // Intervals 里可能修改活动名称、类型或统计值，已有记录也要刷新。
-            Object.assign(existing, {
-                name: candidate.name,
-                distance: candidate.distance,
-                moving_time: candidate.moving_time,
-                type: candidate.type,
-                subtype: candidate.subtype,
-                start_date: candidate.start_date,
-                start_date_local: candidate.start_date_local,
-                average_heartrate: candidate.average_heartrate,
-                average_speed: candidate.average_speed,
-                elevation_gain: candidate.elevation_gain,
-                url: candidate.url,
-                source: candidate.source
-            });
-            if (!existing.summary_polyline && Number(activity.distance ?? 0) > 0) {
-                existing.summary_polyline = await fetchIntervalsMap(activity.id, authorization);
+    const rawById = new Map();
+    const windowSummary = [];
+    let rawTotal = 0;
+    const thisYear = new Date().getUTCFullYear();
+    for (const { oldest, newest } of yearWindows(INTERVALS_FIRST_YEAR, thisYear)) {
+        const params = new URLSearchParams({ oldest, newest, limit: '500', fields: INTERVALS_ACTIVITY_FIELDS });
+        const url = `${INTERVALS_BASE}/athlete/${encodeURIComponent(athleteId)}/activities?${params}`;
+        const data = await fetchJson(url, { headers: { Authorization: authorization } }, 30000);
+        if (!Array.isArray(data)) throw new Error(`[intervals] ${oldest} ~ ${newest} 返回了非数组活动数据`);
+        if (data.length >= 500) console.warn(`[intervals] ${oldest} ~ ${newest} 达到单次 500 条上限，可能有活动被截断`);
+        for (const activity of data) {
+            if (activity?.id) rawById.set(String(activity.id), activity);
+        }
+        rawTotal += data.length;
+        windowSummary.push(`${oldest.slice(0, 4)}:${data.length}`);
+    }
+    // 空结果多半是认证/上游异常：拒绝写入，避免用空数组覆盖线上数据。
+    if (rawById.size === 0) throw new Error('[intervals] intervals.icu 返回 0 条活动，拒绝覆盖已有数据');
+    console.log(`[intervals] 分年拉取 ${windowSummary.join(' ')} → 合计 ${rawTotal} 条，按 id 去重后 ${rawById.size} 条`);
+    if (rawTotal !== rawById.size) console.warn(`[intervals] 分年窗口有 ${rawTotal - rawById.size} 条重复活动（已按 id 去重）`);
+
+    const cachedRoutes = new Map(
+        readJson('activities.json', [])
+            .filter((item) => item?.id && typeof item.polyline === 'string' && item.polyline.length > 0)
+            .map((item) => [String(item.id), item.polyline])
+    );
+    const activities = applyRouteCache(
+        [...rawById.values()].map((activity) => toActivity(activity)),
+        cachedRoutes,
+        fullSync
+    );
+    const total = activities.length;
+    const reused = activities.filter((activity) => activity.polyline).length;
+
+    const pending = pendingRouteIds(activities);
+    const byId = new Map(activities.map((activity) => [activity.id, activity]));
+    let fetched = 0;
+    let empty = 0;
+    let failed = 0;
+    for (let index = 0; index < pending.length; index += ROUTE_CONCURRENCY) {
+        const batch = pending.slice(index, index + ROUTE_CONCURRENCY);
+        const results = await Promise.all(batch.map(async (id) => ({ id, ...(await fetchIntervalsMap(id, authorization)) })));
+        for (const result of results) {
+            if (result.polyline) {
+                byId.get(result.id).polyline = result.polyline;
+                fetched += 1;
+            } else if (result.error) {
+                failed += 1;
+            } else {
+                // 上游这条活动本身没有 GPS（室内跑步/器械等），不算失败，下次同步也拉不到。
+                empty += 1;
             }
-            continue;
         }
-        if (Number(activity.distance ?? 0) > 0) {
-            candidate.summary_polyline = await fetchIntervalsMap(activity.id, authorization);
-        }
-        if (!merged.some((item) => sameActivity(item, candidate))) merged.push(candidate);
+        if (pending.length > ROUTE_CONCURRENCY) console.log(`[intervals] 轨迹进度 ${Math.min(index + batch.length, pending.length)}/${pending.length}`);
     }
 
-    return merged.sort((a, b) => {
-        const at = new Date(String(a.start_date_local).replace(' ', 'T')).getTime();
-        const bt = new Date(String(b.start_date_local).replace(' ', 'T')).getTime();
-        return at - bt;
-    });
+    const withRoute = activities.filter((activity) => activity.polyline).length;
+    console.log(
+        `[intervals] 活动 ${total} 条（${fullSync ? '全量' : '全量活动 + 增量轨迹'}），复用轨迹 ${reused} 条，新拉轨迹 ${fetched} 条，上游无轨迹 ${empty} 条，失败 ${failed} 条，有轨迹 ${withRoute} 条`
+    );
+    return sortActivities(activities);
 }
 
 async function syncMap(env) {
@@ -945,7 +882,7 @@ const SOURCES = {
         ]
     },
     memos: { run: (env, site) => syncMemos(env, site), file: 'memos.json' },
-    intervals: { run: (env) => syncIntervals(env), file: 'strava.json' },
+    intervals: { run: (env) => syncIntervals(env), file: 'activities.json' },
     map: { run: (env) => syncMap(env), file: 'geojson.json' },
     rank: { run: () => syncRank(), file: 'rank.json' },
     imagemeta: { run: () => syncImageMeta(), file: 'image-meta.json' }

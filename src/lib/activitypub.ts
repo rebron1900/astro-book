@@ -1,7 +1,8 @@
-import tippy from 'tippy.js';
+import { createTippy } from './client/tippy';
 import 'tippy.js/themes/light.css';
 import { normalizeData } from './utils/help';
 import cocoMessage from './coco-message';
+import { escapeHtml } from './client/dom';
 
 // 配置常量
 const API_ENDPOINT = 'https://hapi.190102.xyz:4433/blog/interactions';
@@ -21,15 +22,6 @@ interface InteractionStats {
     favourites_count: number;
 }
 
-// 转义外部数据，防止 XSS。同时适用于 HTML 属性与文本上下文。
-function escapeHtml(value: unknown): string {
-    return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-}
-
 interface InteractionData {
     toot_id: string;
     stats: InteractionStats;
@@ -39,19 +31,21 @@ interface InteractionData {
 
 // 主入口函数
 export default async function initActivityPubInteractions() {
+    const container = document.querySelector<HTMLElement>('#activitypub');
+    if (!container) {
+        return;
+    }
+
+    const postId = container.dataset.postid;
+    if (!postId) {
+        container.remove();
+        return;
+    }
+
     try {
-        const container = document.querySelector<HTMLElement>('#activitypub');
-        if (!container) {
-            return;
-        }
-
-        const postId = container.dataset.postid;
-        if (!postId) {
-            container.remove();
-            return;
-        }
-
         const data = await fetchInteractions(postId);
+        // 导航后容器已被替换：丢弃这次过期结果，避免写到别的页面
+        if (!container.isConnected) return;
         renderAllInteractions(data, container);
 
         // 如果有互动数据则显示容器
@@ -64,7 +58,7 @@ export default async function initActivityPubInteractions() {
             document.querySelector('.discussion-avatar-list')?.remove();
         }
     } catch (error) {
-        document.querySelector('.discussion-avatar-list')?.remove();
+        if (container.isConnected) document.querySelector('.discussion-avatar-list')?.remove();
         console.error('加载互动数据失败:', error);
     }
 }
@@ -100,7 +94,7 @@ function renderAllInteractions(data: InteractionData, container: HTMLElement) {
              class="avatar avatar-60 photo"
              loading="lazy"
              data-user-id="${escapeHtml(user.id)}"
-             data-type="${user.type}">
+             data-type="${escapeHtml(user.type)}">
       </div>
     `;
         avatarList.appendChild(li);
@@ -110,7 +104,7 @@ function renderAllInteractions(data: InteractionData, container: HTMLElement) {
         if (!img) return;
         if (user.type === 'reply') {
             // 评论工具提示
-            tippy(img, {
+            createTippy(img, {
                 theme: 'light',
                 allowHTML: true,
                 interactive: true,
@@ -126,7 +120,7 @@ function renderAllInteractions(data: InteractionData, container: HTMLElement) {
             });
         } else {
             // 点赞工具提示
-            tippy(img, {
+            createTippy(img, {
                 allowHTML: true,
                 content: `by ${escapeHtml(user.name)} 💖`,
                 delay: [100, 0]

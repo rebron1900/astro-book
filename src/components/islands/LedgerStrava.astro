@@ -1,9 +1,10 @@
 ---
+import type { Activity } from '../../lib/activity-types';
 import { stravaMetaFor, routeSketch } from '../../lib/strava-preview';
 import StravaCardPreview from './StravaCardPreview.astro';
 
 interface Props {
-    activity: any;
+    activity: Activity;
     /** 可选：把运动记录 id 透传到卡片根节点，方便页面做选中联动（首页不传） */
     dataId?: string;
     /** 可选：运动类型（data-sport，供筛选） */
@@ -12,16 +13,19 @@ interface Props {
     sketchMaxPoints?: number;
     /** 可选：记录日期（渲染为 data-date，供页面做日期联动） */
     dataDate?: string;
+    /** 可选：指标标签前是否显示小图标（运动页开启，首页不传） */
+    metricIcons?: boolean;
 }
 
-const { activity, dataId, dataSport, sketchMaxPoints, dataDate } = Astro.props as Props;
+const { activity, dataId, dataSport, sketchMaxPoints, dataDate, metricIcons } = Astro.props as Props;
 ---
 
 <StravaCardPreview
     activity={activity}
-    route={routeSketch(activity.summary_polyline, { maxPoints: sketchMaxPoints ?? 0 })}
+    route={routeSketch(activity.polyline, { maxPoints: sketchMaxPoints ?? 0 })}
     meta={stravaMetaFor(activity)}
     dataId={dataId}
     dataSport={dataSport}
     dataDate={dataDate}
+    metricIcons={metricIcons}
 />

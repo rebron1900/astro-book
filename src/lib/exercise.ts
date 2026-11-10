@@ -1,11 +1,11 @@
 /**
- * 运动页面共享数据层：把 strava.json 的原始活动整理成「运动记录」，
+ * 运动页面共享数据层：把 activities.json（intervals.icu 同步结果）整理成「运动记录」，
  * 并计算时间线分组、时间范围（scope）统计、日历/周/月/年序列。
  *
  * 该模块同时被 Astro（构建期服务端渲染）和浏览器端 island 引用，
  * 因此保持纯函数、不依赖 DOM，也不做时区换算（数据里是本地墙上时间）。
  */
-import type { StravaActivity } from './strava-types';
+import type { Activity } from './activity-types';
 
 export type SportKey = 'run' | 'ride' | 'walk' | 'hike' | 'climb' | 'swim' | 'stair' | 'other';
 
@@ -42,10 +42,6 @@ export function sportOf(type: string): SportKey {
     if (value.includes('climb')) return 'climb';
     if (value.includes('swim')) return 'swim';
     return 'other';
-}
-
-export function sportMetaOf(type: string): SportMeta {
-    return SPORT_META[sportOf(type)];
 }
 
 /** 时间线 / 地图 / 统计共用的运动记录 */
@@ -93,8 +89,6 @@ export interface ExerciseRecord {
     speed: number | null;
     /** 平均心率 */
     hr: number | null;
-    /** 三级地点描述（可能为空） */
-    location: string;
     /** 是否有可绘制的轨迹 */
     hasRoute: boolean;
     /** 原始编码轨迹，仅构建期用于生成地图数据；页面数据集会剔除 */
@@ -262,29 +256,7 @@ export function weekLabel(weekStart: string): string {
 /* 记录构建                                                            */
 /* ------------------------------------------------------------------ */
 
-function locationOf(raw: StravaActivity): string {
-    const parts = String(raw.location_country ?? '')
-        .split(',')
-        .map((part) => part.trim())
-        .filter(Boolean)
-        .filter((part) => !/^\d{5,6}$/.test(part))
-        .filter((part) => part !== '中国')
-        .filter((part) => !/(省|自治区|特别行政区)$/.test(part));
-    if (!parts.length) return '';
-
-    // 地址是从细到粗排列的，优先取「市 · 区/县」两级，避免显示 POI 名
-    const cityIndex = parts.reduce((found, part, index) => (/(市|州|地区)$/.test(part) ? index : found), -1);
-    if (cityIndex >= 0) {
-        const city = parts[cityIndex];
-        const district = parts[cityIndex - 1];
-        return /(区|县|旗|镇)$/.test(district ?? '') ? `${city} · ${district}` : city;
-    }
-
-    const tail = parts.slice(-2).reverse();
-    return tail.join(' · ');
-}
-
-export function buildRecords(raw: StravaActivity[]): ExerciseRecord[] {
+export function buildRecords(raw: Activity[]): ExerciseRecord[] {
     return raw
         .map((activity) => {
             const local = String(activity.start_date_local ?? activity.start_date ?? '');
@@ -293,7 +265,7 @@ export function buildRecords(raw: StravaActivity[]): ExerciseRecord[] {
             const { y, m } = dateParts(date);
             const sport = sportOf(activity.type);
             return {
-                id: String(activity.run_id),
+                id: String(activity.id),
                 name: activity.name || SPORT_META[sport].label,
                 date,
                 time,
@@ -306,9 +278,8 @@ export function buildRecords(raw: StravaActivity[]): ExerciseRecord[] {
                 elevation: Math.round(Number(activity.elevation_gain) || 0),
                 speed: activity.average_speed ?? null,
                 hr: activity.average_heartrate ?? null,
-                location: locationOf(activity),
-                hasRoute: Boolean(activity.summary_polyline && activity.summary_polyline.length > 20),
-                polyline: activity.summary_polyline || undefined
+                hasRoute: Boolean(activity.polyline && activity.polyline.length > 20),
+                polyline: activity.polyline
             } satisfies ExerciseRecord;
         })
         .filter((record) => record.date.length === 10)
@@ -316,26 +287,22 @@ export function buildRecords(raw: StravaActivity[]): ExerciseRecord[] {
 }
 
 /**
- * 还原成 StravaActivity 形状，复用 `strava-preview.ts` 里既有的卡片文案逻辑
+ * 还原成 `Activity` 形状，复用 `strava-preview.ts` 里既有的卡片文案逻辑
  * （首页 / 时间线的运动卡片和这里保持同一套「距离 / 配速 / 均速 / 用时 / 爬升 / 心率」）。
  */
-export function toStravaActivity(record: ExerciseRecord): StravaActivity {
-    const hours = Math.floor(record.seconds / 3600);
-    const minutes = Math.floor((record.seconds % 3600) / 60);
-    const seconds = record.seconds % 60;
+export function toActivity(record: ExerciseRecord): Activity {
     return {
-        run_id: record.id,
+        id: record.id,
         name: record.name,
         distance: record.distance,
-        moving_time: `${hours}:${pad2(minutes)}:${pad2(seconds)}`,
+        moving_time: record.seconds,
         type: record.type,
-        start_date: record.date,
+        start_date: `${record.date}T${record.time}:00Z`,
         start_date_local: `${record.date} ${record.time}:00`,
-        location_country: record.location,
-        summary_polyline: record.polyline,
         average_heartrate: record.hr,
-        average_speed: record.speed ?? undefined,
-        elevation_gain: record.elevation
+        average_speed: record.speed,
+        elevation_gain: record.elevation,
+        polyline: record.polyline
     };
 }
 
@@ -375,10 +342,6 @@ export function scopeKey(scope: ExerciseScope): string {
         default:
             return 'all';
     }
-}
-
-export function scopeFromRecord(record: ExerciseRecord): ExerciseScope {
-    return { kind: 'record', id: record.id };
 }
 
 /** scope 对应的日期区间 [start, end]（含端点） */

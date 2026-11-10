@@ -1,0 +1,1371 @@
+/* ==========================================================================
+   运动页：右侧统计面板（日历 / 总览 / tooltip）
+   ========================================================================== */
+/* ==========================================================================
+   运动统计面板内部样式（全局，`ex-stats-` 前缀）
+   外框 .ex-stats / 页签 .ex-tabs / .ex-tab / .ex-tab-panel 由 `_base.scss` 提供，
+   这里只负责面板内部：标题、指标格、月历、柱状图、分项、记录行。
+   ========================================================================== */
+
+.ex-stats-body {
+    color: var(--body-font-color);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.5;
+    container-type: inline-size;
+}
+
+.ex-stats-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.42rem;
+    min-inline-size: 0;
+}
+
+/* ---------- 标题 / 翻页 ---------- */
+.ex-stats-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.4rem;
+    min-block-size: 1.4rem;
+    margin-block-end: 0.4rem;
+}
+
+.ex-stats-head-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.02rem;
+    min-inline-size: 0;
+}
+
+.ex-stats-head-title {
+    margin: 0;
+    color: var(--body-font-color);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.ex-stats-head-sub {
+    margin: 0;
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.ex-stats-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1.15rem;
+    block-size: 1.15rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0.25rem;
+    background: transparent;
+    color: var(--gray-500);
+    cursor: pointer;
+    transition:
+        background 140ms ease,
+        color 140ms ease;
+}
+
+.ex-stats-nav:hover {
+    background: var(--gray-100);
+    color: var(--color-link);
+}
+
+.ex-stats-nav:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 1px;
+}
+
+.ex-stats-chev {
+    inline-size: 0.8rem;
+    block-size: 0.8rem;
+}
+
+/* ---------- 指标格 ---------- */
+.ex-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.32rem 0.3rem;
+    margin: 0;
+    padding: 0;
+}
+
+.ex-stats-grid.is-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ex-stats-grid.is-three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ex-stats-cell {
+    min-inline-size: 0;
+}
+
+.ex-stats-cell-label {
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    line-height: 1.4;
+}
+
+/* 数值与单位分开：数字不截断，单位用更小一号的灰字，窄格子也放得下 */
+.ex-stats-cell-value {
+    overflow: hidden;
+    margin: 0.03rem 0 0;
+    color: var(--body-font-color);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.ex-stats-grid.is-two .ex-stats-cell-value,
+.ex-stats-grid.is-three .ex-stats-cell-value {
+    font-size: 0.8125rem;
+}
+
+.ex-stats-cell-unit {
+    margin-inline-start: 0.14rem;
+    color: var(--gray-700);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+
+/* ---------- 月历 ---------- */
+.ex-stats-cal {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.12rem;
+}
+
+.ex-stats-cal-weekday {
+    padding-block-end: 0.1rem;
+    color: var(--gray-500);
+    font-size: 0.5625rem;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.ex-stats-cal-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 1px 0 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--gray-700);
+    font: inherit;
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+button.ex-stats-cal-day {
+    color: var(--body-font-color);
+    cursor: pointer;
+}
+
+/* 圆形环：conic-gradient 画运动类型占比，中间挖空放日期数字 */
+.ex-stats-cal-ring {
+    position: relative;
+    display: grid;
+    place-items: center;
+    inline-size: 1.7rem;
+    block-size: 1.7rem;
+    border-radius: 50%;
+}
+
+.ex-stats-cal-day.has-donut .ex-stats-cal-ring {
+    background: var(--ex-donut, var(--gray-100));
+}
+
+.ex-stats-cal-day.has-donut .ex-stats-cal-ring::before {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--body-background);
+}
+
+.ex-stats-cal-num {
+    position: relative;
+    z-index: 1;
+    font-size: 0.625rem;
+    line-height: 1;
+}
+
+.ex-stats-cal-day.has-donut .ex-stats-cal-num {
+    font-weight: 600;
+}
+
+button.ex-stats-cal-day:hover .ex-stats-cal-ring {
+    box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--color-link) 45%, transparent);
+}
+
+.ex-stats-cal-day.is-today .ex-stats-cal-ring {
+    box-shadow: inset 0 0 0 1px var(--gray-500);
+}
+
+.ex-stats-cal-day.is-selected .ex-stats-cal-ring,
+.ex-stats-cal-day.is-selected:hover .ex-stats-cal-ring {
+    box-shadow: 0 0 0 1.5px var(--color-link);
+}
+
+.ex-stats-cal-day:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 1px;
+}
+
+.ex-stats-cal-day.is-out {
+    color: var(--gray-500);
+    opacity: 0.4;
+}
+
+/* ---------- 小结 / 空状态 / 小节标题 ---------- */
+.ex-stats-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.16rem 0.5rem;
+    margin: 0.5rem 0 0;
+    color: var(--gray-700);
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.ex-stats-summary-label {
+    color: var(--gray-500);
+}
+
+.ex-stats-summary-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.16rem;
+    white-space: nowrap;
+}
+
+.ex-stats-strong {
+    color: var(--body-font-color);
+    font-weight: 600;
+}
+
+.ex-stats-sep {
+    margin-inline: 0.28rem;
+    color: var(--gray-500);
+}
+
+.ex-stats-empty {
+    margin: 0.1rem 0;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    line-height: 1.6;
+}
+
+.ex-stats-section {
+    margin: 0.06rem 0 -0.16rem;
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+}
+
+.ex-stats-more {
+    margin: -0.14rem 0 0;
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    line-height: 1.4;
+}
+
+/* ---------- 柱状图（周 / 年共用） ---------- */
+.ex-stats-bars {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.14rem;
+    margin-block-start: 0.1rem;
+}
+
+.ex-stats-bars.is-year {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 0.1rem;
+}
+
+.ex-stats-bar-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+    min-inline-size: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--gray-500);
+    font: inherit;
+    cursor: pointer;
+}
+
+.ex-stats-bar-col:disabled {
+    cursor: default;
+}
+
+.ex-stats-bar-track {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    block-size: 2.6rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.ex-stats-bars.is-year .ex-stats-bar-track {
+    block-size: 3rem;
+}
+
+.ex-stats-bar {
+    display: block;
+    inline-size: 58%;
+    min-inline-size: 3px;
+    border-radius: 2px 2px 0 0;
+    background: color-mix(in srgb, var(--color-link) 55%, var(--gray-200));
+    transition: background 140ms ease;
+}
+
+/* 没有记录的日子只留底座那道 1px 线，不要出现假的「有数据」色块 */
+.ex-stats-bar-col:disabled .ex-stats-bar {
+    display: none;
+}
+
+.ex-stats-bar-col:not(:disabled):hover .ex-stats-bar {
+    background: var(--color-link);
+}
+
+.ex-stats-bar-col.is-selected .ex-stats-bar {
+    background: var(--color-link);
+}
+
+.ex-stats-bars.is-year .ex-stats-bar {
+    inline-size: 62%;
+}
+
+.ex-stats-bar-label {
+    color: var(--gray-500);
+    font-size: 0.5625rem;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.ex-stats-bars.is-year .ex-stats-bar-label {
+    font-size: 0.5rem;
+}
+
+.ex-stats-bar-col.is-today .ex-stats-bar-label {
+    color: var(--body-font-color);
+    font-weight: 600;
+}
+
+.ex-stats-bar-col.is-selected .ex-stats-bar-label {
+    color: var(--color-link);
+    font-weight: 600;
+}
+
+.ex-stats-bar-col:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 1px;
+    border-radius: 0.2rem;
+}
+
+/* ---------- 运动类型分项 ---------- */
+.ex-stats-sports {
+    display: flex;
+    flex-direction: column;
+    gap: 0.34rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ex-stats-sport {
+    min-inline-size: 0;
+}
+
+.ex-stats-sport-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    min-inline-size: 0;
+}
+
+.ex-stats-sport-dot,
+.ex-stats-item-dot,
+.ex-stats-line-dot {
+    flex: none;
+    align-self: center;
+    inline-size: 0.4rem;
+    block-size: 0.4rem;
+    border-radius: 50%;
+    background: var(--ex-sport-color, var(--gray-500));
+}
+
+.ex-stats-sport-name {
+    color: var(--body-font-color);
+    font-size: 0.6875rem;
+}
+
+.ex-stats-sport-count {
+    color: var(--gray-500);
+    font-size: 0.625rem;
+}
+
+.ex-stats-sport-value {
+    margin-inline-start: auto;
+    color: var(--body-font-color);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ex-stats-sport-share {
+    min-inline-size: 1.9rem;
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    text-align: end;
+}
+
+.ex-stats-sport-track {
+    display: block;
+    overflow: hidden;
+    margin-block-start: 0.18rem;
+    block-size: 0.1875rem;
+    border-radius: 999px;
+    background: var(--gray-100);
+}
+
+.ex-stats-sport-fill {
+    display: block;
+    block-size: 100%;
+    border-radius: inherit;
+    background: color-mix(in srgb, var(--ex-sport-color) 76%, transparent);
+}
+
+/* 总览卡里的紧凑排版：运动类型 / 纪录都用两列网格，压低整卡高度 */
+.ex-stats-sports.is-compact {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.22rem 0.6rem;
+}
+
+.ex-stats-sports.is-compact .ex-stats-sport-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+        'dot name value'
+        'dot count share';
+    align-items: baseline;
+    gap: 0 0.24rem;
+}
+
+.ex-stats-sports.is-compact .ex-stats-sport-dot {
+    grid-area: dot;
+    align-self: center;
+}
+
+.ex-stats-sports.is-compact .ex-stats-sport-name {
+    grid-area: name;
+    overflow: hidden;
+    font-size: 0.625rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ex-stats-sports.is-compact .ex-stats-sport-count {
+    grid-area: count;
+    font-size: 0.5625rem;
+}
+
+.ex-stats-sports.is-compact .ex-stats-sport-value {
+    grid-area: value;
+    font-size: 0.625rem;
+}
+
+.ex-stats-sports.is-compact .ex-stats-sport-share {
+    grid-area: share;
+    min-inline-size: 0;
+    font-size: 0.5625rem;
+}
+
+.ex-stats-marks.is-compact {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.12rem 0.5rem;
+}
+
+.ex-stats-marks.is-compact .ex-stats-line {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+        'dot label value'
+        'dot date date';
+    gap: 0.02rem 0.28rem;
+    min-inline-size: 0;
+}
+
+.ex-stats-marks.is-compact .ex-stats-line-dot {
+    grid-area: dot;
+    align-self: center;
+}
+
+.ex-stats-marks.is-compact .ex-stats-line-label {
+    grid-area: label;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ex-stats-marks.is-compact .ex-stats-line-value {
+    grid-area: value;
+}
+
+.ex-stats-marks.is-compact .ex-stats-line-date {
+    grid-area: date;
+    text-align: end;
+}
+
+/* 日历卡：日历常驻上方，日/周/月/年 筛选结果在下方 */
+.ex-stats-filter {
+    margin-block-start: 0.55rem;
+    padding-block-start: 0.55rem;
+    border-block-start: 1px solid var(--gray-200);
+}
+
+.ex-stats-card--calendar .ex-tab-panel {
+    padding-block-start: 0.45rem;
+}
+
+/* ---------- 月内各周 ---------- */
+.ex-stats-weeks {
+    display: flex;
+    flex-direction: column;
+    gap: 0.02rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ex-stats-week {
+    display: grid;
+    grid-template-columns: 2.1rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.4rem;
+    inline-size: 100%;
+    padding: 0.2rem 0.25rem;
+    border: 0;
+    border-radius: 0.25rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+    transition: background 140ms ease;
+}
+
+.ex-stats-week:disabled {
+    cursor: default;
+}
+
+.ex-stats-week:not(:disabled):hover {
+    background: var(--gray-100);
+}
+
+.ex-stats-week.is-active {
+    background: color-mix(in srgb, var(--color-link) 9%, transparent);
+    box-shadow: inset 2px 0 0 var(--color-link);
+}
+
+.ex-stats-week:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: -1px;
+}
+
+.ex-stats-week-label {
+    color: var(--gray-700);
+    font-size: 0.625rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.ex-stats-week-track {
+    display: block;
+    overflow: hidden;
+    block-size: 0.1875rem;
+    border-radius: 999px;
+    background: var(--gray-100);
+}
+
+.ex-stats-week-fill {
+    display: block;
+    block-size: 100%;
+    border-radius: inherit;
+    background: color-mix(in srgb, var(--color-link) 62%, transparent);
+}
+
+.ex-stats-week-value {
+    color: var(--body-font-color);
+    font-size: 0.625rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+    white-space: nowrap;
+}
+
+.ex-stats-week:disabled .ex-stats-week-value {
+    color: var(--gray-500);
+    font-weight: 400;
+}
+
+/* ---------- 当月最远 ---------- */
+.ex-stats-best {
+    display: flex;
+    flex-direction: column;
+    gap: 0.08rem;
+    inline-size: 100%;
+    padding: 0.28rem 0.35rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.375rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+    transition:
+        background 140ms ease,
+        border-color 140ms ease;
+}
+
+.ex-stats-best:hover {
+    border-color: color-mix(in srgb, var(--color-link) 45%, var(--gray-200));
+    background: var(--gray-100);
+}
+
+.ex-stats-best:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 1px;
+}
+
+.ex-stats-best-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    min-inline-size: 0;
+}
+
+.ex-stats-best-label {
+    color: var(--gray-500);
+    font-size: 0.625rem;
+}
+
+.ex-stats-best-value {
+    margin-inline-start: auto;
+    color: var(--body-font-color);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.ex-stats-best-date {
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.ex-stats-best-name {
+    overflow: hidden;
+    color: var(--body-font-color);
+    font-size: 0.6875rem;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---------- 记录行 ---------- */
+.ex-stats-list,
+.ex-stats-marks {
+    display: flex;
+    flex-direction: column;
+    gap: 0.02rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ex-stats-item {
+    display: grid;
+    grid-template-columns: auto 2.3rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.3rem;
+    inline-size: 100%;
+    padding: 0.22rem 0.25rem;
+    border: 0;
+    border-radius: 0.25rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+    transition: background 140ms ease;
+}
+
+.ex-stats-item:hover {
+    background: var(--gray-100);
+}
+
+.ex-stats-item.is-active {
+    background: color-mix(in srgb, var(--color-link) 9%, transparent);
+    box-shadow: inset 2px 0 0 var(--color-link);
+}
+
+.ex-stats-item:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: -1px;
+}
+
+.ex-stats-item-when {
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.ex-stats-item-name {
+    overflow: hidden;
+    color: var(--body-font-color);
+    font-size: 0.6875rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ex-stats-item-value {
+    color: var(--body-font-color);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.ex-stats-line {
+    display: grid;
+    grid-template-columns: auto 3.7rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.32rem;
+    inline-size: 100%;
+    padding: 0.22rem 0.25rem;
+    border: 0;
+    border-radius: 0.25rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+    transition: background 140ms ease;
+}
+
+.ex-stats-line:hover {
+    background: var(--gray-100);
+}
+
+.ex-stats-line.is-active {
+    background: color-mix(in srgb, var(--color-link) 9%, transparent);
+    box-shadow: inset 2px 0 0 var(--color-link);
+}
+
+.ex-stats-line:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: -1px;
+}
+
+.ex-stats-line-label {
+    color: var(--gray-700);
+    font-size: 0.625rem;
+}
+
+.ex-stats-line-value {
+    overflow: hidden;
+    color: var(--body-font-color);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ex-stats-line-date {
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* 右侧栏在 1280px 以下只有 16rem（内容宽约 206px）：指标格退回两列，
+   数字与单位才不会被挤掉（宁可多一行，也不要出现省略号）。 */
+@container (max-width: 265px) {
+    /* 窄栏里两列会挤到截断，退成一列 */
+    .ex-stats-sports.is-compact,
+    .ex-stats-marks.is-compact {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ex-stats-grid:not(.is-two) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ex-stats-week {
+        grid-template-columns: 1.9rem minmax(0, 1fr) auto;
+        gap: 0.3rem;
+    }
+
+    .ex-stats-item {
+        grid-template-columns: auto 2rem minmax(0, 1fr) auto;
+        gap: 0.25rem;
+    }
+
+    .ex-stats-cal-day {
+        block-size: 1.55rem;
+    }
+}
+
+/* 日历卡片：内容切换的淡入 + 标题居中 */
+.ex-cal-body {
+    padding: 0;
+    animation: ex-cal-in 240ms ease;
+}
+
+@keyframes ex-cal-in {
+    from {
+        opacity: 0.35;
+        transform: translateY(2px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* 上 / 下月按钮一边一个，月份标题居中 */
+.ex-stats-card--calendar .ex-stats-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.ex-stats-card--calendar .ex-stats-head-title {
+    grid-column: 2;
+    justify-self: center;
+}
+
+.ex-stats-card--calendar .ex-cal-nav {
+    inline-size: 1.4rem;
+    block-size: 1.4rem;
+    justify-self: start;
+}
+
+.ex-stats-card--calendar .ex-cal-nav:last-child {
+    justify-self: end;
+}
+
+/* ---------- 全部运动总览 ---------- */
+.ex-ov {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+}
+
+.ex-ov-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.ex-ov-title {
+    margin: 0;
+    color: var(--body-font-color);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.ex-ov-range {
+    color: var(--gray-500);
+    font-size: 0.5625rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.ex-ov-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem 0.5rem;
+    margin: 0.6rem 0 0;
+}
+
+.ex-ov-metric {
+    min-inline-size: 0;
+}
+
+.ex-ov-metric dt {
+    display: flex;
+    align-items: center;
+    gap: 0.18rem;
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.ex-ov-metric dd {
+    margin: 0.08rem 0 0;
+    color: var(--body-font-color);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.ex-ov-metric dd small {
+    margin-inline-start: 0.1rem;
+    color: var(--gray-700);
+    font-size: 0.5625rem;
+    font-weight: 500;
+}
+
+/* 侧栏内容宽约 201px：三列放不下「1101.99 km」这类宽数值，退成两列 */
+@container (max-width: 265px) {
+    .ex-ov-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.ex-ov-section {
+    margin: 0.7rem 0 0.3rem;
+    padding-block-start: 0.5rem;
+    border-block-start: 1px solid var(--gray-100);
+    color: var(--gray-500);
+    font-size: 0.5625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.ex-ov-share {
+    display: flex;
+    overflow: hidden;
+    block-size: 0.3rem;
+    border-radius: 999px;
+    background: var(--gray-100);
+}
+
+.ex-ov-share span {
+    min-inline-size: 2px;
+    block-size: 100%;
+}
+
+.ex-ov-legend {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.18rem 0.55rem;
+    margin: 0.4rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ex-ov-legend li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.22rem;
+    min-inline-size: 0;
+    font-size: 0.625rem;
+}
+
+.ex-ov-legend i {
+    flex: none;
+    align-self: center;
+    inline-size: 0.36rem;
+    block-size: 0.36rem;
+    border-radius: 50%;
+    background: var(--c, var(--gray-500));
+}
+
+.ex-ov-legend span {
+    overflow: hidden;
+    color: var(--gray-700);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ex-ov-legend b {
+    color: var(--body-font-color);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ex-ov-legend em {
+    margin-inline-start: auto;
+    color: var(--gray-500);
+    font-style: normal;
+    white-space: nowrap;
+}
+
+.ex-ov-records {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.12rem;
+    /* 行内留出一点内边距，选中态的描边不会贴住图标；再用负外边距把文字拉回标题的左边线 */
+    margin-inline: -0.32rem;
+}
+
+/* 侧栏只有 224px：一条记录占一整行，标签 / 数值 / 日期各占一列，避免两列时挤在一起 */
+.ex-ov-record {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    align-items: baseline;
+    gap: 0.3rem;
+    padding: 0.26rem 0.32rem;
+    border: 0;
+    border-radius: 0.25rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+    transition:
+        background 140ms ease,
+        box-shadow 140ms ease;
+}
+
+.ex-ov-record:hover {
+    background: var(--gray-100);
+}
+
+/* 选中态用正常的整圈描边，不再用左侧一条强调线 */
+.ex-ov-record.is-active {
+    background: color-mix(in srgb, var(--color-link) 8%, transparent);
+    box-shadow: inset 0 0 0 1px var(--color-link);
+}
+
+/* 纪录类别图标：默认灰，悬停 / 选中时变成主题色 */
+.ex-ov-record-icon {
+    align-self: center;
+    flex: none;
+    inline-size: 0.75rem;
+    block-size: 0.75rem;
+    color: var(--gray-500);
+    transition: color 140ms ease;
+}
+
+.ex-ov-record:hover .ex-ov-record-icon,
+.ex-ov-record.is-active .ex-ov-record-icon {
+    color: var(--color-link);
+}
+
+.ex-ov-record-label {
+    overflow: hidden;
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ex-ov-record-value {
+    color: var(--body-font-color);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-align: end;
+    white-space: nowrap;
+}
+
+.ex-ov-record-date {
+    grid-column: 4;
+    color: var(--gray-500);
+    font-size: 0.5625rem;
+    white-space: nowrap;
+}
+
+/* 小屏抽屉里卡片更宽，纪录可以回到两列 */
+@container (min-width: 24rem) {
+    .ex-ov-records {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.12rem 0.9rem;
+    }
+}
+
+/* 日历标题拆成年 / 月两个悬浮目标 */
+.ex-cal-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.2rem;
+}
+
+.ex-cal-head-part {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: help;
+    text-decoration: underline dotted color-mix(in srgb, var(--gray-500) 40%, transparent);
+    text-underline-offset: 0.18rem;
+}
+
+.ex-cal-head-part:hover {
+    color: var(--color-link);
+}
+
+/* ---------- 日历 tooltip（tippy 内容） ---------- */
+/* 卡片外观（边框 / 圆角 / 阴影 / 箭头）已经统一到全局 .tippy-box，这里只把内容内边距归零 */
+.tippy-box.ex-cal-tip-box .tippy-content {
+    padding: 0;
+}
+
+.ex-cal-tip {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 13.5rem;
+    overflow: hidden;
+    border-radius: calc(0.7rem - 1px);
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+}
+
+/* 顶部信息带：日期 / 月份 / 年份 + 一行摘要，用底色和细线和正文分开 */
+.ex-cal-tip-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.08rem;
+    padding: 0.52rem 0.68rem 0.48rem;
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--gray-100) 90%, transparent),
+        color-mix(in srgb, var(--gray-100) 28%, transparent)
+    );
+    border-block-end: 1px solid color-mix(in srgb, var(--gray-500) 24%, transparent);
+}
+
+.ex-cal-tip-title {
+    color: var(--body-font-color);
+    font-size: 0.7813rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    line-height: 1.35;
+}
+
+.ex-cal-tip-sub {
+    color: var(--gray-700);
+    font-size: 0.625rem;
+    line-height: 1.45;
+}
+
+.ex-cal-tip-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.52rem;
+    padding: 0.55rem 0.68rem 0.62rem;
+}
+
+.ex-cal-tip-body:empty {
+    display: none;
+}
+
+/* 四项指标做成 2×2 小格：标签在上、数值在下，比「标签 … 数值」一行更清楚 */
+.ex-cal-tip-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    overflow: hidden;
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--gray-500) 24%, transparent);
+}
+
+.ex-cal-tip-grid span {
+    display: flex;
+    flex-direction: column;
+    gap: 0.02rem;
+    padding: 0.3rem 0.42rem;
+    background: color-mix(in srgb, var(--body-background) 86%, var(--gray-100));
+}
+
+.ex-cal-tip-grid em {
+    display: flex;
+    align-items: center;
+    gap: 0.16rem;
+    color: var(--gray-500);
+    font-size: 0.5625rem;
+    font-style: normal;
+    line-height: 1.3;
+}
+
+.ex-cal-tip-grid b {
+    color: var(--body-font-color);
+    font-size: 0.75rem;
+    font-weight: 650;
+    line-height: 1.25;
+    white-space: nowrap;
+}
+
+/* 分组标题：文字 + 一条会伸展的细线，tooltip 内部分区更明确 */
+.ex-cal-tip-section {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    color: var(--gray-500);
+    font-size: 0.5625rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    line-height: 1.4;
+}
+
+.ex-cal-tip-section::after {
+    content: '';
+    flex: 1;
+    block-size: 1px;
+    background: color-mix(in srgb, var(--gray-500) 26%, transparent);
+}
+
+.ex-cal-tip-list {
+    display: flex;
+    flex-direction: column;
+    margin: -0.08rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ex-cal-tip-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.32rem;
+    min-inline-size: 0;
+    padding: 0.24rem 0.12rem;
+    border-block-start: 1px solid color-mix(in srgb, var(--gray-500) 18%, transparent);
+    font-size: 0.625rem;
+}
+
+.ex-cal-tip-list li:first-child {
+    border-block-start: 0;
+}
+
+.ex-cal-tip .is-clickable {
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background 120ms ease;
+}
+
+.ex-cal-tip .is-clickable:hover {
+    background: color-mix(in srgb, var(--gray-100) 85%, transparent);
+}
+
+.ex-cal-tip-list i {
+    flex: none;
+    align-self: center;
+    inline-size: 0.4rem;
+    block-size: 0.4rem;
+    border-radius: 50%;
+    background: var(--c, var(--gray-500));
+}
+
+.ex-cal-tip-list span {
+    overflow: hidden;
+    flex: 1 1 auto;
+    color: var(--gray-700);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ex-cal-tip-list em {
+    flex: none;
+    color: var(--gray-500);
+    font-style: normal;
+}
+
+.ex-cal-tip-list b {
+    flex: none;
+    color: var(--body-font-color);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* 年度 tooltip：12 个月做成三列小格，月份和距离各占一行 */
+.ex-cal-tip-months {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ex-cal-tip-months li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.02rem;
+    padding: 0.26rem 0.34rem;
+    border-radius: 0.32rem;
+    background: color-mix(in srgb, var(--gray-100) 55%, transparent);
+    font-size: 0.625rem;
+}
+
+.ex-cal-tip-months em {
+    color: var(--gray-500);
+    font-size: 0.5625rem;
+    font-style: normal;
+}
+
+.ex-cal-tip-months b {
+    color: var(--body-font-color);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ex-cal-tip-record {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-block-start: -0.08rem;
+    padding: 0.3rem 0.38rem;
+    border-radius: 0.32rem;
+    background: color-mix(in srgb, var(--gray-100) 55%, transparent);
+    color: var(--gray-700);
+    font-size: 0.625rem;
+}
+
+.ex-cal-tip-record b {
+    color: var(--body-font-color);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* ---------- 动效偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .ex-stats-nav,
+    .ex-stats-cal-day,
+    .ex-stats-bar,
+    .ex-stats-week,
+    .ex-stats-best,
+    .ex-stats-item,
+    .ex-stats-line {
+        transition: none;
+    }
+}

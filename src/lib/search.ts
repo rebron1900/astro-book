@@ -16,6 +16,23 @@ declare global {
     }
 }
 
+/** 全局只注册一次：`s/` 热键聚焦搜索框（每次事件再取当前页面的输入框）。 */
+function focusSearchFieldOnKeyPress(event: KeyboardEvent) {
+    const target = event.target as HTMLInputElement | null;
+    // 正在输入框/可编辑区域里打字时不劫持
+    if (target && (target.value !== undefined || target.isContentEditable)) return;
+
+    const input = document.querySelector<HTMLInputElement>('#book-search-input');
+    if (!input || input === document.activeElement) return;
+
+    const dataHotkeys = input.getAttribute('data-hotkeys') || '';
+    const characterPressed = String.fromCharCode(event.charCode);
+    if (dataHotkeys.indexOf(characterPressed) < 0) return;
+
+    input.focus();
+    event.preventDefault();
+}
+
 const search = () => {
     const searchDataURL = '/search-data.json';
     const indexConfig = Object.assign(
@@ -59,33 +76,10 @@ const search = () => {
     const input: HTMLInputElement = inputMaybe;
     const results: HTMLElement = resultsMaybe;
 
-    input.addEventListener('focus', init);
-    input.addEventListener('keyup', search);
-
-    document.addEventListener('keypress', focusSearchFieldOnKeyPress);
-
-    function focusSearchFieldOnKeyPress(event: KeyboardEvent) {
-        const target = event.target as HTMLInputElement;
-        if (target.value !== undefined) {
-            return;
-        }
-
-        if (input === document.activeElement) {
-            return;
-        }
-
-        const characterPressed = String.fromCharCode(event.charCode);
-        if (!isHotkey(characterPressed)) {
-            return;
-        }
-
-        input.focus();
-        event.preventDefault();
-    }
-
-    function isHotkey(character: string) {
-        const dataHotkeys = input.getAttribute('data-hotkeys') || '';
-        return dataHotkeys.indexOf(character) >= 0;
+    if (input.dataset.searchBound !== 'true') {
+        input.dataset.searchBound = 'true';
+        input.addEventListener('focus', init);
+        input.addEventListener('keyup', search);
     }
 
     function init() {
@@ -141,5 +135,10 @@ const search = () => {
         return div.firstElementChild as HTMLElement | null;
     }
 };
+
+// 模块只会被加载一次，热键监听也只注册一次
+if (typeof document !== 'undefined') {
+    document.addEventListener('keypress', focusSearchFieldOnKeyPress);
+}
 
 export default search;

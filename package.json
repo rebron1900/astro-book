@@ -10,7 +10,8 @@
         "astro": "astro",
         "test": "vitest run",
         "test:watch": "vitest",
-        "sync:data": "node scripts/sync-data.mjs"
+        "sync:data": "node scripts/sync-data.mjs",
+        "import:strava-export": "node scripts/import-strava-export.mjs"
     },
     "dependencies": {
         "@astrojs/rss": "4.0.19",

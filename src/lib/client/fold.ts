@@ -19,23 +19,14 @@ export default function limitHight(dom: HTMLElement | null = null) {
         }
     });
 
-    // 监听 .atk-content 内图片加载，加载完成后重新评估是否需要折叠按钮
+    // 监听 .atk-content 内图片加载，加载完成后重新评估是否需要折叠按钮（每个图片只绑定一次）
     document.querySelectorAll<HTMLImageElement>('.atk-content img').forEach((img) => {
-        img.onload = () => {
-            if (img.complete) {
-                const parent = img.closest('.atk-content');
-                if (parent) limitHight(parent as HTMLElement);
-            }
-            // 未来加载的图片
-            img.onload = function () {
-                const parent = img.closest('.atk-content');
-                if (parent) limitHight(parent as HTMLElement);
-            };
-        };
-        // 处理加载失败
-        img.onerror = function () {
-            console.error('Image failed to load:', img.src);
-        };
+        if (img.dataset.foldWatch === 'true') return;
+        img.dataset.foldWatch = 'true';
+        img.addEventListener('load', () => {
+            const parent = img.closest('.atk-content');
+            if (parent) limitHight(parent as HTMLElement);
+        }, { once: true });
     });
 }
 
@@ -44,7 +35,7 @@ function createFoldButton(highlightDiv: HTMLElement) {
 
     const button = document.createElement('div');
     button.innerHTML = `
-        <svg viewBox="0 0 24 24" aria-hidden="true" class="book-icon"><use xlink:href="/icons.svg#fold"></use></svg><sm>展开</sm>
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="book-icon"><use xlink:href="/icons.svg#fold"></use></svg><small>展开</small>
     `;
     button.className = 'fold-button';
     button.ariaLabel = '展开';
@@ -54,8 +45,8 @@ function createFoldButton(highlightDiv: HTMLElement) {
         const icons = highlightDiv.classList.contains('limit-hight') ? ['/icons.svg#fold', '展开'] : ['/icons.svg#collapse', '折叠'];
         const target = evn.currentTarget as HTMLElement;
         target.querySelector('svg use')?.setAttribute('xlink:href', icons[0]);
-        const sm = target.querySelector<HTMLElement>('sm');
-        if (sm) sm.innerText = icons[1];
+        const small = target.querySelector<HTMLElement>('small');
+        if (small) small.innerText = icons[1];
     });
 
     if (highlightDiv.scrollHeight > 400) {
