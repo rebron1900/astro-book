@@ -142,6 +142,8 @@ class FootprintMapInstance implements FootprintMapController {
     private readonly entries = new Map<string, MarkerEntry>();
     private highlighted = new Set<string>();
     private selectedId: string | null = null;
+    /** 这次激活是从哪来的：标点自己点出来的，再点才跳文章；从卡片/随机聚焦来的不算 */
+    private activeSource: 'card' | 'marker' | null = null;
     /** 按地名筛选：null 表示不过滤；中标点保持原样，其余压暗到 13% */
     private filterNames: ReadonlySet<string> | null = null;
     /** 视角唯一来源：焦点动画、按钮、卡片高亮都从它派生 */
@@ -321,12 +323,9 @@ class FootprintMapInstance implements FootprintMapController {
     focusPlace(placeId: string): void {
         const place = this.placeById.get(placeId);
         if (!place || !this.map) return;
-        // 再次点同一张卡 = 取消激活，回平面
-        if (this.selectedId === placeId) {
-            this.clearActive();
-            return;
-        }
-        this.select(placeId);
+        // 同一地点的另一张卡要能重新聚焦（激活按元素算，不按地点算），所以这里不做「已激活就取消」；
+        // 取消激活走 Esc / 点空白 / 「全部」按钮
+        this.select(placeId, 'card');
         // 先取消在途动画，避免连续点两张卡时 pitch/bearing 互相当作起点而跳变
         this.map.stop();
         this.setPitchMode('tilt');
@@ -539,6 +538,7 @@ class FootprintMapInstance implements FootprintMapController {
         this.focusOffsetY = 0;
         const hadSelection = this.selectedId !== null;
         this.selectedId = null;
+        this.activeSource = null;
         this.applySelection();
         this.options.onSelect?.(null);
         if (hadSelection) this.emitState();
@@ -709,8 +709,9 @@ class FootprintMapInstance implements FootprintMapController {
         this.clearActive();
     };
 
-    private select(placeId: string): void {
+    private select(placeId: string, source: 'card' | 'marker'): void {
         this.selectedId = placeId;
+        this.activeSource = source;
         this.applySelection();
         this.options.onSelect?.(placeId);
         this.emitState();
@@ -865,7 +866,7 @@ class FootprintMapInstance implements FootprintMapController {
             // 触屏没有 hover：点一下开信息，再点同一个点收起（键盘回车 detail 为 0，走焦点态）
             if (event.detail > 0 && this.pointerType === 'touch') {
                 if (this.selectedId !== place.id) {
-                    this.select(place.id);
+                    this.select(place.id, 'marker');
                     this.showTooltip(element, () => this.buildPlaceTooltip(place));
                     return;
                 }
@@ -873,12 +874,13 @@ class FootprintMapInstance implements FootprintMapController {
                 else this.showTooltip(element, () => this.buildPlaceTooltip(place));
                 return;
             }
-            // 已经激活的标点再点一次 = 打开这个地点最新的游记，保持「聚焦 → 再点才跳转」的节奏
-            if (this.selectedId === place.id) {
+            // 只有「刚刚就是点这个标点激活的」再点才跳文章；
+            // 从卡片聚焦过来的标点，第一下仍然只是聚焦（激活按元素算，不按地点算）
+            if (this.selectedId === place.id && this.activeSource === 'marker') {
                 this.options.onOpenPlace?.(place.id);
                 return;
             }
-            this.select(place.id);
+            this.select(place.id, 'marker');
         });
 
         return element;

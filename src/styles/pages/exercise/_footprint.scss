@@ -352,13 +352,22 @@ body.is-footprint {
 
 .ex-fp-row-media {
     display: grid;
-    /* 两张以上两列等高；单图满行（单图缩到 1/3 看不清，两列时 3 张又断成 2+1） */
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* 按张数分列：单图满行、两图两列、三图三列 */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.3rem;
+}
+
+.ex-fp-row-media.is-pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .ex-fp-row-media.is-single {
     grid-template-columns: minmax(0, 1fr);
+}
+
+/* 宽屏最多 3 张（提取本来就封顶 3 张，这里显式兜住） */
+.ex-fp-row-media img:nth-child(n + 4) {
+    display: none;
 }
 
 .ex-fp-row-media img {
@@ -391,11 +400,9 @@ body.is-footprint {
     color: var(--color-link);
 }
 
-/* 聚焦中的卡片：内容列套一圈主题色细环，不动布局（outline 不占位） */
-.ex-fp-panel .ledger-row.is-active .ex-fp-body {
-    border-radius: 0.45rem;
-    outline: 1px solid color-mix(in srgb, var(--color-link) 45%, transparent);
-    outline-offset: 4px;
+/* 聚焦中的卡片只让时间线（日期 / 竖线 / 图标）和标题变色，卡片体不加边框不加底色 */
+.ex-fp-panel .ledger-row.is-active .ex-fp-row-title {
+    font-weight: 650;
 }
 
 .ex-fp-panel .ledger-row.is-flash .ledger-date-value,
@@ -1164,14 +1171,17 @@ body.is-fp-modal {
     display: flex;
     flex-direction: column;
     padding: 0.9rem 1rem 1rem;
-    /* 模态走 Portal 挂到 body，拿不到 .ex-fp 上的玻璃变量，这里补一份同值 token（更实一点保证可读） */
-    --ex-fp-glass: color-mix(in srgb, var(--body-background) 92%, transparent);
-    --ex-fp-blur: blur(10px) saturate(1.12);
-    background: var(--ex-fp-glass);
-    backdrop-filter: var(--ex-fp-blur);
-    -webkit-backdrop-filter: var(--ex-fp-blur);
+    /* 模态由 Portal 挂到 body 外层，拿不到 .ex-fp 上的玻璃变量，这里直接写字面量，不依赖外部作用域 */
+    background: rgb(255 255 255 / 0.94);
+    backdrop-filter: blur(14px) saturate(1.1);
+    -webkit-backdrop-filter: blur(14px) saturate(1.1);
     color: var(--body-font-color);
     animation: ex-fp-modal-in 180ms ease-out;
+}
+
+/* 暗色主题给对应的不透明底，别在深色下变成一屏白 */
+:is(html.dark, html.yayu, html.yuhang, html.herblue, html.dbushell) .ex-fp-modal {
+    background: rgb(24 24 24 / 0.95);
 }
 
 @keyframes ex-fp-modal-in {
@@ -1370,6 +1380,15 @@ body.is-fp-modal {
 
     .ex-fp-panel {
         margin-block-start: 1rem;
+    }
+
+    /* 窄屏最多 2 张图：多出来的直接隐藏（CSS 隐藏，不改数据、不引起布局跳动） */
+    .ex-fp-row-media img:nth-child(n + 3) {
+        display: none;
+    }
+
+    .ex-fp-row-media:not(.is-single) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .ex-fp-map-wrap {

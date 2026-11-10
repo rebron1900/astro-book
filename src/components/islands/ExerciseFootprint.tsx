@@ -30,8 +30,10 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
     const [open, setOpen] = createSignal(false);
     const [mapHostReady, setMapHostReady] = createSignal(false);
     const [activePlace, setActivePlace] = createSignal<string | null>(null);
-    /** 聚焦时具体高亮哪张卡：一个地点可能对应多篇游记，只在被点/被滚到的那张上挂聚焦样式 */
+    /** 用户自己点出来聚焦的卡片：只据它判定「再点一次就跳文章」 */
     const [activeCardSlug, setActiveCardSlug] = createSignal<string | null>(null);
+    /** 当前高亮/滚到眼前的卡片：点标点也会把它点亮，但不代表用户点过这张卡 */
+    const [revealedSlug, setRevealedSlug] = createSignal<string | null>(null);
     const [mapError, setMapError] = createSignal(false);
     /** 窄屏滚下去之后悬浮地图缩高（只影响视觉高度，滚动回顶部恢复） */
     const [mapCompact, setMapCompact] = createSignal(false);
@@ -115,9 +117,16 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
         if (target && target !== (event.currentTarget as HTMLElement) && target.closest('a, button, img')) return;
         event.stopPropagation();
         const placeId = article.placeIds[0];
-        if (placeId && activePlace() !== placeId) {
+        // 「已激活」按卡片自己算：同地点的三篇游记，每张卡第一下都只是聚焦自己
+        if (placeId && activeCardSlug() !== article.slug) {
             pendingCardSlug = article.slug;
+            setActiveCardSlug(article.slug);
+            setRevealedSlug(article.slug);
             controller?.focusPlace(placeId);
+            return;
+        }
+        if (!placeId) {
+            openArticle(article);
             return;
         }
         // 走卡片标题那个真链接：站点开着 ClientRouter，这样是站内客户端跳转（有过渡、不闪白），
@@ -152,7 +161,10 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
             onSelect: (placeId) => {
                 setActivePlace(placeId);
                 if (placeId) revealArticle(placeId);
-                else setActiveCardSlug(null);
+                else {
+                    setActiveCardSlug(null);
+                    setRevealedSlug(null);
+                }
             },
             // 已激活的标点再点一次：打开该地点最新的游记；没有游记就只保持聚焦
             onOpenPlace: (placeId) => {
@@ -194,10 +206,14 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
         if (!article) {
             // 这个地点没有游记（118 个标点里 70 个是这种）：右栏没有对应卡片，
             // 必须把上一张卡的高亮清掉，否则地图亮新点、右栏亮旧卡
+            setRevealedSlug(null);
             setActiveCardSlug(null);
             return;
         }
-        setActiveCardSlug(article.slug);
+        // 只点亮视觉：被标点带出来的卡不算「用户点过」，否则点这张卡第一下就直接跳走了。
+        // 用户上次点选的卡此刻已经不再高亮，跳转判定要跟着清掉，避免「没高亮却一点就跳」
+        if (!preferred) setActiveCardSlug(null);
+        setRevealedSlug(article.slug);
         const card = panel.querySelector<HTMLElement>(`[data-slug="${article.slug}"]`);
         if (!card) return;
         card.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
@@ -715,7 +731,7 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                                             class="ledger-row"
                                             classList={{
                                                 'is-repeat': repeat(),
-                                                'is-active': activeCardSlug() === article.slug
+                                                'is-active': revealedSlug() === article.slug
                                             }}
                                             data-kind="post"
                                             data-slug={article.slug}
@@ -774,7 +790,13 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                                                 </h3>
                                                 {article.excerpt ? <p class="ex-fp-row-text">{article.excerpt}</p> : null}
                                                 <Show when={article.images.length > 0}>
-                                                    <div class="ex-fp-row-media" classList={{ 'is-single': article.images.length === 1 }}>
+                                                    <div
+                                                        class="ex-fp-row-media"
+                                                        classList={{
+                                                            'is-single': article.images.length === 1,
+                                                            'is-pair': article.images.length === 2
+                                                        }}
+                                                    >
                                                         <For each={article.images}>
                                                             {(src) => <img src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />}
                                                         </For>
