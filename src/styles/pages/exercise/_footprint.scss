@@ -87,28 +87,18 @@ body.is-footprint {
     min-inline-size: 0;
 }
 
-.ex-fp-kicker {
+/* 标题/副标题走全站统一的 .page-head / .page-title / .page-intro，这里只把边距交给头部容器 */
+.ex-fp-head .page-head {
     margin: 0;
-    color: var(--color-link);
-    font-size: 0.625rem;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
 }
 
-.ex-fp-title {
-    margin: 0.25rem 0 0;
-    font-size: clamp(1.3rem, 2vw, 1.6rem);
+/* 与 /tags/、/archives/ 的 `.book-article h1.page-title` 同一尺度：
+   足迹这层不在 .book-article 里，拿不到那条规则，显式对齐（29.6px @1440） */
+.ex-fp-head .page-title {
+    font-size: clamp(1.5rem, 2.4vw, 1.85rem);
     font-weight: 600;
-    letter-spacing: -0.02em;
-    line-height: 1.25;
-}
-
-.ex-fp-sub {
-    margin: 0.35rem 0 0;
-    color: var(--gray-700);
-    font-size: 0.75rem;
-    line-height: 1.5;
+    line-height: 1.32;
+    letter-spacing: -0.022em;
 }
 
 .ex-fp-actions {
@@ -168,7 +158,9 @@ body.is-footprint {
 .ex-fp-stage {
     display: flex;
     flex: 1 1 auto;
-    gap: 0.85rem;
+    /* 和运动页「预览地图 ↔ 左侧导航」同一间距（.book-page 的 padding-inline = 16px / 1rem），
+       用同一个值让地图与右侧时间线、地图与导航看起来是一套排版 */
+    gap: 1rem;
     min-block-size: 0;
     padding: 0 1.25rem 1.25rem;
 }
@@ -278,7 +270,9 @@ body.is-footprint {
     min-inline-size: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding-inline-end: 0.15rem;
+    /* 给滚动条留固定槽位，卡片不会贴着滚动条；与 .book-page 的 16px 内边距同量级 */
+    scrollbar-gutter: stable;
+    padding-inline-end: 0.5rem;
     /* 滚动条跟随主题：沿用首页时间线那组 --sb-* 变量，不写死颜色 */
     scrollbar-width: thin;
     scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
@@ -358,14 +352,19 @@ body.is-footprint {
 
 .ex-fp-row-media {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(3.4rem, 1fr));
-    gap: 0.25rem;
+    /* 两张以上两列等高；单图满行（单图缩到 1/3 看不清，两列时 3 张又断成 2+1） */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.3rem;
+}
+
+.ex-fp-row-media.is-single {
+    grid-template-columns: minmax(0, 1fr);
 }
 
 .ex-fp-row-media img {
     display: block;
     inline-size: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 16 / 10;
     border-radius: 0.35rem;
     background: var(--gray-100);
     object-fit: cover;
@@ -379,6 +378,26 @@ body.is-footprint {
 }
 
 /* 从地图点标点跳过来时点亮对应那一行（日期、图标、标题一起变） */
+.ex-fp-panel .ledger-row.is-active .ledger-rail::before {
+    background: var(--color-link);
+}
+
+.ex-fp-panel .ledger-row.is-active .ex-fp-row-title a,
+.ex-fp-panel .ledger-row.is-active .ledger-date-value {
+    color: var(--color-link);
+}
+
+.ex-fp-panel .ledger-row.is-active .rail-marker {
+    color: var(--color-link);
+}
+
+/* 聚焦中的卡片：内容列套一圈主题色细环，不动布局（outline 不占位） */
+.ex-fp-panel .ledger-row.is-active .ex-fp-body {
+    border-radius: 0.45rem;
+    outline: 1px solid color-mix(in srgb, var(--color-link) 45%, transparent);
+    outline-offset: 4px;
+}
+
 .ex-fp-panel .ledger-row.is-flash .ledger-date-value,
 .ex-fp-panel .ledger-row.is-flash .ex-fp-row-title a {
     color: var(--color-link);
@@ -449,32 +468,6 @@ body.is-footprint {
     color: var(--gray-700);
     font-size: 0.6875rem;
     line-height: 1.6;
-}
-
-.ex-fp-rest {
-    margin-block-start: 1.1rem;
-    padding: 0.9rem 0.95rem 1rem;
-    border: 1px dashed var(--gray-200);
-    border-radius: 0.8rem;
-}
-
-.ex-fp-rest-title {
-    margin: 0;
-    font-size: 0.8125rem;
-    font-weight: 600;
-}
-
-.ex-fp-rest-sub {
-    margin: 0.25rem 0 0.65rem;
-    color: var(--gray-700);
-    font-size: 0.6875rem;
-    line-height: 1.6;
-}
-
-.ex-fp-rest-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
 }
 
 /* ---------- 足迹标点：几何全部复用 /map 页的 .marker / .img-post / .no-post ----------
@@ -879,12 +872,32 @@ body.is-footprint {
     overflow: hidden;
     border: 1px solid var(--ex-fp-line);
     border-radius: 0.8rem;
-    /* 列表信息密度高：直接给实色，别让底图文字透上来 */
-    background: var(--body-background);
+    /* 和 tooltip / HUD 同一套玻璃表面，不再用实色白 */
+    background: var(--ex-fp-glass);
     box-shadow: 0 10px 30px rgb(0 0 0 / 0.18);
     pointer-events: auto;
     backdrop-filter: var(--ex-fp-blur);
     -webkit-backdrop-filter: var(--ex-fp-blur);
+    transform-origin: top right;
+    animation: ex-fp-pop 170ms ease-out;
+}
+
+@keyframes ex-fp-pop {
+    from {
+        opacity: 0;
+        transform: translateY(-0.35rem) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ex-fp-filter-panel {
+        animation: none;
+    }
 }
 
 .ex-fp-filter-panel:focus {
@@ -1151,8 +1164,32 @@ body.is-fp-modal {
     display: flex;
     flex-direction: column;
     padding: 0.9rem 1rem 1rem;
-    background: var(--body-background);
+    /* 模态走 Portal 挂到 body，拿不到 .ex-fp 上的玻璃变量，这里补一份同值 token（更实一点保证可读） */
+    --ex-fp-glass: color-mix(in srgb, var(--body-background) 92%, transparent);
+    --ex-fp-blur: blur(10px) saturate(1.12);
+    background: var(--ex-fp-glass);
+    backdrop-filter: var(--ex-fp-blur);
+    -webkit-backdrop-filter: var(--ex-fp-blur);
     color: var(--body-font-color);
+    animation: ex-fp-modal-in 180ms ease-out;
+}
+
+@keyframes ex-fp-modal-in {
+    from {
+        opacity: 0;
+        transform: translateY(0.9rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ex-fp-modal {
+        animation: none;
+    }
 }
 
 .ex-fp-modal:focus {
@@ -1327,7 +1364,12 @@ body.is-fp-modal {
 
     .ex-fp-stage {
         display: block;
+        /* 窄屏变成上下排：地图与时间线之间同样留 1rem */
         padding: 0 0 1.4rem;
+    }
+
+    .ex-fp-panel {
+        margin-block-start: 1rem;
     }
 
     .ex-fp-map-wrap {
@@ -1337,6 +1379,19 @@ body.is-fp-modal {
         block-size: 42svh;
         min-block-size: 15rem;
         border-radius: 0 0 0.9rem 0.9rem;
+        /* 往下滚之后悬浮地图缩高，把版面让给时间线；过渡结束后脚本调一次 map.resize() */
+        transition: block-size 220ms ease;
+    }
+
+    .ex-fp.is-map-compact .ex-fp-map-wrap {
+        block-size: 28svh;
+        min-block-size: 12rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .ex-fp-map-wrap {
+            transition: none;
+        }
     }
 
     .ex-fp-panel {

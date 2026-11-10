@@ -1,9 +1,10 @@
 import { For, Show, createEffect, createMemo, createSignal, onCleanup, onMount } from 'solid-js';
 import { Portal } from 'solid-js/web';
 import type { FootprintArticle, FootprintData, FootprintPlace, FootprintProvinceGroup } from '../../lib/footprint';
-import { FOOTPRINT_OPEN_EVENT, articleMatchesSelection, groupPlacesByProvince, markRepeatArticles, placeMatchesSelection } from '../../lib/footprint';
+import { FOOTPRINT_OPEN_EVENT, articleMatchesSelection, groupPlacesByProvince, markRepeatArticles } from '../../lib/footprint';
 import { createFootprintMap, type FootprintMapController, type FootprintPlaceInfo } from '../../lib/client/footprint-map';
 import { prefersReducedMotion } from '../../lib/client/dom';
+import initZoom from '../../lib/client/zoom';
 
 export interface ExerciseFootprintProps {
     /** 构建期算好的足迹数据（标点 + 游记） */
@@ -29,12 +30,16 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
     const [open, setOpen] = createSignal(false);
     const [mapHostReady, setMapHostReady] = createSignal(false);
     const [activePlace, setActivePlace] = createSignal<string | null>(null);
+    /** 聚焦时具体高亮哪张卡：一个地点可能对应多篇游记，只在被点/被滚到的那张上挂聚焦样式 */
+    const [activeCardSlug, setActiveCardSlug] = createSignal<string | null>(null);
     const [mapError, setMapError] = createSignal(false);
+    /** 窄屏滚下去之后悬浮地图缩高（只影响视觉高度，滚动回顶部恢复） */
+    const [mapCompact, setMapCompact] = createSignal(false);
 
     /** 构建期算一次的两级树：省份 → 该省地名 */
     const groups = groupPlacesByProvince(props.data.places);
-    /** 默认展开标点最多的省（榜首），否则两级结构一眼看不出来 */
-    const defaultExpanded = () => new Set<string>(groups[0] ? [groups[0].province] : []);
+    /** 默认全部收起：面板打开先看到 12 个省，要展开哪个省再点箭头 */
+    const defaultExpanded = () => new Set<string>();
 
     /** 筛选：只存「地名」一套状态，省份的勾选 / 半选 / 计数全部从它推出来 */
     const [selected, setSelected] = createSignal<ReadonlySet<string>>(new Set<string>());
@@ -60,7 +65,6 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
     /** 同日多篇不重复显示日期：判定逻辑在数据层（有单测），这里只消费结果 */
     const repeatFlags = createMemo(() => markRepeatArticles(filteredArticles()));
     const selectedProvinces = createMemo(() => groups.filter((group) => group.places.some((place) => selected().has(place.name))));
-    const restPlaces = createMemo(() => props.data.places.filter((place) => place.articleSlugs.length === 0 && placeMatchesSelection(place, selected())));
 
     const provinceHit = (group: FootprintProvinceGroup) => group.places.filter((place) => selected().has(place.name)).length;
     const provinceChecked = (group: FootprintProvinceGroup) => provinceHit(group) === group.places.length;
@@ -98,6 +102,34 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
     };
 
     /** 日期列只放「月.日」，年和星期另起两行，和首页时间线同一结构 */
+    /**
+     * 卡片两段式：第一次点先把这篇的第一个地点定到地图上，已经定位过的卡片再点才打开文章。
+     * 正文里还有标题链接和地点 chip，它们在各自的处理里 stopPropagation，不会被这里截走。
+     */
+    const activateCard = (event: MouseEvent, article: FootprintArticle) => {
+        // 正在划词选中正文时不要当成点击
+        const selection = window.getSelection();
+        if (selection && !selection.isCollapsed && selection.toString().trim()) return;
+        // 点的是卡片里的链接、chip 或图片（灯箱）时，各走各的，别被两段式截走
+        const target = event.target as HTMLElement | null;
+        if (target && target !== (event.currentTarget as HTMLElement) && target.closest('a, button, img')) return;
+        event.stopPropagation();
+        const placeId = article.placeIds[0];
+        if (placeId && activePlace() !== placeId) {
+            pendingCardSlug = article.slug;
+            controller?.focusPlace(placeId);
+            return;
+        }
+        // 走卡片标题那个真链接：站点开着 ClientRouter，这样是站内客户端跳转（有过渡、不闪白），
+        // 直接 location.assign 会整页刷新，观感和点标题链接不一致
+        const link = (event.currentTarget as HTMLElement | null)?.querySelector<HTMLAnchorElement>('.ex-fp-row-title a');
+        if (link) {
+            link.click();
+            return;
+        }
+        window.location.assign(article.url);
+    };
+
     const monthDay = (article: FootprintArticle) => article.dateLabel.slice(5);
 
     // 首页 List.astro 用的是同一组标签，这里保持一致
@@ -119,7 +151,13 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
             placeInfo,
             onSelect: (placeId) => {
                 setActivePlace(placeId);
-                revealArticle(placeId);
+                if (placeId) revealArticle(placeId);
+                else setActiveCardSlug(null);
+            },
+            // 已激活的标点再点一次：打开该地点最新的游记；没有游记就只保持聚焦
+            onOpenPlace: (placeId) => {
+                const article = articlesByPlace.get(placeId)?.[0];
+                if (article) openArticle(article);
             },
             onError: () => setMapError(true),
             onReady: () => setMapError(false),
@@ -130,11 +168,36 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
         controller.setFilter(selected());
     };
 
+    /** 点卡片聚焦时记下这张卡，等 onSelect 回来时优先高亮它 */
+    let pendingCardSlug: string | null = null;
+
+    /** 走卡片标题那个真链接，让 ClientRouter 做站内跳转；卡片被筛掉时退化成整页跳转 */
+    const openArticle = (article: FootprintArticle) => {
+        const card = panel?.querySelector<HTMLElement>(`[data-slug="${CSS.escape(article.slug)}"]`);
+        const link = card?.querySelector<HTMLAnchorElement>('.ex-fp-row-title a');
+        if (link) {
+            link.click();
+            return;
+        }
+        window.location.assign(article.url);
+    };
+
     /** 点地图上的标点后，把时间线里对应的游记卡片滚到眼前 */
     const revealArticle = (placeId: string | null | undefined) => {
         if (!placeId || !panel) return;
-        const article = filteredArticles().find((item) => item.placeIds.includes(placeId));
-        if (!article) return;
+        // 点卡片进来的优先高亮那张卡；点标点进来就取这个地点最新的游记
+        const preferred = pendingCardSlug;
+        pendingCardSlug = null;
+        const article =
+            (preferred ? filteredArticles().find((item) => item.slug === preferred) : undefined) ??
+            filteredArticles().find((item) => item.placeIds.includes(placeId));
+        if (!article) {
+            // 这个地点没有游记（118 个标点里 70 个是这种）：右栏没有对应卡片，
+            // 必须把上一张卡的高亮清掉，否则地图亮新点、右栏亮旧卡
+            setActiveCardSlug(null);
+            return;
+        }
+        setActiveCardSlug(article.slug);
         const card = panel.querySelector<HTMLElement>(`[data-slug="${article.slug}"]`);
         if (!card) return;
         card.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
@@ -281,6 +344,46 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
         requestAnimationFrame(() => {
             controller?.resize();
             controller?.fitAll();
+        });
+    });
+
+    // 卡片里的图片复用站内的 medium-zoom 灯箱：列表随筛选重渲染，每次渲染后补挂一次
+    createEffect(() => {
+        if (!open()) return;
+        filteredArticles();
+        requestAnimationFrame(() => initZoom());
+    });
+
+    // 窄屏：页面往下滚过一小段就把悬浮地图缩高，过渡结束后调一次 map.resize()，不每帧调
+    createEffect(() => {
+        if (!open() || !narrow()) {
+            setMapCompact(false);
+            return;
+        }
+        let frame: number | null = null;
+        let resizeTimer: number | null = null;
+        let compact = window.scrollY > 64;
+        setMapCompact(compact);
+        const onScroll = () => {
+            if (frame !== null) return;
+            frame = requestAnimationFrame(() => {
+                frame = null;
+                const next = window.scrollY > 64;
+                if (next === compact) return;
+                compact = next;
+                setMapCompact(next);
+                if (resizeTimer !== null) clearTimeout(resizeTimer);
+                // 过渡结束后再 resize：时长从 CSS 读，别在这里手写一份和样式对不上的数字
+                const wrap = overlay?.querySelector<HTMLElement>('.ex-fp-map-wrap');
+                const duration = Number.parseFloat(wrap ? getComputedStyle(wrap).transitionDuration : '') || 0;
+                resizeTimer = window.setTimeout(() => controller?.resize(), Math.round(duration * 1000) + 20);
+            });
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onCleanup(() => {
+            window.removeEventListener('scroll', onScroll);
+            if (frame !== null) cancelAnimationFrame(frame);
+            if (resizeTimer !== null) clearTimeout(resizeTimer);
         });
     });
 
@@ -474,12 +577,18 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
     );
 
     return (
-        <section class="ex-fp" classList={{ 'is-map-error': mapError() }} hidden={!open()} ref={overlay} aria-label="足迹" tabindex={-1}>
+        <section
+            class="ex-fp"
+            classList={{ 'is-map-error': mapError(), 'is-map-compact': mapCompact() }}
+            hidden={!open()}
+            ref={overlay}
+            aria-label="足迹"
+            tabindex={-1}
+        >
             <header class="ex-fp-head">
-                <div class="ex-fp-heading">
-                    <p class="ex-fp-kicker">Footprint · 足迹</p>
-                    <h2 class="ex-fp-title">走过的地方</h2>
-                    <p class="ex-fp-sub">{subtitle()}</p>
+                <div class="ex-fp-heading page-head">
+                    <h1 class="book-title page-title">走过的地方</h1>
+                    <p class="page-intro">{subtitle()}</p>
                 </div>
                 <div class="ex-fp-actions">
                     <Show when={selected().size > 0}>
@@ -600,13 +709,27 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                                     const repeat = () => repeatFlags()[index()] ?? false;
                                     const changedYear = () => filteredArticles()[index() - 1]?.year !== article.year;
                                     return (
-                                        // 激活只认地点 chip：卡片里已经有文章链接和 chip 两种可交互元素，
-                                        // 再给整行加 tabindex 会出现嵌套交互，Tab 顺序也会变差
+                                        // 卡片本体也参与激活：第一次点聚焦地点、第二次跳文章。
+                                        // 标题链接和地点 chip 各自 stopPropagation，点它们只走自己的逻辑
                                         <article
                                             class="ledger-row"
-                                            classList={{ 'is-repeat': repeat() }}
+                                            classList={{
+                                                'is-repeat': repeat(),
+                                                'is-active': activeCardSlug() === article.slug
+                                            }}
                                             data-kind="post"
                                             data-slug={article.slug}
+                                            role="button"
+                                            tabindex="0"
+                                            aria-label={`${article.title}：首次点击在地图上定位，再次点击打开文章`}
+                                            onClick={(event) => activateCard(event, article)}
+                                            onKeyDown={(event) => {
+                                                // 焦点在内部的链接/按钮上时由它们自己处理 Enter/Space
+                                                if (event.target !== event.currentTarget) return;
+                                                if (event.key !== 'Enter' && event.key !== ' ') return;
+                                                event.preventDefault();
+                                                activateCard(event as unknown as MouseEvent, article);
+                                            }}
                                             onMouseEnter={() => controller?.highlight(article.placeIds)}
                                             onMouseLeave={() => controller?.clearHighlight()}
                                             onFocusIn={() => controller?.highlight(article.placeIds)}
@@ -643,11 +766,15 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                                             </div>
                                             <div class="ledger-body ex-fp-body">
                                                 <h3 class="ex-fp-row-title">
-                                                    <a href={article.url}>{article.title}</a>
+                                                    {/* stopPropagation 后仍能被 ClientRouter 拦走（它在 document 捕获阶段接管），
+                                                        两段式卡片也是靠点这个真链接做站内跳转；改成 stopImmediatePropagation 会静默退化成整页刷新 */}
+                                                    <a href={article.url} onClick={(event) => event.stopPropagation()}>
+                                                        {article.title}
+                                                    </a>
                                                 </h3>
                                                 {article.excerpt ? <p class="ex-fp-row-text">{article.excerpt}</p> : null}
                                                 <Show when={article.images.length > 0}>
-                                                    <div class="ex-fp-row-media">
+                                                    <div class="ex-fp-row-media" classList={{ 'is-single': article.images.length === 1 }}>
                                                         <For each={article.images}>
                                                             {(src) => <img src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />}
                                                         </For>
@@ -661,7 +788,10 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                                                                     class="ex-fp-chip"
                                                                     type="button"
                                                                     classList={{ 'is-active': activePlace() === placeId }}
-                                                                    onClick={() => controller?.focusPlace(placeId)}
+                                                                    onClick={(event) => {
+                                                                        event.stopPropagation();
+                                                                        controller?.focusPlace(placeId);
+                                                                    }}
                                                                 >
                                                                     {article.placeNames[placeIndex()]}
                                                                 </button>
@@ -683,28 +813,6 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                         </div>
                     </Show>
 
-                    <Show when={restPlaces().length > 0}>
-                        <section class="ex-fp-rest" aria-label="只去过、还没有写游记的地方">
-                            <h3 class="ex-fp-rest-title">
-                                只去过 · {restPlaces().length} 个{selected().size > 0 ? '已选' : ''}地方
-                            </h3>
-                            <p class="ex-fp-rest-sub">这些标点还没有配到游记，点一下可以在地图上定位。</p>
-                            <div class="ex-fp-rest-chips">
-                                <For each={restPlaces()}>
-                                    {(place) => (
-                                        <button
-                                            class="ex-fp-chip"
-                                            type="button"
-                                            classList={{ 'is-active': activePlace() === place.id }}
-                                            onClick={() => controller?.focusPlace(place.id)}
-                                        >
-                                            {place.name}
-                                        </button>
-                                    )}
-                                </For>
-                            </div>
-                        </section>
-                    </Show>
                 </aside>
             </div>
 

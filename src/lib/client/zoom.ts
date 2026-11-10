@@ -7,7 +7,7 @@ import mediumZoom from 'medium-zoom';
  */
 export default function initZoom() {
     const images = document.querySelectorAll<HTMLImageElement>(
-        '.markdown img:not(.og-card img):not([data-zoom-initialized]), .memo-content img:not([data-zoom-initialized]), .memo-media img:not([data-zoom-initialized]), .memo-photo-stack img:not([data-zoom-initialized])'
+        '.markdown img:not(.og-card img):not([data-zoom-initialized]), .memo-content img:not([data-zoom-initialized]), .memo-media img:not([data-zoom-initialized]), .memo-photo-stack img:not([data-zoom-initialized]), .ex-fp-row-media img:not([data-zoom-initialized])'
     );
     if (!images.length) return;
 

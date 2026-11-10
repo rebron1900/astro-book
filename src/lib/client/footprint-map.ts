@@ -47,6 +47,8 @@ export interface FootprintMapOptions {
     placeInfo?: (place: FootprintPlace) => FootprintPlaceInfo;
     /** 用户点了地图上的标点 / 聚合点之外的空地 */
     onSelect?: (placeId: string | null) => void;
+    /** 已激活的标点又被点了一次：打开该地点最新的游记（没有游记由页面决定什么都不做） */
+    onOpenPlace?: (placeId: string) => void;
     /** 底图加载失败（token 无效、网络不通）时通知页面 */
     onError?: () => void;
     /** 底图就绪（用于清掉之前的失败提示） */
@@ -109,7 +111,11 @@ interface MarkerEntry {
 const CLUSTER_RADIUS = 46;
 const CLUSTER_MAX_ZOOM = 15;
 /** 3D 视角参数：卡片激活和按钮切换共用同一套，保证两种入口视觉一致 */
-const TILT_PITCH = 55;
+/** 基础俯仰：足迹只需看清大概位置和周边地形，不学运动页贴脸看轨迹 */
+const TILT_PITCH = 40;
+/** 高差越大，镜头越远、视角越抬，避免相机钻进山窝、标点压在坡面上 */
+const TILT_PITCH_HIGH = 45;
+const FOCUS_ZOOM = { flat: 12.5, mid: 11.5, high: 10.5 } as const;
 const TILT_BEARING = -20;
 /** tooltip 悬停延迟：进得快一点，出得慢一点，鼠标扫过一排标点不会闪 */
 const TIP_SHOW_DELAY = 70;
@@ -151,6 +157,12 @@ class FootprintMapInstance implements FootprintMapController {
     private themeObserver: MutationObserver | null = null;
     /** 样式一直加载不出来（token 无效、网络不通）时的兜底提示 */
     private readyTimer: ReturnType<typeof setTimeout> | null = null;
+    /** 聚焦后等 DEM 铺好再校准机位的轮询定时器，切换/退出时要清掉 */
+    private pendingAimRefine: ReturnType<typeof setTimeout> | null = null;
+    /** 当前聚焦用的偏移量（负值 = 把标点抬到容器中心上方），落地校正时在它基础上改 */
+    private focusOffsetY = 0;
+    /** 聚焦点被聚合藏起来时的补位标点：保证「聚焦」在任何层级都看得见那个点 */
+    private focusMarker: { marker: mapboxgl.Marker; element: HTMLButtonElement } | null = null;
 
     /** 地图 tooltip：单点显示地名 + 游记摘要，聚合点列出它包含的所有标点 */
     private tooltip: HTMLDivElement | null = null;
@@ -234,6 +246,8 @@ class FootprintMapInstance implements FootprintMapController {
     destroy(): void {
         if (this.destroyed) return;
         this.destroyed = true;
+        this.cancelAimRefine();
+        this.removeFocusMarker();
 
         if (this.updateFrame !== null) {
             cancelAnimationFrame(this.updateFrame);
@@ -316,26 +330,177 @@ class FootprintMapInstance implements FootprintMapController {
         // 先取消在途动画，避免连续点两张卡时 pitch/bearing 互相当作起点而跳变
         this.map.stop();
         this.setPitchMode('tilt');
+        this.focusOffsetY = -Math.round((this.map.getContainer().clientHeight || 720) * 0.1);
+        const aim = this.focusAim(place);
         this.map.easeTo({
             center: [place.lng, place.lat],
-            zoom: this.zoomForSinglePlace(place),
-            pitch: TILT_PITCH,
+            zoom: aim.zoom,
+            pitch: aim.pitch,
             bearing: TILT_BEARING,
-            // 带一点上移：pitch 55° 时点会掉到视口下缘，抬到中上部才看得出「聚焦」的是它
+            // 带一点上移：镜头压斜后点会掉到视口下缘，抬到中上部才看得出「聚焦」的是它
             offset: this.focusOffset(),
             duration: prefersReducedMotion() ? 0 : 700,
             essential: true
         });
+        // 聚焦瞬间目标区的 DEM tile 通常还没到，先按能拿到的数据给一版机位，等 idle 再校准一次
+        this.refineAim(placeId);
     }
 
     /**
-     * 聚焦点在屏幕上的纵向偏移。俯仰到 55° 后，正中的目标会被地形和透视推到画面下缘，
-     * 这里按容器高度往上抬 12%（offset 的 y 为负 = 让目标落在容器中心上方），
-     * 窄屏和桌面用同一比例，避免写死像素在 390 上过头。
+     * 聚焦机位：按目标点周围的地形高差分三档，不再连续算相机海拔。
+     * 足迹不像运动页要看完整路线，只要知道大概在哪、周边地形如何，
+     * 所以镜头松一点：高差点拉到 10.5 级，相机离得远，山脊不会糊满画面。
+     */
+    private focusAim(place: FootprintPlace): { zoom: number; pitch: number; relief: number | null } {
+        // DEM 还没到位时先给松档，别用贴脸机位闪一下
+        const pending = { zoom: FOCUS_ZOOM.flat, pitch: TILT_PITCH, relief: null };
+        if (!this.map || !this.styleReady) return pending;
+
+        const relief = this.reliefAround(place);
+        if (relief === null) return pending;
+        if (relief > 1000) return { zoom: FOCUS_ZOOM.high, pitch: TILT_PITCH_HIGH, relief };
+        if (relief >= 300) return { zoom: FOCUS_ZOOM.mid, pitch: TILT_PITCH + 2, relief };
+        return { zoom: FOCUS_ZOOM.flat, pitch: TILT_PITCH, relief };
+    }
+
+    /**
+     * 目标点周围（8 个方向 × 2/5km）最高的地形抬升，单位真实米，只用来给机位分档。
+     * 只取四个正方向会漏掉斜向的山脊（康定那种），八个方向才不会把高差点分到平档。
+     * 用 {exaggerated:false} 拿原始高程，避免和 setTerrain 的 1.4 倍混在一起；DEM 没铺到时返回 null。
+     */
+    private reliefAround(place: FootprintPlace): number | null {
+        const map = this.map;
+        if (!map) return null;
+        const elevAt = (lng: number, lat: number): number | null => {
+            try {
+                const value = map.queryTerrainElevation([lng, lat], { exaggerated: false });
+                return typeof value === 'number' && Number.isFinite(value) ? value : null;
+            } catch {
+                return null;
+            }
+        };
+        const target = elevAt(place.lng, place.lat);
+        if (target === null) return null;
+
+        const metersPerDegLat = 111320;
+        const metersPerDegLng = metersPerDegLat * Math.cos((place.lat * Math.PI) / 180);
+        let peak = target;
+        let sampled = 0;
+        for (let dir = 0; dir < 8; dir += 1) {
+            const angle = (dir * Math.PI) / 4;
+            for (const km of [2, 5]) {
+                const dLng = (Math.sin(angle) * km * 1000) / metersPerDegLng;
+                const dLat = (Math.cos(angle) * km * 1000) / metersPerDegLat;
+                const elev = elevAt(place.lng + dLng, place.lat + dLat);
+                if (elev === null) continue;
+                sampled += 1;
+                if (elev > peak) peak = elev;
+            }
+        }
+        // 采到的太少说明 DEM 还没覆盖到这片，交给轮询重算，别用半个环分错档
+        if (sampled < 6) return null;
+        return Math.max(0, peak - target);
+    }
+
+    /**
+     * 聚焦后按真实高差校准机位。queryTerrainElevation 只读已加载的 DEM tile，
+     * 刚开地形时目标区常是空的，而 idle 事件不保证还会再来（没有瓦片在加载就不会触发），
+     * 所以这里用定时轮询：每 250ms 试一次，最多 5s，拿到高差就校准，拿到就停。
+     */
+    private refineAim(placeId: string, attempt = 0): void {
+        if (!this.map) return;
+        this.cancelAimRefine();
+        this.pendingAimRefine = setTimeout(() => {
+            this.pendingAimRefine = null;
+            if (this.destroyed || this.selectedId !== placeId) return;
+            const place = this.placeById.get(placeId);
+            const current = this.map;
+            if (!place || !current) return;
+
+            const aim = this.focusAim(place);
+            if (aim.relief === null) {
+                // DEM 还没铺到：继续等，期间保持首帧机位，别切回固定 55
+                if (attempt < 20) this.refineAim(placeId, attempt + 1);
+                return;
+            }
+            const shifted = Math.abs(current.getZoom() - aim.zoom) > 0.25 || Math.abs(current.getPitch() - aim.pitch) > 3;
+            if (!shifted) {
+                this.settleFocusOffset(placeId);
+                return;
+            }
+            // 必须显式给 center：带 offset 且不传 center 时，Mapbox 会把偏移叠在当前中心上，
+            // 每次调用都会让镜头往偏移方向漂一段
+            current.easeTo({
+                center: [place.lng, place.lat],
+                zoom: aim.zoom,
+                pitch: aim.pitch,
+                offset: this.focusOffset(),
+                duration: prefersReducedMotion() ? 0 : 480
+            });
+            this.settleFocusOffset(placeId, 3, 560);
+        }, 250);
+    }
+
+    /**
+     * 落地校正：开了地形之后，相机中心落到的地表高度和标点自身高度不同，
+     * offset 再准，标点在屏幕上的位置也会偏几十像素。这里按标点元素的真实矩形量一次，
+     * 把差量补回 offset，让它落在容器 40% 高度；最多校正两轮，不挂 move/zoom。
+     */
+    private settleFocusOffset(placeId: string, attempt = 3, delay = 280): void {
+        this.cancelAimRefine();
+        this.pendingAimRefine = setTimeout(() => {
+            this.pendingAimRefine = null;
+            if (this.destroyed || this.selectedId !== placeId) return;
+            const map = this.map;
+            const place = this.placeById.get(placeId);
+            if (!map || !place) return;
+
+            const container = map.getContainer();
+            const element = Array.from(container.querySelectorAll<HTMLElement>('.ex-fp-point.is-active')).find(
+                (item) => item.style.display !== 'none' && item.dataset.placeId === placeId
+            );
+            if (!element) {
+                if (attempt > 0) this.settleFocusOffset(placeId, attempt - 1, delay);
+                return;
+            }
+            const box = container.getBoundingClientRect();
+            const rect = element.getBoundingClientRect();
+            const height = box.height;
+            if (!height) return;
+            const desired = height * 0.4;
+            const actual = rect.top + rect.height / 2 - box.top;
+            // 6px 以内算对齐，避免为了几个像素反复动画
+            if (Math.abs(actual - desired) <= 6) return;
+
+            const nextY = Math.max(-Math.round(height * 0.45), Math.min(0, Math.round(this.focusOffsetY + (desired - actual))));
+            if (nextY === this.focusOffsetY) return;
+            this.focusOffsetY = nextY;
+            map.easeTo({
+                center: [place.lng, place.lat],
+                zoom: map.getZoom(),
+                pitch: map.getPitch(),
+                bearing: map.getBearing(),
+                offset: [0, nextY],
+                duration: prefersReducedMotion() ? 0 : 220
+            });
+            // 相机动画走完后按新位置再确认一次，最多两轮
+            if (attempt > 0) this.settleFocusOffset(placeId, attempt - 1, 280);
+        }, delay);
+    }
+
+    private cancelAimRefine(): void {
+        if (this.pendingAimRefine === null) return;
+        clearTimeout(this.pendingAimRefine);
+        this.pendingAimRefine = null;
+    }
+
+    /**
+     * 聚焦点在屏幕上的纵向偏移：把标点放到容器 40% 高度（offset 的 y 为负 = 目标在中心上方），
+     * 上方留出地形、下方留出前景，离四边都远。窄屏和桌面用同一比例，不写死像素。
      */
     private focusOffset(): [number, number] {
         const height = this.map?.getContainer().clientHeight ?? 0;
-        return [0, -Math.round(height * 0.12)];
+        return [0, this.focusOffsetY || -Math.round(height * 0.1)];
     }
 
     togglePitch(): void {
@@ -345,17 +510,21 @@ class FootprintMapInstance implements FootprintMapController {
         const active = this.selectedId ? this.placeById.get(this.selectedId) : null;
         // 手动开关和聚焦共用同一份 pitchMode：开着激活点时切回 3D，仍要落在那个点上
         if (this.pitchMode === 'tilt' && active) {
+            this.focusOffsetY = -Math.round((this.map.getContainer().clientHeight || 720) * 0.1);
+            const aim = this.focusAim(active);
             this.map.easeTo({
                 center: [active.lng, active.lat],
-                zoom: this.zoomForSinglePlace(active),
-                pitch: TILT_PITCH,
+                zoom: aim.zoom,
+                pitch: aim.pitch,
                 bearing: TILT_BEARING,
                 offset: this.focusOffset(),
                 duration: prefersReducedMotion() ? 0 : 650
             });
+            this.refineAim(active.id);
             return;
         }
         this.map.easeTo({
+            center: this.map.getCenter(),
             pitch: this.pitchMode === 'tilt' ? TILT_PITCH : 0,
             bearing: this.pitchMode === 'tilt' ? TILT_BEARING : 0,
             offset: [0, 0],
@@ -365,6 +534,9 @@ class FootprintMapInstance implements FootprintMapController {
 
     /** 取消激活：清选中/高亮，回平面。点空白、Esc、「全部」、同一张卡再点都走这里 */
     clearActive(): void {
+        this.cancelAimRefine();
+        this.removeFocusMarker();
+        this.focusOffsetY = 0;
         const hadSelection = this.selectedId !== null;
         this.selectedId = null;
         this.applySelection();
@@ -374,6 +546,7 @@ class FootprintMapInstance implements FootprintMapController {
         // 地形收掉的同时把镜头放回平面，否则只关了地形、俯仰还停在 3D
         this.map?.stop();
         this.map?.easeTo({
+            center: this.map.getCenter(),
             pitch: 0,
             bearing: 0,
             // 清掉聚焦时的上移偏移，否则回平面后画面仍偏向一边
@@ -431,42 +604,6 @@ class FootprintMapInstance implements FootprintMapController {
 
     private emitState(): void {
         this.options.onStateChange?.({ pitchMode: this.pitchMode, activePlaceId: this.selectedId });
-    }
-
-    /**
-     * 飞到某个点之前，先算出它所在聚合桶的展开层级，保证落地时它是单点：
-     * 固定 12.6 在重庆/海南这种密集省仍会被聚成一簇，点完看不到那个点，is-active 也挂不上。
-     * 保底 15（Supercluster 的 maxZoom），超过它不会再聚合。
-     */
-    private zoomForSinglePlace(place: FootprintPlace): number {
-        let zoom = Math.max(Math.ceil(this.map?.getZoom() ?? 4), 3);
-        for (let guard = 0; guard < 6; guard += 1) {
-            const clusterId = this.clusterIdAt(place, zoom);
-            if (clusterId === null) break;
-            let next = zoom + 2;
-            try {
-                next = this.cluster.getClusterExpansionZoom(clusterId);
-            } catch {
-                // 没有这个簇时用 +2 兜底
-            }
-            if (!Number.isFinite(next) || next <= zoom) {
-                zoom = CLUSTER_MAX_ZOOM + 1;
-                break;
-            }
-            zoom = Math.ceil(next) + 1;
-        }
-        return Math.min(Math.max(zoom, 15, 12.6), 17);
-    }
-
-    /** 某个点在指定缩放层级下落在哪个聚合桶里；已经是单点返回 null */
-    private clusterIdAt(place: FootprintPlace, zoom: number): number | null {
-        const features = this.cluster.getClusters([-180, -90, 180, 90], zoom) as unknown as FootprintPointFeature[];
-        for (const feature of features) {
-            const clusterId = feature.properties.cluster_id;
-            if (!feature.properties.cluster || clusterId === undefined) continue;
-            if (this.leavesOf(clusterId).includes(place.id)) return clusterId;
-        }
-        return null;
     }
 
     private leavesOf(clusterId: number): string[] {
@@ -645,6 +782,7 @@ class FootprintMapInstance implements FootprintMapController {
         this.applySelection();
         this.applyHighlight();
         this.applyFilter();
+        this.syncFocusMarker();
     }
 
     /** 把 entries 投影回按 地名 / 聚合 id 索引的两张表（选中、高亮、筛选都走这两张表） */
@@ -659,7 +797,50 @@ class FootprintMapInstance implements FootprintMapController {
         }
     }
 
+    /**
+     * 高差点聚焦时镜头会降到 13 级上下（否则相机钻进山窝、山脊糊满画面），
+     * 那个层级上这个点可能落进聚合桶，常规标点就没了。这里保一个 is-active 的补位标点，
+     * 常规标点在的时候把它隐藏，同一个位置永远只显示一个点。
+     */
+    private syncFocusMarker(): void {
+        const map = this.map;
+        const id = this.selectedId;
+        if (!map || !id || this.destroyed || !this.styleReady) {
+            this.removeFocusMarker();
+            return;
+        }
+        const place = this.placeById.get(id);
+        if (!place) {
+            this.removeFocusMarker();
+            return;
+        }
+        if (!this.focusMarker) {
+            const element = this.buildPlaceElement(place);
+            element.classList.add('is-active');
+            const marker = new mapboxgl.Marker({ element, anchor: 'center' }).setLngLat([place.lng, place.lat]).addTo(map);
+            this.focusMarker = { marker, element };
+        } else {
+            this.focusMarker.marker.setLngLat([place.lng, place.lat]);
+            this.focusMarker.element.classList.add('is-active');
+        }
+        // 常规标点在同一位置时先藏起来，避免两个点叠在一起
+        this.focusMarker.element.style.display = this.markerElements.has(id) ? 'none' : '';
+    }
+
+    private removeFocusMarker(): void {
+        if (!this.focusMarker) return;
+        this.focusMarker.marker.remove();
+        this.focusMarker = null;
+    }
+
     private createPlaceEntry(place: FootprintPlace, coordinates: [number, number]): MarkerEntry {
+        const element = this.buildPlaceElement(place);
+        const marker = new mapboxgl.Marker({ element, anchor: 'center' }).setLngLat(coordinates).addTo(this.map!);
+        return { marker, element, kind: 'place', placeId: place.id, lngLat: coordinates };
+    }
+
+    /** 建一个地点标点元素；常规标点和「聚焦点被聚合藏起来」时的补位标点共用这套外观与交互 */
+    private buildPlaceElement(place: FootprintPlace): HTMLButtonElement {
         const element = document.createElement('button');
         element.type = 'button';
         // 几何完全复用 /map 页的 `.marker` / `.img-post` / `.no-post`（_custom.scss），
@@ -681,16 +862,26 @@ class FootprintMapInstance implements FootprintMapController {
         element.addEventListener('pointerdown', this.trackPointerType);
         element.addEventListener('click', (event) => {
             event.stopPropagation();
-            this.select(place.id);
             // 触屏没有 hover：点一下开信息，再点同一个点收起（键盘回车 detail 为 0，走焦点态）
             if (event.detail > 0 && this.pointerType === 'touch') {
+                if (this.selectedId !== place.id) {
+                    this.select(place.id);
+                    this.showTooltip(element, () => this.buildPlaceTooltip(place));
+                    return;
+                }
                 if (this.tooltipOwner === element) this.hideTooltip();
                 else this.showTooltip(element, () => this.buildPlaceTooltip(place));
+                return;
             }
+            // 已经激活的标点再点一次 = 打开这个地点最新的游记，保持「聚焦 → 再点才跳转」的节奏
+            if (this.selectedId === place.id) {
+                this.options.onOpenPlace?.(place.id);
+                return;
+            }
+            this.select(place.id);
         });
 
-        const marker = new mapboxgl.Marker({ element, anchor: 'center' }).setLngLat(coordinates).addTo(this.map!);
-        return { marker, element, kind: 'place', placeId: place.id, lngLat: coordinates };
+        return element;
     }
 
     private createClusterEntry(clusterId: number, coordinates: [number, number]): MarkerEntry {
@@ -888,6 +1079,9 @@ class FootprintMapInstance implements FootprintMapController {
             }
         });
         tip.addEventListener('pointerleave', () => this.scheduleHide());
+        // 地图开着 scrollZoom：滚轮落在气泡上会冒泡到地图变成缩放，列表根本滚不动。
+        // 这里只拦冒泡、不禁用默认滚动（passive），触屏不拦 touchmove，否则列表反而滚不了
+        tip.addEventListener('wheel', (event) => event.stopPropagation(), { passive: true });
         // 键盘用户 Tab 进 tooltip 时标点会 blur：必须由 tooltip 自己接管保活，
         // 否则 150ms 后收起，地名按钮对键盘等于不存在
         tip.addEventListener('focusin', () => {
