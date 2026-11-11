@@ -6,6 +6,7 @@ import { articleMatchesSelection, groupPlacesByProvince, markRepeatArticles } fr
 import { createFootprintMap, type FootprintMapController, type FootprintPlaceInfo } from '../../lib/client/footprint-map';
 import { prefersReducedMotion } from '../../lib/client/dom';
 import { afterTransition } from '../../lib/client/idle';
+import { ACTIVITY_MODE_EVENT, type ActivityModeDetail } from '../../lib/client/activity';
 import initZoom from '../../lib/client/zoom';
 
 export interface ExerciseFootprintProps {
@@ -13,6 +14,8 @@ export interface ExerciseFootprintProps {
     data: FootprintData;
     /** Mapbox public token */
     token: string;
+    /** 合并页用：只在足迹模式下创建地图（不传 = 一直激活） */
+    activeMode?: 'exercise' | 'footprint';
 }
 
 /** 和样式里的窄屏断点保持一致：窄屏筛选走全屏模态 */
@@ -289,7 +292,11 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
     // 地图容器拿到 ref 之后才建实例（此时 flex 高度已经就位），
     // 而且要等页面切换动画跑完、浏览器空闲：换页那几百毫秒里初始化 WebGL 会直接把过渡拖卡。
     let cancelMapInit: (() => void) | null = null;
+    /** 合并页里只有足迹模式需要这张地图；旧页面不传 activeMode，一直是 true */
+    const [active, setActive] = createSignal(true);
+
     createEffect(() => {
+        if (!active()) return;
         if (!mapHostReady() || controller || cancelMapInit) return;
         cancelMapInit = afterTransition(() => {
             cancelMapInit = null;
@@ -359,6 +366,26 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
     });
 
     onMount(() => {
+        if (props.activeMode) {
+            const readMode = () => document.querySelector('.activity-page')?.getAttribute('data-activity-mode') ?? 'footprint';
+            setActive(readMode() === props.activeMode);
+            const onMode = (event: Event) => {
+                const mode = (event as CustomEvent<ActivityModeDetail>).detail?.mode;
+                setActive(mode === props.activeMode);
+            };
+            document.addEventListener(ACTIVITY_MODE_EVENT, onMode);
+            // 切走时把地图收掉，保证同一时刻只有一个 Mapbox 实例
+            createEffect(() => {
+                if (active()) return;
+                cancelMapInit?.();
+                cancelMapInit = null;
+                controller?.destroy();
+                controller = undefined;
+                mapHost?.replaceChildren();
+            });
+            onCleanup(() => document.removeEventListener(ACTIVITY_MODE_EVENT, onMode));
+        }
+
         const onKeyDown = (event: KeyboardEvent) => {
             if (event.key !== 'Escape') return;
             // 顺序：筛选面板 → 激活的卡片/3D → 退足迹；每一步都只吃掉自己那一层

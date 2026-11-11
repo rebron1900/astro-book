@@ -14,6 +14,8 @@ export interface ExerciseMapPanelProps {
     initialScope: ExerciseScope;
     token: string;
     routesUrl: string;
+    /** 合并页用：只在指定模式下创建地图（不传 = 一直激活） */
+    activeMode?: 'exercise' | 'footprint';
 }
 
 export default function ExerciseMapPanel(props: ExerciseMapPanelProps) {
@@ -100,6 +102,7 @@ export default function ExerciseMapPanel(props: ExerciseMapPanelProps) {
                     compact={stuck()}
                     onSelectRoute={(id) => select({ kind: 'record', id })}
                     onReset={() => select({ kind: 'all' })}
+                    activeMode={props.activeMode}
                 />
                 <div class="ex-map-filter" data-exercise-filter>
                     <div class="filter-chips" role="group" aria-label="运动类型筛选">

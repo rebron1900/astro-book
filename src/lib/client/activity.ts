@@ -10,3 +10,13 @@ export interface ActivityPlaceFilterDetail {
     /** 选中的地名；空数组表示不过滤 */
     names: string[];
 }
+
+/**
+ * `/activity/` 的当前模式广播：切换按钮 → 两个地图岛。
+ * 岛只在自己那个模式激活时才创建地图，保证同一时刻只有一个 Mapbox 实例。
+ */
+export const ACTIVITY_MODE_EVENT = 'activity:mode';
+
+export interface ActivityModeDetail {
+    mode: 'exercise' | 'footprint';
+}

@@ -3,6 +3,7 @@ import type { ExerciseRecord, ExerciseScope } from '../../lib/exercise';
 import { estimateCalories, formatDuration, formatRecordDistance, recordsInScope, scopeLabel } from '../../lib/exercise';
 import { createExerciseMap, type ExerciseMapController, type ExerciseMapStatus } from '../../lib/client/exercise-map';
 import { afterTransition } from '../../lib/client/idle';
+import { ACTIVITY_MODE_EVENT, type ActivityModeDetail } from '../../lib/client/activity';
 import MetricIcon from '../ui/MetricIcon';
 
 export interface ExerciseMapProps {
@@ -22,6 +23,11 @@ export interface ExerciseMapProps {
     onSelectRoute: (id: string) => void;
     /** 回到「全部路线」 */
     onReset: () => void;
+    /**
+     * 合并页（/activity/）用：只有当前模式等于它时地图才创建。
+     * 不传 = 一直激活（旧的 /exercise/ 页面行为不变）。
+     */
+    activeMode?: 'exercise' | 'footprint';
 }
 
 const INITIAL_STATUS: ExerciseMapStatus = { message: null, unavailable: false };
@@ -60,27 +66,59 @@ export default function ExerciseMap(props: ExerciseMapProps) {
     onMount(() => {
         if (!canvas) return;
 
-        controller = createExerciseMap({
-            container: canvas,
-            viewport,
-            token: props.token,
-            routesUrl: props.routesUrl,
-            records: props.records,
-            onSelectRoute: (id) => props.onSelectRoute(id),
-            onStatus: (next) => setStatus(next),
-            onReplayAvailable: (available) => setReplayable(available),
-            onReplayChange: (active) => setReplayActive(active),
-            onReplayPlayback: (playing) => setReplayPlaying(playing),
-            onReplayProgress: (progress) => setReplayProgress(progress)
-        });
+        const [active, setActive] = createSignal(true);
+        let cancelStart: (() => void) | null = null;
 
-        // 先把当前 props 灌进去，再用 effect 跟随后变化
-        controller.setScope(props.scope);
-        controller.setHover(props.hoverId);
-        // 等换页动画结束、浏览器空闲再起地图：WebGL 初始化和首帧瓦片渲染都不该和过渡抢帧
-        let cancelStart: (() => void) | null = afterTransition(() => {
+        const boot = () => {
+            if (!canvas || controller || !active()) return;
+
+            controller = createExerciseMap({
+                container: canvas,
+                viewport,
+                token: props.token,
+                routesUrl: props.routesUrl,
+                records: props.records,
+                onSelectRoute: (id) => props.onSelectRoute(id),
+                onStatus: (next) => setStatus(next),
+                onReplayAvailable: (available) => setReplayable(available),
+                onReplayChange: (next) => setReplayActive(next),
+                onReplayPlayback: (playing) => setReplayPlaying(playing),
+                onReplayProgress: (progress) => setReplayProgress(progress)
+            });
+
+            // 先把当前 props 灌进去，再用 effect 跟随后变化
+            controller.setScope(props.scope);
+            controller.setHover(props.hoverId);
+            // 等换页动画结束、浏览器空闲再起地图：WebGL 初始化和首帧瓦片渲染都不该和过渡抢帧
+            cancelStart = afterTransition(() => {
+                cancelStart = null;
+                void controller?.start();
+            });
+        };
+
+        const teardown = () => {
+            cancelStart?.();
             cancelStart = null;
-            void controller?.start();
+            controller?.destroy();
+            controller = undefined;
+            canvas?.replaceChildren();
+        };
+
+        // 合并页：读一次当前模式，之后跟着广播走
+        if (props.activeMode) {
+            const readMode = () => document.querySelector('.activity-page')?.getAttribute('data-activity-mode') ?? 'exercise';
+            setActive(readMode() === props.activeMode);
+            const onMode = (event: Event) => {
+                const mode = (event as CustomEvent<ActivityModeDetail>).detail?.mode;
+                setActive(mode === props.activeMode);
+            };
+            document.addEventListener(ACTIVITY_MODE_EVENT, onMode);
+            onCleanup(() => document.removeEventListener(ACTIVITY_MODE_EVENT, onMode));
+        }
+
+        createEffect(() => {
+            if (active() && !controller) boot();
+            else if (!active() && controller) teardown();
         });
 
         createEffect(() => controller?.setScope(props.scope));
@@ -89,14 +127,12 @@ export default function ExerciseMap(props: ExerciseMapProps) {
 
         // ClientRouter 换页只换 DOM，Solid 的 onCleanup 不保证会跑：
         // 地图实例（WebGL 上下文 + 渲染循环）必须在这里兜底销毁，否则离开一页就多一份一直在画的地图
-        const destroyOnSwap = () => controller?.destroy();
+        const destroyOnSwap = () => teardown();
         document.addEventListener('astro:before-swap', destroyOnSwap);
 
         onCleanup(() => {
             document.removeEventListener('astro:before-swap', destroyOnSwap);
-            cancelStart?.();
-            cancelStart = null;
-            controller?.destroy();
+            teardown();
         });
     });
 

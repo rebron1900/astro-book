@@ -12,15 +12,17 @@ import Head from '../components/islands/Head.astro';
 import Header from '../components/layout/Header.astro';
 import Menu from '../components/layout/Menu.astro';
 import PageIntro from '../components/ui/PageIntro.astro';
-import ActivityShell from '../components/islands/ActivityShell';
+import ExerciseMapPanel from '../components/islands/ExerciseMapPanel';
 import ExerciseTimeline from '../components/islands/ExerciseTimeline.astro';
 import ExerciseSidebar from '../components/islands/ExerciseSidebar';
+import ExerciseFootprint from '../components/islands/ExerciseFootprint';
+
 // 时间线、运动侧栏、地图卡片的样式都在 exercise.scss 里，必须一起引入，
-// 否则岛里的 .ex-* 结构就是裸的
+// 否则岛里的 .ex-* / .ex-fp-* 结构就是裸的
 import '../styles/pages/exercise.scss';
 import '../styles/pages/activity.scss';
 
-// 沿用运动页的 Ghost 记录拿标题；这里的页面布局和 /exercise/ 一致（中间内容 + 右侧栏）
+// 沿用运动页的 Ghost 记录拿标题；页面布局与 /exercise/ 一致（中间内容 + 右侧栏）
 const page = pages.find((post) => post.slug == 'exercise') ?? pages.find((post) => post.slug == 'strava');
 
 const allRecords = buildRecords(activitiesJson as unknown as Activity[]);
@@ -28,6 +30,8 @@ const groups = groupByMonth(allRecords);
 const initialScope = defaultScope(allRecords);
 const records = compactRecords(allRecords);
 const footprint = loadFootprintData();
+const mapToken = import.meta.env.PUBLIC_MAP_KEY;
+
 // 标点海拔由 scripts/fetch-elevations.mjs 落盘（构建期不联网）
 const elevations = (elevationsJson as { places: Record<string, number> }).places;
 const achievements = buildAchievements(footprint, elevations);
@@ -35,7 +39,6 @@ const summary = buildFootprintSummary(footprint);
 const maxYear = Math.max(1, ...summary.years.map((bucket) => bucket.count));
 const topProvinces = summary.provinces.slice(0, 8);
 const maxProvince = Math.max(1, ...topProvinces.map((item) => item.places));
-const mapToken = import.meta.env.PUBLIC_MAP_KEY;
 
 const layoutPage = page ? { ...page, tags: (page.tags ?? []).filter((tag) => tag.slug !== 'hash-page-fullwidth') } : undefined;
 const years = footprint.stats.years;
@@ -62,10 +65,29 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
             note={note}
         />
 
-        <ActivityShell client:load records={records} initialScope={initialScope} footprint={footprint} token={mapToken} routesUrl="/exercise-routes.json" />
+        <div class="act-stage">
+            <div class="act-switch" role="group" aria-label="切换运动 / 足迹">
+                <button class="act-switch-btn" type="button" data-act-mode="exercise" aria-pressed="true">运动</button>
+                <button class="act-switch-btn" type="button" data-act-mode="footprint" aria-pressed="false">足迹</button>
+            </div>
 
-        <div class="ex-main act-exercise-timeline">
-            <ExerciseTimeline groups={groups} scope={initialScope} />
+            <div class="act-mode act-mode--exercise">
+                <div class="ex-main">
+                    <ExerciseMapPanel
+                        client:load
+                        records={records}
+                        initialScope={initialScope}
+                        token={mapToken}
+                        routesUrl="/exercise-routes.json"
+                        activeMode="exercise"
+                    />
+                    <ExerciseTimeline groups={groups} scope={initialScope} />
+                </div>
+            </div>
+
+            <div class="act-mode act-mode--footprint">
+                <ExerciseFootprint client:load data={footprint} token={mapToken} activeMode="footprint" />
+            </div>
         </div>
     </article>
 
@@ -78,18 +100,9 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
             <section class="act-sec">
                 <h2 class="act-side-title">概览</h2>
                 <dl class="act-side-stats">
-                    <div>
-                        <dt>地点</dt>
-                        <dd>{footprint.stats.places}</dd>
-                    </div>
-                    <div>
-                        <dt>游记</dt>
-                        <dd>{footprint.stats.articles}</dd>
-                    </div>
-                    <div>
-                        <dt>有游记的地点</dt>
-                        <dd>{footprint.stats.matchedPlaces}</dd>
-                    </div>
+                    <div><dt>地点</dt><dd>{footprint.stats.places}</dd></div>
+                    <div><dt>游记</dt><dd>{footprint.stats.articles}</dd></div>
+                    <div><dt>有游记的地点</dt><dd>{footprint.stats.matchedPlaces}</dd></div>
                     {
                         years && (
                             <div>
@@ -156,6 +169,12 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
 
             {/* 地点筛选暂时下线：要恢复就把 ActivityPlaceFilter 放回这里（组件和事件通道都还在） */}
         </div>
-
     </Fragment>
 </BaseLayout>
+
+<script>
+    import initActivityMode from '../lib/client/activity-mode';
+    import { onPageLoad } from '../lib/client/mount';
+
+    onPageLoad(initActivityMode);
+</script>
