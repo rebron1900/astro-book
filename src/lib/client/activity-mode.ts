@@ -1,4 +1,5 @@
 import { ACTIVITY_FOCUS_PLACE_EVENT, ACTIVITY_MODE_EVENT, type ActivityFocusPlaceDetail, type ActivityModeDetail } from './activity';
+import { createTippy } from './tippy';
 
 /**
  * `/activity/` 顶部「运动 / 足迹」的切换。
@@ -40,5 +41,35 @@ export default function initActivityMode(): () => void {
     // 首次挂载也广播一次，让两个岛各自判断要不要建地图（旧页面没有这个按钮，不受影响）
     apply(page.getAttribute('data-activity-mode') ?? 'exercise');
 
-    return () => document.removeEventListener('click', onClick);
+    // 右栏分布条的悬浮提示：年份 → 那年去过的地点；省份 → 该省的地点
+    const bars = [...document.querySelectorAll<HTMLElement>('.act-bar-row[data-tip]')];
+    if (bars.length > 0) {
+        createTippy(bars, {
+            content: (element: Element) => element.getAttribute('data-tip') ?? '',
+            placement: 'left',
+            maxWidth: 260,
+            delay: [140, 0],
+            theme: 'auto'
+        });
+    }
+
+    // 足迹地图吸顶：和运动页一样，滚过哨兵就切到「悬浮条」形态
+    const sentinel = document.querySelector('.act-fp-sentinel');
+    const fpMap = document.querySelector<HTMLElement>('.ex-fp-map-wrap');
+    let observer: IntersectionObserver | null = null;
+    if (sentinel && fpMap && typeof IntersectionObserver !== 'undefined') {
+        observer = new IntersectionObserver(
+            (entries) => {
+                const entry = entries[0];
+                if (entry) fpMap.classList.toggle('is-stuck', !entry.isIntersecting);
+            },
+            { threshold: 0 }
+        );
+        observer.observe(sentinel);
+    }
+
+    return () => {
+        document.removeEventListener('click', onClick);
+        observer?.disconnect();
+    };
 }

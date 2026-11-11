@@ -1,4 +1,5 @@
 import { createSignal, onCleanup, onMount } from 'solid-js';
+import { ACTIVITY_MODE_EVENT, type ActivityModeDetail } from '../../lib/client/activity';
 import type { ExerciseHoverDetail, ExerciseRecord, ExerciseScope, ExerciseSelectDetail, SportKey } from '../../lib/exercise';
 import { EXERCISE_HOVER_EVENT, EXERCISE_SELECT_EVENT, SPORT_META, SPORT_ORDER } from '../../lib/exercise';
 import ExerciseMap from './ExerciseMap';
@@ -80,7 +81,22 @@ export default function ExerciseMapPanel(props: ExerciseMapPanelProps) {
             observer.observe(sentinel);
         }
 
+        // 合并页：从足迹切回来时，地图刚从 display:none 恢复，
+        // 直接按「没吸顶」的新布局生效，不要播那段 height 过渡（看起来像展开动画）
+        let onMode: ((event: Event) => void) | null = null;
+        if (props.activeMode) {
+            onMode = (event: Event) => {
+                if ((event as CustomEvent<ActivityModeDetail>).detail?.mode !== props.activeMode) return;
+                setStuck(false);
+                if (!hero) return;
+                hero.classList.add('is-resizing');
+                requestAnimationFrame(() => requestAnimationFrame(() => hero?.classList.remove('is-resizing')));
+            };
+            document.addEventListener(ACTIVITY_MODE_EVENT, onMode);
+        }
+
         onCleanup(() => {
+            if (onMode) document.removeEventListener(ACTIVITY_MODE_EVENT, onMode);
             document.removeEventListener(EXERCISE_SELECT_EVENT, handleSelect);
             document.removeEventListener(EXERCISE_HOVER_EVENT, handleHover);
             window.removeEventListener('resize', handleViewportResize);

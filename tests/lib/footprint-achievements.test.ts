@@ -80,9 +80,18 @@ describe('buildFootprintSummary', () => {
         ];
         const data = { places: [], articles, stats: { places: 0, articles: 3, matchedPlaces: 0, years: null } } as unknown as FootprintData;
         expect(buildFootprintSummary(data).years).toEqual([
-            { year: 2019, count: 1 },
-            { year: 2024, count: 2 }
+            { year: 2019, count: 1, places: [] },
+            { year: 2024, count: 2, places: [] }
         ]);
+    });
+
+    it('年份桶带上那年去过的地点', () => {
+        const articles = [
+            { year: 2024, slug: 'a', placeNames: ['青海湖', '西宁'] },
+            { year: 2024, slug: 'b', placeNames: ['青海湖'] }
+        ];
+        const data = { places: [], articles, stats: { places: 0, articles: 2, matchedPlaces: 0, years: null } } as unknown as FootprintData;
+        expect(buildFootprintSummary(data).years).toEqual([{ year: 2024, count: 2, places: ['青海湖', '西宁'] }]);
     });
 
     it('省份按标点数排序，游记去重', () => {
@@ -92,7 +101,7 @@ describe('buildFootprintSummary', () => {
         const data = { places: [a, b, c], articles: [], stats: { places: 3, articles: 0, matchedPlaces: 0, years: null } } as unknown as FootprintData;
         const provinces = buildFootprintSummary(data).provinces;
         // 两个标点各带 2 篇不同 slug 的游记，并集是 4 篇
-        expect(provinces[0]).toEqual({ province: '四川', places: 2, articles: 4 });
+        expect(provinces[0]).toEqual({ province: '四川', places: 2, articles: 4, names: ['甲', '乙'] });
         expect(provinces[1].province).toBe('云南');
     });
 });

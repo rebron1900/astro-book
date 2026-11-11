@@ -12,6 +12,8 @@
 /* ---------- 右上角：运动 / 足迹（容器与胶囊见文件末尾） ---------- */
 
 .act-switch-btn {
+    position: relative;
+    z-index: 1;
     padding: 0.26rem 0.72rem;
     border: 0;
     border-radius: 999px;
@@ -32,8 +34,27 @@
 }
 
 .act-switch-btn[aria-pressed='true'] {
-    background: var(--body-font-color);
+    background: transparent;
     color: var(--body-background);
+}
+
+/* 激活态：一块滑块在两项之间平移（两个按钮文字等宽，滑 100% 刚好对准） */
+.act-thumb {
+    position: absolute;
+    inset-block: 0.18rem;
+    inset-inline-start: 0.18rem;
+    z-index: 0;
+    /* 容器左右各 0.18rem 内边距 + 中间 0.15rem 缝，滑块正好顶满一个按钮 */
+    inline-size: calc((100% - 0.51rem) / 2);
+    border-radius: 999px;
+    background: var(--body-font-color);
+    transform: translateX(0);
+    transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 用页面上的模式属性驱动滑块 */
+.activity-page[data-activity-mode='footprint'] .act-thumb {
+    transform: translateX(calc(100% + 0.15rem));
 }
 
 .act-switch-btn:focus-visible {
@@ -97,42 +118,9 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
     padding-inline-end: 0;
 }
 
-/* 多列：游记卡片按两列排，去掉时间轴那套「日期列 + 竖线」 */
-.act-mode--footprint .ex-fp-rows {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem 1.1rem;
-    padding-block: 0;
-}
+/* 保持时间线样式：日期列 + 竖线 + 右侧内容，只把卡片里的字号/图片收小一点 */
 
-.act-mode--footprint .ex-fp-panel .ledger-row {
-    display: block;
-    margin: 0;
-    padding: 0.7rem 0.8rem 0.75rem;
-    border: 1px solid var(--gray-200);
-    border-radius: 0.6rem;
-    background: color-mix(in srgb, var(--body-background) 96%, var(--body-font-color));
-}
-
-.act-mode--footprint .ex-fp-panel .ledger-row + .ledger-row {
-    margin-block-start: 0;
-}
-
-.act-mode--footprint .ex-fp-panel .ledger-row::before,
-.act-mode--footprint .ex-fp-panel .ledger-date,
-.act-mode--footprint .ex-fp-panel .ledger-rail {
-    display: none;
-}
-
-/* 卡片高度控制：标题 2 行、摘要 2 行、图片更矮 */
-.act-mode--footprint .ex-fp-row-title {
-    display: -webkit-box;
-    overflow: hidden;
-    font-size: 0.8125rem;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-}
-
+/* 时间线卡片：摘要压到 2 行、图片收小，整体高度更紧凑 */
 .act-mode--footprint .ex-fp-row-text {
     font-size: 0.7rem;
     -webkit-line-clamp: 2;
@@ -154,12 +142,6 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
 .act-mode--footprint .ex-fp-chip,
 .act-mode--footprint .ex-fp-row-places > * {
     font-size: 0.5625rem;
-}
-
-@media screen and (max-width: 63.99rem) {
-    .act-mode--footprint .ex-fp-rows {
-        grid-template-columns: minmax(0, 1fr);
-    }
 }
 
 @media screen and (max-width: 47.84rem) {
@@ -347,6 +329,7 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
 }
 
 .act-switch {
+    position: relative;
     display: inline-flex;
     gap: 0.15rem;
     padding: 0.18rem;
@@ -375,7 +358,7 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
 .act-badge-btn,
 .act-badge-static {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 0.08rem 0.4rem;
     inline-size: 100%;
     padding: 0.3rem 0.35rem;
@@ -401,15 +384,23 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
     outline-offset: 1px;
 }
 
-.act-badge-label {
+.act-badge-btn > svg,
+.act-badge-static > svg {
+    grid-row: 1 / span 2;
     grid-column: 1;
+    align-self: center;
+    color: color-mix(in srgb, var(--color-link) 85%, transparent);
+}
+
+.act-badge-label {
+    grid-column: 2;
     color: var(--gray-500);
     font-size: 0.625rem;
     line-height: 1.5;
 }
 
 .act-badge-note {
-    grid-column: 2;
+    grid-column: 3;
     color: var(--gray-500);
     font-size: 0.5625rem;
     line-height: 1.5;
@@ -417,7 +408,7 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
 }
 
 .act-badge-value {
-    grid-column: 1 / -1;
+    grid-column: 2 / 4;
     overflow: hidden;
     color: var(--body-font-color);
     font-size: 0.75rem;
@@ -433,4 +424,84 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
     .act-badge-btn {
         transition: none;
     }
+}
+
+/* ---------- 足迹地图：吸顶后和运动页一样收成悬浮条 ---------- */
+
+.act-mode--footprint .ex-fp-map-wrap {
+    transition:
+        block-size 240ms ease,
+        box-shadow 240ms ease,
+        border-radius 240ms ease;
+}
+
+.act-mode--footprint .ex-fp-map-wrap.is-stuck {
+    block-size: 15rem;
+    box-shadow: 0 10px 26px rgb(0 0 0 / 0.12);
+}
+
+@media screen and (max-width: 47.84rem) {
+    .act-mode--footprint .ex-fp-map-wrap.is-stuck {
+        block-size: 10rem;
+    }
+}
+
+/* 地图变小了，标点也跟着收一档 */
+.act-mode--footprint .ex-fp-map .marker.ex-fp-point {
+    inline-size: 16px;
+    block-size: 16px;
+}
+
+.act-mode--footprint .ex-fp-map .img-post.marker.ex-fp-point {
+    inline-size: 24px;
+    block-size: 24px;
+}
+
+/* 小地图里标点气泡也收一点，不然一屏全是气泡 */
+.act-mode--footprint .ex-fp-tip {
+    font-size: 0.6875rem;
+    max-inline-size: 15rem;
+}
+
+/* ---------- 概览：两列小卡 + 图标 ---------- */
+
+.act-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.act-fact {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+    gap: 0 0.4rem;
+    padding: 0.45rem 0.5rem;
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--body-font-color) 4%, transparent);
+}
+
+.act-fact svg {
+    grid-row: 1 / span 2;
+    grid-column: 1;
+    color: color-mix(in srgb, var(--color-link) 85%, transparent);
+}
+
+.act-fact-value {
+    grid-column: 2;
+    color: var(--body-font-color);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.act-fact-label {
+    grid-column: 2;
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    line-height: 1.4;
 }

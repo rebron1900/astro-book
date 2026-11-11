@@ -12,6 +12,7 @@ import Head from '../components/islands/Head.astro';
 import Header from '../components/layout/Header.astro';
 import Menu from '../components/layout/Menu.astro';
 import PageIntro from '../components/ui/PageIntro.astro';
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, BookmarkCheck, CalendarRange, Map, MapPin, Mountain, NotebookPen, PenLine, Ruler, Sparkles } from '@lucide/astro';
 import ExerciseMapPanel from '../components/islands/ExerciseMapPanel';
 import ExerciseTimeline from '../components/islands/ExerciseTimeline.astro';
 import ExerciseSidebar from '../components/islands/ExerciseSidebar';
@@ -38,6 +39,17 @@ const achievements = buildAchievements(footprint, elevations);
 const summary = buildFootprintSummary(footprint);
 const maxYear = Math.max(1, ...summary.years.map((bucket) => bucket.count));
 const topProvinces = summary.provinces.slice(0, 8);
+// 成就图标：按 key 取，未收录的用 Sparkles 兜底
+const ACHIEVEMENT_ICONS: Record<string, typeof Sparkles> = {
+    north: ArrowUp,
+    south: ArrowDown,
+    east: ArrowRight,
+    west: ArrowLeft,
+    province: Map,
+    writer: PenLine,
+    span: Ruler,
+    elevation: Mountain
+};
 const maxProvince = Math.max(1, ...topProvinces.map((item) => item.places));
 
 const layoutPage = page ? { ...page, tags: (page.tags ?? []).filter((tag) => tag.slug !== 'hash-page-fullwidth') } : undefined;
@@ -68,6 +80,7 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
         <div class="act-stage">
             <div class="act-switch-bar">
                 <div class="act-switch" role="group" aria-label="切换运动 / 足迹">
+                    <span class="act-thumb" aria-hidden="true"></span>
                     <button class="act-switch-btn" type="button" data-act-mode="exercise" aria-pressed="true">运动</button>
                     <button class="act-switch-btn" type="button" data-act-mode="footprint" aria-pressed="false">足迹</button>
                 </div>
@@ -88,6 +101,7 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
             </div>
 
             <div class="act-mode act-mode--footprint">
+                <div class="act-fp-sentinel" aria-hidden="true"></div>
                 <ExerciseFootprint client:load data={footprint} token={mapToken} activeMode="footprint" />
             </div>
         </div>
@@ -101,19 +115,32 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
         <div class="act-side act-side--footprint">
             <section class="act-sec">
                 <h2 class="act-side-title">概览</h2>
-                <dl class="act-side-stats">
-                    <div><dt>地点</dt><dd>{footprint.stats.places}</dd></div>
-                    <div><dt>游记</dt><dd>{footprint.stats.articles}</dd></div>
-                    <div><dt>有游记的地点</dt><dd>{footprint.stats.matchedPlaces}</dd></div>
+                <ul class="act-facts">
+                    <li class="act-fact">
+                        <MapPin size={14} aria-hidden="true" />
+                        <span class="act-fact-value">{footprint.stats.places}</span>
+                        <span class="act-fact-label">地点</span>
+                    </li>
+                    <li class="act-fact">
+                        <NotebookPen size={14} aria-hidden="true" />
+                        <span class="act-fact-value">{footprint.stats.articles}</span>
+                        <span class="act-fact-label">游记</span>
+                    </li>
+                    <li class="act-fact">
+                        <BookmarkCheck size={14} aria-hidden="true" />
+                        <span class="act-fact-value">{footprint.stats.matchedPlaces}</span>
+                        <span class="act-fact-label">有游记的地点</span>
+                    </li>
                     {
                         years && (
-                            <div>
-                                <dt>写作跨度</dt>
-                                <dd>{years[1] - years[0] + 1} 年</dd>
-                            </div>
+                            <li class="act-fact">
+                                <CalendarRange size={14} aria-hidden="true" />
+                                <span class="act-fact-value">{years[1] - years[0] + 1} 年</span>
+                                <span class="act-fact-label">写作跨度</span>
+                            </li>
                         )
                     }
-                </dl>
+                </ul>
             </section>
 
             <section class="act-sec act-tabs">
@@ -128,7 +155,7 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
                 <ul class="act-bars act-tabs-panel act-tabs-panel--year">
                     {
                         summary.years.map((bucket) => (
-                            <li class="act-bar-row">
+                            <li class="act-bar-row" data-tip={bucket.places.length > 0 ? `${bucket.year} 年去过：${bucket.places.join('、')}` : undefined}>
                                 <span class="act-bar-label">{bucket.year}</span>
                                 <span class="act-bar-track">
                                     <span class="act-bar-fill" style={`--w: ${Math.round((bucket.count / maxYear) * 100)}%`} />
@@ -142,7 +169,7 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
                 <ul class="act-bars act-tabs-panel act-tabs-panel--province">
                     {
                         topProvinces.map((item) => (
-                            <li class="act-bar-row">
+                            <li class="act-bar-row" data-tip={item.names.length > 0 ? `${item.province}：${item.names.join('、')}` : undefined}>
                                 <span class="act-bar-label act-bar-label--wide">{item.province}</span>
                                 <span class="act-bar-track">
                                     <span class="act-bar-fill" style={`--w: ${Math.round((item.places / maxProvince) * 100)}%`} />
@@ -158,23 +185,28 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
                 <h2 class="act-side-title">成就</h2>
                 <ul class="act-badges">
                     {
-                        achievements.map((item) => (
-                            <li class="act-badge">
-                                {item.placeId ? (
-                                    <button class="act-badge-btn" type="button" data-act-place={item.placeId} title={`在地图上看看 ${item.value}`}>
-                                        <span class="act-badge-label">{item.label}</span>
-                                        {item.note && <span class="act-badge-note">{item.note}</span>}
-                                        <span class="act-badge-value">{item.value}</span>
-                                    </button>
-                                ) : (
-                                    <div class="act-badge-static">
-                                        <span class="act-badge-label">{item.label}</span>
-                                        {item.note && <span class="act-badge-note">{item.note}</span>}
-                                        <span class="act-badge-value">{item.value}</span>
-                                    </div>
-                                )}
-                            </li>
-                        ))
+                        achievements.map((item) => {
+                            const Icon = ACHIEVEMENT_ICONS[item.key] ?? Sparkles;
+                            return (
+                                <li class="act-badge">
+                                    {item.placeId ? (
+                                        <button class="act-badge-btn" type="button" data-act-place={item.placeId} title={`在地图上看看 ${item.value}`}>
+                                            <Icon size={12} aria-hidden="true" />
+                                            <span class="act-badge-label">{item.label}</span>
+                                            {item.note && <span class="act-badge-note">{item.note}</span>}
+                                            <span class="act-badge-value">{item.value}</span>
+                                        </button>
+                                    ) : (
+                                        <div class="act-badge-static">
+                                            <Icon size={12} aria-hidden="true" />
+                                            <span class="act-badge-label">{item.label}</span>
+                                            {item.note && <span class="act-badge-note">{item.note}</span>}
+                                            <span class="act-badge-value">{item.value}</span>
+                                        </div>
+                                    )}
+                                </li>
+                            );
+                        })
                     }
                 </ul>
             </section>

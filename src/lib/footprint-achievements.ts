@@ -90,6 +90,8 @@ export interface FootprintYearBucket {
     year: number;
     /** 该年写了几篇游记 */
     count: number;
+    /** 该年游记涉及的地点（去重，按出现顺序）——右栏悬浮时列出来 */
+    places: string[];
 }
 
 export interface FootprintProvinceStat {
@@ -98,6 +100,8 @@ export interface FootprintProvinceStat {
     places: number;
     /** 该省标点关联的游记数（同一篇重复命中只算一次） */
     articles: number;
+    /** 该省的地名（去重，按标点表顺序）——右栏悬浮时列出来 */
+    names: string[];
 }
 
 /**
@@ -105,19 +109,27 @@ export interface FootprintProvinceStat {
  * 运动页侧栏是日历热力图 + 周月年统计，这边就用这两个分布撑起同样的信息密度。
  */
 export function buildFootprintSummary(data: FootprintData): { years: FootprintYearBucket[]; provinces: FootprintProvinceStat[] } {
-    const yearCount = new Map<number, number>();
-    for (const article of data.articles) yearCount.set(article.year, (yearCount.get(article.year) ?? 0) + 1);
-    const years = [...yearCount.entries()].map(([year, count]) => ({ year, count })).sort((a, b) => a.year - b.year);
+    const yearMap = new Map<number, { count: number; places: string[] }>();
+    for (const article of data.articles) {
+        const bucket = yearMap.get(article.year) ?? { count: 0, places: [] };
+        bucket.count += 1;
+        for (const name of article.placeNames ?? []) {
+            if (!bucket.places.includes(name)) bucket.places.push(name);
+        }
+        yearMap.set(article.year, bucket);
+    }
+    const years = [...yearMap.entries()].map(([year, bucket]) => ({ year, ...bucket })).sort((a, b) => a.year - b.year);
 
-    const buckets = new Map<string, { places: number; slugs: Set<string> }>();
+    const buckets = new Map<string, { places: number; slugs: Set<string>; names: string[] }>();
     for (const place of data.places) {
-        const bucket = buckets.get(place.province) ?? { places: 0, slugs: new Set<string>() };
+        const bucket = buckets.get(place.province) ?? { places: 0, slugs: new Set<string>(), names: [] };
         bucket.places += 1;
+        if (!bucket.names.includes(place.name)) bucket.names.push(place.name);
         for (const slug of place.articleSlugs) bucket.slugs.add(slug);
         buckets.set(place.province, bucket);
     }
     const provinces = [...buckets.entries()]
-        .map(([province, bucket]) => ({ province, places: bucket.places, articles: bucket.slugs.size }))
+        .map(([province, bucket]) => ({ province, places: bucket.places, articles: bucket.slugs.size, names: bucket.names }))
         .sort((a, b) => b.places - a.places || b.articles - a.articles || a.province.localeCompare(b.province, 'zh-Hans-CN'));
 
     return { years, provinces };
