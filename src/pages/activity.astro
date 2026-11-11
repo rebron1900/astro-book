@@ -15,6 +15,9 @@ import PageIntro from '../components/ui/PageIntro.astro';
 import ActivityShell from '../components/islands/ActivityShell';
 import ExerciseTimeline from '../components/islands/ExerciseTimeline.astro';
 import ExerciseSidebar from '../components/islands/ExerciseSidebar';
+// 时间线、运动侧栏、地图卡片的样式都在 exercise.scss 里，必须一起引入，
+// 否则岛里的 .ex-* 结构就是裸的
+import '../styles/pages/exercise.scss';
 import '../styles/pages/activity.scss';
 
 // 沿用运动页的 Ghost 记录拿标题；这里的页面布局和 /exercise/ 一致（中间内容 + 右侧栏）
@@ -61,7 +64,7 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
 
         <ActivityShell client:load records={records} initialScope={initialScope} footprint={footprint} token={mapToken} routesUrl="/exercise-routes.json" />
 
-        <div class="act-exercise-timeline">
+        <div class="ex-main act-exercise-timeline">
             <ExerciseTimeline groups={groups} scope={initialScope} />
         </div>
     </article>
