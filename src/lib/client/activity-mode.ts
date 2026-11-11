@@ -34,6 +34,14 @@ export default function initActivityMode(): () => void {
     const onClick = (event: Event) => {
         const target = event.target as HTMLElement | null;
 
+        // 气泡里的地名：和地图标点气泡一样，点一下就聚焦过去
+        const tipRow = target?.closest<HTMLElement>('.act-tip-row[data-place-id]');
+        if (tipRow?.dataset.placeId) {
+            tips.forEach((instance) => instance.hide());
+            document.dispatchEvent(new CustomEvent<ActivityFocusPlaceDetail>(ACTIVITY_FOCUS_PLACE_EVENT, { detail: { placeId: tipRow.dataset.placeId } }));
+            return;
+        }
+
         // 成就卡片：点一下让地图聚焦到那个标点
         const achievement = target?.closest<HTMLElement>('[data-act-place]');
         if (achievement?.dataset.actPlace) {
@@ -54,8 +62,9 @@ export default function initActivityMode(): () => void {
     // 右栏分布条的悬浮提示：和地图标点气泡同一套「标题 + 列表」结构
     const escape = (value: string) => value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] ?? char);
     const bars = [...document.querySelectorAll<HTMLElement>('.act-bar-row[data-tip-places]')];
+    let tips: ReturnType<typeof createTippy> = [];
     if (bars.length > 0) {
-        createTippy(bars, {
+        tips = createTippy(bars, {
             allowHTML: true,
             placement: 'left',
             maxWidth: 260,
@@ -69,14 +78,16 @@ export default function initActivityMode(): () => void {
             delay: [140, 220],
             content: (element: Element) => {
                 const title = element.getAttribute('data-tip-title') ?? '';
-                let names: string[] = [];
+                let refs: { id: string; name: string }[] = [];
                 try {
-                    names = JSON.parse(element.getAttribute('data-tip-places') ?? '[]');
+                    refs = JSON.parse(element.getAttribute('data-tip-places') ?? '[]');
                 } catch {
-                    names = [];
+                    refs = [];
                 }
-                const rows = names.map((name) => `<li class="act-tip-row">${escape(name)}</li>`).join('');
-                return `<div class="act-tip"><p class="act-tip-head">${escape(title)} · ${names.length} 个地方</p><ul class="act-tip-list">${rows}</ul></div>`;
+                const rows = refs
+                    .map((ref) => `<li><button class="act-tip-row" type="button" data-place-id="${escape(ref.id)}">${escape(ref.name)}</button></li>`)
+                    .join('');
+                return `<div class="act-tip"><p class="act-tip-head">${escape(title)} · ${refs.length} 个地方</p><ul class="act-tip-list">${rows}</ul></div>`;
             }
         });
     }

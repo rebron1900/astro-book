@@ -12,7 +12,7 @@ import Head from '../components/islands/Head.astro';
 import Header from '../components/layout/Header.astro';
 import Menu from '../components/layout/Menu.astro';
 import PageIntro from '../components/ui/PageIntro.astro';
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, BookmarkCheck, CalendarRange, Map, MapPin, Mountain, NotebookPen, PenLine, Ruler, Sparkles } from '@lucide/astro';
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, BookmarkCheck, CalendarRange, Map as MapIcon, MapPin, Mountain, NotebookPen, PenLine, Ruler, Sparkles } from '@lucide/astro';
 import ExerciseMapPanel from '../components/islands/ExerciseMapPanel';
 import ExerciseTimeline from '../components/islands/ExerciseTimeline.astro';
 import ExerciseSidebar from '../components/islands/ExerciseSidebar';
@@ -39,13 +39,16 @@ const achievements = buildAchievements(footprint, elevations);
 const summary = buildFootprintSummary(footprint);
 const maxYear = Math.max(1, ...summary.years.map((bucket) => bucket.count));
 const topProvinces = summary.provinces.slice(0, 8);
+// 气泡里要能点，所以把「名字」换成「id + 名字」
+const placeIdByName = new Map(footprint.places.map((place) => [place.name, place.id]));
+const toPlaceRefs = (names: string[]) => names.map((name) => ({ id: placeIdByName.get(name) ?? name, name }));
 // 成就图标：按 key 取，未收录的用 Sparkles 兜底
 const ACHIEVEMENT_ICONS: Record<string, typeof Sparkles> = {
     north: ArrowUp,
     south: ArrowDown,
     east: ArrowRight,
     west: ArrowLeft,
-    province: Map,
+    province: MapIcon,
     writer: PenLine,
     span: Ruler,
     elevation: Mountain
@@ -117,24 +120,24 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
                 <h2 class="act-side-title">概览</h2>
                 <ul class="act-facts">
                     <li class="act-fact">
-                        <MapPin size={14} aria-hidden="true" />
+                        <MapPin size={16} aria-hidden="true" />
                         <span class="act-fact-value">{footprint.stats.places}</span>
                         <span class="act-fact-label">地点</span>
                     </li>
                     <li class="act-fact">
-                        <NotebookPen size={14} aria-hidden="true" />
+                        <NotebookPen size={16} aria-hidden="true" />
                         <span class="act-fact-value">{footprint.stats.articles}</span>
                         <span class="act-fact-label">游记</span>
                     </li>
                     <li class="act-fact">
-                        <BookmarkCheck size={14} aria-hidden="true" />
+                        <BookmarkCheck size={16} aria-hidden="true" />
                         <span class="act-fact-value">{footprint.stats.matchedPlaces}</span>
                         <span class="act-fact-label">有游记的地点</span>
                     </li>
                     {
                         years && (
                             <li class="act-fact">
-                                <CalendarRange size={14} aria-hidden="true" />
+                                <CalendarRange size={16} aria-hidden="true" />
                                 <span class="act-fact-value">{years[1] - years[0] + 1} 年</span>
                                 <span class="act-fact-label">写作跨度</span>
                             </li>
@@ -158,7 +161,7 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
                             <li
                                 class="act-bar-row"
                                 data-tip-title={`${bucket.year} 年`}
-                                data-tip-places={bucket.places.length > 0 ? JSON.stringify(bucket.places) : undefined}
+                                data-tip-places={bucket.places.length > 0 ? JSON.stringify(toPlaceRefs(bucket.places)) : undefined}
                             >
                                 <span class="act-bar-label">{bucket.year}</span>
                                 <span class="act-bar-track">
@@ -173,7 +176,7 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
                 <ul class="act-bars act-tabs-panel act-tabs-panel--province">
                     {
                         topProvinces.map((item) => (
-                            <li class="act-bar-row" data-tip-title={item.province} data-tip-places={item.names.length > 0 ? JSON.stringify(item.names) : undefined}>
+                            <li class="act-bar-row" data-tip-title={item.province} data-tip-places={item.names.length > 0 ? JSON.stringify(toPlaceRefs(item.names)) : undefined}>
                                 <span class="act-bar-label act-bar-label--wide">{item.province}</span>
                                 <span class="act-bar-track">
                                     <span class="act-bar-fill" style={`--w: ${Math.round((item.places / maxProvince) * 100)}%`} />
