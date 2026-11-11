@@ -15,8 +15,18 @@ export default function initActivityMode(): () => void {
     const buttons = [...page.querySelectorAll<HTMLButtonElement>('.act-switch-btn')];
     if (buttons.length === 0) return () => {};
 
+    /** 切模式时先把足迹地图的高度定死，避免 display:none → block 时播一次「窄 → 高」 */
+    const freezeFootprintMap = () => {
+        const map = document.querySelector<HTMLElement>('.ex-fp-map-wrap');
+        if (!map) return;
+        map.classList.add('act-no-anim');
+        map.classList.toggle('is-stuck', map.getBoundingClientRect().top < 0);
+        requestAnimationFrame(() => requestAnimationFrame(() => map.classList.remove('act-no-anim')));
+    };
+
     const apply = (mode: string) => {
         page.setAttribute('data-activity-mode', mode);
+        if (mode === 'footprint') freezeFootprintMap();
         for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.actMode === mode));
         document.dispatchEvent(new CustomEvent<ActivityModeDetail>(ACTIVITY_MODE_EVENT, { detail: { mode: mode === 'footprint' ? 'footprint' : 'exercise' } }));
     };
@@ -49,8 +59,14 @@ export default function initActivityMode(): () => void {
             allowHTML: true,
             placement: 'left',
             maxWidth: 260,
-            delay: [140, 0],
             theme: 'auto',
+            // 要能移到气泡里滚列表、点地名，所以是交互式的：
+            // 移出触发源不立刻关，只有移出气泡本身（或按 Esc）才关
+            interactive: true,
+            hideOnClick: false,
+            trigger: 'mouseenter focus',
+            appendTo: () => document.body,
+            delay: [140, 220],
             content: (element: Element) => {
                 const title = element.getAttribute('data-tip-title') ?? '';
                 let names: string[] = [];
