@@ -1209,27 +1209,49 @@ $page-sequence-max-items: 12;
     text-underline-offset: 0.3em;
 }
 
-/* 所有 page 页面标题统一对齐 /exercise/ 的标题层级：一句标题 + 一段引言。 */
-.book-article h1.page-title {
-    font-size: clamp(1.5rem, 2.4vw, 1.85rem);
-    font-weight: 600;
-    line-height: 1.32;
-    letter-spacing: -0.022em;
-}
-
-/* 页面标题区统一：标题 + 简介，尺度与 /exercise/ 的 ex-hero 完全一致。 */
+/* 全站页面标题区统一成首页（时间线导语）那一档尺度：一句标题 + 一段引言。
+   标题略小、引言压一行宽，页面第一眼看到的是内容而不是一个大标题。 */
 .page-head {
-    margin: 0 0 1.75rem;
+    max-inline-size: 44rem;
+    margin: 0 0 1.45rem;
 }
 
-.page-head .page-title {
+.page-title,
+.book-article h1.page-title,
+.book-page h1.page-title {
     margin: 0;
+    color: var(--body-font-color);
+    font-size: clamp(1.3rem, 1.55vw, 1.55rem);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.4;
 }
 
 .page-intro {
-    max-inline-size: 40rem;
-    margin: 0.65rem 0 0;
+    max-inline-size: 44rem;
+    margin: 0.55rem 0 0;
     color: var(--gray-700);
     font-size: 0.875rem;
     line-height: 1.85;
+}
+
+/* 引言下面的补充信息（条数、年份区间之类），比引言再淡一档 */
+.page-note {
+    margin: 0.5rem 0 0;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    letter-spacing: 0.01em;
+    line-height: 1.5;
+}
+
+@media screen and (max-width: 47.84rem) {
+    .page-head {
+        margin-block-end: 1.2rem;
+    }
+
+    .page-title,
+    .book-article h1.page-title,
+    .book-page h1.page-title {
+        font-size: 1.15rem;
+    }
 }

@@ -1,7 +1,6 @@
 import { createSignal, onCleanup, onMount } from 'solid-js';
 import type { ExerciseHoverDetail, ExerciseRecord, ExerciseScope, ExerciseSelectDetail, SportKey } from '../../lib/exercise';
 import { EXERCISE_HOVER_EVENT, EXERCISE_SELECT_EVENT, SPORT_META, SPORT_ORDER } from '../../lib/exercise';
-import { FOOTPRINT_OPEN_EVENT } from '../../lib/footprint';
 import ExerciseMap from './ExerciseMap';
 
 /**
@@ -88,45 +87,10 @@ export default function ExerciseMapPanel(props: ExerciseMapPanelProps) {
         });
     });
 
-    /**
-     * 足迹入口是真锚点（`/exercise/#footprint`）：浏览器先拿到 hash，无 JS 或岛还没水合时
-     * 也不会丢（足迹岛挂载后自查 hash）。同页点击时拦掉默认跳转，改 hash 再发事件，
-     * 让另一个岛立刻响应，同时不触发整页导航。
-     */
-    const openFootprint = (event: MouseEvent) => {
-        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-        const anchor = event.currentTarget as HTMLAnchorElement;
-        const target = new URL(anchor.href, window.location.href);
-        // 从别的页面点进来就交给浏览器整页跳，落地后由 hash 触发
-        if (target.pathname !== window.location.pathname) return;
-        event.preventDefault();
-        if (window.location.hash !== '#footprint') {
-            history.pushState(history.state, '', `${target.pathname}${target.search}#footprint`);
-        }
-        document.dispatchEvent(new CustomEvent(FOOTPRINT_OPEN_EVENT));
-    };
-
     return (
         <>
             <div class="ex-map-sentinel" ref={sentinel} aria-hidden="true"></div>
             <div class="ex-map-hero" classList={{ 'is-stuck': stuck() }} data-ex-map-panel data-scope-kind={scope().kind} ref={hero}>
-                <div class="ex-map-tools">
-                    <a class="ex-footprint-entry" href="/exercise/#footprint" data-astro-reload onClick={openFootprint}>
-                        <svg
-                            viewBox="0 0 24 24"
-                            aria-hidden="true"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z" />
-                            <circle cx="12" cy="10" r="3" />
-                        </svg>
-                        足迹
-                    </a>
-                </div>
                 <ExerciseMap
                     records={props.records}
                     token={props.token}

@@ -1,0 +1,88 @@
+/* ==========================================================================
+   运动 / 足迹 视图切换（运动页与足迹页顶部共用）
+   分段胶囊：容器浅底 + 细边，选中项用正文色填充、文字取底色反白。
+   不用主题色做填充，是因为深色主题下 --color-link 本身偏亮，反白字会糊。
+   ========================================================================== */
+
+.ex-switch {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.18rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--body-font-color) 4%, transparent);
+}
+
+.ex-switch-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+    block-size: 1.75rem;
+    padding: 0 0.72rem;
+    border-radius: 999px;
+    color: var(--gray-700);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    transition:
+        color 160ms ease,
+        background 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.ex-switch-link svg {
+    inline-size: 0.9rem;
+    block-size: 0.9rem;
+    flex: none;
+}
+
+/* 先写 hover，再写激活态：两者特异性相同，靠顺序保证选中项 hover 不变形 */
+.ex-switch-link:hover {
+    background: color-mix(in srgb, var(--body-font-color) 8%, transparent);
+    color: var(--body-font-color);
+}
+
+.ex-switch-link[aria-current='page'] {
+    background: var(--body-font-color);
+    color: var(--body-background);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.16);
+}
+
+.ex-switch-link[aria-current='page']:hover {
+    background: var(--body-font-color);
+    color: var(--body-background);
+}
+
+.ex-switch-link:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+/* ---------- 页面里的落位 ---------- */
+
+/* 两个页面都挂在标题区下面、内容上面：跟内容一起滚，不参与地图吸顶。
+   align-self 必须写 —— 足迹页的 .exercise-page 是 flex 列，不写会被拉成整行宽的胶囊。 */
+.exercise-page > .ex-switch {
+    align-self: flex-start;
+    margin-block: 0 1.05rem;
+}
+
+/* 足迹页桌面端 .book-page 没有内边距，这里补上和标题区一致的 1.25rem */
+.footprint-page > .ex-switch {
+    margin: 0 1rem 0.85rem;
+}
+
+@media screen and (max-width: 47.84rem) {
+    .footprint-page > .ex-switch {
+        margin-inline: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ex-switch-link {
+        transition: none;
+    }
+}

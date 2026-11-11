@@ -8,6 +8,7 @@ import Comments from '../../components/islands/Comments.astro';
 import Relitu from '../../components/islands/Relitu.jsx';
 import Header from '../../components/layout/Header.astro';
 import Menu from '../../components/layout/Menu.astro';
+import PageIntro from '../../components/ui/PageIntro.astro';
 import { Markup } from 'astro-remote';
 import CodeSlot from '../../components/islands/CodeSlot.astro';
 import IFrameSlot from '../../components/ui/IFrameSlot.astro';
@@ -16,7 +17,6 @@ import Columns from '../../components/shortcode/Columns.astro';
 import Details from '../../components/shortcode/Details.astro';
 import Link from '../../components/shortcode/Link.astro';
 import AlbumCard from '../../components/islands/AlbumCard.astro';
-import { Images } from '@lucide/astro';
 
 const page = pages.find((post) => post.slug == 'albums');
 const albums = extractAlbumsFromPosts();
@@ -33,7 +33,10 @@ if (!page) {
     <Menu slot="menu" />
 
     <article slot="content" class="markdown book-article">
-        <h1 class="book-title page-title"><Images /> {page.title}</h1>
+        <PageIntro
+            title="光落在某一天，就留了一张。"
+            copy="这里按时间收着一些照片。没有修图，也没有配文，只是那天刚好抬头，觉得该记下来。"
+        />
         {
             page.html && (
                 <Markup

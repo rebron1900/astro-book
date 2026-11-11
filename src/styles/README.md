@@ -13,7 +13,7 @@
 
 只放「几乎每个页面都用到」的东西。这里的每一行都会出现在所有页面的公共 CSS 里，新增前先确认它真的全局。
 
-> 固定装饰渐变（`_defaults.scss` 的 `@mixin gradientback`）由 `BaseLayout.astro` 里的 `<div class="page-bg" aria-hidden="true">` 承载，它带 `view-transition-name: page-bg`，切页面时保持静止。不要把它改回 `body::before/::after`，也不要挪出 `body` 顶层，否则过渡里它会随整页快照淡出再淡回（表现为「背景色闪一下」）。
+> 固定装饰渐变（`_defaults.scss` 的 `@mixin gradientback`）由 `BaseLayout.astro` 里的 `<div class="page-bg" aria-hidden="true">` 承载。它是 `position: fixed; z-index: 0`：压在 `body` 底色之上、`.container` 正文之下。**不要给它 `view-transition-name`** —— 一旦有名字，过渡期间浏览器会把它的快照画在所有内容之上，表现为「右上角/左下角冒出一块背景色，动画结束又消失」。几何不要绑到 `html.<theme>` 上（主题类是运行时加的，换页有空窗期）。
 
 ## 2. 页面层：`src/styles/pages/*.scss`（只随对应页面加载）
 

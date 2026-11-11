@@ -26,35 +26,7 @@ body:has(.exercise-page) .book-toc .book-toc-content {
     inline-size: 100%;
 }
 
-/* ---------- 页头 ---------- */
-.ex-hero {
-    margin: 0 0 1.75rem;
-}
-
-.ex-kicker {
-    margin: 0;
-    color: var(--color-link);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-
-.ex-title {
-    margin: 0.4rem 0 0;
-    font-size: clamp(1.5rem, 2.4vw, 1.85rem);
-    font-weight: 600;
-    line-height: 1.32;
-    letter-spacing: -0.022em;
-}
-
-.ex-intro {
-    max-inline-size: 40rem;
-    margin: 0.65rem 0 0;
-    color: var(--gray-700);
-    font-size: 0.875rem;
-    line-height: 1.85;
-}
+/* ---------- 页头：走全站统一的 .page-head / .page-title / .page-intro ---------- */
 
 /* ---------- 预览地图：中间区顶部 + 滚动吸顶 ---------- */
 .ex-main {
@@ -712,10 +684,6 @@ body:has(.exercise-page) .book-toc .book-toc-content {
     .ex-map-viewport {
         --ex-map-full: 13rem;
         --ex-map-stuck: 10rem;
-    }
-
-    .ex-hero {
-        margin-block-end: 1.35rem;
     }
 
 }

@@ -1,9 +1,11 @@
 import { For, Show, createEffect, createMemo, createSignal, onCleanup, onMount } from 'solid-js';
 import { Portal } from 'solid-js/web';
+import { navigate } from 'astro:transitions/client';
 import type { FootprintArticle, FootprintData, FootprintPlace, FootprintProvinceGroup } from '../../lib/footprint';
-import { FOOTPRINT_OPEN_EVENT, articleMatchesSelection, groupPlacesByProvince, markRepeatArticles } from '../../lib/footprint';
+import { articleMatchesSelection, groupPlacesByProvince, markRepeatArticles } from '../../lib/footprint';
 import { createFootprintMap, type FootprintMapController, type FootprintPlaceInfo } from '../../lib/client/footprint-map';
 import { prefersReducedMotion } from '../../lib/client/dom';
+import { afterTransition } from '../../lib/client/idle';
 import initZoom from '../../lib/client/zoom';
 
 export interface ExerciseFootprintProps {
@@ -17,17 +19,16 @@ export interface ExerciseFootprintProps {
 const NARROW_QUERY = '(max-width: 47.84rem)';
 
 /**
- * 足迹模式：从预览地图上方的「足迹」按钮进入，页面切成和友邻页类似的布局。
+ * 足迹页（`/exercise/footprint/`）的主体：独立页面，不再由运动页页内切换进入。
  *
  * 左侧导航保留；中间是地图，占满「除了标题 / 副标题之外」的剩余高度，右上角悬浮「筛选」HUD；
  * 右侧时间线沿用首页 / 友邻页那套纵向时间轴（日期 + 竖线圆点 + 内容），宽度和 TOC 列一致（16rem），
  * 自己内部滚动；桌面端整页不滚动，窄屏地图在上、时间线在下，页面正常滚动。
  *
- * 入口有两种：`#footprint`（无 JS 也能落到这个 hash，挂载后自查）和 document 事件（页内即时响应）。
- * 地图第一次打开时才创建（此时容器才有真实尺寸），关闭不销毁，页面卸载时统一清理。
+ * 两个页面之间的来回走：顶部 `.ex-switch`（ExerciseNav，真锚点）负责视觉入口，
+ * Esc 也能退回运动页。地图在容器就位后创建，页面卸载时统一销毁。
  */
 export default function ExerciseFootprint(props: ExerciseFootprintProps) {
-    const [open, setOpen] = createSignal(false);
     const [mapHostReady, setMapHostReady] = createSignal(false);
     const [activePlace, setActivePlace] = createSignal<string | null>(null);
     /** 用户自己点出来聚焦的卡片：只据它判定「再点一次就跳文章」 */
@@ -58,10 +59,9 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
     let filterPanel: HTMLDivElement | undefined;
     let filterModal: HTMLDivElement | undefined;
     let controller: FootprintMapController | undefined;
-    let lastFocus: HTMLElement | null = null;
+
     let lastFilterFocus: HTMLElement | null = null;
-    let lastScroll = 0;
-    let wasOpen = false;
+
 
     const filteredArticles = createMemo(() => props.data.articles.filter((article) => articleMatchesSelection(article, selected())));
     /** 同日多篇不重复显示日期：判定逻辑在数据层（有单测），这里只消费结果 */
@@ -93,14 +93,6 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
             // tooltip 里要能点进文章，所以直接给完整字段，不再只传标题
             articles: articles.map((article) => ({ title: article.title, url: article.url, dateLabel: article.dateLabel }))
         };
-    };
-
-    const subtitle = () => {
-        const stats = props.data.stats;
-        const parts = [`${stats.places} 个地点`];
-        if (stats.articles > 0) parts.push(`${stats.articles} 篇游记`);
-        if (stats.years) parts.push(`${stats.years[0]}—${stats.years[1]}`);
-        return parts.join(' · ');
     };
 
     /** 日期列只放「月.日」，年和星期另起两行，和首页时间线同一结构 */
@@ -284,95 +276,38 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
         }
     };
 
-    /* ------------------------------ 开关足迹 ------------------------------ */
-
+    /* ------------------------------ 返回运动页 ------------------------------ */
     /**
-     * 用 View Transition 包住「运动页 ↔ 足迹」的页内切换。
-     * 地图和右侧时间线各自起名，其余部分走根节点淡入淡出；
-     * 减弱动画时直接切；退出/再进时清掉标记，避免和 ClientRouter 的页面过渡抢。
+     * Esc / 键盘退场用。顶部「运动 / 足迹」切换是真锚点，不走这里；
+     * 减弱动画时直接整页跳，省掉一次 View Transition。
      */
-    const runWithViewTransition = (apply: () => void) => {
-        const doc = document as Document & { startViewTransition?: (callback: () => void | Promise<void>) => { finished?: Promise<unknown> } };
-        if (prefersReducedMotion() || typeof doc.startViewTransition !== 'function') {
-            apply();
-            return;
-        }
-        document.documentElement.setAttribute('data-fp-transition', '');
-        try {
-            const transition = doc.startViewTransition(() => {
-                apply();
-                // Solid 的 DOM 更新走 effect 队列：让出两个宏任务再让浏览器取「新快照」，
-                // 否则可能拍到展开到一半的中间态。
-                // 不用 rAF：过渡的捕获阶段 rAF 可能被推迟，Chrome 会判 DOM update 超时并中止过渡。
-                return new Promise<void>((resolve) => {
-                    setTimeout(() => setTimeout(resolve, 0), 0);
-                });
-            });
-            void Promise.resolve(transition?.finished)
-                .catch(() => undefined)
-                .then(() => document.documentElement.removeAttribute('data-fp-transition'));
-        } catch {
-            document.documentElement.removeAttribute('data-fp-transition');
-            apply();
-        }
+    const backToExercise = () => {
+        if (prefersReducedMotion()) window.location.assign('/exercise/');
+        else void navigate('/exercise/');
     };
 
-    const openMode = () => {
-        if (open()) return;
-        lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-        // 页内切换会把上面一大段运动内容藏起来，先记下滚动位置，退出时再还回去
-        lastScroll = window.scrollY;
-        window.scrollTo({ top: 0, behavior: 'auto' });
-        runWithViewTransition(() => {
-            // 布局类在这里同步加，effect 里那次是幂等的兜底：过渡回调必须当场看到新布局
-            document.body.classList.add('is-footprint');
-            setOpen(true);
-        });
-    };
-
-    /** 退出足迹：筛选状态只在本次足迹会话里保留，退出即重置 */
-    const closeMode = () => {
-        setFilterOpen(false);
-        setSelected(new Set<string>());
-        setExpanded(defaultExpanded());
-        controller?.clearActive();
-        runWithViewTransition(() => {
-            document.body.classList.remove('is-footprint');
-            setOpen(false);
-        });
-    };
-
+    // 地图容器拿到 ref 之后才建实例（此时 flex 高度已经就位），
+    // 而且要等页面切换动画跑完、浏览器空闲：换页那几百毫秒里初始化 WebGL 会直接把过渡拖卡。
+    let cancelMapInit: (() => void) | null = null;
     createEffect(() => {
-        if (!open()) return;
-        wasOpen = true;
-        document.body.classList.add('is-footprint');
-        if (window.location.hash !== '#footprint') history.replaceState(history.state, '', '#footprint');
-        // 把焦点交给整层而不是按钮：避免刚打开就出现一圈「返回运动」的焦点环
-        requestAnimationFrame(() => {
-            overlay?.focus({ preventScroll: true });
-        });
-    });
-
-    // 地图容器拿到 ref、模式也打开之后再创建实例（此时 flex 高度已经就位）
-    createEffect(() => {
-        if (!open() || !mapHostReady()) return;
-        ensureMap();
-        requestAnimationFrame(() => {
-            controller?.resize();
-            controller?.fitAll();
+        if (!mapHostReady() || controller || cancelMapInit) return;
+        cancelMapInit = afterTransition(() => {
+            cancelMapInit = null;
+            ensureMap();
+            // 首次取景由地图自己在 style.load 里「瞬间就位」，这里只补一次尺寸
+            requestAnimationFrame(() => controller?.resize());
         });
     });
 
     // 卡片里的图片复用站内的 medium-zoom 灯箱：列表随筛选重渲染，每次渲染后补挂一次
     createEffect(() => {
-        if (!open()) return;
         filteredArticles();
         requestAnimationFrame(() => initZoom());
     });
 
     // 窄屏：页面往下滚过一小段就把悬浮地图缩高，过渡结束后调一次 map.resize()，不每帧调
     createEffect(() => {
-        if (!open() || !narrow()) {
+        if (!narrow()) {
             setMapCompact(false);
             return;
         }
@@ -406,7 +341,6 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
     // 选中集合变了就同步给地图：未选中的标点压暗，不从地图移走
     createEffect(() => {
         const names = selected();
-        if (!open()) return;
         controller?.setFilter(names);
     });
 
@@ -424,22 +358,9 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
         requestAnimationFrame(() => filterPanel?.focus({ preventScroll: true }));
     });
 
-    createEffect(() => {
-        if (open() || !wasOpen) return;
-        document.body.classList.remove('is-footprint');
-        if (window.location.hash === '#footprint') {
-            history.replaceState(history.state, '', `${window.location.pathname}${window.location.search}`);
-        }
-        requestAnimationFrame(() => {
-            window.scrollTo({ top: lastScroll, behavior: 'auto' });
-            lastFocus?.focus({ preventScroll: true });
-        });
-    });
-
     onMount(() => {
-        const onOpenEvent = () => openMode();
         const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key !== 'Escape' || !open()) return;
+            if (event.key !== 'Escape') return;
             // 顺序：筛选面板 → 激活的卡片/3D → 退足迹；每一步都只吃掉自己那一层
             if (filterOpen()) {
                 event.preventDefault();
@@ -455,13 +376,7 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                 return;
             }
             event.preventDefault();
-            closeMode();
-        };
-        // 直接改 hash（比如从别的页面点 /exercise/#footprint，或后退）也要能进/出足迹；
-        // openMode 自带 `if (open()) return`，重复触发（事件 + hashchange）是幂等的
-        const onHashChange = () => {
-            if (window.location.hash === '#footprint') openMode();
-            else if (open()) closeMode();
+            backToExercise();
         };
         // 桌面 popover 点外面收起（窄屏是模态，不走这条）
         const onPointerDown = (event: PointerEvent) => {
@@ -479,24 +394,26 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
             setNarrow(media.matches);
         };
 
-        document.addEventListener(FOOTPRINT_OPEN_EVENT, onOpenEvent);
         document.addEventListener('keydown', onKeyDown);
         document.addEventListener('pointerdown', onPointerDown);
-        window.addEventListener('hashchange', onHashChange);
         media.addEventListener('change', onMediaChange);
 
-        // 早点击兜底：入口是 <a href="/exercise/#footprint">，事件监听还没挂上时
-        // 浏览器已经把 hash 写进地址栏，这里挂载时补一次
-        if (window.location.hash === '#footprint') openMode();
+        // ClientRouter 换页只换 DOM，Solid 的 onCleanup 不保证会跑：
+        // 这张地图带 3D 地形和标点聚合，不销毁就会跟着用户去下一个页面继续渲染
+        const destroyOnSwap = () => {
+            controller?.destroy();
+            controller = undefined;
+        };
+        document.addEventListener('astro:before-swap', destroyOnSwap);
 
         onCleanup(() => {
-            document.removeEventListener(FOOTPRINT_OPEN_EVENT, onOpenEvent);
+            document.removeEventListener('astro:before-swap', destroyOnSwap);
             document.removeEventListener('keydown', onKeyDown);
             document.removeEventListener('pointerdown', onPointerDown);
-            window.removeEventListener('hashchange', onHashChange);
             media.removeEventListener('change', onMediaChange);
-            document.body.classList.remove('is-footprint', 'is-fp-modal');
-            document.documentElement.removeAttribute('data-fp-transition');
+            document.body.classList.remove('is-fp-modal');
+            cancelMapInit?.();
+            cancelMapInit = null;
             controller?.destroy();
             controller = undefined;
         });
@@ -596,41 +513,19 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
         <section
             class="ex-fp"
             classList={{ 'is-map-error': mapError(), 'is-map-compact': mapCompact() }}
-            hidden={!open()}
             ref={overlay}
             aria-label="足迹"
             tabindex={-1}
         >
-            <header class="ex-fp-head">
-                <div class="ex-fp-heading page-head">
-                    <h1 class="book-title page-title">走过的地方</h1>
-                    <p class="page-intro">{subtitle()}</p>
-                </div>
-                <div class="ex-fp-actions">
-                    <Show when={selected().size > 0}>
-                        <p class="ex-fp-selection">
-                            <span class="ex-fp-selection-full">
-                                已选 {selectedProvinces().length} 省 · {selected().size} 个地方 · {filteredArticles().length} 篇游记
-                            </span>
-                            <span class="ex-fp-selection-short">已选 {selected().size}</span>
-                        </p>
-                    </Show>
-                    <button class="ex-fp-btn ex-fp-close" type="button" aria-label="返回运动记录" onClick={closeMode}>
-                        <svg
-                            viewBox="0 0 24 24"
-                            aria-hidden="true"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <path d="M15 5 8 12l7 7" />
-                        </svg>
-                        <span class="ex-fp-close-label">返回运动</span>
-                    </button>
-                </div>
-            </header>
+            {/* 标题 / 副标题 / 顶部切换都在 .astro 页面里，这里只留筛选状态提示 */}
+            <Show when={selected().size > 0}>
+                <p class="ex-fp-selection">
+                    <span class="ex-fp-selection-full">
+                        已选 {selectedProvinces().length} 省 · {selected().size} 个地方 · {filteredArticles().length} 篇游记
+                    </span>
+                    <span class="ex-fp-selection-short">已选 {selected().size}</span>
+                </p>
+            </Show>
 
             <div class="ex-fp-stage">
                 <div class="ex-fp-map-wrap">

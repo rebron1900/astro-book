@@ -1,0 +1,158 @@
+---
+import { pages, settings } from '../api/store';
+import activitiesJson from '../data/activities.json';
+import type { Activity } from '../lib/activity-types';
+import { buildRecords, compactRecords, defaultScope, groupByMonth } from '../lib/exercise';
+import { loadFootprintData } from '../lib/footprint-data';
+import { buildAchievements, buildFootprintSummary } from '../lib/footprint-achievements';
+import elevationsJson from '../data/place-elevations.json';
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Head from '../components/islands/Head.astro';
+import Header from '../components/layout/Header.astro';
+import Menu from '../components/layout/Menu.astro';
+import PageIntro from '../components/ui/PageIntro.astro';
+import ActivityShell from '../components/islands/ActivityShell';
+import ExerciseTimeline from '../components/islands/ExerciseTimeline.astro';
+import ExerciseSidebar from '../components/islands/ExerciseSidebar';
+import '../styles/pages/activity.scss';
+
+// 沿用运动页的 Ghost 记录拿标题；这里的页面布局和 /exercise/ 一致（中间内容 + 右侧栏）
+const page = pages.find((post) => post.slug == 'exercise') ?? pages.find((post) => post.slug == 'strava');
+
+const allRecords = buildRecords(activitiesJson as unknown as Activity[]);
+const groups = groupByMonth(allRecords);
+const initialScope = defaultScope(allRecords);
+const records = compactRecords(allRecords);
+const footprint = loadFootprintData();
+// 标点海拔由 scripts/fetch-elevations.mjs 落盘（构建期不联网）
+const elevations = (elevationsJson as { places: Record<string, number> }).places;
+const achievements = buildAchievements(footprint, elevations);
+const summary = buildFootprintSummary(footprint);
+const maxYear = Math.max(1, ...summary.years.map((bucket) => bucket.count));
+const topProvinces = summary.provinces.slice(0, 8);
+const maxProvince = Math.max(1, ...topProvinces.map((item) => item.places));
+const mapToken = import.meta.env.PUBLIC_MAP_KEY;
+
+const layoutPage = page ? { ...page, tags: (page.tags ?? []).filter((tag) => tag.slug !== 'hash-page-fullwidth') } : undefined;
+const years = footprint.stats.years;
+const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles} 篇游记${years ? ` · ${years[0]}—${years[1]}` : ''}`;
+---
+
+<BaseLayout post={layoutPage}>
+    <Head
+        slot="head"
+        post={layoutPage}
+        site={settings}
+        title={`运动与足迹 | ${settings?.title} - ${settings?.description}`}
+        description="同一条时间线，两种看法：一边是每次出门的路线和成绩，一边是那些路线上真正站过的地方。"
+        og_url={`${import.meta.env.SITE}/activity/`}
+    />
+
+    <Header slot="header" title="运动与足迹" />
+    <Menu slot="menu" />
+
+    <article slot="content" class="exercise-page activity-page" data-activity-mode="exercise">
+        <PageIntro
+            title="动起来的日子，都留下了痕迹。"
+            copy="同一条时间线，两种看法：一边是每次出门的路线和成绩，一边是那些路线上真正站过的地方。地图右上角可以随时换。"
+            note={note}
+        />
+
+        <ActivityShell client:load records={records} initialScope={initialScope} footprint={footprint} token={mapToken} routesUrl="/exercise-routes.json" />
+
+        <div class="act-exercise-timeline">
+            <ExerciseTimeline groups={groups} scope={initialScope} />
+        </div>
+    </article>
+
+    <Fragment slot="toc">
+        <div class="act-side act-side--exercise">
+            <ExerciseSidebar client:media="(min-width: 47.85rem)" records={records} initialScope={initialScope} />
+        </div>
+
+        <div class="act-side act-side--footprint">
+            <section class="act-sec">
+                <h2 class="act-side-title">概览</h2>
+                <dl class="act-side-stats">
+                    <div>
+                        <dt>地点</dt>
+                        <dd>{footprint.stats.places}</dd>
+                    </div>
+                    <div>
+                        <dt>游记</dt>
+                        <dd>{footprint.stats.articles}</dd>
+                    </div>
+                    <div>
+                        <dt>有游记的地点</dt>
+                        <dd>{footprint.stats.matchedPlaces}</dd>
+                    </div>
+                    {
+                        years && (
+                            <div>
+                                <dt>写作跨度</dt>
+                                <dd>{years[1] - years[0] + 1} 年</dd>
+                            </div>
+                        )
+                    }
+                </dl>
+            </section>
+
+            <section class="act-sec act-tabs">
+                <input class="act-tabs-input" type="radio" name="act-dist" id="act-dist-year" checked />
+                <input class="act-tabs-input" type="radio" name="act-dist" id="act-dist-province" />
+
+                <div class="act-tabs-head">
+                    <label class="act-tabs-tab" for="act-dist-year">游记年份</label>
+                    <label class="act-tabs-tab" for="act-dist-province">去得最多的省</label>
+                </div>
+
+                <ul class="act-bars act-tabs-panel act-tabs-panel--year">
+                    {
+                        summary.years.map((bucket) => (
+                            <li class="act-bar-row">
+                                <span class="act-bar-label">{bucket.year}</span>
+                                <span class="act-bar-track">
+                                    <span class="act-bar-fill" style={`--w: ${Math.round((bucket.count / maxYear) * 100)}%`} />
+                                </span>
+                                <span class="act-bar-value">{bucket.count}</span>
+                            </li>
+                        ))
+                    }
+                </ul>
+
+                <ul class="act-bars act-tabs-panel act-tabs-panel--province">
+                    {
+                        topProvinces.map((item) => (
+                            <li class="act-bar-row">
+                                <span class="act-bar-label act-bar-label--wide">{item.province}</span>
+                                <span class="act-bar-track">
+                                    <span class="act-bar-fill" style={`--w: ${Math.round((item.places / maxProvince) * 100)}%`} />
+                                </span>
+                                <span class="act-bar-value">{item.places}</span>
+                            </li>
+                        ))
+                    }
+                </ul>
+            </section>
+
+            <section class="act-sec">
+                <h2 class="act-side-title">小成就</h2>
+                <ul class="act-badges">
+                    {
+                        achievements.map((item) => (
+                            <li class="act-badge">
+                                <span class="act-badge-label">{item.label}</span>
+                                <span class="act-badge-value">{item.value}</span>
+                                {item.note && <span class="act-badge-note">{item.note}</span>}
+                            </li>
+                        ))
+                    }
+                </ul>
+            </section>
+
+            {/* 地点筛选暂时下线：要恢复就把 ActivityPlaceFilter 放回这里（组件和事件通道都还在） */}
+        </div>
+
+    </Fragment>
+</BaseLayout>

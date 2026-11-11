@@ -10,6 +10,7 @@ import Menu from '../components/layout/Menu.astro';
 import '../styles/pages/links.scss';
 import ScrollReveal from '../components/islands/ScrollReveal.astro';
 import Comments from '../components/islands/Comments.astro';
+import PageIntro from '../components/ui/PageIntro.astro';
 import { Unplug } from '@lucide/astro';
 
 const page = pages.find((post) => post.slug == 'links');
@@ -60,10 +61,10 @@ const lostReasonLabels = { error: '抓取失败', empty: '暂无文章', disable
     <Menu slot="menu" />
 
     <article slot="content" class="markdown book-article pv-page">
-        <header class="pv-header">
-            <h1 class="pv-title page-title">去别人的院子里坐一会儿。</h1>
-            <p class="pv-intro">这里是我常去逛逛的地方。有人写技术，有人写生活，有人只是偶尔记下一阵风。顺着这些名字点过去，看看他们最近在做什么。</p>
-        </header>
+        <PageIntro
+            title="去别人的院子里坐一会儿。"
+            copy="这里是我常去逛逛的地方。有人写技术，有人写生活，有人只是偶尔记下一阵风。顺着这些名字点过去，看看他们最近在做什么。"
+        />
 
         <div class="pv-section-head">
             <h2 class="pv-section-title">最近更新</h2>

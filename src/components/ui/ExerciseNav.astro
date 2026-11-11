@@ -1,0 +1,53 @@
+---
+/**
+ * 运动 / 足迹 的视图切换（两个页面顶部共用）。
+ *
+ * 都是真锚点：没 JS 也能整页跳；激活态在构建期由 `aria-current="page"` 定下来，
+ * 不参与水合，也就不会在页间过渡时闪一下。放在页面顶部而不是预览地图里，
+ * 这样地图吸顶悬浮时按钮不会被一起带走。
+ */
+interface Props {
+    /** 当前页面，决定哪个 tab 是激活态 */
+    active: 'exercise' | 'footprint';
+}
+
+const { active } = Astro.props;
+
+const items = [
+    {
+        key: 'exercise',
+        label: '运动',
+        href: '/exercise/',
+        // 心跳折线：一张「记录」的脸，比跑鞋更贴近这个页面的内容
+        path: 'M3 12h3.2l2.1-6.4 3.6 12.8 2.2-6.4H21',
+    },
+    {
+        key: 'footprint',
+        label: '足迹',
+        href: '/exercise/footprint/',
+        // 地图标点：和预览地图上的「足迹」入口同一个图形
+        path: 'M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
+    },
+] as const;
+---
+
+<nav class="ex-switch" aria-label="运动与足迹">
+    {
+        items.map((item) => (
+            <a class="ex-switch-link" href={item.href} aria-current={item.key === active ? 'page' : undefined}>
+                <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <path d={item.path} />
+                </svg>
+                <span>{item.label}</span>
+            </a>
+        ))
+    }
+</nav>

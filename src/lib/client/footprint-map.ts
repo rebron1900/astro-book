@@ -61,10 +61,10 @@ export interface FootprintMapController {
     start(): void;
     destroy(): void;
     resize(): void;
-    /** 缩放到全部地点 */
-    fitAll(): void;
     /** 飞到某个地点并选中 */
     focusPlace(placeId: string): void;
+    /** 缩放到全部地点；instant 用于首帧就位（不做飞行动画） */
+    fitAll(options?: { instant?: boolean }): void;
     /** 按已选地名压暗标点（不删点）；空集合表示不过滤 */
     setFilter(selectedNames: ReadonlySet<string>): void;
     /** 卡片悬停时高亮一组地点 */
@@ -152,6 +152,8 @@ class FootprintMapInstance implements FootprintMapController {
     private theme: MapTheme = 'light';
     private started = false;
     private destroyed = false;
+    /** 是否已经做过首帧取景：只有第一次进页面要「瞬间就位」，之后的取景才带动画 */
+    private initialFitDone = false;
     private styleReady = false;
     private updateFrame: number | null = null;
 
@@ -296,7 +298,7 @@ class FootprintMapInstance implements FootprintMapController {
         this.map?.resize();
     }
 
-    fitAll(): void {
+    fitAll(options: { instant?: boolean } = {}): void {
         if (!this.map || !this.styleReady) return;
         const places = this.options.places;
         if (places.length === 0) return;
@@ -316,7 +318,8 @@ class FootprintMapInstance implements FootprintMapController {
                 [minLng, minLat],
                 [maxLng, maxLat]
             ],
-            { padding: 56, maxZoom: 6.4, duration: motionDuration(560) }
+            // 首帧就位用 0：开局那 560ms 的缩放会把整屏重绘几十次，地形/阴影图层一叠就明显发卡
+            { padding: 56, maxZoom: 6.4, duration: options.instant ? 0 : motionDuration(560) }
         );
     }
 
@@ -695,7 +698,10 @@ class FootprintMapInstance implements FootprintMapController {
             this.applySelection();
             return;
         }
-        this.fitAll();
+        // 第一次进页面直接「就位」：开场那段 fitBounds 动画会把整屏重绘几百毫秒，
+        // 地形和阴影图层还没铺完，观感就是卡一下再缩进去
+        this.fitAll({ instant: !this.initialFitDone });
+        this.initialFitDone = true;
     };
 
     private handleError = (): void => {

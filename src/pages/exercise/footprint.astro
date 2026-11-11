@@ -1,0 +1,65 @@
+---
+import { pages, settings } from '../../api/store';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Head from '../../components/islands/Head.astro';
+import Header from '../../components/layout/Header.astro';
+import Menu from '../../components/layout/Menu.astro';
+import ExerciseFootprint from '../../components/islands/ExerciseFootprint';
+import ExerciseNav from '../../components/ui/ExerciseNav.astro';
+import PageIntro from '../../components/ui/PageIntro.astro';
+import { loadFootprintData } from '../../lib/footprint-data';
+import '../../styles/pages/exercise.scss';
+
+// 足迹是运动页的延伸：沿用运动页的 Ghost 记录拿标题/描述兜底
+const page = pages.find((post) => post.slug == 'exercise') ?? pages.find((post) => post.slug == 'strava');
+
+const title = '足迹';
+const intro = '去过的地方：地图上的标点和按月排列的游记。点一处地名就能看到那片的地形，以及在那里写下的文章。';
+
+const footprint = loadFootprintData();
+const mapToken = import.meta.env.PUBLIC_MAP_KEY;
+
+// 副标题（构建期算好，和岛里原来那份逻辑一致）：118 个地点 · 34 篇游记 · 2015—2026
+const stats = footprint.stats;
+const subtitle = [
+    `${stats.places} 个地点`,
+    stats.articles > 0 ? `${stats.articles} 篇游记` : '',
+    stats.years ? `${stats.years[0]}—${stats.years[1]}` : '',
+]
+    .filter(Boolean)
+    .join(' · ');
+
+/**
+ * 足迹要的是「内容占满 95%」：Ghost 里的「运动」页本来就带 hash-page-fullwidth 标签，
+ * 原样交给 BaseLayout 即可 —— isFullWidth 生效后 `.container` 拿到 `.full-width`，
+ * 右侧那列 TOC 压根不渲染。之前把标签滤掉、再用 body:has(.footprint-page) 硬压宽度，
+ * 结果右侧留下一整列空着的 16rem TOC 栏（就是「右边空一截」）。
+ */
+const layoutPage = page;
+---
+
+<BaseLayout post={layoutPage}>
+    <Head
+        slot="head"
+        post={layoutPage}
+        site={settings}
+        title={`${title} | ${settings?.title} - ${settings?.description}`}
+        description={intro}
+        og_url={`${import.meta.env.SITE}/exercise/footprint/`}
+    />
+
+    <Header slot="header" title={title} />
+    <Menu slot="menu" />
+
+    <article slot="content" class="exercise-page footprint-page">
+        <PageIntro
+            title="走过的地方，都留下了痕迹。"
+            copy="地图上标着我确确实实到过的每一处。点开一个地名，那片山坡的走向、当时的光线，和在那里写下的文章会一起浮上来。"
+            note={subtitle}
+        />
+
+        <ExerciseNav active="footprint" />
+
+        <ExerciseFootprint client:load data={footprint} token={mapToken} />
+    </article>
+</BaseLayout>

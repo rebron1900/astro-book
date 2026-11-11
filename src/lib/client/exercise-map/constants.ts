@@ -23,6 +23,16 @@ export const REPLAY_HIDDEN_LAYERS = [LAYER_BASE, LAYER_FOCUS_GLOW, LAYER_FOCUS, 
 export const ROTATE_PAUSE_MS = 4200;
 export const ROTATE_RESUME_AFTER_REPLAY_MS = 1200;
 
+/**
+ * 自动旋转的节流参数。
+ * 每帧 setBearing 会逼 Mapbox 整张 3D 地形图重绘一次（60 次/秒），
+ * 实测把运动页的常驻帧率压到 40 上下；改成每 ROTATE_STEP_MS 转一次、
+ * 角度按实际经过时间补，肉眼速度不变（3.6°/s），重绘次数少一半以上。
+ */
+export const ROTATE_STEP_MS = 40;
+/** 每毫秒转多少度：0.06°/帧 @60fps ≈ 3.6°/s */
+export const ROTATE_DEG_PER_MS = 0.0036;
+
 /** 第一视角重播：镜头压低、朝行进方向看，并稍微看向前方 */
 export const REPLAY_PITCH = 66;
 export const REPLAY_ZOOM = 13.6;

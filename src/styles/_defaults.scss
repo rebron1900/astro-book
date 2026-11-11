@@ -362,38 +362,7 @@ $hint-colors: (
     }
 }
 
-@mixin gradientback {
-    // 固定的装饰渐变（原先是 body::before/::after，改成真实元素才能让 View Transition 单独给它命名）
-    .page-bg {
-        position: fixed;
-        top: 0;
-        right: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: -1;
-        pointer-events: none;
-        // 这一层是纯装饰、固定在视口上，不该跟着页面内容一起做过渡，
-        // 否则过渡里它会随整页快照淡出再淡回，看起来就是「背景色闪一下」。
-        view-transition-name: page-bg;
-
-        &::before,
-        &::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0.15;
-        }
-
-        &::before {
-            background: radial-gradient(circle at 100% 0%, var(--color-link) 0%, transparent 37%);
-        }
-
-        &::after {
-            background: radial-gradient(circle at 0% 100%, var(--color-link) 0%, transparent 37%);
-            filter: hue-rotate(45deg);
-        }
-    }
-}
+/* 固定装饰渐变（.page-bg + @mixin gradientback）已移除：
+   它一直压在 body 底色之下、平时根本不可见，唯一能被看见的时机是
+   ①换页过渡把它当快照抬到顶层，②内容进场动画半透明时把它透出来 ——
+   两种情况都是「背景闪一下」。需要装饰就另做一层跟着内容一起进场的背景。 */

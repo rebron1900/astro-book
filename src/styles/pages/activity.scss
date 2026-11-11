@@ -1,0 +1,558 @@
+/* ==========================================================================
+   /activity/：运动 + 足迹 合并页
+   结构：页头 → 一张小地图（吸顶）+ 右上角模式切换 → 时间线（跟随模式切换）
+        右侧栏：运动模式是运动统计，足迹模式是足迹概览
+   类名统一 act- 前缀，避免和 ex- / ex-fp- 冲突。
+   ========================================================================== */
+
+.act {
+    min-inline-size: 0;
+}
+
+/* ---------- 地图 ---------- */
+
+.act-map {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 30;
+    margin-block-end: 1.5rem;
+}
+
+.act-map-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.5rem;
+    background: var(--gray-100);
+}
+
+/* 和 /exercise/ 的预览地图同一档高度：吸顶时只改外层高度，不重新取景 */
+.act-map-viewport {
+    position: relative;
+    block-size: 21rem;
+    transition: block-size 240ms ease;
+}
+
+.act-map-canvas {
+    position: absolute;
+    inset: 0;
+}
+
+/* ---------- 右上角：运动 / 足迹 ---------- */
+
+.act-switch {
+    position: absolute;
+    inset-block-start: 0.55rem;
+    inset-inline-end: 0.55rem;
+    z-index: 5;
+    display: inline-flex;
+    gap: 0.15rem;
+    padding: 0.18rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--body-background) 82%, transparent);
+    box-shadow: 0 2px 10px rgb(0 0 0 / 0.14);
+    backdrop-filter: blur(10px) saturate(1.12);
+    -webkit-backdrop-filter: blur(10px) saturate(1.12);
+}
+
+.act-switch-btn {
+    padding: 0.26rem 0.72rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--gray-700);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+        background 160ms ease,
+        color 160ms ease;
+}
+
+.act-switch-btn:hover {
+    color: var(--body-font-color);
+    background: color-mix(in srgb, var(--body-font-color) 8%, transparent);
+}
+
+.act-switch-btn[aria-pressed='true'] {
+    background: var(--body-font-color);
+    color: var(--body-background);
+}
+
+.act-switch-btn:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+.act-map-status {
+    position: absolute;
+    inset-block-end: 0.6rem;
+    inset-inline-start: 0.7rem;
+    margin: 0;
+    padding: 0.2rem 0.55rem;
+    border-radius: 0.35rem;
+    background: color-mix(in srgb, var(--body-background) 85%, transparent);
+    color: var(--gray-700);
+    font-size: 0.6875rem;
+}
+
+/* ---------- 足迹模式的游记列表 ---------- */
+
+.act-rows {
+    display: flex;
+    flex-direction: column;
+}
+
+.act-row + .act-row {
+    margin-block-start: 1.35rem;
+}
+
+.act-row-day {
+    color: var(--body-font-color);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.act-row-year {
+    color: var(--gray-500);
+    font-size: 0.625rem;
+}
+
+.act-row-title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.act-row-title a {
+    color: var(--body-font-color);
+    text-decoration: none;
+}
+
+.act-row-title a:hover {
+    color: var(--color-link);
+}
+
+.act-row-excerpt {
+    margin: 0.3rem 0 0;
+    color: var(--gray-700);
+    font-size: 0.8125rem;
+    line-height: 1.75;
+}
+
+.act-row-places {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin: 0.45rem 0 0;
+}
+
+.act-chip {
+    padding: 0.1rem 0.42rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--body-font-color) 6%, transparent);
+    color: var(--gray-700);
+    font-size: 0.625rem;
+    line-height: 1.6;
+}
+
+/* ---------- 右侧栏：两种模式的概览 ---------- */
+
+.act-side-title {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.act-side-stats {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0.75rem 0 0;
+}
+
+.act-side-stats > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-block-end: 0.45rem;
+    border-block-end: 1px solid color-mix(in srgb, var(--gray-500) 22%, transparent);
+}
+
+.act-side-stats dt {
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+}
+
+.act-side-stats dd {
+    margin: 0;
+    color: var(--body-font-color);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.act-side-note {
+    margin: 0.85rem 0 0;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    line-height: 1.6;
+}
+
+/* ---------- 模式切换：时间线 / 侧栏一起跟 ---------- */
+
+/* 默认：足迹侧栏隐藏；切到足迹模式时和运动侧栏互换 */
+.act-side--footprint {
+    display: none;
+}
+
+body:has(.activity-page[data-activity-mode='footprint']) .act-exercise-timeline,
+body:has(.activity-page[data-activity-mode='footprint']) .act-side--exercise {
+    display: none;
+}
+
+body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
+    display: flex;
+}
+
+@media screen and (max-width: 47.84rem) {
+    .act-map-viewport {
+        block-size: 13rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .act-map-viewport,
+    .act-switch-btn {
+        transition: none;
+    }
+}
+
+/* ---------- 足迹模式右栏：概览 / 分布 / 成就 / 筛选 ---------- */
+
+.act-side {
+    display: flex;
+    flex-direction: column;
+    gap: 1.05rem;
+}
+
+.act-sec + .act-sec {
+    margin-block-start: 0;
+}
+
+.act-side-title {
+    margin: 0 0 0.6rem;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* 统计：一行一条，右侧数字 */
+.act-side-stats {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0;
+}
+
+.act-side-stats > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-block-end: 0.4rem;
+    border-block-end: 1px solid color-mix(in srgb, var(--gray-500) 20%, transparent);
+}
+
+.act-side-stats dt {
+    color: var(--gray-700);
+    font-size: 0.6875rem;
+}
+
+.act-side-stats dd {
+    margin: 0;
+    color: var(--body-font-color);
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+/* 分布柱状：标签 / 轨道 / 数值 */
+.act-bars {
+    display: grid;
+    gap: 0.34rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.act-bar-row {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr) 1.35rem;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.act-bar-label {
+    color: var(--gray-700);
+    font-size: 0.625rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.act-bar-label--wide {
+    overflow: hidden;
+    font-size: 0.6875rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.act-bar-row:has(.act-bar-label--wide) {
+    grid-template-columns: 3.4rem minmax(0, 1fr) 1.35rem;
+}
+
+.act-bar-track {
+    block-size: 0.32rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--gray-500) 16%, transparent);
+    overflow: hidden;
+}
+
+.act-bar-fill {
+    display: block;
+    block-size: 100%;
+    inline-size: var(--w, 0%);
+    border-radius: inherit;
+    background: color-mix(in srgb, var(--color-link) 70%, transparent);
+}
+
+.act-bar-value {
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+}
+
+/* 成就：一行一条，标签在左、结论在右，注释跟在后面小字 */
+.act-badges {
+    display: grid;
+    gap: 0.1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.act-badge {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    min-inline-size: 0;
+    padding: 0.2rem 0;
+    border-block-end: 1px dashed color-mix(in srgb, var(--gray-500) 16%, transparent);
+}
+
+.act-badge:last-child {
+    border-block-end: 0;
+}
+
+.act-badge-label {
+    flex: none;
+    color: var(--gray-500);
+    font-size: 0.625rem;
+}
+
+.act-badge-value {
+    overflow: hidden;
+    min-inline-size: 0;
+    color: var(--body-font-color);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.act-badge-note {
+    flex: none;
+    margin-inline-start: auto;
+    color: var(--gray-500);
+    font-size: 0.5625rem;
+    white-space: nowrap;
+}
+
+/* ---------- 地点筛选 ---------- */
+
+.act-flt-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-block-end: 0.35rem;
+}
+
+.act-flt-head .act-side-title {
+    margin: 0;
+}
+
+.act-flt-clear {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-link);
+    font-size: 0.625rem;
+    cursor: pointer;
+}
+
+.act-flt-clear:hover {
+    text-decoration: underline;
+}
+
+.act-flt-count {
+    margin: 0 0 0.5rem;
+    color: var(--gray-500);
+    font-size: 0.625rem;
+}
+
+.act-flt-groups,
+.act-flt-places {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.act-flt-row {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.act-flt-caret {
+    display: grid;
+    place-items: center;
+    inline-size: 1.05rem;
+    block-size: 1.05rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: transform 160ms ease;
+}
+
+.act-flt-caret[aria-expanded='true'] {
+    transform: rotate(90deg);
+}
+
+.act-flt-caret svg {
+    inline-size: 0.7rem;
+    block-size: 0.7rem;
+}
+
+.act-flt-label {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 0.35rem;
+    min-inline-size: 0;
+    padding: 0.12rem 0;
+    font-size: 0.6875rem;
+    cursor: pointer;
+}
+
+.act-flt-label input {
+    inline-size: 0.72rem;
+    block-size: 0.72rem;
+    margin: 0;
+    accent-color: var(--color-link);
+}
+
+.act-flt-name {
+    overflow: hidden;
+    color: var(--gray-700);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.act-flt-label:hover .act-flt-name {
+    color: var(--body-font-color);
+}
+
+.act-flt-badge {
+    margin-inline-start: auto;
+    color: var(--gray-500);
+    font-size: 0.625rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.act-flt-badge--soft {
+    color: color-mix(in srgb, var(--color-link) 80%, transparent);
+}
+
+.act-flt-places {
+    margin-inline-start: 1.2rem;
+    border-inline-start: 1px solid color-mix(in srgb, var(--gray-500) 18%, transparent);
+    padding-inline-start: 0.45rem;
+}
+
+.act-flt-label--place {
+    font-size: 0.65rem;
+}
+
+/* ---------- 分布卡片的 tab（年份 / 省份 二选一） ---------- */
+
+.act-tabs {
+    position: relative;
+}
+
+.act-tabs-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.act-tabs-head {
+    display: inline-flex;
+    gap: 0.12rem;
+    margin-block-end: 0.55rem;
+    padding: 0.15rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--body-font-color) 5%, transparent);
+}
+
+.act-tabs-tab {
+    padding: 0.18rem 0.5rem;
+    border-radius: 999px;
+    color: var(--gray-700);
+    font-size: 0.625rem;
+    font-weight: 600;
+    line-height: 1.6;
+    cursor: pointer;
+    transition:
+        color 140ms ease,
+        background 140ms ease;
+}
+
+.act-tabs-tab:hover {
+    color: var(--body-font-color);
+}
+
+.act-tabs-panel {
+    display: none;
+}
+
+#act-dist-year:checked ~ .act-tabs-head label[for='act-dist-year'],
+#act-dist-province:checked ~ .act-tabs-head label[for='act-dist-province'] {
+    background: var(--body-font-color);
+    color: var(--body-background);
+}
+
+#act-dist-year:checked ~ .act-tabs-panel--year,
+#act-dist-province:checked ~ .act-tabs-panel--province {
+    display: grid;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .act-tabs-tab {
+        transition: none;
+    }
+}

@@ -3,6 +3,7 @@
    与原来三个样式组件的渲染顺序一致（后面的文件可以覆盖前面的规则）。
    ========================================================================== */
 @import 'exercise/base';
+@import 'exercise/switch';
 @import 'exercise/map';
 @import 'exercise/stats';
 @import 'exercise/footprint';

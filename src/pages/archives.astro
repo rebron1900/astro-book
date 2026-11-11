@@ -9,6 +9,7 @@ import TocTagloop from '../components/islands/TocTagloop.astro';
 import Header from '../components/layout/Header.astro';
 import Top from '../components/ui/Top.astro';
 import Menu from '../components/layout/Menu.astro';
+import PageIntro from '../components/ui/PageIntro.astro';
 import ArchiveTimeline from '../components/islands/ArchiveTimeline.astro';
 import { Markup } from 'astro-remote';
 import CodeSlot from '../components/islands/CodeSlot.astro';
@@ -33,12 +34,10 @@ const archivePosts = [...postsAll].sort(
     <Menu slot="menu" />
 
     <div slot="content" class="markdown book-article archive-page">
-        <header class="page-head">
-            <h1 class="book-title page-title">{page?.title}</h1>
-            <p class="page-intro">
-                {page?.excerpt || '时间沉淀下的往事总是铺满灰尘，不过却不妨碍我们抹去灰尘重新品味。'}
-            </p>
-        </header>
+        <PageIntro
+            title="把日子按年份摆好，方便回头。"
+            copy="写下的都在这里，从最近一年往前翻。每篇都带着当时的天气和心情，只是现在读起来，已经有点像别人的故事了。"
+        />
         {
             page?.html && (
                 <Markup

@@ -1,10 +1,7 @@
 ---
-import { pages, postsAll, settings } from '../api/store';
+import { pages, settings } from '../api/store';
 import activitiesJson from '../data/activities.json';
-import geojsonJson from '../data/geojson.json';
 import type { Activity } from '../lib/activity-types';
-import type { FootprintFeature, FootprintPost } from '../lib/footprint';
-import { buildFootprint } from '../lib/footprint';
 import { buildRecords, compactRecords, defaultScope, groupByMonth } from '../lib/exercise';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -15,7 +12,8 @@ import '../styles/pages/exercise.scss';
 import ExerciseTimeline from '../components/islands/ExerciseTimeline.astro';
 import ExerciseSidebar from '../components/islands/ExerciseSidebar';
 import ExerciseMapPanel from '../components/islands/ExerciseMapPanel';
-import ExerciseFootprint from '../components/islands/ExerciseFootprint';
+import ExerciseNav from '../components/ui/ExerciseNav.astro';
+import PageIntro from '../components/ui/PageIntro.astro';
 
 // Ghost 里的页面 slug 仍是 strava；如果以后跟着路径一起改成 exercise，这里也能直接接住
 const page = pages.find((post) => post.slug == 'exercise') ?? pages.find((post) => post.slug == 'strava');
@@ -29,9 +27,6 @@ const allRecords = buildRecords(activitiesJson as unknown as Activity[]);
 const groups = groupByMonth(allRecords);
 const initialScope = defaultScope(allRecords);
 const records = compactRecords(allRecords);
-
-// 「足迹」用的标点来自 Google Maps 导出的 geojson；游记按 Ghost 的 #地点- 标签匹配（构建期算好，页面不内嵌原始数据）
-const footprint = buildFootprint(geojsonJson.features as unknown as FootprintFeature[], postsAll as unknown as FootprintPost[]);
 
 // Ghost 里的「运动」页带 fullwidth 标签，这里改用常规 page 布局（中间时间线 + 右侧地图/统计）
 const layoutPage = { ...page, tags: (page.tags ?? []).filter((tag) => tag.slug !== 'hash-page-fullwidth') };
@@ -58,10 +53,9 @@ const intro =
     <Menu slot="menu" />
 
     <article slot="content" class="exercise-page">
-        <header class="ex-hero">
-            <h1 class="ex-title">用身体，把日子往前推一点。</h1>
-            <p class="ex-intro">{intro}</p>
-        </header>
+        <PageIntro title="用身体，把日子往前推一点。" copy={intro} />
+
+        <ExerciseNav active="exercise" />
 
         {
             groups.length > 0 ? (
@@ -79,8 +73,6 @@ const intro =
                 <p class="ex-empty">还没有同步到运动记录。</p>
             )
         }
-
-        <ExerciseFootprint client:load data={footprint} token={mapToken} />
     </article>
 
     <Fragment slot="toc">
@@ -95,3 +87,11 @@ const intro =
 
 
 </BaseLayout>
+
+<script is:inline>
+    // 旧链接兜底：足迹已经独立成 /exercise/footprint/，老书签或外链带 #footprint 的
+    // 在这里直接换地址，别让用户停在一个跟足迹无关的运动页上。
+    if (window.location.hash === '#footprint') {
+        window.location.replace('/exercise/footprint/');
+    }
+</script>

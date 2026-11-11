@@ -55,8 +55,10 @@ import {
     REPLAY_SOURCE,
     REPLAY_TRANSPARENT,
     REPLAY_ZOOM,
+    ROTATE_DEG_PER_MS,
     ROTATE_PAUSE_MS,
     ROTATE_RESUME_AFTER_REPLAY_MS,
+    ROTATE_STEP_MS,
     ROUTE_LAYERS,
     SOURCE_ID
 } from './exercise-map/constants';
@@ -116,6 +118,8 @@ class ExerciseMapInstance implements ExerciseMapController {
     private cameraTimer: ReturnType<typeof setTimeout> | null = null;
     private rotateTimer: ReturnType<typeof setTimeout> | null = null;
     private rotateFrame: number | null = null;
+    /** 上一次真正改 bearing 的时间戳：旋转按时间节流，不是每帧都动相机 */
+    private rotateLast = 0;
     /** 用户操作地图后，自动旋转的恢复计时器 */
     private rotateResumeTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -889,13 +893,18 @@ class ExerciseMapInstance implements ExerciseMapController {
         if (this.destroyed || this.reducedMotion || typeof requestAnimationFrame === 'undefined' || this.replaying) return;
         this.rotateTimer = setTimeout(() => {
             this.rotateTimer = null;
-            const step = () => {
+            this.rotateLast = 0;
+            const step = (now: number) => {
                 this.rotateFrame = null;
                 const map = this.map;
                 if (this.destroyed || !map) return;
-                if (this.scope.kind === 'record' && !this.dragging) {
+                // 每帧 setBearing = 每帧整图重绘；按时间节流，角度按经过时间补偿
+                if (this.rotateLast === 0) this.rotateLast = now;
+                const elapsed = now - this.rotateLast;
+                if (this.scope.kind === 'record' && !this.dragging && elapsed >= ROTATE_STEP_MS) {
+                    this.rotateLast = now;
                     try {
-                        map.setBearing((map.getBearing() + 0.06) % 360);
+                        map.setBearing((map.getBearing() + ROTATE_DEG_PER_MS * elapsed) % 360);
                     } catch {
                         // 地图销毁过程中的最后几帧，忽略
                     }

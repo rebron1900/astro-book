@@ -10,6 +10,7 @@ import TocTagloop from '../components/islands/TocTagloop.astro';
 import Header from '../components/layout/Header.astro';
 import Top from '../components/ui/Top.astro';
 import Menu from '../components/layout/Menu.astro';
+import PageIntro from '../components/ui/PageIntro.astro';
 import Footer from '../components/layout/Footer.astro';
 import '../styles/pages/tags.scss';
 import { normalizeSlug } from '../lib/utils/help';
@@ -52,14 +53,15 @@ const postTotal = postIds.size;
     <Menu slot="menu" />
 
     <div slot="content" class="markdown book-article tags-page">
-        <header class="page-head">
-            <h1 class="book-title page-title">{page?.title || '标签集'}</h1>
-            <p class="page-intro">散落在各处的落点。技术、生活、路上看见的东西，都被收进这些词里，顺着一个标签点进去，能读到一段连起来的时间。</p>
-            <p class="tags-summary">
-                <span><strong>{tagTotal}</strong> 个公开标签</span>
-                <span><strong>{postTotal}</strong> 篇相关文章</span>
-            </p>
-        </header>
+        <PageIntro
+            title="散落的词，慢慢连成一张网。"
+            copy="写下的东西多了，就长出这些词。有的关于技术，有的关于生活，有的只是路上看见的一棵树；顺着一个词点进去，能读到一段连起来的时间。"
+        />
+
+        <p class="tags-summary">
+            <span><strong>{tagTotal}</strong> 个公开标签</span>
+            <span><strong>{postTotal}</strong> 篇相关文章</span>
+        </p>
 
         {publicTags.length > 0 ? (
             <div class="tags-grid">

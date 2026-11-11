@@ -7,8 +7,6 @@
 export const PLACE_TAG_PREFIX = '#地点-';
 
 /** 足迹模式由预览地图上的按钮触发，两个岛之间用一个 document 事件通信 */
-export const FOOTPRINT_OPEN_EVENT = 'exercise-footprint:open';
-
 /** 标点没有映射到省份时的兜底分组 */
 export const UNKNOWN_PROVINCE = '未分组';
 

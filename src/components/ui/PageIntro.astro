@@ -1,0 +1,24 @@
+---
+/**
+ * 全站页面标题区：一句主标题 + 一段引言，尺度对齐首页时间线的 `.timeline-intro`。
+ *
+ * 各页面只传文案，排版 / 留白统一走全局的 `.page-head / .page-title / .page-intro`，
+ * 免得一页一个字号、一页一个间距。
+ */
+interface Props {
+    /** 主标题：一句话，带句号，和首页导语同一语气 */
+    title: string;
+    /** 引言：两三句，说清这个页面放的是什么 */
+    copy?: string;
+    /** 引言下面的补充信息（条数、年份区间之类），比引言再淡一档 */
+    note?: string;
+}
+
+const { title, copy, note } = Astro.props;
+---
+
+<header class="page-head">
+    <h1 class="page-title">{title}</h1>
+    {copy && <p class="page-intro">{copy}</p>}
+    {note && <p class="page-note">{note}</p>}
+</header>

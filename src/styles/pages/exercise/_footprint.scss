@@ -1,39 +1,12 @@
 @import '../../blocks/ledger';
 
 /* ==========================================================================
-   足迹模式（从运动页预览地图上方的「足迹」按钮进入）
+   足迹页（独立路由 `/exercise/footprint/`，入口是页面顶部的「运动 / 足迹」切换）
    布局和友邻页类似：左侧导航保留，中间地图占掉「标题 / 副标题」之外的剩余高度，
    右侧时间线宽度和 TOC 列一致（16rem）并自己内部滚动；桌面端整页不滚动，
-   窄屏退回运动页的做法：地图在上吸顶，时间线在下面，页面正常滚动。
+   窄屏：地图在上吸顶，时间线在下面，页面正常滚动。
+   页面间跳转交给 ClientRouter 的 View Transition，不再手动包 startViewTransition。
    ========================================================================== */
-
-/* 页内切换用 View Transition：地图和时间线各自起名，其余走根节点交叉淡入 */
-html[data-fp-transition] .ex-fp-map-wrap {
-    view-transition-name: fp-map;
-}
-
-html[data-fp-transition] .ex-fp-panel {
-    view-transition-name: fp-panel;
-}
-
-/* 打开足迹时把运动页原本的内容和右侧统计栏藏起来，版面让给足迹 */
-body.is-footprint {
-    .ex-hero,
-    .ex-main,
-    .ex-empty,
-    .book-toc {
-        display: none;
-    }
-
-    /* 移动端 TOC 抽屉里放的是运动统计，足迹模式下不需要；导航按钮保留 */
-    .ex-mobile-toc {
-        display: none !important;
-    }
-
-    label[for='toc-control'] {
-        visibility: hidden;
-    }
-}
 
 .ex-fp {
     display: flex;
@@ -47,111 +20,45 @@ body.is-footprint {
     --ex-fp-blur: blur(10px) saturate(1.12);
 }
 
-/* 桌面端：整页锁到一屏，页内边距交给足迹自己的头部 / 舞台控制 */
+/* 页面用 Ghost 页自带的 hash-page-fullwidth：BaseLayout 会跳过右侧 TOC 空栏，
+   并把 .container 压到 95% 宽。这里只处理高度：整页锁一屏，把剩余高度全给足迹。 */
+.exercise-page.footprint-page {
+    display: flex;
+    flex-direction: column;
+}
+
 @media screen and (min-width: 47.85rem) {
-    body.is-footprint {
+    body:has(.footprint-page) {
         overflow: hidden;
     }
 
-    body.is-footprint .container {
-        /* 和友邻页的 full-width 一样，让内容占满 95% 宽 */
-        max-width: 95%;
-    }
-
-    body.is-footprint .book-page {
+    body:has(.footprint-page) .book-page {
         block-size: 100svh;
         padding: 0;
     }
 
-    body.is-footprint .exercise-page,
-    body.is-footprint .ex-fp {
+    body:has(.footprint-page) .exercise-page {
         block-size: 100%;
+    }
+
+    /* 顶部切换占了固定高度，剩下的一屏交给 .ex-fp 自己消化 */
+    body:has(.footprint-page) .ex-fp {
+        flex: 1 1 auto;
+        min-block-size: 0;
     }
 }
 
-.ex-fp[hidden] {
-    display: none;
-}
-
-/* ---------- 顶部：标题 + 副标题 + 操作 ---------- */
-.ex-fp-head {
-    display: flex;
-    flex: none;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1.05rem 1.25rem 0.85rem;
-}
-
-.ex-fp-heading {
-    min-inline-size: 0;
-}
-
-/* 标题/副标题走全站统一的 .page-head / .page-title / .page-intro，这里只把边距交给头部容器 */
-.ex-fp-head .page-head {
-    margin: 0;
-}
-
-/* 与 /tags/、/archives/ 的 `.book-article h1.page-title` 同一尺度：
-   足迹这层不在 .book-article 里，拿不到那条规则，显式对齐（29.6px @1440） */
-.ex-fp-head .page-title {
-    font-size: clamp(1.5rem, 2.4vw, 1.85rem);
-    font-weight: 600;
-    line-height: 1.32;
-    letter-spacing: -0.022em;
-}
-
-.ex-fp-actions {
-    display: flex;
-    flex: none;
-    align-items: center;
-    gap: 0.45rem;
-}
-
-.ex-fp-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    block-size: 2rem;
-    padding: 0 0.8rem;
-    border: 1px solid var(--ex-fp-line);
-    border-radius: 999px;
-    background: var(--body-background);
-    color: var(--body-font-color);
-    font-size: 0.75rem;
-    line-height: 1;
-    cursor: pointer;
-    box-shadow: var(--ex-fp-shadow);
-    backdrop-filter: var(--ex-fp-blur);
-    -webkit-backdrop-filter: var(--ex-fp-blur);
-    transition:
-        color 160ms ease,
-        border-color 160ms ease,
-        background 160ms ease;
-}
-
-.ex-fp-btn:hover {
-    border-color: color-mix(in srgb, var(--color-link) 50%, var(--ex-fp-line));
-    color: var(--color-link);
-}
-
-.ex-fp-btn:focus-visible {
-    outline: 2px solid var(--color-link);
-    outline-offset: 2px;
-}
-
-.ex-fp-close {
-    padding-inline-start: 0.6rem;
+/* ---------- 顶部：标题区（全站统一的 .page-head） ----------
+   桌面端 .book-page 被锁成 padding: 0（要撑满一屏），这里补回标准页面的
+   上 2rem / 左右 1rem，标题的位置和 /tags/、/archives/ 完全对齐。 */
+.footprint-page > .page-head {
+    padding: 2rem 1rem 0;
+    margin-block-end: 0.85rem;
 }
 
 /* 整层自己接管初始焦点，不要焦点环 */
 .ex-fp:focus {
     outline: none;
-}
-
-.ex-fp-close svg {
-    inline-size: 0.9rem;
-    block-size: 0.9rem;
 }
 
 /* ---------- 中部：地图 + 时间线 ---------- */
@@ -162,7 +69,7 @@ body.is-footprint {
        用同一个值让地图与右侧时间线、地图与导航看起来是一套排版 */
     gap: 1rem;
     min-block-size: 0;
-    padding: 0 1.25rem 1.25rem;
+    padding: 0 1rem 1rem;
 }
 
 .ex-fp-map-wrap {
@@ -614,6 +521,16 @@ body.is-footprint {
     backdrop-filter: var(--ex-fp-blur);
     -webkit-backdrop-filter: var(--ex-fp-blur);
     pointer-events: auto;
+
+    /* 气泡里的「可点行」（聚合气泡的地名、标点气泡的文章）共用这一组值 */
+    --tip-row-pad: 0.18rem 0.28rem;
+    --tip-row-radius: 0.3rem;
+    --tip-row-bg: color-mix(in srgb, var(--body-font-color) 8%, transparent);
+}
+
+/* 暗色下同一个混色更淡，单独提一档，让「这是可点行」看得出来 */
+:is(html.dark, html.yayu, html.yuhang, html.herblue, html.dbushell) .ex-fp-tip {
+    --tip-row-bg: color-mix(in srgb, var(--body-font-color) 10%, transparent);
 }
 
 .ex-fp-tip[hidden] {
@@ -637,7 +554,7 @@ body.is-footprint {
 .ex-fp-tip-list {
     display: flex;
     flex-direction: column;
-    gap: 0.22rem;
+    gap: 0.14rem;
     margin: 0.4rem 0 0;
     padding: 0;
     list-style: none;
@@ -730,16 +647,26 @@ body.is-footprint {
 
 /* 单点 tooltip 里的游记链接 */
 .ex-fp-tip-article {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: baseline;
+    gap: 0.4rem;
+    min-inline-size: 0;
+    padding: var(--tip-row-pad);
+    border-radius: var(--tip-row-radius);
     color: inherit;
     text-decoration: none;
-    text-underline-offset: 2px;
-    transition: color 140ms ease;
+    transition:
+        background 140ms ease,
+        color 140ms ease;
 }
 
+/* 和聚合气泡的地名项同一套 hover / focus 表现：整行浅底 + 主题色，不靠下划线 */
 .ex-fp-tip-article:hover,
 .ex-fp-tip-article:focus-visible {
+    background: var(--tip-row-bg);
     color: var(--color-link);
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 .ex-fp-tip-article:focus-visible {
@@ -762,21 +689,24 @@ body.is-footprint {
     align-items: baseline;
     gap: 0.4rem;
     min-inline-size: 0;
-    padding: 0.18rem 0.28rem;
+    padding: var(--tip-row-pad);
     margin: 0;
     border: 0;
-    border-radius: 0.3rem;
+    border-radius: var(--tip-row-radius);
     background: transparent;
     color: inherit;
     font-size: 0.7rem;
     line-height: 1.5;
     text-align: start;
     cursor: pointer;
-    transition: background 140ms ease;
+    transition:
+        background 140ms ease,
+        color 140ms ease;
 }
 
-.ex-fp-tip-place:hover {
-    background: color-mix(in srgb, var(--body-font-color) 6%, transparent);
+.ex-fp-tip-place:hover,
+.ex-fp-tip-place:focus-visible {
+    background: var(--tip-row-bg);
     color: var(--color-link);
 }
 
@@ -1298,78 +1228,21 @@ body.is-fp-modal {
     opacity: 1 !important;
 }
 
-/* ---------- 预览地图上方的入口按钮 ---------- */
-.ex-map-tools {
-    display: flex;
-    justify-content: flex-end;
-    margin-block-end: 0.45rem;
-}
-
-.ex-footprint-entry {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.22rem 0.7rem 0.24rem;
-    border: 1px solid var(--gray-200);
-    border-radius: 999px;
-    background: var(--body-background);
-    color: var(--body-font-color);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    line-height: 1.5;
-    text-decoration: none;
-    cursor: pointer;
-    box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
-    transition:
-        color 160ms ease,
-        border-color 160ms ease,
-        box-shadow 160ms ease;
-}
-
-.ex-footprint-entry svg {
-    inline-size: 0.85rem;
-    block-size: 0.85rem;
-    color: var(--color-link);
-}
-
-.ex-footprint-entry:hover {
-    border-color: color-mix(in srgb, var(--color-link) 50%, var(--gray-200));
-    color: var(--color-link);
-    box-shadow: 0 3px 10px rgb(0 0 0 / 0.1);
-}
-
-.ex-footprint-entry:focus-visible {
-    outline: 2px solid var(--color-link);
-    outline-offset: 2px;
-}
-
 /* ---------- 窄屏：地图在上（吸顶）、时间线在下 ---------- */
 @media screen and (max-width: 47.84rem) {
-    body.is-footprint .container {
-        max-width: 100%;
-    }
-
     .ex-fp {
         display: block;
         block-size: auto;
     }
 
     /* 页面本身有 1rem 内边距，这里只留标题和地图之间的间距 */
-    .ex-fp-head {
-        align-items: flex-start;
-        gap: 0.75rem;
-        padding: 0 0 0.7rem;
-    }
-
-    /* 窄屏只留一个圆形返回按钮，别让标题区被按钮挤成三行 */
-    .ex-fp-close {
-        justify-content: center;
-        inline-size: 2rem;
+    .footprint-page > .page-head {
         padding: 0;
+        margin-block-end: 0.7rem;
     }
 
-    .ex-fp-close-label {
-        display: none;
+    .ex-fp > .ex-fp-selection {
+        margin-inline: 0;
     }
 
     .ex-fp-stage {
@@ -1448,15 +1321,13 @@ body.is-fp-modal {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .ex-fp-btn,
     .ex-fp-hud-btn,
     .ex-fp-chip,
     .ex-fp-point,
     .ex-fp-filter-btn,
     .ex-fp-filter-action,
     .ex-fp-check,
-    .ex-fp-province-toggle svg,
-    .ex-footprint-entry {
+    .ex-fp-province-toggle svg {
         transition: none;
     }
 }

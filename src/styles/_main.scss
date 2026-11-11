@@ -669,25 +669,10 @@ body[dir='rtl'] .book-menu {
 }
 
 // 主题切换靠 html 的 view-transition-name(animation-theme-toggle) 做整页裁切动画。
-// 右侧栏和固定装饰背景（见 _defaults.scss 的 gradientback）有了自己的 view-transition-name
-// 后会被单独抓成一组、不参与裁切，所以换主题时要让它们退回 root 快照
+// 右侧栏有自己的 view-transition-name，换主题时要让它退回 root 快照
 // （左侧栏由 MenuTheme 脚本临时清空 scope 达到同样效果）。
-html[data-theme-changing] .book-toc-content,
-html[data-theme-changing] .page-bg {
+html[data-theme-changing] .book-toc-content {
     view-transition-name: none;
-}
-
-// 固定装饰背景单独成组后，过渡里只保留一份图：
-// 装饰层本身是半透明的，旧图/新图同时画会叠加成两倍浓度（就是那个「背景色闪一下」）。
-// 和 menu-flag-marker 一样：隐藏旧图、新图原地不动。
-::view-transition-old(page-bg),
-::view-transition-new(page-bg) {
-    animation: none;
-    mix-blend-mode: normal;
-}
-
-::view-transition-old(page-bg) {
-    opacity: 0;
 }
 
 @keyframes reveal {

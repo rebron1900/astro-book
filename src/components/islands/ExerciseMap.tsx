@@ -2,6 +2,7 @@ import { createEffect, createSignal, onCleanup, onMount } from 'solid-js';
 import type { ExerciseRecord, ExerciseScope } from '../../lib/exercise';
 import { estimateCalories, formatDuration, formatRecordDistance, recordsInScope, scopeLabel } from '../../lib/exercise';
 import { createExerciseMap, type ExerciseMapController, type ExerciseMapStatus } from '../../lib/client/exercise-map';
+import { afterTransition } from '../../lib/client/idle';
 import MetricIcon from '../ui/MetricIcon';
 
 export interface ExerciseMapProps {
@@ -76,13 +77,27 @@ export default function ExerciseMap(props: ExerciseMapProps) {
         // 先把当前 props 灌进去，再用 effect 跟随后变化
         controller.setScope(props.scope);
         controller.setHover(props.hoverId);
-        void controller.start();
+        // 等换页动画结束、浏览器空闲再起地图：WebGL 初始化和首帧瓦片渲染都不该和过渡抢帧
+        let cancelStart: (() => void) | null = afterTransition(() => {
+            cancelStart = null;
+            void controller?.start();
+        });
 
         createEffect(() => controller?.setScope(props.scope));
         createEffect(() => controller?.setHover(props.hoverId));
         createEffect(() => controller?.setCompact(props.compact));
 
-        onCleanup(() => controller?.destroy());
+        // ClientRouter 换页只换 DOM，Solid 的 onCleanup 不保证会跑：
+        // 地图实例（WebGL 上下文 + 渲染循环）必须在这里兜底销毁，否则离开一页就多一份一直在画的地图
+        const destroyOnSwap = () => controller?.destroy();
+        document.addEventListener('astro:before-swap', destroyOnSwap);
+
+        onCleanup(() => {
+            document.removeEventListener('astro:before-swap', destroyOnSwap);
+            cancelStart?.();
+            cancelStart = null;
+            controller?.destroy();
+        });
     });
 
     return (

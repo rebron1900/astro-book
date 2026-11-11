@@ -569,12 +569,14 @@
         color 140ms ease;
 }
 
+/* 按钮压在气泡的左右边线上：.memo-block 左右内边距相同（0.85rem），
+   所以左右用同一个偏移量，视觉上对称 */
 .memo-photo-nav.is-prev {
-    inset-inline-start: 0.3rem;
+    inset-inline-start: -0.675rem;
 }
 
 .memo-photo-nav.is-next {
-    inset-inline-end: 0.3rem;
+    inset-inline-end: -0.675rem;
 }
 
 .memo-photo-nav[hidden] {

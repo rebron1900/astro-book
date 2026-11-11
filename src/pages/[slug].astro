@@ -90,7 +90,7 @@ const tocHtml = tocGen(post.html);
 
     <Menu slot="menu" title=`${post.title}` />
     <article slot="content" class="markdown book-article">
-        <h1 class:list={['book-title', { 'page-title': post.type === 'page' }]}>
+        <h1 class="book-title page-title">
             {post.title}
         </h1>
         <PostMeta post={post} isFeature={true} />

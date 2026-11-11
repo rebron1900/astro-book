@@ -6,34 +6,7 @@
     inline-size: 100%;
 }
 
-.pv-page .pv-header {
-    margin-block: 0 2rem;
-}
-
-.pv-page .pv-kicker {
-    margin: 0;
-    color: var(--color-link);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-
-.pv-page .pv-title {
-    margin: 0.35rem 0 0;
-    font-size: clamp(1.7rem, 3vw, 2.15rem);
-    font-weight: 600;
-    line-height: 1.25;
-    letter-spacing: -0.025em;
-}
-
-.pv-page .pv-intro {
-    max-inline-size: 42rem;
-    margin: 0.75rem 0 0;
-    color: var(--gray-700);
-    font-size: 0.9rem;
-    line-height: 1.8;
-}
+/* 标题区走全站统一的 .page-head / .page-title / .page-intro */
 
 .pv-page .pv-section-head {
     display: flex;
@@ -393,10 +366,6 @@
 }
 
 @media (max-width: 34rem) {
-    .pv-page .pv-title {
-        font-size: 1.55rem;
-    }
-
     .pv-page .pv-friend-grid {
         grid-template-columns: 1fr;
     }

@@ -18,8 +18,6 @@ const isFullWidth = post && (post.slug?.includes('albums') || post.tags?.some((t
     </head>
 
     <body dir="ltr">
-        {/* 固定装饰背景（gradientback mixin 上色）：单独成组，切页面时不跟着内容动 */}
-        <div class="page-bg" aria-hidden="true"></div>
         <input aria-label="menu-control" type="checkbox" class="hidden toggle" id="menu-control" />
         <input aria-label="toc-control" type="checkbox" class="hidden toggle" id="toc-control" />
         <main class=`container flex ${isFullWidth ? 'full-width' : ''} `>
