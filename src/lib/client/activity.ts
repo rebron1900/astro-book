@@ -20,3 +20,10 @@ export const ACTIVITY_MODE_EVENT = 'activity:mode';
 export interface ActivityModeDetail {
     mode: 'exercise' | 'footprint';
 }
+
+/** 点「成就」时把对应标点在地图上聚焦（成就列表 → 足迹地图岛） */
+export const ACTIVITY_FOCUS_PLACE_EVENT = 'activity:focus-place';
+
+export interface ActivityFocusPlaceDetail {
+    placeId: string;
+}

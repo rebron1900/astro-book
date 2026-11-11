@@ -6,7 +6,7 @@ import { articleMatchesSelection, groupPlacesByProvince, markRepeatArticles } fr
 import { createFootprintMap, type FootprintMapController, type FootprintPlaceInfo } from '../../lib/client/footprint-map';
 import { prefersReducedMotion } from '../../lib/client/dom';
 import { afterTransition } from '../../lib/client/idle';
-import { ACTIVITY_MODE_EVENT, type ActivityModeDetail } from '../../lib/client/activity';
+import { ACTIVITY_FOCUS_PLACE_EVENT, ACTIVITY_MODE_EVENT, type ActivityFocusPlaceDetail, type ActivityModeDetail } from '../../lib/client/activity';
 import initZoom from '../../lib/client/zoom';
 
 export interface ExerciseFootprintProps {
@@ -383,7 +383,18 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                 controller = undefined;
                 mapHost?.replaceChildren();
             });
-            onCleanup(() => document.removeEventListener(ACTIVITY_MODE_EVENT, onMode));
+            // 右栏「成就」点一下 → 地图飞过去并选中这个标点
+            const onFocusPlace = (event: Event) => {
+                const placeId = (event as CustomEvent<ActivityFocusPlaceDetail>).detail?.placeId;
+                if (!placeId || !controller) return;
+                setActivePlace(placeId);
+                controller.focusPlace(placeId);
+            };
+            document.addEventListener(ACTIVITY_FOCUS_PLACE_EVENT, onFocusPlace);
+            onCleanup(() => {
+                document.removeEventListener(ACTIVITY_MODE_EVENT, onMode);
+                document.removeEventListener(ACTIVITY_FOCUS_PLACE_EVENT, onFocusPlace);
+            });
         }
 
         const onKeyDown = (event: KeyboardEvent) => {

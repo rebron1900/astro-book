@@ -14,6 +14,8 @@ export interface FootprintAchievement {
     value: string;
     /** 一句补充说明 */
     note?: string;
+    /** 可点击的成就：点一下把这个标点在地图上聚焦 */
+    placeId?: string;
 }
 
 /** 两个经纬度之间的直线距离（公里，球面近似） */
@@ -49,10 +51,10 @@ export function buildAchievements(data: FootprintData, elevations: Readonly<Reco
     const topPlace = places.reduce((best, place) => (place.articleSlugs.length > best.articleSlugs.length ? place : best), places[0]);
 
     const achievements: FootprintAchievement[] = [
-        { key: 'north', label: '最北到过', value: north.name, note: `北纬 ${north.lat.toFixed(1)}°` },
-        { key: 'south', label: '最南到过', value: south.name, note: `北纬 ${south.lat.toFixed(1)}°` },
-        { key: 'east', label: '最东', value: east.name, note: `东经 ${east.lng.toFixed(1)}°` },
-        { key: 'west', label: '最西', value: west.name, note: `东经 ${west.lng.toFixed(1)}°` }
+        { key: 'north', label: '最北到过', value: north.name, note: `北纬 ${north.lat.toFixed(1)}°`, placeId: north.id },
+        { key: 'south', label: '最南到过', value: south.name, note: `北纬 ${south.lat.toFixed(1)}°`, placeId: south.id },
+        { key: 'east', label: '最东', value: east.name, note: `东经 ${east.lng.toFixed(1)}°`, placeId: east.id },
+        { key: 'west', label: '最西', value: west.name, note: `东经 ${west.lng.toFixed(1)}°`, placeId: west.id }
     ];
 
     if (topProvince) {
@@ -60,7 +62,7 @@ export function buildAchievements(data: FootprintData, elevations: Readonly<Reco
     }
 
     if (topPlace.articleSlugs.length > 0) {
-        achievements.push({ key: 'writer', label: '写得最多的地点', value: topPlace.name, note: `${topPlace.articleSlugs.length} 篇游记` });
+        achievements.push({ key: 'writer', label: '写得最多的地点', value: topPlace.name, note: `${topPlace.articleSlugs.length} 篇游记`, placeId: topPlace.id });
     }
 
     const span = distanceKm(south, north);
@@ -76,7 +78,8 @@ export function buildAchievements(data: FootprintData, elevations: Readonly<Reco
             key: 'elevation',
             label: '海拔最高',
             value: highest.name,
-            note: `${elevations[highest.name].toLocaleString('zh-CN')} 米`
+            note: `${elevations[highest.name].toLocaleString('zh-CN')} 米`,
+            placeId: highest.id
         });
     }
 

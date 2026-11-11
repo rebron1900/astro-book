@@ -1,4 +1,4 @@
-import { ACTIVITY_MODE_EVENT, type ActivityModeDetail } from './activity';
+import { ACTIVITY_FOCUS_PLACE_EVENT, ACTIVITY_MODE_EVENT, type ActivityFocusPlaceDetail, type ActivityModeDetail } from './activity';
 
 /**
  * `/activity/` 顶部「运动 / 足迹」的切换。
@@ -21,14 +21,24 @@ export default function initActivityMode(): () => void {
     };
 
     const onClick = (event: Event) => {
-        const button = (event.target as HTMLElement | null)?.closest<HTMLButtonElement>('.act-switch-btn');
+        const target = event.target as HTMLElement | null;
+
+        // 成就卡片：点一下让地图聚焦到那个标点
+        const achievement = target?.closest<HTMLElement>('[data-act-place]');
+        if (achievement?.dataset.actPlace) {
+            document.dispatchEvent(new CustomEvent<ActivityFocusPlaceDetail>(ACTIVITY_FOCUS_PLACE_EVENT, { detail: { placeId: achievement.dataset.actPlace } }));
+            return;
+        }
+
+        const button = target?.closest<HTMLButtonElement>('.act-switch-btn');
         if (!button) return;
         apply(button.dataset.actMode ?? 'exercise');
     };
 
-    page.addEventListener('click', onClick);
+    // 用 document 代理：右栏在地图的 toc 插槽里，不是 .activity-page 的子节点
+    document.addEventListener('click', onClick);
     // 首次挂载也广播一次，让两个岛各自判断要不要建地图（旧页面没有这个按钮，不受影响）
     apply(page.getAttribute('data-activity-mode') ?? 'exercise');
 
-    return () => page.removeEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
 }

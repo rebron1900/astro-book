@@ -9,22 +9,7 @@
     position: relative;
 }
 
-/* ---------- 右上角：运动 / 足迹 ---------- */
-
-.act-switch {
-    position: absolute;
-    inset-block-start: 0.55rem;
-    inset-inline-end: 0.55rem;
-    z-index: 35;
-    display: inline-flex;
-    gap: 0.15rem;
-    padding: 0.18rem;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--body-background) 82%, transparent);
-    box-shadow: 0 2px 10px rgb(0 0 0 / 0.14);
-    backdrop-filter: blur(10px) saturate(1.12);
-    -webkit-backdrop-filter: blur(10px) saturate(1.12);
-}
+/* ---------- 右上角：运动 / 足迹（容器与胶囊见文件末尾） ---------- */
 
 .act-switch-btn {
     padding: 0.26rem 0.72rem;
@@ -74,7 +59,7 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
     display: block;
 }
 
-/* ---------- 足迹模式：把整页布局压成「小地图 + 下面时间线」 ---------- */
+/* ---------- 足迹模式：小地图（吸顶）+ 多列卡片 ---------- */
 
 .act-mode--footprint .ex-fp {
     block-size: auto;
@@ -89,10 +74,20 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
     padding: 0;
 }
 
+/* 和运动模式的预览地图一样吸顶：滚到下面看文章时地图还留在视野里 */
 .act-mode--footprint .ex-fp-map-wrap {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 25;
     block-size: 21rem;
     margin-block-end: 1.5rem;
     border-radius: 0.5rem;
+    box-shadow: 0 6px 20px rgb(0 0 0 / 0.08);
+}
+
+/* 地图上的筛选入口在合并页里去掉（右栏已经有分布和成就，不再需要按省筛） */
+.act-mode--footprint .ex-fp-filter {
+    display: none !important;
 }
 
 .act-mode--footprint .ex-fp-panel {
@@ -100,6 +95,71 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
     inline-size: auto;
     overflow: visible;
     padding-inline-end: 0;
+}
+
+/* 多列：游记卡片按两列排，去掉时间轴那套「日期列 + 竖线」 */
+.act-mode--footprint .ex-fp-rows {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.1rem;
+    padding-block: 0;
+}
+
+.act-mode--footprint .ex-fp-panel .ledger-row {
+    display: block;
+    margin: 0;
+    padding: 0.7rem 0.8rem 0.75rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 0.6rem;
+    background: color-mix(in srgb, var(--body-background) 96%, var(--body-font-color));
+}
+
+.act-mode--footprint .ex-fp-panel .ledger-row + .ledger-row {
+    margin-block-start: 0;
+}
+
+.act-mode--footprint .ex-fp-panel .ledger-row::before,
+.act-mode--footprint .ex-fp-panel .ledger-date,
+.act-mode--footprint .ex-fp-panel .ledger-rail {
+    display: none;
+}
+
+/* 卡片高度控制：标题 2 行、摘要 2 行、图片更矮 */
+.act-mode--footprint .ex-fp-row-title {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 0.8125rem;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.act-mode--footprint .ex-fp-row-text {
+    font-size: 0.7rem;
+    -webkit-line-clamp: 2;
+}
+
+.act-mode--footprint .ex-fp-row-media {
+    gap: 0.25rem;
+}
+
+.act-mode--footprint .ex-fp-row-media img {
+    max-block-size: 4.6rem;
+    aspect-ratio: 16 / 9;
+}
+
+.act-mode--footprint .ex-fp-row-places {
+    gap: 0.22rem;
+}
+
+.act-mode--footprint .ex-fp-chip,
+.act-mode--footprint .ex-fp-row-places > * {
+    font-size: 0.5625rem;
+}
+
+@media screen and (max-width: 63.99rem) {
+    .act-mode--footprint .ex-fp-rows {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 @media screen and (max-width: 47.84rem) {
@@ -273,56 +333,104 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
     display: grid;
 }
 
-/* ---------- 小成就 ---------- */
+/* ---------- 切换条：地图吸顶时按钮也留在视野里 ---------- */
+
+.act-switch-bar {
+    position: sticky;
+    inset-block-start: 0.55rem;
+    z-index: 35;
+    display: flex;
+    justify-content: flex-end;
+    margin-block-end: -2.05rem;
+    padding-inline-end: 0.55rem;
+    pointer-events: none;
+}
+
+.act-switch {
+    display: inline-flex;
+    gap: 0.15rem;
+    padding: 0.18rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--body-background) 82%, transparent);
+    box-shadow: 0 2px 10px rgb(0 0 0 / 0.14);
+    backdrop-filter: blur(10px) saturate(1.12);
+    -webkit-backdrop-filter: blur(10px) saturate(1.12);
+    pointer-events: auto;
+}
+
+/* ---------- 成就：两行一条（标签 + 注释 / 结论），可点 ---------- */
 
 .act-badges {
     display: grid;
-    gap: 0.1rem;
+    gap: 0.15rem;
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
 .act-badge {
-    display: flex;
-    align-items: baseline;
-    gap: 0.4rem;
-    min-inline-size: 0;
-    padding: 0.2rem 0;
-    border-block-end: 1px dashed color-mix(in srgb, var(--gray-500) 16%, transparent);
+    display: block;
 }
 
-.act-badge:last-child {
-    border-block-end: 0;
+.act-badge-btn,
+.act-badge-static {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.08rem 0.4rem;
+    inline-size: 100%;
+    padding: 0.3rem 0.35rem;
+    border: 0;
+    border-radius: 0.4rem;
+    background: none;
+    color: inherit;
+    text-align: start;
+    transition: background 140ms ease;
+}
+
+.act-badge-btn {
+    cursor: pointer;
+}
+
+.act-badge-btn:hover,
+.act-badge-btn:focus-visible {
+    background: color-mix(in srgb, var(--body-font-color) 6%, transparent);
+}
+
+.act-badge-btn:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 1px;
 }
 
 .act-badge-label {
-    flex: none;
+    grid-column: 1;
     color: var(--gray-500);
     font-size: 0.625rem;
-}
-
-.act-badge-value {
-    overflow: hidden;
-    min-inline-size: 0;
-    color: var(--body-font-color);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.5;
 }
 
 .act-badge-note {
-    flex: none;
-    margin-inline-start: auto;
+    grid-column: 2;
     color: var(--gray-500);
     font-size: 0.5625rem;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+.act-badge-value {
+    grid-column: 1 / -1;
+    overflow: hidden;
+    color: var(--body-font-color);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.45;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {
     .act-switch-btn,
-    .act-tabs-tab {
+    .act-tabs-tab,
+    .act-badge-btn {
         transition: none;
     }
 }

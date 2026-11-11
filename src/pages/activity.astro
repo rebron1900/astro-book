@@ -66,9 +66,11 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
         />
 
         <div class="act-stage">
-            <div class="act-switch" role="group" aria-label="切换运动 / 足迹">
-                <button class="act-switch-btn" type="button" data-act-mode="exercise" aria-pressed="true">运动</button>
-                <button class="act-switch-btn" type="button" data-act-mode="footprint" aria-pressed="false">足迹</button>
+            <div class="act-switch-bar">
+                <div class="act-switch" role="group" aria-label="切换运动 / 足迹">
+                    <button class="act-switch-btn" type="button" data-act-mode="exercise" aria-pressed="true">运动</button>
+                    <button class="act-switch-btn" type="button" data-act-mode="footprint" aria-pressed="false">足迹</button>
+                </div>
             </div>
 
             <div class="act-mode act-mode--exercise">
@@ -153,14 +155,24 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
             </section>
 
             <section class="act-sec">
-                <h2 class="act-side-title">小成就</h2>
+                <h2 class="act-side-title">成就</h2>
                 <ul class="act-badges">
                     {
                         achievements.map((item) => (
                             <li class="act-badge">
-                                <span class="act-badge-label">{item.label}</span>
-                                <span class="act-badge-value">{item.value}</span>
-                                {item.note && <span class="act-badge-note">{item.note}</span>}
+                                {item.placeId ? (
+                                    <button class="act-badge-btn" type="button" data-act-place={item.placeId} title={`在地图上看看 ${item.value}`}>
+                                        <span class="act-badge-label">{item.label}</span>
+                                        {item.note && <span class="act-badge-note">{item.note}</span>}
+                                        <span class="act-badge-value">{item.value}</span>
+                                    </button>
+                                ) : (
+                                    <div class="act-badge-static">
+                                        <span class="act-badge-label">{item.label}</span>
+                                        {item.note && <span class="act-badge-note">{item.note}</span>}
+                                        <span class="act-badge-value">{item.value}</span>
+                                    </div>
+                                )}
                             </li>
                         ))
                     }
