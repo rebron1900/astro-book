@@ -152,6 +152,17 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
     box-shadow: 0 10px 26px rgb(0 0 0 / 0.12);
 }
 
+/* 和运动页预览地图同一套做法：地图容器始终保持 21rem，吸顶只裁切外层窗口、
+   把地图整体上移半格（3rem），这样 Mapbox 完全不用 resize，也就不会「重画一下」 */
+.act-mode--footprint .ex-fp-map {
+    block-size: 21rem;
+    transition: transform 240ms ease;
+}
+
+.act-mode--footprint .ex-fp-map-wrap.is-stuck .ex-fp-map {
+    transform: translateY(-3rem);
+}
+
 /* 刚切进足迹模式时，地图是从 display:none 出来的：先按当前滚动位置定好高度，
    别把 15rem → 21rem 的展开过程播出来 */
 .act-mode--footprint .ex-fp-map-wrap.act-no-anim {
@@ -406,8 +417,8 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
 .act-fact svg {
     position: absolute;
     z-index: 0;
-    inset-block-start: -0.45rem;
-    inset-inline-end: -0.3rem;
+    inset-block-start: 0.55rem;
+    inset-inline-end: 0;
     inline-size: 2.6rem;
     block-size: 2.6rem;
     color: var(--color-link);
@@ -618,7 +629,16 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
 /* ---------- 分布条气泡：和地图标点气泡同一套长相 ---------- */
 
 .act-tip {
+    display: flex;
+    flex-direction: column;
     max-inline-size: 15rem;
+    max-block-size: 15rem;
+}
+
+.act-tip-list {
+    overflow-y: auto;
+    max-block-size: 12.5rem;
+    scrollbar-width: thin;
 }
 
 .act-tip-head {
@@ -695,6 +715,14 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
 .act-mode--footprint .ex-fp-hud-btn {
     block-size: 1.75rem;
     padding: 0 0.62rem;
+    font-size: 0.75rem;
+}
+
+/* 地图右上角「全部」按钮：和 HUD 按钮同高 */
+.act-mode--exercise .ex-map-reset {
+    display: inline-flex;
+    align-items: center;
+    block-size: 1.75rem;
     font-size: 0.75rem;
 }
 
