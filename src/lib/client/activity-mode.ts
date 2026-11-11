@@ -41,15 +41,27 @@ export default function initActivityMode(): () => void {
     // 首次挂载也广播一次，让两个岛各自判断要不要建地图（旧页面没有这个按钮，不受影响）
     apply(page.getAttribute('data-activity-mode') ?? 'exercise');
 
-    // 右栏分布条的悬浮提示：年份 → 那年去过的地点；省份 → 该省的地点
-    const bars = [...document.querySelectorAll<HTMLElement>('.act-bar-row[data-tip]')];
+    // 右栏分布条的悬浮提示：和地图标点气泡同一套「标题 + 列表」结构
+    const escape = (value: string) => value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] ?? char);
+    const bars = [...document.querySelectorAll<HTMLElement>('.act-bar-row[data-tip-places]')];
     if (bars.length > 0) {
         createTippy(bars, {
-            content: (element: Element) => element.getAttribute('data-tip') ?? '',
+            allowHTML: true,
             placement: 'left',
             maxWidth: 260,
             delay: [140, 0],
-            theme: 'auto'
+            theme: 'auto',
+            content: (element: Element) => {
+                const title = element.getAttribute('data-tip-title') ?? '';
+                let names: string[] = [];
+                try {
+                    names = JSON.parse(element.getAttribute('data-tip-places') ?? '[]');
+                } catch {
+                    names = [];
+                }
+                const rows = names.map((name) => `<li class="act-tip-row">${escape(name)}</li>`).join('');
+                return `<div class="act-tip"><p class="act-tip-head">${escape(title)} · ${names.length} 个地方</p><ul class="act-tip-list">${rows}</ul></div>`;
+            }
         });
     }
 

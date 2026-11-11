@@ -155,7 +155,11 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
                 <ul class="act-bars act-tabs-panel act-tabs-panel--year">
                     {
                         summary.years.map((bucket) => (
-                            <li class="act-bar-row" data-tip={bucket.places.length > 0 ? `${bucket.year} 年去过：${bucket.places.join('、')}` : undefined}>
+                            <li
+                                class="act-bar-row"
+                                data-tip-title={`${bucket.year} 年`}
+                                data-tip-places={bucket.places.length > 0 ? JSON.stringify(bucket.places) : undefined}
+                            >
                                 <span class="act-bar-label">{bucket.year}</span>
                                 <span class="act-bar-track">
                                     <span class="act-bar-fill" style={`--w: ${Math.round((bucket.count / maxYear) * 100)}%`} />
@@ -169,7 +173,7 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
                 <ul class="act-bars act-tabs-panel act-tabs-panel--province">
                     {
                         topProvinces.map((item) => (
-                            <li class="act-bar-row" data-tip={item.names.length > 0 ? `${item.province}：${item.names.join('、')}` : undefined}>
+                            <li class="act-bar-row" data-tip-title={item.province} data-tip-places={item.names.length > 0 ? JSON.stringify(item.names) : undefined}>
                                 <span class="act-bar-label act-bar-label--wide">{item.province}</span>
                                 <span class="act-bar-track">
                                     <span class="act-bar-fill" style={`--w: ${Math.round((item.places / maxProvince) * 100)}%`} />
