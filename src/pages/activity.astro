@@ -198,17 +198,25 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
                                 <li class="act-badge">
                                     {item.placeId ? (
                                         <button class="act-badge-btn" type="button" data-act-place={item.placeId} title={`在地图上看看 ${item.value}`}>
-                                            <Icon size={12} aria-hidden="true" />
-                                            <span class="act-badge-label">{item.label}</span>
-                                            {item.note && <span class="act-badge-note">{item.note}</span>}
-                                            <span class="act-badge-value">{item.value}</span>
+                                            <span class="act-badge-top">
+                                                <span class="act-badge-label">{item.label}</span>
+                                                <Icon size={12} aria-hidden="true" />
+                                            </span>
+                                            <span class="act-badge-bottom">
+                                                <span class="act-badge-value">{item.value}</span>
+                                                {item.note && <span class="act-badge-note">{item.note}</span>}
+                                            </span>
                                         </button>
                                     ) : (
                                         <div class="act-badge-static">
-                                            <Icon size={12} aria-hidden="true" />
-                                            <span class="act-badge-label">{item.label}</span>
-                                            {item.note && <span class="act-badge-note">{item.note}</span>}
-                                            <span class="act-badge-value">{item.value}</span>
+                                            <span class="act-badge-top">
+                                                <span class="act-badge-label">{item.label}</span>
+                                                <Icon size={12} aria-hidden="true" />
+                                            </span>
+                                            <span class="act-badge-bottom">
+                                                <span class="act-badge-value">{item.value}</span>
+                                                {item.note && <span class="act-badge-note">{item.note}</span>}
+                                            </span>
                                         </div>
                                     )}
                                 </li>
