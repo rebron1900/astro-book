@@ -14,12 +14,15 @@
 .act-switch-bar {
     /* 跟着地图一起吸顶：地图滚到顶时按钮也停在它的右上角 */
     position: sticky;
-    inset-block-start: 0.45rem;
+    inset-block-start: 0;
     z-index: 35;
     display: flex;
     justify-content: flex-end;
-    margin-block-end: -1.95rem;
+    /* 上内边距 = 地图控件的 0.45rem，未吸顶时和角标/「全部」同一条基线 */
+    padding-block: 0.45rem 0;
     padding-inline-end: 0.55rem;
+    /* 胶囊高 1.55rem + 上下 0.18rem 内边距 + 0.45rem 上内边距 */
+    margin-block-end: -2.36rem;
     pointer-events: none;
 }
 
@@ -194,6 +197,35 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
     block-size: 24px;
 }
 
+.act-mode--footprint .ex-fp-map .cluster.ex-fp-point {
+    inline-size: 24px;
+    block-size: 24px;
+}
+
+/* hover 不放大：尺寸一变锚点就动，气泡跟着抖 */
+.act-mode--footprint .ex-fp-map .marker.ex-fp-point:hover,
+.act-mode--footprint .ex-fp-map .img-post.marker.ex-fp-point:hover,
+.act-mode--footprint .ex-fp-map .cluster.ex-fp-point:hover {
+    inline-size: 16px;
+    block-size: 16px;
+}
+
+.act-mode--footprint .ex-fp-map .img-post.marker.ex-fp-point:hover {
+    inline-size: 24px;
+    block-size: 24px;
+}
+
+.act-mode--footprint .ex-fp-map .cluster.ex-fp-point:hover {
+    inline-size: 24px;
+    block-size: 24px;
+}
+
+.act-mode--footprint .ex-fp-map .marker.ex-fp-point:hover {
+    box-shadow:
+        0 0 0 2px var(--color-link),
+        0 6px 16px rgb(0 0 0 / 0.22);
+}
+
 /* 地图气泡：磨砂半透明 + 毛玻璃，和页面底色透出来 */
 .act-mode--footprint .ex-fp-tip,
 .act-mode--exercise .ex-map-filter {
@@ -208,13 +240,25 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
 
 /* ---------- 游记卡片：两列，卡片内保留时间线的信息结构 ---------- */
 
-/* 卡片两列；每张卡内部仍是「日期 + 竖线 + 内容」的时间线结构，
-   落单的最后一张只占一格，不会被拉成整行 */
+/* 左侧一条垂直时间线，右边是两列卡片 */
 .act-mode--footprint .ex-fp-rows {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.9rem 1rem;
     padding-block: 0.2rem 0;
+    padding-inline-start: 1.35rem;
+}
+
+/* 贯穿整列的竖线（不属于任何一张卡） */
+.act-mode--footprint .ex-fp-rows::before {
+    content: '';
+    position: absolute;
+    inset-block: 0.55rem 1.2rem;
+    inset-inline-start: 0.3rem;
+    inline-size: 1px;
+    background: var(--gray-200);
+    pointer-events: none;
 }
 
 @media screen and (max-width: 63.99rem) {
@@ -223,12 +267,22 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
     }
 }
 
-/* 行 = 日期列 + 竖线 + 卡片；卡片本身负责描边和内边距 */
+/* 行本身就是卡片：不再有内部的日期列和竖线 */
 .act-mode--footprint .ex-fp-panel .ledger-row {
-    --ledger-date-col: 2.6rem;
-    --ledger-row-gap: 0.9rem;
-    align-items: stretch;
+    display: block;
     margin: 0;
+}
+
+.act-mode--footprint .ex-fp-panel .ledger-rail {
+    display: none;
+}
+
+.act-mode--footprint .ex-fp-panel .ledger-date {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 0.3rem;
+    padding: 0 0 0.45rem;
 }
 
 .act-mode--footprint .ex-fp-panel .ledger-body {
@@ -253,10 +307,6 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
 /* 卡片里的竖线只画在内容旁边，不要跨到卡片外面 */
 .act-mode--footprint .ex-fp-panel .ledger-row::before {
     display: none;
-}
-
-.act-mode--footprint .ex-fp-panel .ledger-rail::before {
-    inset-block: 0.35rem 0.2rem;
 }
 
 .act-mode--footprint .ex-fp-panel .ledger-date {
@@ -550,27 +600,28 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
 
 .act-badge-btn,
 .act-badge-static {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 0.15rem;
     inline-size: 100%;
     block-size: 100%;
-    padding: 0.38rem 0.45rem;
+    padding: 0.2rem 1.3rem 0.2rem 0;
     border: 0;
-    border-radius: 0.45rem;
-    background: color-mix(in srgb, var(--body-font-color) 4%, transparent);
+    border-radius: 0;
+    background: none;
     color: inherit;
     text-align: start;
-    transition: background 140ms ease;
+    transition: color 140ms ease;
 }
 
 .act-badge-btn {
     cursor: pointer;
 }
 
-.act-badge-btn:hover,
-.act-badge-btn:focus-visible {
-    background: color-mix(in srgb, var(--body-font-color) 9%, transparent);
+.act-badge-btn:hover .act-badge-value,
+.act-badge-btn:focus-visible .act-badge-value {
+    color: var(--color-link);
 }
 
 .act-badge-btn:focus-visible {
@@ -596,9 +647,15 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
     white-space: nowrap;
 }
 
+/* 图标贴在卡片最右侧、垂直居中 */
 .act-badge-top svg {
-    flex: none;
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-start: 50%;
+    inline-size: 0.9rem;
+    block-size: 0.9rem;
     color: color-mix(in srgb, var(--color-link) 80%, transparent);
+    transform: translateY(-50%);
 }
 
 /* 第二行：内容 / 小字指标，左右各一半 */

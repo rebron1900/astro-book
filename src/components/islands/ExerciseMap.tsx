@@ -50,10 +50,16 @@ export default function ExerciseMap(props: ExerciseMapProps) {
     const [replayProgress, setReplayProgress] = createSignal(0);
 
     const inScope = () => recordsInScope(props.records, props.scope);
-    // 单条记录时「1 次」是废话，只在范围型 scope 后面缀次数
+    // 单条记录时角标显示这条记录的名字（Garmin/intervals 里的 entry title），
+    // 范围型 scope 仍显示「月份 · N 次」
     const badge = () => {
-        const label = scopeLabel(props.scope, props.records);
-        return props.scope.kind === 'record' ? label : `${label} · ${inScope().length} 次`;
+        const scope = props.scope;
+        if (scope.kind === 'record') {
+            const record = props.records.find((item) => item.id === scope.id);
+            if (record?.name) return record.name;
+        }
+        const label = scopeLabel(scope, props.records);
+        return scope.kind === 'record' ? label : `${label} · ${inScope().length} 次`;
     };
     const hasState = () => status().message !== null;
     /** 单条记录时在地图上显示这次运动的基础信息 */

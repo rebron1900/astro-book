@@ -351,6 +351,7 @@ class FootprintMapInstance implements FootprintMapController {
             essential: true
         });
         // 聚焦瞬间目标区的 DEM tile 通常还没到，先按能拿到的数据给一版机位，等 idle 再校准一次
+        // （合并页的小地图跳过二次校正，见 compactMap）
         this.refineAim(placeId);
     }
 
@@ -415,8 +416,14 @@ class FootprintMapInstance implements FootprintMapController {
      * 刚开地形时目标区常是空的，而 idle 事件不保证还会再来（没有瓦片在加载就不会触发），
      * 所以这里用定时轮询：每 250ms 试一次，最多 5s，拿到高差就校准，拿到就停。
      */
+    /** 合并页里地图只有 21rem 高：二次校正会让镜头来回抽，直接跳过 */
+    private get compactMap(): boolean {
+        const element = this.map?.getContainer();
+        return !!element && element.clientHeight > 0 && element.clientHeight < 420;
+    }
+
     private refineAim(placeId: string, attempt = 0): void {
-        if (!this.map) return;
+        if (!this.map || this.compactMap) return;
         this.cancelAimRefine();
         this.pendingAimRefine = setTimeout(() => {
             this.pendingAimRefine = null;
@@ -461,7 +468,7 @@ class FootprintMapInstance implements FootprintMapController {
             if (this.destroyed || this.selectedId !== placeId) return;
             const map = this.map;
             const place = this.placeById.get(placeId);
-            if (!map || !place) return;
+            if (!map || !place || this.compactMap) return;
 
             const container = map.getContainer();
             const element = Array.from(container.querySelectorAll<HTMLElement>('.ex-fp-point.is-active')).find(
