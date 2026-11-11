@@ -68,7 +68,7 @@ export default function initActivityMode(): () => void {
             allowHTML: true,
             placement: 'left',
             maxWidth: 260,
-            theme: 'auto',
+            theme: 'act-glass',
             // 要能移到气泡里滚列表、点地名，所以是交互式的：
             // 移出触发源不立刻关，只有移出气泡本身（或按 Esc）才关
             interactive: true,

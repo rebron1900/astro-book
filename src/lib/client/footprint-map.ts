@@ -158,6 +158,8 @@ class FootprintMapInstance implements FootprintMapController {
     private updateFrame: number | null = null;
 
     private resizeObserver: ResizeObserver | null = null;
+    /** resize 防抖：吸顶过渡期间高度连续变化，别每帧都让 Mapbox 重排 */
+    private resizeTimer: ReturnType<typeof setTimeout> | null = null;
     private themeObserver: MutationObserver | null = null;
     /** 样式一直加载不出来（token 无效、网络不通）时的兜底提示 */
     private readyTimer: ReturnType<typeof setTimeout> | null = null;
@@ -270,6 +272,10 @@ class FootprintMapInstance implements FootprintMapController {
 
         this.resizeObserver?.disconnect();
         this.resizeObserver = null;
+        if (this.resizeTimer !== null) {
+            clearTimeout(this.resizeTimer);
+            this.resizeTimer = null;
+        }
         this.themeObserver?.disconnect();
         this.themeObserver = null;
 
@@ -1237,7 +1243,13 @@ class FootprintMapInstance implements FootprintMapController {
         if (typeof ResizeObserver === 'undefined') return;
         this.resizeObserver = new ResizeObserver(() => {
             if (!this.map) return;
-            this.map.resize();
+            // 吸顶/展开时高度是连续变化的：每一帧都 resize 会让地图一直在重排、闪一下，
+            // 等尺寸稳定下来（160ms 内没新变化）再调一次
+            if (this.resizeTimer !== null) clearTimeout(this.resizeTimer);
+            this.resizeTimer = setTimeout(() => {
+                this.resizeTimer = null;
+                if (this.map) this.map.resize();
+            }, 160);
         });
         this.resizeObserver.observe(this.options.container);
     }
