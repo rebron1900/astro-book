@@ -1,0 +1,337 @@
+{
+  "generatedAt": "2026-11-10T09:28:39.184Z",
+  "tagPrefix": "#地点-",
+  "status": "applied",
+  "summary": {
+    "postsTagged": 24,
+    "markerCoverage": "47/118"
+  },
+  "items": [
+    {
+      "id": "6610d68e0516690001debca3",
+      "slug": "day-trip-to-neijiang-sweet-city",
+      "title": "内江甜城一日游",
+      "date": "2024-04-06",
+      "addedTags": [
+        "#地点-圣水寺",
+        "#地点-张大千美术馆",
+        "#地点-魏明伦碑文馆"
+      ],
+      "source": "high",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "66bb7de371cafc0001abcb79",
+      "slug": "zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-1",
+      "title": "重庆特种兵大作战两日游：1",
+      "date": "2024-08-13",
+      "addedTags": [
+        "#地点-李子坝站B口",
+        "#地点-二厂文创公园",
+        "#地点-鹅岭公园",
+        "#地点-千厮门大桥",
+        "#地点-重庆洪崖洞",
+        "#地点-解放碑"
+      ],
+      "source": "high",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "66bc0b3671cafc0001abcbc9",
+      "slug": "zhong-qing-te-chong-bing-da-zuo-zhan-liang-ri-you-2",
+      "title": "重庆特种兵大作战两日游：2",
+      "date": "2024-08-14",
+      "addedTags": [
+        "#地点-山城步道",
+        "#地点-十八梯",
+        "#地点-地下之城火锅",
+        "#地点-魁星楼",
+        "#地点-少年的你打卡点",
+        "#地点-解放碑",
+        "#地点-重庆来福士广场",
+        "#地点-重庆洪崖洞"
+      ],
+      "source": "high",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "64852d7eaf7f0f00010a0e39",
+      "slug": "da-li-lu-pai",
+      "title": "大理旅拍",
+      "date": "2023-06-12",
+      "addedTags": [
+        "#地点-大理古城",
+        "#地点-洱海"
+      ],
+      "source": "high",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "63158312cf533d1c2cf29b0d",
+      "slug": "kun-ming-lai-liao-bian-bu-xiang-zou-de-cheng-shi",
+      "title": "昆明，来了便不想走的城市(更新中)",
+      "date": "2019-07-08",
+      "addedTags": [
+        "#地点-滇池"
+      ],
+      "source": "high",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "63158312cf533d1c2cf29af0",
+      "slug": "san-ya-xing",
+      "title": "海南环岛行の红皮烧猪炼成记-缓慢更新中...",
+      "date": "2019-01-11",
+      "addedTags": [
+        "#地点-东方市",
+        "#地点-儋州市",
+        "#地点-海口市",
+        "#地点-白马井镇"
+      ],
+      "source": "high",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "63158312cf533d1c2cf29951",
+      "slug": "qing-hai-you-tu-zhi",
+      "title": "青海游·图志/更新中",
+      "date": "2016-10-19",
+      "addedTags": [
+        "#地点-西宁市",
+        "#地点-青海湖风景名胜区",
+        "#地点-黑马河乡"
+      ],
+      "source": "high",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "63158312cf533d1c2cf2999d",
+      "slug": "yi-zhou-nian",
+      "title": "一周年",
+      "date": "2017-08-03",
+      "addedTags": [
+        "#地点-重庆南山鲜龙井火锅",
+        "#地点-洋人街"
+      ],
+      "source": "high",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "66349626aac8fc000167f965",
+      "slug": "wo-ye-cheng-du-you-yi-tang-ba",
+      "title": "五一我也成都游一趟把！",
+      "date": "2024-05-03",
+      "addedTags": [
+        "#地点-天府绿道·锦城绿道"
+      ],
+      "source": "high",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "676393842b589200019a5a6a",
+      "slug": "chuan-xi-bi-jia-shan-dong-ji-xue-shan-deng-shan-shi-cao",
+      "title": "川西笔架山，冬季雪山登山实操",
+      "date": "2024-12-19",
+      "addedTags": [
+        "#地点-笔架山",
+        "#地点-坞瓦布露营地"
+      ],
+      "source": "high",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "683fcbe9388036000124d5eb",
+      "slug": "wen-hua-ren-de-you-ji",
+      "title": "文化人的游记",
+      "date": "2025-06-04",
+      "addedTags": [
+        "#地点-康定",
+        "#地点-白海子"
+      ],
+      "source": "high",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "63158312cf533d1c2cf29b81",
+      "slug": "extraordinary-life",
+      "title": "人活着总要干几件能吹牛逼的事吧？",
+      "date": "2022-07-02",
+      "addedTags": [
+        "#地点-2015年8月骑行到拉萨",
+        "#地点-布达拉宫",
+        "#地点-康定"
+      ],
+      "source": "medium",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "63158312cf533d1c2cf29939",
+      "slug": "hurry-this-year",
+      "title": "匆匆这一年",
+      "date": "2016-07-27",
+      "addedTags": [
+        "#地点-2015年8月骑行到拉萨",
+        "#地点-布达拉宫"
+      ],
+      "source": "medium",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "684e77a5932139000100602c",
+      "slug": "zhui-wan-xia-de-ren",
+      "title": "追晚霞的人",
+      "date": "2025-06-15",
+      "addedTags": [
+        "#地点-观音岩"
+      ],
+      "source": "user",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "63158312cf533d1c2cf29b89",
+      "slug": "31-year-old-travel-preparation",
+      "title": "31岁的旅行·全",
+      "date": "2022-07-25",
+      "addedTags": [
+        "#地点-三星堆",
+        "#地点-蓥华山"
+      ],
+      "source": "user",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "63158312cf533d1c2cf29aef",
+      "slug": "xing-cheng-yi-ding-ji-ke-chu-fa",
+      "title": "行程已定，即刻出发",
+      "date": "2018-11-05",
+      "addedTags": [
+        "#地点-东方市",
+        "#地点-儋州市",
+        "#地点-海口市",
+        "#地点-白马井镇"
+      ],
+      "source": "user",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "63158312cf533d1c2cf29ae8",
+      "slug": "hai-nan-dao-huan-dao-xing-hei-qia-chong-cao-ji",
+      "title": "海南岛环岛行+黑卡种草记",
+      "date": "2018-09-05",
+      "addedTags": [
+        "#地点-东方市",
+        "#地点-儋州市",
+        "#地点-海口市",
+        "#地点-白马井镇"
+      ],
+      "source": "user",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "63158312cf533d1c2cf2994f",
+      "slug": "qinghaihuly",
+      "title": "国庆兑现想了一年的青海湖之旅",
+      "date": "2016-09-26",
+      "addedTags": [
+        "#地点-西宁市",
+        "#地点-青海湖风景名胜区",
+        "#地点-黑马河乡"
+      ],
+      "source": "user",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "659fd1f0afc1830001546413",
+      "slug": "my-ride-story-the-beginning",
+      "title": "我的骑行故事：开端",
+      "date": "2024-01-21",
+      "addedTags": [
+        "#地点-2015年8月骑行到拉萨"
+      ],
+      "source": "user",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "659f6a9dafc183000154630f",
+      "slug": "my-riding-story-begin",
+      "title": "我的骑行故事：梦",
+      "date": "2024-01-11",
+      "addedTags": [
+        "#地点-2015年8月骑行到拉萨"
+      ],
+      "source": "user",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "63158312cf533d1c2cf299b8",
+      "slug": "two-day-tour-of-xiling-snow-mountain",
+      "title": "前些日子西岭雪山两日游",
+      "date": "2018-01-23",
+      "addedTags": [
+        "#地点-西岭雪山",
+        "#地点-花水湾"
+      ],
+      "source": "user",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "63158312cf533d1c2cf29b70",
+      "slug": "22-years-day-travel-arrangement",
+      "title": "22年元旦旅游安排",
+      "date": "2021-12-31",
+      "addedTags": [
+        "#地点-西岭雪山",
+        "#地点-花水湾"
+      ],
+      "source": "user",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "63158312cf533d1c2cf29ac1",
+      "slug": "in-october-2014-2nd-have-spent-cattle-back-mountain",
+      "title": "2014年10月02日&nbsp;牛背山",
+      "date": "2014-10-06",
+      "addedTags": [
+        "#地点-牛背山"
+      ],
+      "source": "user",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    },
+    {
+      "id": "66ab56724ba82d00015d8981",
+      "slug": "33sui-de-lu-xing",
+      "title": "33岁的旅行",
+      "date": "2024-08-01",
+      "addedTags": [
+        "#地点-天台山",
+        "#地点-平乐古镇"
+      ],
+      "source": "user",
+      "applied": true,
+      "appliedAt": "2026-11-10"
+    }
+  ]
+}
