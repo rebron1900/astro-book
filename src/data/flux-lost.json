@@ -10,6 +10,16 @@
     "last_entry_at": "2026-10-22T06:41:00.000Z"
   },
   {
+    "id": 187,
+    "title": "木 竹 造 价",
+    "site_url": "https://www.laomuzhu.cn",
+    "reason": "error",
+    "first_seen_at": "2026-11-12T00:44:44.353Z",
+    "feed_url": "https://www.laomuzhu.cn/feed/",
+    "error": "未找到请求的资源。请检查 URL。",
+    "last_entry_at": "2026-11-06T11:18:00.000Z"
+  },
+  {
     "id": 186,
     "title": "瓦匠个人小站",
     "site_url": "https://airy.ink",
