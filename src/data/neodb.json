@@ -1,21 +1,125 @@
 {
   "data": [
     {
+      "post_id": 643542704221058400,
+      "shelf": "complete",
+      "comment_text": "先给3星半，张颂文怎么感觉啥戏都是这个状态",
+      "rating_grade": 7,
+      "item": {
+        "id": "https://neodb.social/tv/season/2pvsE8zKn3Bx9vXskRIysG",
+        "title": "The Silent Storm",
+        "category": "tv",
+        "cover_image_url": "https://neodb.social/m/item/doubanmovie/2026/11/08/1f239005-ac2b-45e8-b253-2e5adcf4d674.webp",
+        "url": "/tv/season/2pvsE8zKn3Bx9vXskRIysG",
+        "uuid": "2pvsE8zKn3Bx9vXskRIysG",
+        "localized_title": [
+          {
+            "lang": "zh-cn",
+            "text": "谷雨"
+          },
+          {
+            "lang": "en",
+            "text": "The Silent Storm"
+          },
+          {
+            "lang": "ko",
+            "text": "시즌 1"
+          },
+          {
+            "lang": "ja",
+            "text": "シーズン1"
+          },
+          {
+            "lang": "pt",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "de",
+            "text": "Staffel 1"
+          },
+          {
+            "lang": "fr",
+            "text": "Saison 1"
+          },
+          {
+            "lang": "es",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "en",
+            "text": "Season 1"
+          }
+        ],
+        "type": "TVSeason",
+        "title_cn": "谷雨"
+      },
+      "created_time": "2026-11-12T03:08:56.988Z",
+      "visibility": 0
+    },
+    {
       "post_id": 641968221371700400,
       "shelf": "complete",
       "comment_text": null,
       "rating_grade": 6,
       "item": {
         "id": "https://neodb.social/movie/53uGcmTcUC6RMxKLEMhXuh",
-        "title": "新人类战争：复活男",
+        "title": "Reawakened Man",
         "category": "movie",
-        "cover_image_url": "https://neodb.social/m/movie/2022/06/035d749426-93a0-4373-8768-4c2f877cd54e.png",
+        "cover_image_url": "https://neodb.social/m/item/tmdb_movie/2026/11/11/db5c8d11-7b3e-47f3-b226-b31ad6182892.jpg",
         "url": "/movie/53uGcmTcUC6RMxKLEMhXuh",
         "uuid": "53uGcmTcUC6RMxKLEMhXuh",
         "localized_title": [
           {
+            "lang": "ko",
+            "text": "부활남: 더 레드"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "復活男"
+          },
+          {
             "lang": "zh-cn",
-            "text": "新人类战争：复活男"
+            "text": "复活男"
+          },
+          {
+            "lang": "en",
+            "text": "Reawakened Man"
+          },
+          {
+            "lang": "en",
+            "text": "New Generation War: Reawakened Man"
+          },
+          {
+            "lang": "zh",
+            "text": "复活男"
+          },
+          {
+            "lang": "zh-hans",
+            "text": "复活男"
+          },
+          {
+            "lang": "zh-hant",
+            "text": "復活男"
+          },
+          {
+            "lang": "fr",
+            "text": "Reawaken Man: The Red"
+          },
+          {
+            "lang": "ja",
+            "text": "復活男 : ザ・レッド"
           },
           {
             "lang": "ko",
@@ -23,7 +127,7 @@
           }
         ],
         "type": "Movie",
-        "title_cn": "新人类战争：复活男"
+        "title_cn": "复活男"
       },
       "created_time": "2026-11-07T18:52:31.126Z",
       "visibility": 0
@@ -52,6 +156,10 @@
           {
             "lang": "zh-cn",
             "text": "尸变"
+          },
+          {
+            "lang": "de",
+            "text": "The Cycle - Die Wiederkehr"
           }
         ],
         "type": "Movie",
@@ -552,6 +660,50 @@
           {
             "lang": "en",
             "text": "Flowervale St"
+          },
+          {
+            "lang": "it",
+            "text": "La fine di Oak Street"
+          },
+          {
+            "lang": "pt",
+            "text": "O Fim de Oak Street"
+          },
+          {
+            "lang": "fr",
+            "text": "La fin d’Oak Street"
+          },
+          {
+            "lang": "es",
+            "text": "El final de Oak Street"
+          },
+          {
+            "lang": "fr",
+            "text": "La Fin d'Oak Street"
+          },
+          {
+            "lang": "de",
+            "text": "The End of Oak Street"
+          },
+          {
+            "lang": "pt-br",
+            "text": "O Fim da Rua"
+          },
+          {
+            "lang": "ko",
+            "text": "오크 스트리트의 마지막 날"
+          },
+          {
+            "lang": "ja",
+            "text": "オークストリートの異変"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "末世橡樹街"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "橡樹街末日"
           }
         ],
         "type": "Movie",
@@ -1516,6 +1668,10 @@
           {
             "lang": "zh-cn",
             "text": "给阿嬷的情书"
+          },
+          {
+            "lang": "zh",
+            "text": "给阿嬷的情书"
           }
         ],
         "type": "Movie",
@@ -1788,6 +1944,10 @@
           {
             "lang": "en",
             "text": "Tomb of Fallen Gods"
+          },
+          {
+            "lang": "en",
+            "text": "TOMB OF FALLEN GODS"
           }
         ],
         "type": "TVSeason",
@@ -1968,6 +2128,34 @@
           {
             "lang": "zh-cn",
             "text": "镖人 真人电影"
+          },
+          {
+            "lang": "it",
+            "text": "Blades of the Guardians"
+          },
+          {
+            "lang": "en",
+            "text": "Blades of the Guardians"
+          },
+          {
+            "lang": "zh",
+            "text": "镖人：风起大漠"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "镖人：风起大漠"
+          },
+          {
+            "lang": "en",
+            "text": "Biao Ren"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "镖人"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "镖人(电影版)"
           }
         ],
         "type": "Movie",
@@ -2004,6 +2192,30 @@
           {
             "lang": "zh",
             "text": "火遮眼"
+          },
+          {
+            "lang": "it",
+            "text": "The Furious"
+          },
+          {
+            "lang": "da",
+            "text": "The Furious"
+          },
+          {
+            "lang": "pt",
+            "text": "The Furious"
+          },
+          {
+            "lang": "de",
+            "text": "The Furious"
+          },
+          {
+            "lang": "fr",
+            "text": "The Furious"
+          },
+          {
+            "lang": "es",
+            "text": "The Furious"
           }
         ],
         "type": "Movie",
@@ -2560,6 +2772,26 @@
           {
             "lang": "zh-tw",
             "text": "荒島囚救"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "荒岛求救"
+          },
+          {
+            "lang": "de",
+            "text": "Send Help"
+          },
+          {
+            "lang": "zh",
+            "text": "腦細天劫"
+          },
+          {
+            "lang": "zh-hant",
+            "text": "荒島囚救"
+          },
+          {
+            "lang": "zh-sg",
+            "text": "冤家路绝"
           }
         ],
         "type": "Movie",
@@ -14360,6 +14592,10 @@
           {
             "lang": "ja",
             "text": "抓娃娃(じゅあわわ) 　後継者養成計画"
+          },
+          {
+            "lang": "fr",
+            "text": "Successor"
           }
         ],
         "type": "Movie",
@@ -19980,6 +20216,14 @@
           {
             "lang": "ko",
             "text": "도그맨"
+          },
+          {
+            "lang": "fr",
+            "text": "Dogman"
+          },
+          {
+            "lang": "it",
+            "text": "Dogman"
           }
         ],
         "type": "Movie",
@@ -26032,6 +26276,26 @@
           {
             "lang": "it",
             "text": "Guillermo del Toro's Pinocchio"
+          },
+          {
+            "lang": "da",
+            "text": "Guillermo del Toros Pinocchio"
+          },
+          {
+            "lang": "pt",
+            "text": "Pinóquio de Guillermo Del Toro"
+          },
+          {
+            "lang": "fr",
+            "text": "Pinocchio par Guillermo del Toro"
+          },
+          {
+            "lang": "pt",
+            "text": "Pinóquio por Guillermo del Toro"
+          },
+          {
+            "lang": "pt",
+            "text": "Pinóquio De Guillermo Del Toro"
           }
         ],
         "type": "Movie",
@@ -29896,6 +30160,10 @@
           {
             "lang": "ko",
             "text": "뉴문"
+          },
+          {
+            "lang": "it",
+            "text": "The Twilight Saga: New Moon"
           }
         ],
         "type": "Movie",
@@ -30864,6 +31132,14 @@
           {
             "lang": "ko",
             "text": "브레이킹 던 part 2"
+          },
+          {
+            "lang": "it",
+            "text": "The Twilight Saga: Breaking Dawn - Parte 2"
+          },
+          {
+            "lang": "da",
+            "text": "The Twilight Saga: Breaking Dawn – Part 2"
           }
         ],
         "type": "Movie",
@@ -38552,6 +38828,18 @@
           {
             "lang": "pt",
             "text": "Spider-Man: No Way Home"
+          },
+          {
+            "lang": "pt",
+            "text": "Homem-Aranha: Sem Volta Para Casa"
+          },
+          {
+            "lang": "da",
+            "text": "Spider-Man: No Way Home"
+          },
+          {
+            "lang": "it",
+            "text": "Spider-Man: No Way Home"
           }
         ],
         "type": "Movie",
@@ -43572,6 +43860,30 @@
           {
             "lang": "ko",
             "text": "헝거 게임: 캣칭 파이어"
+          },
+          {
+            "lang": "pt",
+            "text": "Jogos Vorazes: Em Chamas"
+          },
+          {
+            "lang": "es",
+            "text": "Los juegos del hambre: En llamas"
+          },
+          {
+            "lang": "it",
+            "text": "Hunger Games: La ragazza di fuoco"
+          },
+          {
+            "lang": "pt",
+            "text": "The Hunger Games: Em Chamas"
+          },
+          {
+            "lang": "es",
+            "text": "Los Juegos del Hambre: En llamas"
+          },
+          {
+            "lang": "it",
+            "text": "Hunger Games - La ragazza di fuoco"
           }
         ],
         "type": "Movie",
@@ -44012,6 +44324,14 @@
           {
             "lang": "ko",
             "text": "월터의 상상은 현실이 된다"
+          },
+          {
+            "lang": "it",
+            "text": "I sogni segreti di Walter Mitty"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "梦里乾坤"
           }
         ],
         "type": "Movie",
@@ -46900,6 +47220,18 @@
           {
             "lang": "zh-cn",
             "text": "哈利·波特与火焰杯"
+          },
+          {
+            "lang": "it",
+            "text": "Harry Potter e il calice di fuoco"
+          },
+          {
+            "lang": "da",
+            "text": "Harry Potter og flammernes pokal"
+          },
+          {
+            "lang": "da",
+            "text": "Harry Potter og Flammernes Pokal"
           }
         ],
         "type": "Movie",
@@ -48328,6 +48660,18 @@
           {
             "lang": "zh-tw",
             "text": "哈利波特：消失的密室"
+          },
+          {
+            "lang": "it",
+            "text": "Harry Potter e la camera dei segreti"
+          },
+          {
+            "lang": "pt-br",
+            "text": "Harry Potter e a Câmara Secreta"
+          },
+          {
+            "lang": "da",
+            "text": "Harry Potter og Hemmelighedernes Kammer"
           }
         ],
         "type": "Movie",
@@ -48748,6 +49092,18 @@
           {
             "lang": "pt",
             "text": "Piratas do Caribe: A Maldição do Pérola Negra"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "加勒比海盗：黑珍珠的诅咒"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "魔盜王決戰鬼盜船（港）"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "神鬼奇航：鬼盜船魔咒（台）"
           }
         ],
         "type": "Movie",
@@ -48860,6 +49216,14 @@
           {
             "lang": "ko",
             "text": "해리 포터와 아즈카반의 죄수"
+          },
+          {
+            "lang": "it",
+            "text": "Harry Potter e il prigioniero di Azkaban"
+          },
+          {
+            "lang": "da",
+            "text": "Harry Potter og Fangen fra Azkaban"
           }
         ],
         "type": "Movie",
@@ -49476,6 +49840,26 @@
           {
             "lang": "zh-tw",
             "text": "哈利波特－死神的聖物2（港/台）"
+          },
+          {
+            "lang": "it",
+            "text": "Harry Potter e i Doni della Morte - Parte 2"
+          },
+          {
+            "lang": "pt",
+            "text": "Harry Potter e os Talismãs da Morte: Parte 2"
+          },
+          {
+            "lang": "es",
+            "text": "Harry Potter y las Reliquias de la Muerte - Parte 2"
+          },
+          {
+            "lang": "pt",
+            "text": "Harry Potter e as Relíquias da Morte - Parte 2"
+          },
+          {
+            "lang": "da",
+            "text": "Harry Potter og Dødsregalierne - del 2"
           }
         ],
         "type": "Movie",
@@ -50412,6 +50796,18 @@
           {
             "lang": "ko",
             "text": "캐치 미 이프 유 캔"
+          },
+          {
+            "lang": "it",
+            "text": "Prova a prendermi"
+          },
+          {
+            "lang": "pt",
+            "text": "Apanha-me se Puderes"
+          },
+          {
+            "lang": "pt",
+            "text": "Prenda-Me se For Capaz"
           }
         ],
         "type": "Movie",
@@ -50728,6 +51124,14 @@
           {
             "lang": "zh-cn",
             "text": "哈利波特：神秘的魔法石（港/台）"
+          },
+          {
+            "lang": "it",
+            "text": "Harry Potter e la pietra filosofale"
+          },
+          {
+            "lang": "da",
+            "text": "Harry Potter og De Vises Sten"
           }
         ],
         "type": "Movie",
@@ -53968,6 +54372,10 @@
           {
             "lang": "ja",
             "text": "雄獅少年 少年とそらに舞う獅子"
+          },
+          {
+            "lang": "it",
+            "text": "I Am What I Am"
           }
         ],
         "type": "Movie",
@@ -56996,6 +57404,18 @@
           {
             "lang": "es",
             "text": "John Wick: Pacto de sangre"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "约翰·威克 第2章"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "殺神John Wick 2（港）"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "捍衛任務2：殺神回歸（台）"
           }
         ],
         "type": "Movie",
@@ -60004,6 +60424,30 @@
           {
             "lang": "zh-tw",
             "text": "飢餓遊戲：自由幻夢 PART I"
+          },
+          {
+            "lang": "it",
+            "text": "Hunger Games: Il canto della rivolta - Parte 1"
+          },
+          {
+            "lang": "pt",
+            "text": "The Hunger Games: A Revolta - Parte 1"
+          },
+          {
+            "lang": "es",
+            "text": "Los Juegos del Hambre: Sinsajo - Parte 1"
+          },
+          {
+            "lang": "pt-br",
+            "text": "Jogos Vorazes: A Esperança - Parte 1"
+          },
+          {
+            "lang": "da",
+            "text": "The Hunger Games: Mockingjay - Del 1"
+          },
+          {
+            "lang": "it",
+            "text": "Hunger Games - Il canto della rivolta - Parte 1"
           }
         ],
         "type": "Movie",
@@ -60628,6 +61072,14 @@
           {
             "lang": "zh-tw",
             "text": "穿條紋衣的男孩"
+          },
+          {
+            "lang": "it",
+            "text": "Il bambino con il pigiama a righe"
+          },
+          {
+            "lang": "da",
+            "text": "Drengen i den stribede pyjamas"
           }
         ],
         "type": "Movie",
@@ -61748,6 +62200,14 @@
           {
             "lang": "ko",
             "text": "브레이킹 던 part 1"
+          },
+          {
+            "lang": "it",
+            "text": "The Twilight Saga: Breaking Dawn - Parte 1"
+          },
+          {
+            "lang": "da",
+            "text": "The Twilight Saga: Breaking Dawn – Part 1"
           }
         ],
         "type": "Movie",
@@ -62488,6 +62948,14 @@
           {
             "lang": "ko",
             "text": "킹스 스피치"
+          },
+          {
+            "lang": "it",
+            "text": "Il discorso del re"
+          },
+          {
+            "lang": "da",
+            "text": "Kongens store tale"
           }
         ],
         "type": "Movie",
@@ -62600,6 +63068,14 @@
           {
             "lang": "pt",
             "text": "Encontro de Irmãos"
+          },
+          {
+            "lang": "it",
+            "text": "Rain Man - L'uomo della pioggia"
+          },
+          {
+            "lang": "pt-br",
+            "text": "Rain Man"
           }
         ],
         "type": "Movie",
@@ -64560,6 +65036,22 @@
           {
             "lang": "ko",
             "text": "헝거 게임: 판엠의 불꽃"
+          },
+          {
+            "lang": "it",
+            "text": "Hunger Games"
+          },
+          {
+            "lang": "pt",
+            "text": "The Hunger Games - Os Jogos da Fome"
+          },
+          {
+            "lang": "es",
+            "text": "Los Juegos del Hambre"
+          },
+          {
+            "lang": "pt-br",
+            "text": "Jogos Vorazes"
           }
         ],
         "type": "Movie",
@@ -65572,6 +66064,18 @@
           {
             "lang": "es",
             "text": "Once (Una vez)"
+          },
+          {
+            "lang": "da",
+            "text": "Once"
+          },
+          {
+            "lang": "it",
+            "text": "Once"
+          },
+          {
+            "lang": "pt-br",
+            "text": "Apenas Uma Vez"
           }
         ],
         "type": "Movie",
@@ -73236,6 +73740,30 @@
           {
             "lang": "ko",
             "text": "화양연화"
+          },
+          {
+            "lang": "it",
+            "text": "In the Mood for Love"
+          },
+          {
+            "lang": "da",
+            "text": "In the Mood for Love"
+          },
+          {
+            "lang": "pt",
+            "text": "Disponível Para Amar"
+          },
+          {
+            "lang": "de",
+            "text": "In The Mood For Love"
+          },
+          {
+            "lang": "es",
+            "text": "Deseando amar"
+          },
+          {
+            "lang": "pt",
+            "text": "Amor à Flor da Pele"
           }
         ],
         "type": "Movie",
