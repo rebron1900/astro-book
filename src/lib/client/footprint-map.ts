@@ -207,6 +207,8 @@ class FootprintMapInstance implements FootprintMapController {
     private tipHideTimer: ReturnType<typeof setTimeout> | null = null;
     /** 上一次按下时是鼠标还是触摸：触屏没有 hover，点击要能点开 tooltip */
     private pointerType: string = 'mouse';
+    /** 气泡/悬停期间暂停自动旋转，避免旋转的 movestart 反复收掉气泡 */
+    private tooltipHeldRotation = false;
 
     constructor(options: FootprintMapOptions) {
         this.options = options;
@@ -428,7 +430,7 @@ class FootprintMapInstance implements FootprintMapController {
     private startAutoRotate(delay: number): void {
         this.stopAutoRotate();
         if (this.destroyed || prefersReducedMotion() || typeof requestAnimationFrame === 'undefined') return;
-        if (this.pitchMode !== 'tilt' || !this.selectedId) return;
+        if (this.tooltipHeldRotation || this.pitchMode !== 'tilt' || !this.selectedId) return;
         const seq = this.focusSeq;
         this.rotateTimer = setTimeout(() => {
             this.rotateTimer = null;
@@ -1064,12 +1066,16 @@ class FootprintMapInstance implements FootprintMapController {
     private bindTooltip(element: HTMLButtonElement, build: () => Node[]): void {
         element.addEventListener('pointerenter', (event) => {
             if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
+            // 先停住自动旋转：旋转每帧 setBearing 会触发 movestart，而 movestart 会隐藏气泡，
+            // 70ms 的 hover 延迟还没到就被清掉，看起来就像 tooltip 被屏蔽了。
+            this.holdAutoRotateForTooltip();
             this.scheduleShow(element, build);
         });
         element.addEventListener('pointerleave', () => this.scheduleHide());
         // 键盘 Tab 到标点时也要能看到信息
         element.addEventListener('focus', () => {
             if (this.suppressOwnerFocus === element) return;
+            this.holdAutoRotateForTooltip();
             this.showTooltip(element, build);
         });
         element.addEventListener('blur', () => this.scheduleHide());
@@ -1104,6 +1110,7 @@ class FootprintMapInstance implements FootprintMapController {
      */
     private showTooltip(owner: HTMLElement, build: () => Node[]): void {
         if (this.destroyed) return;
+        this.holdAutoRotateForTooltip();
         this.clearShowTimer();
         if (this.tipHideTimer !== null) {
             clearTimeout(this.tipHideTimer);
@@ -1142,7 +1149,22 @@ class FootprintMapInstance implements FootprintMapController {
             this.tooltipOwner.setAttribute('aria-expanded', 'false');
             this.tooltipOwner = null;
         }
+        this.releaseAutoRotateForTooltip();
     };
+
+    /** 气泡悬停/显示期间暂停自动旋转；移出并收起后再恢复 */
+    private holdAutoRotateForTooltip(): void {
+        if (this.tooltipHeldRotation) return;
+        this.tooltipHeldRotation = true;
+        this.stopAutoRotate();
+    }
+
+    private releaseAutoRotateForTooltip(): void {
+        if (!this.tooltipHeldRotation) return;
+        this.tooltipHeldRotation = false;
+        if (this.destroyed || this.dragging || !this.selectedId || this.pitchMode !== 'tilt' || prefersReducedMotion()) return;
+        this.startAutoRotate(ROTATE_PAUSE_MS);
+    }
 
     /** 把焦点还给当前气泡的触发标点（Esc、点外部关闭时用） */
     private returnFocusToOwner(): void {
