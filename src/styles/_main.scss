@@ -481,6 +481,8 @@ body[dir='rtl'] .book-menu {
 
 .book-toc {
     flex: 0 0 $toc-width;
+    inline-size: $toc-width;
+    min-inline-size: $toc-width;
     font-size: $font-size-12;
 
     &.full-width {

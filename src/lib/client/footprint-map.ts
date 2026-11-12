@@ -15,7 +15,16 @@ import Supercluster from 'supercluster';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 import type { FootprintPlace } from '../footprint';
-import { DEM_SOURCE, HILLSHADE_LAYER, INITIAL_CENTER, INITIAL_ZOOM, MAP_STYLES } from './exercise-map/constants';
+import {
+    DEM_SOURCE,
+    HILLSHADE_LAYER,
+    INITIAL_CENTER,
+    INITIAL_ZOOM,
+    MAP_STYLES,
+    ROTATE_DEG_PER_MS,
+    ROTATE_PAUSE_MS,
+    ROTATE_STEP_MS
+} from './exercise-map/constants';
 import type { MapTheme } from './exercise-map/constants';
 import { motionDuration, readTheme } from './exercise-map/geometry';
 import { prefersReducedMotion } from './dom';
@@ -61,8 +70,8 @@ export interface FootprintMapController {
     start(): void;
     destroy(): void;
     resize(): void;
-    /** 飞到某个地点并选中 */
-    focusPlace(placeId: string): void;
+    /** 飞到某个地点并选中；source 区分卡片聚焦和直接点标点 */
+    focusPlace(placeId: string, source?: 'card' | 'marker'): void;
     /** 缩放到全部地点；instant 用于首帧就位（不做飞行动画） */
     fitAll(options?: { instant?: boolean }): void;
     /** 按已选地名压暗标点（不删点）；空集合表示不过滤 */
@@ -112,10 +121,11 @@ const CLUSTER_RADIUS = 46;
 const CLUSTER_MAX_ZOOM = 15;
 /** 3D 视角参数：卡片激活和按钮切换共用同一套，保证两种入口视觉一致 */
 /** 基础俯仰：足迹只需看清大概位置和周边地形，不学运动页贴脸看轨迹 */
-const TILT_PITCH = 40;
-/** 高差越大，镜头越远、视角越抬，避免相机钻进山窝、标点压在坡面上 */
-const TILT_PITCH_HIGH = 45;
-const FOCUS_ZOOM = { flat: 12.5, mid: 11.5, high: 10.5 } as const;
+const TILT_PITCH = 28;
+/** 合并页的小地图：压低俯仰，减少近景山体挡住标点 */
+const COMPACT_TILT_PITCH = 20;
+/** 激活标点固定缩放：足迹只交代大概位置，不学运动地图贴脸看轨迹 */
+const FOCUS_ZOOM = 11.4;
 const TILT_BEARING = -20;
 /** tooltip 悬停延迟：进得快一点，出得慢一点，鼠标扫过一排标点不会闪 */
 const TIP_SHOW_DELAY = 70;
@@ -128,6 +138,14 @@ function createNode<K extends keyof HTMLElementTagNameMap>(tag: K, className?: s
     if (className) node.className = className;
     if (text !== undefined) node.textContent = text;
     return node;
+}
+
+/** 激活点的光晕层：独立元素只做 transform/opacity 动画，避免在 box-shadow 上逐帧重绘 */
+function appendFocusHalo(element: HTMLElement): void {
+    const halo = document.createElement('span');
+    halo.className = 'ex-fp-halo';
+    halo.setAttribute('aria-hidden', 'true');
+    element.append(halo);
 }
 
 class FootprintMapInstance implements FootprintMapController {
@@ -165,8 +183,16 @@ class FootprintMapInstance implements FootprintMapController {
     private readyTimer: ReturnType<typeof setTimeout> | null = null;
     /** 聚焦后等 DEM 铺好再校准机位的轮询定时器，切换/退出时要清掉 */
     private pendingAimRefine: ReturnType<typeof setTimeout> | null = null;
-    /** 当前聚焦用的偏移量（负值 = 把标点抬到容器中心上方），落地校正时在它基础上改 */
-    private focusOffsetY = 0;
+    /** 防止旧的聚焦校正回调在连续点击后修改新标点的镜头 */
+    private focusSeq = 0;
+    /** 切换标点的自定义 Center 过渡；不用 Mapbox easeTo，避免地形下 marker transform 异常 */
+    private focusAnimFrame: number | null = null;
+    /** 激活地点后的自动旋转（和运动地图同一条时间节流逻辑） */
+    private rotateTimer: ReturnType<typeof setTimeout> | null = null;
+    private rotateFrame: number | null = null;
+    private rotateLast = 0;
+    private rotateResumeTimer: ReturnType<typeof setTimeout> | null = null;
+    private dragging = false;
     /** 聚焦点被聚合藏起来时的补位标点：保证「聚焦」在任何层级都看得见那个点 */
     private focusMarker: { marker: mapboxgl.Marker; element: HTMLButtonElement } | null = null;
 
@@ -239,6 +265,11 @@ class FootprintMapInstance implements FootprintMapController {
         map.on('movestart', this.hideTooltip);
         map.on('zoomstart', this.hideTooltip);
         map.on('click', this.handleMapClick);
+        map.on('mousedown', this.handleUserInteract);
+        map.on('touchstart', this.handleUserInteract);
+        map.on('wheel', this.handleUserInteract);
+        map.on('dragstart', this.handleDragStart);
+        map.on('dragend', this.handleDragEnd);
 
         this.observeSize();
         this.observeTheme();
@@ -253,6 +284,8 @@ class FootprintMapInstance implements FootprintMapController {
         if (this.destroyed) return;
         this.destroyed = true;
         this.cancelAimRefine();
+        this.cancelFocusAnimation();
+        this.stopAutoRotate();
         this.removeFocusMarker();
 
         if (this.updateFrame !== null) {
@@ -306,6 +339,7 @@ class FootprintMapInstance implements FootprintMapController {
 
     fitAll(options: { instant?: boolean } = {}): void {
         if (!this.map || !this.styleReady) return;
+        this.stopAutoRotate();
         const places = this.options.places;
         if (places.length === 0) return;
 
@@ -329,177 +363,218 @@ class FootprintMapInstance implements FootprintMapController {
         );
     }
 
-    focusPlace(placeId: string): void {
+    focusPlace(placeId: string, source: 'card' | 'marker' = 'card'): void {
         const place = this.placeById.get(placeId);
         if (!place || !this.map) return;
+        // 已经激活过标点时走移镜动画；首次打开则直接落位，避免从全国范围飞过去的等待
+        const switched = this.selectedId !== null;
         // 同一地点的另一张卡要能重新聚焦（激活按元素算，不按地点算），所以这里不做「已激活就取消」；
         // 取消激活走 Esc / 点空白 / 「全部」按钮
-        this.select(placeId, 'card');
-        // 先取消在途动画，避免连续点两张卡时 pitch/bearing 互相当作起点而跳变
+        this.select(placeId, source);
+        // 先取消在途动画和上一轮聚焦校正，避免连续点两个标点时旧定时器改到新镜头
+        this.cancelAimRefine();
+        this.cancelFocusAnimation();
+        this.focusSeq += 1;
+        this.stopAutoRotate();
         this.map.stop();
         this.setPitchMode('tilt');
-        this.focusOffsetY = -Math.round((this.map.getContainer().clientHeight || 720) * 0.1);
-        const aim = this.focusAim(place);
-        this.map.easeTo({
-            center: [place.lng, place.lat],
-            zoom: aim.zoom,
-            pitch: aim.pitch,
-            bearing: TILT_BEARING,
-            // 带一点上移：镜头压斜后点会掉到视口下缘，抬到中上部才看得出「聚焦」的是它
-            offset: this.focusOffset(),
-            duration: prefersReducedMotion() ? 0 : 700,
-            essential: true
-        });
-        // 聚焦瞬间目标区的 DEM tile 通常还没到，先按能拿到的数据给一版机位，等 idle 再校准一次
-        // （合并页的小地图跳过二次校正，见 compactMap）
-        this.refineAim(placeId);
-    }
-
-    /**
-     * 聚焦机位：按目标点周围的地形高差分三档，不再连续算相机海拔。
-     * 足迹不像运动页要看完整路线，只要知道大概在哪、周边地形如何，
-     * 所以镜头松一点：高差点拉到 10.5 级，相机离得远，山脊不会糊满画面。
-     */
-    private focusAim(place: FootprintPlace): { zoom: number; pitch: number; relief: number | null } {
-        // DEM 还没到位时先给松档，别用贴脸机位闪一下
-        const pending = { zoom: FOCUS_ZOOM.flat, pitch: TILT_PITCH, relief: null };
-        if (!this.map || !this.styleReady) return pending;
-
-        const relief = this.reliefAround(place);
-        if (relief === null) return pending;
-        if (relief > 1000) return { zoom: FOCUS_ZOOM.high, pitch: TILT_PITCH_HIGH, relief };
-        if (relief >= 300) return { zoom: FOCUS_ZOOM.mid, pitch: TILT_PITCH + 2, relief };
-        return { zoom: FOCUS_ZOOM.flat, pitch: TILT_PITCH, relief };
-    }
-
-    /**
-     * 目标点周围（8 个方向 × 2/5km）最高的地形抬升，单位真实米，只用来给机位分档。
-     * 只取四个正方向会漏掉斜向的山脊（康定那种），八个方向才不会把高差点分到平档。
-     * 用 {exaggerated:false} 拿原始高程，避免和 setTerrain 的 1.4 倍混在一起；DEM 没铺到时返回 null。
-     */
-    private reliefAround(place: FootprintPlace): number | null {
-        const map = this.map;
-        if (!map) return null;
-        const elevAt = (lng: number, lat: number): number | null => {
-            try {
-                const value = map.queryTerrainElevation([lng, lat], { exaggerated: false });
-                return typeof value === 'number' && Number.isFinite(value) ? value : null;
-            } catch {
-                return null;
-            }
+        // 激活标点固定缩放和俯仰；切换标点时用自定义中心插值动画，保留移动轨迹。
+        const camera = {
+            center: [place.lng, place.lat] as [number, number],
+            zoom: FOCUS_ZOOM,
+            pitch: this.baseTiltPitch,
+            bearing: TILT_BEARING
         };
-        const target = elevAt(place.lng, place.lat);
-        if (target === null) return null;
-
-        const metersPerDegLat = 111320;
-        const metersPerDegLng = metersPerDegLat * Math.cos((place.lat * Math.PI) / 180);
-        let peak = target;
-        let sampled = 0;
-        for (let dir = 0; dir < 8; dir += 1) {
-            const angle = (dir * Math.PI) / 4;
-            for (const km of [2, 5]) {
-                const dLng = (Math.sin(angle) * km * 1000) / metersPerDegLng;
-                const dLat = (Math.cos(angle) * km * 1000) / metersPerDegLat;
-                const elev = elevAt(place.lng + dLng, place.lat + dLat);
-                if (elev === null) continue;
-                sampled += 1;
-                if (elev > peak) peak = elev;
-            }
-        }
-        // 采到的太少说明 DEM 还没覆盖到这片，交给轮询重算，别用半个环分错档
-        if (sampled < 6) return null;
-        return Math.max(0, peak - target);
+        const duration = switched && !prefersReducedMotion() ? motionDuration(560) : 0;
+        if (duration > 0) this.animateFocusTo(place, duration, this.focusSeq);
+        else this.map.jumpTo(camera);
+        // 移动动画结束后再做落点校正；首次落位立即校正
+        this.settleFocusOffset(placeId, 6, duration > 0 ? duration + 80 : 120, this.focusSeq);
+        this.startAutoRotate(duration > 0 ? duration + 2400 : this.compactMap ? 2400 : 1800);
     }
 
+    /** 自定义中心插值：逐帧 jumpTo，避免 Mapbox easeTo 在 DEM 下写出异常 marker transform */
+    private animateFocusTo(place: FootprintPlace, duration: number, seq: number): void {
+        const map = this.map;
+        if (!map) return;
+        this.cancelFocusAnimation();
+        const from = map.getCenter();
+        const start = performance.now();
+        const ease = (t: number) => 1 - (1 - t) ** 3;
+        const step = (now: number) => {
+            this.focusAnimFrame = null;
+            if (this.destroyed || seq !== this.focusSeq || !this.map) return;
+            const t = Math.min(1, (now - start) / duration);
+            const e = ease(t);
+            this.map.jumpTo({
+                center: [from.lng + (place.lng - from.lng) * e, from.lat + (place.lat - from.lat) * e],
+                zoom: FOCUS_ZOOM,
+                pitch: this.baseTiltPitch,
+                bearing: TILT_BEARING
+            });
+            if (t < 1) this.focusAnimFrame = requestAnimationFrame(step);
+        };
+        this.focusAnimFrame = requestAnimationFrame(step);
+    }
+
+    private cancelFocusAnimation(): void {
+        if (this.focusAnimFrame === null) return;
+        cancelAnimationFrame(this.focusAnimFrame);
+        this.focusAnimFrame = null;
+    }
+
+    /* ------------------------------ 自动旋转 ------------------------------ */
+
+    private startAutoRotate(delay: number): void {
+        this.stopAutoRotate();
+        if (this.destroyed || prefersReducedMotion() || typeof requestAnimationFrame === 'undefined') return;
+        if (this.pitchMode !== 'tilt' || !this.selectedId) return;
+        const seq = this.focusSeq;
+        this.rotateTimer = setTimeout(() => {
+            this.rotateTimer = null;
+            this.rotateLast = 0;
+            const step = (now: number) => {
+                this.rotateFrame = null;
+                const map = this.map;
+                if (this.destroyed || !map) return;
+                if (this.rotateLast === 0) this.rotateLast = now;
+                const elapsed = now - this.rotateLast;
+                if (seq === this.focusSeq && this.selectedId && this.pitchMode === 'tilt' && !this.dragging && elapsed >= ROTATE_STEP_MS) {
+                    this.rotateLast = now;
+                    try {
+                        map.setBearing((map.getBearing() + ROTATE_DEG_PER_MS * elapsed) % 360);
+                    } catch {
+                        // 地图销毁过程中的最后几帧，忽略
+                    }
+                }
+                this.rotateFrame = requestAnimationFrame(step);
+            };
+            this.rotateFrame = requestAnimationFrame(step);
+        }, delay);
+    }
+
+    private stopAutoRotate(): void {
+        if (this.rotateTimer !== null) {
+            clearTimeout(this.rotateTimer);
+            this.rotateTimer = null;
+        }
+        if (this.rotateFrame !== null) {
+            cancelAnimationFrame(this.rotateFrame);
+            this.rotateFrame = null;
+        }
+        if (this.rotateResumeTimer !== null) {
+            clearTimeout(this.rotateResumeTimer);
+            this.rotateResumeTimer = null;
+        }
+    }
+
+    private pauseAutoRotate(delay: number): void {
+        this.stopAutoRotate();
+        if (this.destroyed || this.pitchMode !== 'tilt' || !this.selectedId) return;
+        this.rotateResumeTimer = setTimeout(() => {
+            this.rotateResumeTimer = null;
+            if (!this.destroyed && this.pitchMode === 'tilt' && this.selectedId) this.startAutoRotate(0);
+        }, delay);
+    }
+
+    private handleUserInteract = (): void => {
+        if (this.destroyed) return;
+        this.pauseAutoRotate(ROTATE_PAUSE_MS);
+    };
+
+    private handleDragStart = (): void => {
+        this.dragging = true;
+        this.pauseAutoRotate(ROTATE_PAUSE_MS);
+    };
+
+    private handleDragEnd = (): void => {
+        this.dragging = false;
+        this.pauseAutoRotate(ROTATE_PAUSE_MS);
+    };
+
     /**
-     * 聚焦后按真实高差校准机位。queryTerrainElevation 只读已加载的 DEM tile，
-     * 刚开地形时目标区常是空的，而 idle 事件不保证还会再来（没有瓦片在加载就不会触发），
-     * 所以这里用定时轮询：每 250ms 试一次，最多 5s，拿到高差就校准，拿到就停。
+     * 激活标点的固定机位：缩放固定、俯仰偏平。
+     * 不按高差变焦，连续点不同地点时不会忽远忽近；视角更低平，山脊也不容易挡目标。
      */
-    /** 合并页里地图只有 21rem 高：二次校正会让镜头来回抽，直接跳过 */
+    private focusAim(): { zoom: number; pitch: number } {
+        return { zoom: FOCUS_ZOOM, pitch: this.baseTiltPitch };
+    }
+
+    /** 合并页里地图只有 21rem 高：用更平的俯仰和固定缩放 */
     private get compactMap(): boolean {
         const element = this.map?.getContainer();
         return !!element && element.clientHeight > 0 && element.clientHeight < 420;
     }
 
-    private refineAim(placeId: string, attempt = 0): void {
-        if (!this.map || this.compactMap) return;
-        this.cancelAimRefine();
-        this.pendingAimRefine = setTimeout(() => {
-            this.pendingAimRefine = null;
-            if (this.destroyed || this.selectedId !== placeId) return;
-            const place = this.placeById.get(placeId);
-            const current = this.map;
-            if (!place || !current) return;
-
-            const aim = this.focusAim(place);
-            if (aim.relief === null) {
-                // DEM 还没铺到：继续等，期间保持首帧机位，别切回固定 55
-                if (attempt < 20) this.refineAim(placeId, attempt + 1);
-                return;
-            }
-            const shifted = Math.abs(current.getZoom() - aim.zoom) > 0.25 || Math.abs(current.getPitch() - aim.pitch) > 3;
-            if (!shifted) {
-                this.settleFocusOffset(placeId);
-                return;
-            }
-            // 必须显式给 center：带 offset 且不传 center 时，Mapbox 会把偏移叠在当前中心上，
-            // 每次调用都会让镜头往偏移方向漂一段
-            current.easeTo({
-                center: [place.lng, place.lat],
-                zoom: aim.zoom,
-                pitch: aim.pitch,
-                offset: this.focusOffset(),
-                duration: prefersReducedMotion() ? 0 : 480
-            });
-            this.settleFocusOffset(placeId, 3, 560);
-        }, 250);
+    private get baseTiltPitch(): number {
+        return this.compactMap ? COMPACT_TILT_PITCH : TILT_PITCH;
     }
 
     /**
      * 落地校正：开了地形之后，相机中心落到的地表高度和标点自身高度不同，
-     * offset 再准，标点在屏幕上的位置也会偏几十像素。这里按标点元素的真实矩形量一次，
-     * 把差量补回 offset，让它落在容器 40% 高度；最多校正两轮，不挂 move/zoom。
+     * 标点在屏幕上的位置会偏几十像素。这里按标点元素的真实矩形测量，
+     * 用屏幕空间 panBy 把标点挪到可视地图窗口正中心，再把固定 zoom 压回去。
      */
-    private settleFocusOffset(placeId: string, attempt = 3, delay = 280): void {
+    private settleFocusOffset(placeId: string, attempt = 3, delay = 280, seq = this.focusSeq): void {
+        if (seq !== this.focusSeq) return;
         this.cancelAimRefine();
         this.pendingAimRefine = setTimeout(() => {
             this.pendingAimRefine = null;
-            if (this.destroyed || this.selectedId !== placeId) return;
+            if (this.destroyed || this.selectedId !== placeId || seq !== this.focusSeq) return;
             const map = this.map;
             const place = this.placeById.get(placeId);
-            if (!map || !place || this.compactMap) return;
+            if (!map || !place) return;
 
             const container = map.getContainer();
-            const element = Array.from(container.querySelectorAll<HTMLElement>('.ex-fp-point.is-active')).find(
-                (item) => item.style.display !== 'none' && item.dataset.placeId === placeId
+            const candidates = [
+                this.focusMarker?.element,
+                this.markerElements.get(placeId),
+                ...Array.from(container.querySelectorAll<HTMLElement>('.ex-fp-point.is-active'))
+            ];
+            const element = candidates.find(
+                (item): item is HTMLElement =>
+                    !!item && item.style.display !== 'none' && item.getBoundingClientRect().width > 0 && item.dataset.placeId === placeId
             );
-            if (!element) {
-                if (attempt > 0) this.settleFocusOffset(placeId, attempt - 1, delay);
+            // 可见窗口是地图容器的外层（吸顶时比地图本身矮、上下对称裁切）
+            const viewport = container.closest<HTMLElement>('.ex-fp-map-wrap') ?? container;
+            const box = viewport.getBoundingClientRect();
+            if (!box.width || !box.height) return;
+            const desiredX = box.left + box.width / 2;
+            const desiredY = box.top + box.height / 2;
+            let actualX: number;
+            let actualY: number;
+            if (element) {
+                const rect = element.getBoundingClientRect();
+                actualX = rect.left + rect.width / 2;
+                actualY = rect.top + rect.height / 2;
+            } else {
+                // 标点被聚合或暂时不可见时，用地图投影位置兜底
+                const point = map.project([place.lng, place.lat]);
+                actualX = box.left + point.x;
+                actualY = box.top + point.y;
+            }
+            // 用 panBy 直接在屏幕空间补差，不要改 camera offset：
+            // offset 在地形 + pitch 下会把标点推得越来越远，几轮后直接飞出地图。
+            const dx = Math.round(actualX - desiredX);
+            const dy = Math.round(actualY - desiredY);
+            if (Math.abs(dx) <= 3 && Math.abs(dy) <= 3) {
+                if (attempt > 0) this.settleFocusOffset(placeId, attempt - 1, Math.max(240, delay), seq);
                 return;
             }
-            const box = container.getBoundingClientRect();
-            const rect = element.getBoundingClientRect();
-            const height = box.height;
-            if (!height) return;
-            const desired = height * 0.4;
-            const actual = rect.top + rect.height / 2 - box.top;
-            // 6px 以内算对齐，避免为了几个像素反复动画
-            if (Math.abs(actual - desired) <= 6) return;
 
-            const nextY = Math.max(-Math.round(height * 0.45), Math.min(0, Math.round(this.focusOffsetY + (desired - actual))));
-            if (nextY === this.focusOffsetY) return;
-            this.focusOffsetY = nextY;
-            map.easeTo({
-                center: [place.lng, place.lat],
-                zoom: map.getZoom(),
-                pitch: map.getPitch(),
-                bearing: map.getBearing(),
-                offset: [0, nextY],
-                duration: prefersReducedMotion() ? 0 : 220
+            map.panBy([dx, dy], {
+                duration: 0,
+                essential: true
             });
-            // 相机动画走完后按新位置再确认一次，最多两轮
-            if (attempt > 0) this.settleFocusOffset(placeId, attempt - 1, 280);
+            // panBy 会轻微改变 zoom（地形 + 俯仰下的 Mapbox 行为），把固定缩放压回去
+            map.jumpTo({
+                center: map.getCenter(),
+                zoom: FOCUS_ZOOM,
+                pitch: this.baseTiltPitch,
+                bearing: TILT_BEARING
+            });
+            // 相机落位后按新位置再确认一次
+            if (attempt > 0) this.settleFocusOffset(placeId, attempt - 1, 280, seq);
         }, delay);
     }
 
@@ -508,39 +583,32 @@ class FootprintMapInstance implements FootprintMapController {
         clearTimeout(this.pendingAimRefine);
         this.pendingAimRefine = null;
     }
-
-    /**
-     * 聚焦点在屏幕上的纵向偏移：把标点放到容器 40% 高度（offset 的 y 为负 = 目标在中心上方），
-     * 上方留出地形、下方留出前景，离四边都远。窄屏和桌面用同一比例，不写死像素。
-     */
-    private focusOffset(): [number, number] {
-        const height = this.map?.getContainer().clientHeight ?? 0;
-        return [0, this.focusOffsetY || -Math.round(height * 0.1)];
-    }
-
     togglePitch(): void {
+        this.cancelAimRefine();
+        this.cancelFocusAnimation();
+        this.focusSeq += 1;
+        this.stopAutoRotate();
         this.map?.stop();
         this.setPitchMode(this.pitchMode === 'tilt' ? 'flat' : 'tilt');
         if (!this.map) return;
         const active = this.selectedId ? this.placeById.get(this.selectedId) : null;
         // 手动开关和聚焦共用同一份 pitchMode：开着激活点时切回 3D，仍要落在那个点上
         if (this.pitchMode === 'tilt' && active) {
-            this.focusOffsetY = -Math.round((this.map.getContainer().clientHeight || 720) * 0.1);
-            const aim = this.focusAim(active);
+            const aim = this.focusAim();
             this.map.easeTo({
                 center: [active.lng, active.lat],
                 zoom: aim.zoom,
                 pitch: aim.pitch,
                 bearing: TILT_BEARING,
-                offset: this.focusOffset(),
                 duration: prefersReducedMotion() ? 0 : 650
             });
-            this.refineAim(active.id);
+            this.settleFocusOffset(active.id, 6, 120, this.focusSeq);
+            this.startAutoRotate(2400);
             return;
         }
         this.map.easeTo({
             center: this.map.getCenter(),
-            pitch: this.pitchMode === 'tilt' ? TILT_PITCH : 0,
+            pitch: this.pitchMode === 'tilt' ? this.baseTiltPitch : 0,
             bearing: this.pitchMode === 'tilt' ? TILT_BEARING : 0,
             offset: [0, 0],
             duration: prefersReducedMotion() ? 0 : 650
@@ -550,8 +618,10 @@ class FootprintMapInstance implements FootprintMapController {
     /** 取消激活：清选中/高亮，回平面。点空白、Esc、「全部」、同一张卡再点都走这里 */
     clearActive(): void {
         this.cancelAimRefine();
+        this.cancelFocusAnimation();
+        this.focusSeq += 1;
+        this.stopAutoRotate();
         this.removeFocusMarker();
-        this.focusOffsetY = 0;
         const hadSelection = this.selectedId !== null;
         this.selectedId = null;
         this.activeSource = null;
@@ -577,7 +647,7 @@ class FootprintMapInstance implements FootprintMapController {
         if (this.pitchMode === mode) return;
         this.pitchMode = mode;
         this.emitState();
-        // 3D = 真切地形（和运动地图聚焦单条轨迹一致），按钮和卡片激活共用这一份状态
+        // 3D = 真切地形；固定低俯仰减小高落差地点的遮挡和标点偏移
         this.applyTerrain(mode === 'tilt');
     }
 
@@ -843,8 +913,10 @@ class FootprintMapInstance implements FootprintMapController {
             this.focusMarker.marker.setLngLat([place.lng, place.lat]);
             this.focusMarker.element.classList.add('is-active');
         }
-        // 常规标点在同一位置时先藏起来，避免两个点叠在一起
-        this.focusMarker.element.style.display = this.markerElements.has(id) ? 'none' : '';
+        // 常规标点在同一位置且真的可见时先藏起来；被聚合藏起来时补位标点必须显示
+        const regular = this.markerElements.get(id);
+        const regularVisible = !!regular && regular.style.display !== 'none' && regular.getBoundingClientRect().width > 0;
+        this.focusMarker.element.style.display = regularVisible ? 'none' : '';
     }
 
     private removeFocusMarker(): void {
@@ -878,6 +950,7 @@ class FootprintMapInstance implements FootprintMapController {
         // `.marker::before` 用 --photo 铺封面：不改元素尺寸，锚点就不会漂
         if (place.cover) element.style.setProperty('--photo', `url("${place.cover}")`);
 
+        appendFocusHalo(element);
         this.bindTooltip(element, () => this.buildPlaceTooltip(place));
         element.addEventListener('pointerdown', this.trackPointerType);
         element.addEventListener('click', (event) => {
@@ -885,7 +958,7 @@ class FootprintMapInstance implements FootprintMapController {
             // 触屏没有 hover：点一下开信息，再点同一个点收起（键盘回车 detail 为 0，走焦点态）
             if (event.detail > 0 && this.pointerType === 'touch') {
                 if (this.selectedId !== place.id) {
-                    this.select(place.id, 'marker');
+                    this.focusPlace(place.id, 'marker');
                     this.showTooltip(element, () => this.buildPlaceTooltip(place));
                     return;
                 }
@@ -899,7 +972,7 @@ class FootprintMapInstance implements FootprintMapController {
                 this.options.onOpenPlace?.(place.id);
                 return;
             }
-            this.select(place.id, 'marker');
+            this.focusPlace(place.id, 'marker');
         });
 
         return element;
@@ -913,6 +986,7 @@ class FootprintMapInstance implements FootprintMapController {
         element.setAttribute('aria-label', '聚合点，展开查看');
         element.setAttribute('aria-haspopup', 'dialog');
         element.setAttribute('aria-expanded', 'false');
+        appendFocusHalo(element);
 
         const entry: MarkerEntry = {
             marker: null as unknown as mapboxgl.Marker,

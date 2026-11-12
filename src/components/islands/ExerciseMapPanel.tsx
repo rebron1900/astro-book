@@ -81,16 +81,14 @@ export default function ExerciseMapPanel(props: ExerciseMapPanelProps) {
             observer.observe(sentinel);
         }
 
-        // 合并页：从足迹切回来时，地图刚从 display:none 恢复，
-        // 直接按「没吸顶」的新布局生效，不要播那段 height 过渡（看起来像展开动画）
+        // 合并页：从足迹切回来时，地图刚离开 display:none。
+        // 足迹模式期间这一列是 display:none，IntersectionObserver 不会补发状态：
+        // 必须在切回来的同一帧按哨兵位置恢复吸顶状态，后面的高度动画才有正确目标值。
         let onMode: ((event: Event) => void) | null = null;
         if (props.activeMode) {
             onMode = (event: Event) => {
                 if ((event as CustomEvent<ActivityModeDetail>).detail?.mode !== props.activeMode) return;
-                setStuck(false);
-                if (!hero) return;
-                hero.classList.add('is-resizing');
-                requestAnimationFrame(() => requestAnimationFrame(() => hero?.classList.remove('is-resizing')));
+                setStuck(sentinel ? sentinel.getBoundingClientRect().bottom <= 0 : false);
             };
             document.addEventListener(ACTIVITY_MODE_EVENT, onMode);
         }

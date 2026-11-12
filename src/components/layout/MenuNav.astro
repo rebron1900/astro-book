@@ -80,7 +80,7 @@ const hasActiveNav = menus.some(({ item }) => isActiveUrl(item.url));
                         <li class="menu-flag-item">
                             {isCurrent && <span class="menu-flag-marker" aria-hidden="true"></span>}
                             {/* prettier-ignore */}
-                            <a href={item.url} class={`menu-flag ellipsis ${isCurrent ? 'current' : ''}`}>
+                            <a href={item.url} data-astro-reload={item.url === '/exercise/' || item.url === '/exercise/footprint/' ? true : undefined} class={`menu-flag ellipsis ${isCurrent ? 'current' : ''}`}>
                                 {Icon && <Icon class="book-icon" />}{CleanLabel || item.label}
                             </a>
                         </li>

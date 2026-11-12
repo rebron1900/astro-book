@@ -2,7 +2,7 @@ import { For, Show, createEffect, createMemo, createSignal, onCleanup, onMount }
 import { Portal } from 'solid-js/web';
 import { navigate } from 'astro:transitions/client';
 import type { FootprintArticle, FootprintData, FootprintPlace, FootprintProvinceGroup } from '../../lib/footprint';
-import { articleMatchesSelection, groupPlacesByProvince, markRepeatArticles } from '../../lib/footprint';
+import { articleMatchesSelection, groupPlacesByProvince } from '../../lib/footprint';
 import { createFootprintMap, type FootprintMapController, type FootprintPlaceInfo } from '../../lib/client/footprint-map';
 import { prefersReducedMotion } from '../../lib/client/dom';
 import { afterTransition } from '../../lib/client/idle';
@@ -20,6 +20,14 @@ export interface ExerciseFootprintProps {
 
 /** 和样式里的窄屏断点保持一致：窄屏筛选走全屏模态 */
 const NARROW_QUERY = '(max-width: 47.84rem)';
+
+/** 同一个月（year + month）的游记合成一组：时间线按月份排，右侧卡片的列数跟当月文章数走 */
+interface FootprintArticleGroup {
+    monthKey: string;
+    year: number;
+    month: number;
+    articles: FootprintArticle[];
+}
 
 /**
  * 足迹页（`/exercise/footprint/`）的主体：独立页面，不再由运动页页内切换进入。
@@ -65,10 +73,7 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
 
     let lastFilterFocus: HTMLElement | null = null;
 
-
     const filteredArticles = createMemo(() => props.data.articles.filter((article) => articleMatchesSelection(article, selected())));
-    /** 同日多篇不重复显示日期：判定逻辑在数据层（有单测），这里只消费结果 */
-    const repeatFlags = createMemo(() => markRepeatArticles(filteredArticles()));
     const selectedProvinces = createMemo(() => groups.filter((group) => group.places.some((place) => selected().has(place.name))));
 
     const provinceHit = (group: FootprintProvinceGroup) => group.places.filter((place) => selected().has(place.name)).length;
@@ -134,17 +139,20 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
         window.location.assign(article.url);
     };
 
-    const monthDay = (article: FootprintArticle) => article.dateLabel.slice(5);
-
-    // 首页 List.astro 用的是同一组标签，这里保持一致
-    const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-
-    /** 用 dateLabel 的年月日算星期，避免 new Date(iso) 在浏览器时区下跨天 */
-    const weekdayOf = (article: FootprintArticle) => {
-        const [year, month, day] = article.dateLabel.split('.').map(Number);
-        if (!year || !month || !day) return '';
-        return WEEKDAYS[new Date(year, month - 1, day).getDay()] ?? '';
-    };
+    /** 按月分组：同一个月多篇显示在同一个时间线节点下，卡片多列排 */
+    const articleGroups = createMemo<FootprintArticleGroup[]>(() => {
+        const groups: FootprintArticleGroup[] = [];
+        for (const article of filteredArticles()) {
+            const monthKey = article.dateLabel.slice(0, 7);
+            const last = groups[groups.length - 1];
+            if (last && last.monthKey === monthKey) {
+                last.articles.push(article);
+                continue;
+            }
+            groups.push({ monthKey, year: article.year, month: Number(article.dateLabel.slice(5, 7)), articles: [article] });
+        }
+        return groups;
+    });
 
     const ensureMap = () => {
         if (controller || !mapHost) return;
@@ -189,6 +197,77 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
         window.location.assign(article.url);
     };
 
+    /** 多列网格里的单篇游记卡片：点击/悬停逻辑仍按文章走 */
+    const renderArticleCard = (article: FootprintArticle) => (
+        <article
+            class="ex-fp-card"
+            classList={{ 'is-active': revealedSlug() === article.slug }}
+            data-slug={article.slug}
+            role="button"
+            tabindex="0"
+            aria-label={`${article.title}：首次点击在地图上定位，再次点击打开文章`}
+            onClick={(event) => activateCard(event, article)}
+            onKeyDown={(event) => {
+                // 焦点在内部的链接/按钮上时由它们自己处理 Enter/Space
+                if (event.target !== event.currentTarget) return;
+                if (event.key !== 'Enter' && event.key !== ' ') return;
+                event.preventDefault();
+                activateCard(event as unknown as MouseEvent, article);
+            }}
+            onMouseEnter={() => controller?.highlight(article.placeIds)}
+            onMouseLeave={() => controller?.clearHighlight()}
+            onFocusIn={() => controller?.highlight(article.placeIds)}
+            onFocusOut={() => controller?.clearHighlight()}
+        >
+            <div class="ledger-body ex-fp-body">
+                <h3 class="ex-fp-row-title">
+                    {/* stopPropagation 后仍能被 ClientRouter 拦走（它在 document 捕获阶段接管），
+                        两段式卡片也是靠点这个真链接做站内跳转；改成 stopImmediatePropagation 会静默退化成整页刷新 */}
+                    <a href={article.url} onClick={(event) => event.stopPropagation()}>
+                        {article.title}
+                    </a>
+                </h3>
+                {article.excerpt ? <p class="ex-fp-row-text">{article.excerpt}</p> : null}
+                <Show when={article.images.length > 0}>
+                    <div
+                        class="ex-fp-row-media"
+                        classList={{
+                            'is-single': article.images.length === 1,
+                            'is-pair': article.images.length === 2
+                        }}
+                    >
+                        <For each={article.images}>{(src) => <img src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />}</For>
+                    </div>
+                </Show>
+                <Show when={article.placeIds.length > 0}>
+                    <div class="ex-fp-row-places">
+                        <For each={article.placeIds}>
+                            {(placeId, placeIndex) => (
+                                <button
+                                    class="ex-fp-chip"
+                                    type="button"
+                                    classList={{ 'is-active': activePlace() === placeId }}
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        controller?.focusPlace(placeId);
+                                    }}
+                                >
+                                    {article.placeNames[placeIndex()]}
+                                </button>
+                            )}
+                        </For>
+                        {/* 一个标签命中就算匹配：没落地的标签只是补充信息，纯文本不可点 */}
+                        <For each={article.unmatchedTags}>{(tag) => <span class="ex-fp-tag">{tag}</span>}</For>
+                    </div>
+                </Show>
+                {/* 只有整篇一个标点都没命中，才是真的没匹配上 */}
+                <Show when={article.placeIds.length === 0 && article.tags.length > 0}>
+                    <p class="ex-fp-row-note">这篇的标签没有对应的地图标点：{article.tags.join('、')}</p>
+                </Show>
+            </div>
+        </article>
+    );
+
     /** 点地图上的标点后，把时间线里对应的游记卡片滚到眼前 */
     const revealArticle = (placeId: string | null | undefined) => {
         if (!placeId || !panel) return;
@@ -212,11 +291,15 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
         const card = panel.querySelector<HTMLElement>(`[data-slug="${article.slug}"]`);
         if (!card) return;
         card.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
-        card.classList.remove('is-flash');
-        // 重新触发一次高亮动画
-        void card.offsetWidth;
-        card.classList.add('is-flash');
-        window.setTimeout(() => card.classList.remove('is-flash'), 1400);
+        // 卡片和它所在的时间线节点一起闪一下：日期 / 竖线 / 标题都能定位到这篇
+        const row = card.closest<HTMLElement>('.ledger-row');
+        for (const element of [card, row]) {
+            if (!element) continue;
+            element.classList.remove('is-flash');
+            void element.offsetWidth;
+            element.classList.add('is-flash');
+            window.setTimeout(() => element.classList.remove('is-flash'), 1400);
+        }
     };
 
     /* ------------------------------ 筛选状态 ------------------------------ */
@@ -548,13 +631,7 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
     );
 
     return (
-        <section
-            class="ex-fp"
-            classList={{ 'is-map-error': mapError(), 'is-map-compact': mapCompact() }}
-            ref={overlay}
-            aria-label="足迹"
-            tabindex={-1}
-        >
+        <section class="ex-fp" classList={{ 'is-map-error': mapError(), 'is-map-compact': mapCompact() }} ref={overlay} aria-label="足迹" tabindex={-1}>
             {/* 标题 / 副标题 / 顶部切换都在 .astro 页面里，这里只留筛选状态提示 */}
             <Show when={selected().size > 0}>
                 <p class="ex-fp-selection">
@@ -653,45 +730,20 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                         }
                     >
                         <div class="ex-fp-rows">
-                            <For each={filteredArticles()}>
-                                {(article, index) => {
-                                    const repeat = () => repeatFlags()[index()] ?? false;
-                                    const changedYear = () => filteredArticles()[index() - 1]?.year !== article.year;
+                            <For each={articleGroups()}>
+                                {(group, index) => {
+                                    const changedYear = () => articleGroups()[index() - 1]?.year !== group.year;
+                                    const groupActive = () => group.articles.some((article) => article.slug === revealedSlug());
                                     return (
-                                        // 卡片本体也参与激活：第一次点聚焦地点、第二次跳文章。
-                                        // 标题链接和地点 chip 各自 stopPropagation，点它们只走自己的逻辑
-                                        <article
-                                            class="ledger-row"
-                                            classList={{
-                                                'is-repeat': repeat(),
-                                                'is-active': revealedSlug() === article.slug
-                                            }}
-                                            data-kind="post"
-                                            data-slug={article.slug}
-                                            role="button"
-                                            tabindex="0"
-                                            aria-label={`${article.title}：首次点击在地图上定位，再次点击打开文章`}
-                                            onClick={(event) => activateCard(event, article)}
-                                            onKeyDown={(event) => {
-                                                // 焦点在内部的链接/按钮上时由它们自己处理 Enter/Space
-                                                if (event.target !== event.currentTarget) return;
-                                                if (event.key !== 'Enter' && event.key !== ' ') return;
-                                                event.preventDefault();
-                                                activateCard(event as unknown as MouseEvent, article);
-                                            }}
-                                            onMouseEnter={() => controller?.highlight(article.placeIds)}
-                                            onMouseLeave={() => controller?.clearHighlight()}
-                                            onFocusIn={() => controller?.highlight(article.placeIds)}
-                                            onFocusOut={() => controller?.clearHighlight()}
-                                        >
+                                        <div class="ledger-row" classList={{ 'is-active': groupActive() }} data-kind="post">
                                             <div class="ledger-date">
                                                 <Show when={changedYear()}>
-                                                    <span class="ledger-year">{article.year}</span>
+                                                    <span class="ledger-year">{group.year}</span>
                                                 </Show>
-                                                <time class="ledger-date-value" datetime={article.date}>
-                                                    {monthDay(article)}
+                                                <time class="ledger-date-value" datetime={`${group.year}-${String(group.month).padStart(2, '0')}`}>
+                                                    {group.month} 月
                                                 </time>
-                                                <span class="ledger-weekday">{weekdayOf(article)}</span>
+                                                <span class="ledger-weekday">{group.articles.length} 篇</span>
                                             </div>
                                             <div class="ledger-rail" aria-hidden="true">
                                                 <span class="rail-marker">
@@ -714,60 +766,16 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                                                 </span>
                                             </div>
                                             <div class="ledger-body ex-fp-body">
-                                                <h3 class="ex-fp-row-title">
-                                                    {/* stopPropagation 后仍能被 ClientRouter 拦走（它在 document 捕获阶段接管），
-                                                        两段式卡片也是靠点这个真链接做站内跳转；改成 stopImmediatePropagation 会静默退化成整页刷新 */}
-                                                    <a href={article.url} onClick={(event) => event.stopPropagation()}>
-                                                        {article.title}
-                                                    </a>
-                                                </h3>
-                                                {article.excerpt ? <p class="ex-fp-row-text">{article.excerpt}</p> : null}
-                                                <Show when={article.images.length > 0}>
-                                                    <div
-                                                        class="ex-fp-row-media"
-                                                        classList={{
-                                                            'is-single': article.images.length === 1,
-                                                            'is-pair': article.images.length === 2
-                                                        }}
-                                                    >
-                                                        <For each={article.images}>
-                                                            {(src) => <img src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />}
-                                                        </For>
-                                                    </div>
-                                                </Show>
-                                                <Show when={article.placeIds.length > 0}>
-                                                    <div class="ex-fp-row-places">
-                                                        <For each={article.placeIds}>
-                                                            {(placeId, placeIndex) => (
-                                                                <button
-                                                                    class="ex-fp-chip"
-                                                                    type="button"
-                                                                    classList={{ 'is-active': activePlace() === placeId }}
-                                                                    onClick={(event) => {
-                                                                        event.stopPropagation();
-                                                                        controller?.focusPlace(placeId);
-                                                                    }}
-                                                                >
-                                                                    {article.placeNames[placeIndex()]}
-                                                                </button>
-                                                            )}
-                                                        </For>
-                                                        {/* 一个标签命中就算匹配：没落地的标签只是补充信息，纯文本不可点 */}
-                                                        <For each={article.unmatchedTags}>{(tag) => <span class="ex-fp-tag">{tag}</span>}</For>
-                                                    </div>
-                                                </Show>
-                                                {/* 只有整篇一个标点都没命中，才是真的没匹配上 */}
-                                                <Show when={article.placeIds.length === 0 && article.tags.length > 0}>
-                                                    <p class="ex-fp-row-note">这篇的标签没有对应的地图标点：{article.tags.join('、')}</p>
-                                                </Show>
+                                                <div class="ex-fp-day-cards">
+                                                    <For each={group.articles}>{(article) => renderArticleCard(article)}</For>
+                                                </div>
                                             </div>
-                                        </article>
+                                        </div>
                                     );
                                 }}
                             </For>
                         </div>
                     </Show>
-
                 </aside>
             </div>
 

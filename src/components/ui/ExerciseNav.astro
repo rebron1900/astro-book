@@ -34,7 +34,7 @@ const items = [
 <nav class="ex-switch" aria-label="运动与足迹">
     {
         items.map((item) => (
-            <a class="ex-switch-link" href={item.href} aria-current={item.key === active ? 'page' : undefined}>
+            <a class="ex-switch-link" href={item.href} data-astro-reload aria-current={item.key === active ? 'page' : undefined}>
                 <svg
                     viewBox="0 0 24 24"
                     aria-hidden="true"

@@ -117,6 +117,12 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
     }
 }
 
+/* 测最终高度时临时关掉所有尺寸过渡，量完立刻移除，避免把切换动画的中间值当目标值 */
+.act-mode .is-measuring-height,
+.act-mode .is-measuring-height * {
+    transition: none !important;
+}
+
 /* display:none → block 会重放动画；只动 opacity，不动 transform，
    否则地图的 sticky 会被关进新的包含块 */
 .act-mode,
@@ -143,35 +149,21 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
     position: sticky;
     inset-block-start: 0;
     z-index: 25;
+    /* 足迹地图固定和悬浮都是 21rem：吸顶不改变高度，只切换阴影 */
     block-size: 21rem;
-    margin-block-end: 1.5rem;
+    margin-block-end: 1.6rem;
     border-radius: 0.5rem;
-    box-shadow: 0 6px 20px rgb(0 0 0 / 0.08);
-    transition:
-        block-size 240ms ease,
-        box-shadow 240ms ease;
+    /* 未吸顶时和运动地图的 .ex-map-card 保持一致：只留细边框，不额外投影 */
+    box-shadow: none;
+    transition: box-shadow 240ms ease;
 }
 
 .act-mode--footprint .ex-fp-map-wrap.is-stuck {
-    block-size: 15rem;
     box-shadow: 0 10px 26px rgb(0 0 0 / 0.12);
 }
 
-/* 和运动页预览地图同一套做法：地图容器始终保持 21rem，吸顶只裁切外层窗口、
-   把地图整体上移半格（3rem），这样 Mapbox 完全不用 resize，也就不会「重画一下」 */
 .act-mode--footprint .ex-fp-map {
     block-size: 21rem;
-    transition: transform 240ms ease;
-}
-
-.act-mode--footprint .ex-fp-map-wrap.is-stuck .ex-fp-map {
-    transform: translateY(-3rem);
-}
-
-/* 刚切进足迹模式时，地图是从 display:none 出来的：先按当前滚动位置定好高度，
-   别把 15rem → 21rem 的展开过程播出来 */
-.act-mode--footprint .ex-fp-map-wrap.act-no-anim {
-    transition: none !important;
 }
 
 /* 合并页里不需要地图上的筛选入口 */
@@ -202,22 +194,24 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
     block-size: 24px;
 }
 
-/* hover 不放大：尺寸一变锚点就动，气泡跟着抖 */
-.act-mode--footprint .ex-fp-map .marker.ex-fp-point:hover,
-.act-mode--footprint .ex-fp-map .img-post.marker.ex-fp-point:hover,
-.act-mode--footprint .ex-fp-map .cluster.ex-fp-point:hover {
-    inline-size: 16px;
-    block-size: 16px;
+/* 小地图也保留 hover 放大：文章封面和聚合点统一 1.25 倍，锚点仍在中心 */
+.act-mode--footprint .ex-fp-map .marker.ex-fp-point:hover {
+    inline-size: 20px;
+    block-size: 20px;
 }
 
 .act-mode--footprint .ex-fp-map .img-post.marker.ex-fp-point:hover {
-    inline-size: 24px;
-    block-size: 24px;
+    inline-size: 30px;
+    block-size: 30px;
 }
 
 .act-mode--footprint .ex-fp-map .cluster.ex-fp-point:hover {
-    inline-size: 24px;
-    block-size: 24px;
+    inline-size: 30px;
+    block-size: 30px;
+}
+
+.act-mode--footprint .ex-fp-map .cluster.ex-fp-point:hover::after {
+    font-size: 16.25px;
 }
 
 .act-mode--footprint .ex-fp-map .marker.ex-fp-point:hover {
@@ -238,156 +232,99 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
     background: color-mix(in srgb, var(--body-background) 78%, transparent);
 }
 
-/* ---------- 游记卡片：两列，卡片内保留时间线的信息结构 ---------- */
+/* ---------- 游记列表：复用首页 / 足迹右栏的统一时间线 ---------- */
 
-/* 左侧一条垂直时间线，右边是两列卡片 */
-.act-mode--footprint .ex-fp-rows {
-    position: relative;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.9rem 1rem;
-    padding-block: 0.2rem 0;
-    padding-inline-start: 1.35rem;
-}
-
-/* 贯穿整列的竖线（不属于任何一张卡） */
-.act-mode--footprint .ex-fp-rows::before {
-    content: '';
-    position: absolute;
-    inset-block: 0.55rem 1.2rem;
-    inset-inline-start: 0.3rem;
-    inline-size: 1px;
-    background: var(--gray-200);
-    pointer-events: none;
-}
-
-@media screen and (max-width: 63.99rem) {
-    .act-mode--footprint .ex-fp-rows {
-        grid-template-columns: minmax(0, 1fr);
-    }
-}
-
-/* 行本身就是卡片：不再有内部的日期列和竖线 */
+/* 活动页内容列宽度和首页正文接近：日期列、行距直接用首页的几何，
+   每行都是「日期 + 竖线图标 + 文章卡片」，竖线在左侧合成一条连续时间轴 */
 .act-mode--footprint .ex-fp-panel .ledger-row {
+    --ledger-date-col: 3rem;
+    --ledger-row-gap: 1.7rem;
+}
+
+/* 同一天的游记卡片多列排：单条也占一列，不会被拉成整行满宽 */
+.act-mode--footprint .ex-fp-day-cards {
+    grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
+    gap: 1.1rem;
+}
+
+.act-mode--footprint .ex-fp-card {
+    position: relative;
     display: block;
-    margin: 0;
-}
-
-.act-mode--footprint .ex-fp-panel .ledger-rail {
-    display: none;
-}
-
-.act-mode--footprint .ex-fp-panel .ledger-date {
-    flex-direction: row;
-    align-items: baseline;
-    justify-content: flex-start;
-    gap: 0.3rem;
-    padding: 0 0 0.45rem;
-}
-
-.act-mode--footprint .ex-fp-panel .ledger-body {
-    padding: 0.7rem 0.8rem 0.75rem;
-    border: 1px solid color-mix(in srgb, var(--gray-500) 24%, transparent);
-    border-radius: 0.65rem;
-    background: color-mix(in srgb, var(--body-background) 97%, var(--body-font-color));
+    min-inline-size: 0;
+    block-size: 100%;
+    overflow: hidden;
+    padding: 1rem 1.25rem 0.9rem;
+    border-radius: 0.5rem;
+    background: var(--body-background);
+    box-shadow: inset 0 0 0 1px var(--gray-200);
     transition:
-        border-color 160ms ease,
+        transform 160ms ease,
         box-shadow 160ms ease;
 }
 
-.act-mode--footprint .ex-fp-panel .ledger-row:hover .ledger-body {
-    border-color: color-mix(in srgb, var(--color-link) 45%, var(--gray-500));
-    box-shadow: 0 4px 14px rgb(0 0 0 / 0.06);
+/* 博客列表卡片的轻上浮 + 柔和描边 */
+.act-mode--footprint .ex-fp-card:hover,
+.act-mode--footprint .ex-fp-card:focus-within {
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--color-link) 30%, var(--gray-200)),
+        0 5px 18px rgb(0 0 0 / 0.06);
 }
 
-.act-mode--footprint .ex-fp-panel .ledger-row + .ledger-row {
-    margin-block-start: 0;
+.act-mode--footprint .ex-fp-card.is-active {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-link) 38%, var(--gray-200));
 }
 
-/* 卡片里的竖线只画在内容旁边，不要跨到卡片外面 */
-.act-mode--footprint .ex-fp-panel .ledger-row::before {
-    display: none;
-}
-
-.act-mode--footprint .ex-fp-panel .ledger-date {
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 0.05rem;
-    padding: 0.05rem 0 0;
-}
-
-.act-mode--footprint .ex-fp-panel .ledger-year,
-.act-mode--footprint .ex-fp-panel .ledger-weekday {
-    color: var(--gray-500);
-    font-size: 0.625rem;
-    line-height: 1.4;
-}
-
-.act-mode--footprint .ex-fp-panel .ledger-date-value {
-    color: var(--body-font-color);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    line-height: 1.4;
-}
-
-.act-mode--footprint .ex-fp-body {
-    gap: 0.35rem;
+.act-mode--footprint .ex-fp-card .ex-fp-body {
+    gap: 0.45rem;
     padding-block-end: 0;
 }
 
-.act-mode--footprint .ex-fp-row-title {
-    display: -webkit-box;
-    overflow: hidden;
-    font-size: 0.8125rem;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+.act-mode--footprint .ex-fp-card .ex-fp-row-title {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
 }
 
-.act-mode--footprint .ex-fp-row-text {
-    font-size: 0.7rem;
-    -webkit-line-clamp: 2;
+.act-mode--footprint .ex-fp-card .ex-fp-row-title a {
+    color: inherit;
 }
 
-/* 不管 1 张还是 3 张，都按三列排：图片尺寸一致，空位留白，不拉伸填满 */
-.act-mode--footprint .ex-fp-row-media,
-.act-mode--footprint .ex-fp-row-media.is-pair,
-.act-mode--footprint .ex-fp-row-media.is-single {
+.act-mode--footprint .ex-fp-card .ex-fp-row-text {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    -webkit-line-clamp: 3;
+}
+
+/* 缩略图统一尺寸：不管 1 张、2 张还是 3 张，都按三列排、同高裁切，避免单图撑满卡片 */
+.act-mode--footprint .ex-fp-card .ex-fp-row-media,
+.act-mode--footprint .ex-fp-card .ex-fp-row-media.is-pair,
+.act-mode--footprint .ex-fp-card .ex-fp-row-media.is-single {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.3rem;
 }
 
-.act-mode--footprint .ex-fp-row-media img {
+.act-mode--footprint .ex-fp-card .ex-fp-row-media img {
+    display: block;
     inline-size: 100%;
     block-size: 4.2rem;
     aspect-ratio: auto;
+    border-radius: 0.35rem;
     object-fit: cover;
 }
 
-/* 地点多的时候一行放不下就省略，不换行撑高卡片 */
-.act-mode--footprint .ex-fp-row-places {
-    flex-wrap: nowrap;
-    gap: 0.22rem;
-    overflow: hidden;
-}
-
-.act-mode--footprint .ex-fp-row-places > * {
-    flex: none;
-    font-size: 0.5625rem;
-}
-
-.act-mode--footprint .ex-fp-row-places > *:last-child {
-    flex: 0 1 auto;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 @media screen and (max-width: 47.84rem) {
-    .act-mode--footprint .ex-fp-map-wrap {
+    /* 独立足迹页的 is-map-compact 会把地图压到 28svh；合并页需要固定 13rem，
+       所以把 compact 选择器的优先级也一起覆盖掉 */
+    .act-mode--footprint .ex-fp-map-wrap,
+    .act-mode--footprint .ex-fp.is-map-compact .ex-fp-map-wrap {
         block-size: 13rem;
     }
 
-    .act-mode--footprint .ex-fp-map-wrap.is-stuck {
-        block-size: 10rem;
+    .act-mode--footprint .ex-fp-map {
+        block-size: 13rem;
     }
 }
 
@@ -420,61 +357,34 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
     text-transform: uppercase;
 }
 
-/* ---------- 概览：两列小卡，图标靠右 ---------- */
-
-.act-facts {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.45rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+/* 成就行复用运动侧栏的纪录行样式，静态成就不要按钮光标 */
+.act-ov-records {
+    margin-block-start: 0.5rem;
 }
 
-.act-fact {
-    position: relative;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    align-items: center;
-    gap: 0;
-    overflow: hidden;
-    padding: 0.1rem 0;
-}
-.act-fact-value {
-    position: relative;
-    z-index: 1;
-    grid-column: 1;
-    grid-row: 1;
-    color: var(--body-font-color);
-    font-size: 0.875rem;
-    font-weight: 600;
-    line-height: 1.3;
+.act-ov-record--static {
+    cursor: default;
 }
 
-.act-fact-label {
-    position: relative;
-    z-index: 1;
-    grid-column: 1;
-    grid-row: 2;
-    color: var(--gray-500);
-    font-size: 0.625rem;
-    line-height: 1.4;
+.act-ov-record--static:hover {
+    background: transparent;
 }
 
-/* 图标当水印：贴在右上角，从底部往上渐隐 */
-.act-fact svg {
-    position: absolute;
-    z-index: 0;
-    inset-block-start: 0.55rem;
-    inset-inline-end: 0;
-    inline-size: 2.6rem;
-    block-size: 2.6rem;
-    color: var(--color-link);
-    opacity: 0.16;
-    pointer-events: none;
-    -webkit-mask-image: linear-gradient(to top, transparent 6%, #000 82%);
-    mask-image: linear-gradient(to top, transparent 6%, #000 82%);
+/* 活动页足迹侧栏的区块之间留出呼吸感；
+   .ex-stats-body 是实际装 section 的容器，间距要加在它身上而不是外层 stack */
+.act-side--footprint .ex-stats-stack,
+.act-side--footprint .ex-stats-body {
+    gap: 1.2rem;
+}
+
+.act-side--footprint .ex-stats-body {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 成就行不再显示「北纬 / 东经」这类旧标记，三列即可 */
+.act-side--footprint .ex-ov-record {
+    grid-template-columns: auto minmax(0, 1fr) auto;
 }
 
 /* ---------- 分布柱状：标签 + 数值在上，轨道整行在下 ---------- */
@@ -542,7 +452,9 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
 }
 
 .act-tabs-head {
-    display: inline-flex;
+    position: relative;
+    display: flex;
+    inline-size: 100%;
     gap: 0.12rem;
     margin-block-end: 0.55rem;
     padding: 0.15rem;
@@ -550,13 +462,34 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
     background: color-mix(in srgb, var(--body-font-color) 5%, transparent);
 }
 
+/* 和顶部「运动 / 足迹」同一套滑块：选中底不再是文字自己的背景，而是滑动的胶囊 */
+.act-tabs-head::before {
+    content: '';
+    position: absolute;
+    inset-block: 0.15rem;
+    inset-inline-start: 0.15rem;
+    z-index: 0;
+    inline-size: calc((100% - 0.42rem) / 2);
+    border-radius: 999px;
+    background: var(--body-font-color);
+    transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#act-dist-province:checked ~ .act-tabs-head::before {
+    transform: translateX(calc(100% + 0.12rem));
+}
+
 .act-tabs-tab {
+    position: relative;
+    z-index: 1;
+    flex: 1 1 0;
     padding: 0.18rem 0.5rem;
     border-radius: 999px;
     color: var(--gray-700);
     font-size: 0.625rem;
     font-weight: 600;
     line-height: 1.6;
+    text-align: center;
     cursor: pointer;
     transition:
         color 140ms ease,
@@ -573,117 +506,12 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
 
 #act-dist-year:checked ~ .act-tabs-head label[for='act-dist-year'],
 #act-dist-province:checked ~ .act-tabs-head label[for='act-dist-province'] {
-    background: var(--body-font-color);
     color: var(--body-background);
 }
 
 #act-dist-year:checked ~ .act-tabs-panel--year,
 #act-dist-province:checked ~ .act-tabs-panel--province {
     display: grid;
-}
-
-/* ---------- 成就：两列；一行「名称 + 图标」，二行「内容 + 小字指标」 ---------- */
-
-.act-badges {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.35rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.act-badge {
-    display: block;
-    min-inline-size: 0;
-}
-
-.act-badge-btn,
-.act-badge-static {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    inline-size: 100%;
-    block-size: 100%;
-    padding: 0.2rem 1.3rem 0.2rem 0;
-    border: 0;
-    border-radius: 0;
-    background: none;
-    color: inherit;
-    text-align: start;
-    transition: color 140ms ease;
-}
-
-.act-badge-btn {
-    cursor: pointer;
-}
-
-.act-badge-btn:hover .act-badge-value,
-.act-badge-btn:focus-visible .act-badge-value {
-    color: var(--color-link);
-}
-
-.act-badge-btn:focus-visible {
-    outline: 2px solid var(--color-link);
-    outline-offset: 1px;
-}
-
-/* 第一行：名称吃掉剩余宽度，右侧只放图标（留一点间距） */
-.act-badge-top {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    min-inline-size: 0;
-}
-
-.act-badge-label {
-    flex: 1 1 auto;
-    overflow: hidden;
-    color: var(--gray-500);
-    font-size: 0.5625rem;
-    line-height: 1.4;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* 图标贴在卡片最右侧、垂直居中 */
-.act-badge-top svg {
-    position: absolute;
-    inset-inline-end: 0;
-    inset-block-start: 50%;
-    inline-size: 0.9rem;
-    block-size: 0.9rem;
-    color: color-mix(in srgb, var(--color-link) 80%, transparent);
-    transform: translateY(-50%);
-}
-
-/* 第二行：内容 / 小字指标，左右各一半 */
-.act-badge-bottom {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: center;
-    gap: 0.3rem;
-}
-
-.act-badge-value {
-    overflow: hidden;
-    color: var(--body-font-color);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    line-height: 1.35;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.act-badge-note {
-    overflow: hidden;
-    color: var(--gray-500);
-    font-size: 0.5625rem;
-    line-height: 1.35;
-    text-align: end;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 /* ---------- 分布条气泡：和地图标点气泡同一套长相 ---------- */
@@ -750,17 +578,12 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
         color 120ms ease;
 }
 
-.act-tip-row:hover,
-.act-tip-row:focus-visible {
-    background: color-mix(in srgb, var(--color-link) 12%, transparent);
-    color: var(--color-link);
-    outline: none;
-}
-
 /* 默认透明，只有 hover / focus 才有底色 */
 .act-tip-row:hover,
 .act-tip-row:focus-visible {
     background: color-mix(in srgb, var(--color-link) 14%, transparent);
+    color: var(--color-link);
+    outline: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -772,7 +595,7 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
     .act-switch-btn,
     .act-thumb,
     .act-tabs-tab,
-    .act-badge-btn,
+    .act-tabs-head::before,
     .act-mode--footprint .ex-fp-map-wrap {
         transition: none;
     }
@@ -803,16 +626,13 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
     font-size: 0.75rem;
 }
 
-.act-mode--exercise .ex-map-badge {
-    inset-inline-start: 4.35rem;
-    max-inline-size: calc(100% - 9.5rem);
-}
-
-/* 地图左上角的状态角标：和 HUD 按钮同高 */
+/* 地图左上角的状态角标：和 HUD 按钮同高，左侧紧接「全部」按钮 */
 .act-mode--exercise .ex-map-badge {
     display: inline-flex;
     align-items: center;
     block-size: 1.75rem;
+    inset-inline-start: 3.35rem;
+    max-inline-size: calc(100% - 9.5rem);
     padding-block: 0;
     font-size: 0.75rem;
 }
@@ -842,4 +662,60 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
 
 .tippy-box[data-theme~='act-glass'] .tippy-arrow {
     color: color-mix(in srgb, var(--body-background) 78%, transparent);
+}
+
+/* 桌面端不显示遮罩；移动端打开侧栏时才有 */
+.act-toc-scrim {
+    display: none;
+}
+
+/* ---------- 移动端：右侧统计栏收成抽屉，沿用主题的 #toc-control 折叠逻辑 ---------- */
+@media screen and (max-width: 47.84rem) {
+    body:has(.activity-page) .book-toc {
+        display: block;
+        position: fixed;
+        inset-block: 0;
+        inset-inline-end: 0;
+        z-index: 90;
+        inline-size: min(20rem, calc(100vw - 2.75rem));
+        min-inline-size: 0;
+        max-inline-size: 20rem;
+        margin: 0;
+        background: var(--body-background);
+        box-shadow: -14px 0 36px rgb(0 0 0 / 0.18);
+        transform: translateX(100%);
+        visibility: hidden;
+        transition:
+            transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+            visibility 240ms;
+        overflow: hidden;
+    }
+
+    body:has(.activity-page) #toc-control:checked ~ main .book-toc {
+        transform: translateX(0);
+        visibility: visible;
+    }
+
+    body:has(.activity-page) .book-toc .book-toc-content {
+        position: static;
+        inline-size: auto;
+        block-size: 100%;
+        padding: 1rem 0.85rem 1.5rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .act-toc-scrim {
+        position: fixed;
+        inset: 0;
+        z-index: 85;
+        display: none;
+        background: rgb(0 0 0 / 0.3);
+        backdrop-filter: blur(1px);
+        -webkit-backdrop-filter: blur(1px);
+    }
+
+    body:has(.activity-page) #toc-control:checked ~ main .act-toc-scrim {
+        display: block;
+    }
 }

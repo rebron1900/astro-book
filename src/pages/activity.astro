@@ -37,8 +37,69 @@ const mapToken = import.meta.env.PUBLIC_MAP_KEY;
 const elevations = (elevationsJson as { places: Record<string, number> }).places;
 const achievements = buildAchievements(footprint, elevations);
 const summary = buildFootprintSummary(footprint);
-const maxYear = Math.max(1, ...summary.years.map((bucket) => bucket.count));
-const topProvinces = summary.provinces.slice(0, 8);
+
+/** 分布榜最多显示 8 行：前 7 行正常，第 8 行聚合没展示的部分 */
+const MAX_DISTRIBUTION_ROWS = 8;
+const uniqueNames = (names: string[]) => [...new Set(names)];
+
+const yearBucketsDesc = [...summary.years].sort((a, b) => b.year - a.year);
+const yearRows =
+    yearBucketsDesc.length > MAX_DISTRIBUTION_ROWS
+        ? [
+              ...yearBucketsDesc.slice(0, MAX_DISTRIBUTION_ROWS - 1).map((bucket) => ({
+                  label: String(bucket.year),
+                  count: bucket.count,
+                  places: bucket.places,
+                  tipTitle: `${bucket.year} 年`
+              })),
+              (() => {
+                  const rest = yearBucketsDesc.slice(MAX_DISTRIBUTION_ROWS - 1);
+                  const newest = rest[0].year;
+                  const oldest = rest[rest.length - 1].year;
+                  const label = newest === oldest ? String(oldest) : `${oldest}-${newest}`;
+                  return {
+                      label,
+                      count: rest.reduce((sum, bucket) => sum + bucket.count, 0),
+                      places: uniqueNames(rest.flatMap((bucket) => bucket.places)),
+                      tipTitle: label
+                  };
+              })()
+          ]
+        : yearBucketsDesc.map((bucket) => ({
+              label: String(bucket.year),
+              count: bucket.count,
+              places: bucket.places,
+              tipTitle: `${bucket.year} 年`
+          }));
+
+const provinceBuckets = summary.provinces;
+const provinceRows =
+    provinceBuckets.length > MAX_DISTRIBUTION_ROWS
+        ? [
+              ...provinceBuckets.slice(0, MAX_DISTRIBUTION_ROWS - 1).map((item) => ({
+                  label: item.province,
+                  count: item.places,
+                  names: item.names,
+                  tipTitle: item.province
+              })),
+              (() => {
+                  const rest = provinceBuckets.slice(MAX_DISTRIBUTION_ROWS - 1);
+                  return {
+                      label: '其他',
+                      count: rest.reduce((sum, item) => sum + item.places, 0),
+                      names: uniqueNames(rest.flatMap((item) => item.names)),
+                      tipTitle: '其他'
+                  };
+              })()
+          ]
+        : provinceBuckets.map((item) => ({
+              label: item.province,
+              count: item.places,
+              names: item.names,
+              tipTitle: item.province
+          }));
+
+const maxYear = Math.max(1, ...yearRows.map((row) => row.count));
 // 气泡里要能点，所以把「名字」换成「id + 名字」
 const placeIdByName = new Map(footprint.places.map((place) => [place.name, place.id]));
 const toPlaceRefs = (names: string[]) => names.map((name) => ({ id: placeIdByName.get(name) ?? name, name }));
@@ -53,7 +114,7 @@ const ACHIEVEMENT_ICONS: Record<string, typeof Sparkles> = {
     span: Ruler,
     elevation: Mountain
 };
-const maxProvince = Math.max(1, ...topProvinces.map((item) => item.places));
+const maxProvince = Math.max(1, ...provinceRows.map((row) => row.count));
 
 const layoutPage = page ? { ...page, tags: (page.tags ?? []).filter((tag) => tag.slug !== 'hash-page-fullwidth') } : undefined;
 const years = footprint.stats.years;
@@ -74,6 +135,7 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
     <Menu slot="menu" />
 
     <article slot="content" class="exercise-page activity-page" data-activity-mode="exercise">
+        <label for="toc-control" class="act-toc-scrim" aria-label="关闭侧边栏"></label>
         <PageIntro
             title="动起来的日子，都留下了痕迹。"
             copy="同一条时间线，两种看法：一边是每次出门的路线和成绩，一边是那些路线上真正站过的地方。地图右上角可以随时换。"
@@ -112,119 +174,114 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
 
     <Fragment slot="toc">
         <div class="act-side act-side--exercise">
-            <ExerciseSidebar client:media="(min-width: 47.85rem)" records={records} initialScope={initialScope} />
+            <ExerciseSidebar client:load records={records} initialScope={initialScope} />
         </div>
 
         <div class="act-side act-side--footprint">
-            <section class="act-sec">
-                <h2 class="act-side-title">概览</h2>
-                <ul class="act-facts">
-                    <li class="act-fact">
-                        <MapPin size={16} aria-hidden="true" />
-                        <span class="act-fact-value">{footprint.stats.places}</span>
-                        <span class="act-fact-label">地点</span>
-                    </li>
-                    <li class="act-fact">
-                        <NotebookPen size={16} aria-hidden="true" />
-                        <span class="act-fact-value">{footprint.stats.articles}</span>
-                        <span class="act-fact-label">游记</span>
-                    </li>
-                    <li class="act-fact">
-                        <BookmarkCheck size={16} aria-hidden="true" />
-                        <span class="act-fact-value">{footprint.stats.matchedPlaces}</span>
-                        <span class="act-fact-label">有游记的地点</span>
-                    </li>
-                    {
-                        years && (
-                            <li class="act-fact">
-                                <CalendarRange size={16} aria-hidden="true" />
-                                <span class="act-fact-value">{years[1] - years[0] + 1} 年</span>
-                                <span class="act-fact-label">写作跨度</span>
-                            </li>
-                        )
-                    }
-                </ul>
-            </section>
+            <div class="ex-stats-stack">
+                <div class="ex-stats-body">
+                    <section class="ex-ov" aria-label="足迹总览">
+                        <header class="ex-ov-head">
+                            <h2 class="ex-ov-title">足迹总览</h2>
+                        </header>
+                        <dl class="ex-ov-metrics">
+                            <div class="ex-ov-metric">
+                                <dt><MapPin size={12} aria-hidden="true" />地点</dt>
+                                <dd>{footprint.stats.places}<small>个</small></dd>
+                            </div>
+                            <div class="ex-ov-metric">
+                                <dt><NotebookPen size={12} aria-hidden="true" />游记</dt>
+                                <dd>{footprint.stats.articles}<small>篇</small></dd>
+                            </div>
+                            <div class="ex-ov-metric">
+                                <dt><BookmarkCheck size={12} aria-hidden="true" />有游记</dt>
+                                <dd>{footprint.stats.matchedPlaces}<small>个地点</small></dd>
+                            </div>
+                            {
+                                years && (
+                                    <div class="ex-ov-metric">
+                                        <dt><CalendarRange size={12} aria-hidden="true" />写作跨度</dt>
+                                        <dd>{years[1] - years[0] + 1}<small>年</small></dd>
+                                    </div>
+                                )
+                            }
+                        </dl>
+                    </section>
 
-            <section class="act-sec act-tabs">
-                <input class="act-tabs-input" type="radio" name="act-dist" id="act-dist-year" checked />
-                <input class="act-tabs-input" type="radio" name="act-dist" id="act-dist-province" />
+                    <hr class="ex-stats-divider" />
 
-                <div class="act-tabs-head">
-                    <label class="act-tabs-tab" for="act-dist-year">游记年份</label>
-                    <label class="act-tabs-tab" for="act-dist-province">去得最多的省</label>
-                </div>
+                    <section class="ex-ov act-tabs" aria-label="游记分布">
+                        <input class="act-tabs-input" type="radio" name="act-dist" id="act-dist-year" checked />
+                        <input class="act-tabs-input" type="radio" name="act-dist" id="act-dist-province" />
 
-                <ul class="act-bars act-tabs-panel act-tabs-panel--year">
-                    {
-                        summary.years.map((bucket) => (
-                            <li
-                                class="act-bar-row"
-                                data-tip-title={`${bucket.year} 年`}
-                                data-tip-places={bucket.places.length > 0 ? JSON.stringify(toPlaceRefs(bucket.places)) : undefined}
-                            >
-                                <span class="act-bar-label">{bucket.year}</span>
-                                <span class="act-bar-track">
-                                    <span class="act-bar-fill" style={`--w: ${Math.round((bucket.count / maxYear) * 100)}%`} />
-                                </span>
-                                <span class="act-bar-value">{bucket.count}</span>
-                            </li>
-                        ))
-                    }
-                </ul>
+                        <div class="act-tabs-head">
+                            <label class="act-tabs-tab" for="act-dist-year">游记年份</label>
+                            <label class="act-tabs-tab" for="act-dist-province">去得最多的省</label>
+                        </div>
 
-                <ul class="act-bars act-tabs-panel act-tabs-panel--province">
-                    {
-                        topProvinces.map((item) => (
-                            <li class="act-bar-row" data-tip-title={item.province} data-tip-places={item.names.length > 0 ? JSON.stringify(toPlaceRefs(item.names)) : undefined}>
-                                <span class="act-bar-label act-bar-label--wide">{item.province}</span>
-                                <span class="act-bar-track">
-                                    <span class="act-bar-fill" style={`--w: ${Math.round((item.places / maxProvince) * 100)}%`} />
-                                </span>
-                                <span class="act-bar-value">{item.places}</span>
-                            </li>
-                        ))
-                    }
-                </ul>
-            </section>
+                        <ul class="act-bars act-tabs-panel act-tabs-panel--year">
+                            {
+                                yearRows.map((row) => (
+                                    <li
+                                        class="act-bar-row"
+                                        data-tip-title={row.tipTitle}
+                                        data-tip-places={row.places.length > 0 ? JSON.stringify(toPlaceRefs(row.places)) : undefined}
+                                    >
+                                        <span class="act-bar-label">{row.label}</span>
+                                        <span class="act-bar-track">
+                                            <span class="act-bar-fill" style={`--w: ${Math.round((row.count / maxYear) * 100)}%`} />
+                                        </span>
+                                        <span class="act-bar-value">{row.count}</span>
+                                    </li>
+                                ))
+                            }
+                        </ul>
 
-            <section class="act-sec">
-                <h2 class="act-side-title">成就</h2>
-                <ul class="act-badges">
-                    {
-                        achievements.map((item) => {
-                            const Icon = ACHIEVEMENT_ICONS[item.key] ?? Sparkles;
-                            return (
-                                <li class="act-badge">
-                                    {item.placeId ? (
-                                        <button class="act-badge-btn" type="button" data-act-place={item.placeId} title={`在地图上看看 ${item.value}`}>
-                                            <span class="act-badge-top">
-                                                <span class="act-badge-label">{item.label}</span>
-                                                <Icon size={12} aria-hidden="true" />
-                                            </span>
-                                            <span class="act-badge-bottom">
-                                                <span class="act-badge-value">{item.value}</span>
-                                                {item.note && <span class="act-badge-note">{item.note}</span>}
-                                            </span>
+                        <ul class="act-bars act-tabs-panel act-tabs-panel--province">
+                            {
+                                provinceRows.map((row) => (
+                                    <li class="act-bar-row" data-tip-title={row.tipTitle} data-tip-places={row.names.length > 0 ? JSON.stringify(toPlaceRefs(row.names)) : undefined}>
+                                        <span class="act-bar-label act-bar-label--wide">{row.label}</span>
+                                        <span class="act-bar-track">
+                                            <span class="act-bar-fill" style={`--w: ${Math.round((row.count / maxProvince) * 100)}%`} />
+                                        </span>
+                                        <span class="act-bar-value">{row.count}</span>
+                                    </li>
+                                ))
+                            }
+                        </ul>
+                    </section>
+
+                    <hr class="ex-stats-divider" />
+
+                    <section class="ex-ov" aria-label="成就">
+                        <header class="ex-ov-head">
+                            <h2 class="ex-ov-title">成就</h2>
+                            <span class="ex-ov-range">{achievements.length} 项</span>
+                        </header>
+                        <div class="ex-ov-records act-ov-records">
+                            {
+                                achievements.map((item) => {
+                                    const Icon = ACHIEVEMENT_ICONS[item.key] ?? Sparkles;
+                                    return item.placeId ? (
+                                        <button class="ex-ov-record" type="button" data-act-place={item.placeId} title={`在地图上看看 ${item.value}`}>
+                                            <Icon class="ex-ov-record-icon" size={12} aria-hidden="true" />
+                                            <span class="ex-ov-record-label">{item.label}</span>
+                                            <span class="ex-ov-record-value">{item.value}</span>
                                         </button>
                                     ) : (
-                                        <div class="act-badge-static">
-                                            <span class="act-badge-top">
-                                                <span class="act-badge-label">{item.label}</span>
-                                                <Icon size={12} aria-hidden="true" />
-                                            </span>
-                                            <span class="act-badge-bottom">
-                                                <span class="act-badge-value">{item.value}</span>
-                                                {item.note && <span class="act-badge-note">{item.note}</span>}
-                                            </span>
+                                        <div class="ex-ov-record act-ov-record--static">
+                                            <Icon class="ex-ov-record-icon" size={12} aria-hidden="true" />
+                                            <span class="ex-ov-record-label">{item.label}</span>
+                                            <span class="ex-ov-record-value">{item.value}</span>
                                         </div>
-                                    )}
-                                </li>
-                            );
-                        })
-                    }
-                </ul>
-            </section>
+                                    );
+                                })
+                            }
+                        </div>
+                    </section>
+                </div>
+            </div>
 
             {/* 地点筛选暂时下线：要恢复就把 ActivityPlaceFilter 放回这里（组件和事件通道都还在） */}
         </div>

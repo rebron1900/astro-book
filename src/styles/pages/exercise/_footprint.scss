@@ -209,6 +209,17 @@
     padding-block: 0.1rem 0.5rem;
 }
 
+/* 同一个日期下可能有多篇游记：时间线节点只出现一次，卡片在右侧网格里排；窄栏默认单列 */
+.ex-fp-day-cards {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+}
+
+.ex-fp-card {
+    min-inline-size: 0;
+}
+
 /* 右栏只有 16rem：只收日期列宽和行距，竖线位置从 --ledger-date-col 派生，不会错轴 */
 .ex-fp-panel .ledger-row {
     --ledger-date-col: 2.6rem;
@@ -390,6 +401,8 @@
    注意：不要给标点元素加 transform 过渡——Mapbox 会往同一节点写内联 transform，
    过渡会让标点在平移/缩放时滞后、漂移。 */
 .ex-fp-point {
+    /* 给光晕负层一个局部堆叠上下文，否则会掉到地图 canvas 后面 */
+    isolation: isolate;
     /* 覆盖 .marker 里带 !important 的 width/height 过渡，只保留尺寸和明暗，不带 transform */
     transition:
         width 0.2s ease-out,
@@ -425,16 +438,17 @@
 }
 
 .ex-fp-map .cluster.ex-fp-point:hover {
-    inline-size: 36px;
-    block-size: 36px;
+    inline-size: 35px;
+    block-size: 35px;
 }
 
 .ex-fp-map .cluster.ex-fp-point::after {
     font-size: 13px;
 }
 
+/* 数字和圆点按同一个 1.25 比例放大，hover 才不会头大身子小 */
 .ex-fp-map .cluster.ex-fp-point:hover::after {
-    font-size: 18px;
+    font-size: 16.25px;
 }
 
 /* 3D 时 DOM marker 不会跟着倾斜，看起来像浮在斜面上：加深投影做一点落地感补偿 */
@@ -446,8 +460,8 @@
 
 /* 预览小地图比 /map 页小：hover 别撑到 80px 盖住周边 */
 .ex-fp-map .img-post.marker.ex-fp-point:hover {
-    inline-size: 44px;
-    block-size: 44px;
+    inline-size: 37.5px;
+    block-size: 37.5px;
 }
 
 .ex-fp-map .no-post.marker.ex-fp-point:hover {
@@ -491,11 +505,50 @@
         0 6px 14px rgb(0 0 0 / 0.28);
 }
 
+/* 激活点用比普通 hover 更粗的链接色描边，和「只是被 hover」区分开 */
 .ex-fp-point.is-active {
-    z-index: 5;
+    z-index: 6;
     box-shadow:
-        0 0 0 3px color-mix(in srgb, var(--color-link) 60%, transparent),
-        0 6px 16px rgb(0 0 0 / 0.3);
+        0 0 0 2px var(--body-background),
+        0 0 0 5px var(--color-link);
+}
+
+/* 光晕单独一层，只动 transform/opacity，避免 box-shadow 逐帧重绘造成不丝滑 */
+.ex-fp-halo {
+    position: absolute;
+    inset: -7px;
+    z-index: -1;
+    display: block;
+    border: 2px solid color-mix(in srgb, var(--color-link) 72%, transparent);
+    border-radius: 50%;
+    box-shadow: 0 0 22px 6px color-mix(in srgb, var(--color-link) 46%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.92);
+    will-change: transform, opacity;
+}
+
+.ex-fp-point.is-active .ex-fp-halo {
+    animation: ex-fp-halo-breathe 2.2s ease-in-out infinite;
+}
+
+@keyframes ex-fp-halo-breathe {
+    0%,
+    100% {
+        opacity: 0.3;
+        transform: scale(0.9);
+    }
+    50% {
+        opacity: 0.95;
+        transform: scale(1.18);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ex-fp-point.is-active .ex-fp-halo {
+        animation: none;
+        opacity: 0.38;
+    }
 }
 
 .ex-fp-point:focus-visible {

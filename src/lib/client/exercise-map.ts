@@ -86,7 +86,6 @@ import {
 export type { ExerciseMapController, ExerciseMapOptions, ExerciseMapStatus } from './exercise-map/types';
 export { PRIVACY_CITIES } from './exercise-map/constants';
 
-
 class ExerciseMapInstance implements ExerciseMapController {
     private readonly options: ExerciseMapOptions;
     private map: mapboxgl.Map | null = null;
@@ -329,8 +328,8 @@ class ExerciseMapInstance implements ExerciseMapController {
     setCompact(compact: boolean): void {
         if (this.destroyed || compact === this.compact) return;
         this.compact = compact;
-        // 单条轨迹是 3D 视角：吸顶只裁切画面，保留镜头角度与缩放；2D 范围则等高度过渡结束后
-        // 按可见区域重新取景，避免路线被上下裁掉。
+        // 吸顶只改变可见窗口的高度。单条轨迹如果在吸顶时取景、随后又展开，旧机位会一直
+        // 按窄窗口的 padding 计算，路线看起来缩在中间很小；高度稳定后统一重新取景。
         if (this.compactTimer !== null) {
             clearTimeout(this.compactTimer);
             this.compactTimer = null;
@@ -338,7 +337,7 @@ class ExerciseMapInstance implements ExerciseMapController {
         const duration = motionDuration(300);
         this.compactTimer = setTimeout(() => {
             this.compactTimer = null;
-            if (this.destroyed || this.scope.kind === 'record') return;
+            if (this.destroyed) return;
             this.focusOnScope(true);
         }, duration + 40);
     }
@@ -1038,7 +1037,7 @@ class ExerciseMapInstance implements ExerciseMapController {
             return;
         }
 
-        const maxZoom = ids.length ? 15 : 13;
+        const maxZoom = ids.length > 0 ? (this.scope.kind === 'record' ? 17 : 15) : 13;
         const duration = motionDuration(animate ? 700 : 0);
 
         if (!this.hasSize()) {
@@ -1063,16 +1062,19 @@ class ExerciseMapInstance implements ExerciseMapController {
 
         // 单条轨迹用 3D 俯仰视角，fitBounds 时就把 pitch 算进去，避免先平视 fit 再抬角度把路线挤出画面
         const pitched = this.scope.kind === 'record';
-        const base = pitched ? { top: 44, bottom: 52, left: 40, right: 40 } : { top: 18, bottom: 28, left: 18, right: 18 };
+        // 单条轨迹的 padding 收一点：3D 俯仰本身会吃掉可用高度，留太多会让路线显得很小
+        const base = pitched ? { top: 36, bottom: 44, left: 36, right: 36 } : { top: 18, bottom: 28, left: 18, right: 18 };
         // 吸顶时地图容器保持完整高度、外面只做居中裁切：把裁掉的上下部分补进 padding，
         // 这样路线仍然完整落在可见区域里，而不是贴着被裁掉的边缘。
         const fullHeight = this.options.container.clientHeight;
         const visibleHeight = this.options.viewport?.clientHeight ?? fullHeight;
         const crop = visibleHeight > 0 && visibleHeight < fullHeight ? Math.round((fullHeight - visibleHeight) / 2) : 0;
         const padding = { top: base.top + crop, bottom: base.bottom + crop, left: base.left, right: base.right };
+        // 重新取景时保留当前朝向：单条轨迹会自动旋转，每次都回正北会让镜头突然拧一下
+        const bearing = pitched ? map.getBearing() || 0 : 0;
         try {
             // 底部多留一点：Mapbox logo / attribution / 提示条都在下沿，避免压住路线
-            map.fitBounds(bounds, { padding, duration, maxZoom, pitch: pitched ? 50 : 0, bearing: 0 });
+            map.fitBounds(bounds, { padding, duration, maxZoom, pitch: pitched ? 50 : 0, bearing });
         } catch {
             // 容器尺寸异常时 fitBounds 可能抛错，忽略即可
         }
