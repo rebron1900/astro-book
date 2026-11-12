@@ -1,6 +1,66 @@
 {
   "data": [
     {
+      "post_id": 641968221371700400,
+      "shelf": "complete",
+      "comment_text": null,
+      "rating_grade": 6,
+      "item": {
+        "id": "https://neodb.social/movie/53uGcmTcUC6RMxKLEMhXuh",
+        "title": "新人类战争：复活男",
+        "category": "movie",
+        "cover_image_url": "https://neodb.social/m/movie/2022/06/035d749426-93a0-4373-8768-4c2f877cd54e.png",
+        "url": "/movie/53uGcmTcUC6RMxKLEMhXuh",
+        "uuid": "53uGcmTcUC6RMxKLEMhXuh",
+        "localized_title": [
+          {
+            "lang": "zh-cn",
+            "text": "新人类战争：复活男"
+          },
+          {
+            "lang": "ko",
+            "text": "신인류 전쟁: 부활남"
+          }
+        ],
+        "type": "Movie",
+        "title_cn": "新人类战争：复活男"
+      },
+      "created_time": "2026-11-07T18:52:31.126Z",
+      "visibility": 0
+    },
+    {
+      "post_id": 641942348649102500,
+      "shelf": "complete",
+      "comment_text": null,
+      "rating_grade": 5,
+      "item": {
+        "id": "https://neodb.social/movie/2TLjV1iqseUjjdRO7sKn9w",
+        "title": "The Cycle",
+        "category": "movie",
+        "cover_image_url": "https://neodb.social/m/item/movie/2026/10/24/9fa358ad-47da-41ca-b5d9-6e57d79b7545.jpg",
+        "url": "/movie/2TLjV1iqseUjjdRO7sKn9w",
+        "uuid": "2TLjV1iqseUjjdRO7sKn9w",
+        "localized_title": [
+          {
+            "lang": "en",
+            "text": "The Cycle"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "老爸的尸体"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "尸变"
+          }
+        ],
+        "type": "Movie",
+        "title_cn": "老爸的尸体"
+      },
+      "created_time": "2026-11-07T17:09:42.586Z",
+      "visibility": 0
+    },
+    {
       "post_id": 641057964478073500,
       "shelf": "complete",
       "comment_text": "惩罚者是差点杀死蜘蛛侠的人，灭霸？路边一条。\n\n内容太单薄了，一般般",
@@ -393,7 +453,7 @@
         "id": "https://neodb.social/tv/season/0km65gZeIYbwBQ8y7wGNPK",
         "title": "Where the Mask Ends (嫁金钗)",
         "category": "tv",
-        "cover_image_url": "https://neodb.social/m/item/doubanmovie/2026/10/27/6ac4dda6-db1b-4b2d-a2ef-0090ced596ca.webp",
+        "cover_image_url": "https://neodb.social/m/item/doubanmovie/2026/11/05/454ad989-7b86-40be-99e0-add251a6fa64.webp",
         "url": "/tv/season/0km65gZeIYbwBQ8y7wGNPK",
         "uuid": "0km65gZeIYbwBQ8y7wGNPK",
         "localized_title": [
@@ -22251,7 +22311,7 @@
       "rating_grade": 8,
       "item": {
         "id": "https://neodb.social/game/2g877jLTAacjnWyrUwGu6G",
-        "title": "怪物猎人 崛起",
+        "title": "MONSTER HUNTER RISE",
         "category": "game",
         "cover_image_url": "https://neodb.social/m/item/doubangame/2024/07/16/7d8a9870-0537-44c5-92d5-b7662a2e9c4e.jpg",
         "url": "/game/2g877jLTAacjnWyrUwGu6G",
@@ -22272,6 +22332,42 @@
           {
             "lang": "ja",
             "text": "モンスターハンターライズ"
+          },
+          {
+            "lang": "en",
+            "text": "MONSTER HUNTER RISE"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "MONSTER HUNTER RISE"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "MONSTER HUNTER RISE"
+          },
+          {
+            "lang": "es",
+            "text": "MONSTER HUNTER RISE"
+          },
+          {
+            "lang": "fr",
+            "text": "MONSTER HUNTER RISE"
+          },
+          {
+            "lang": "de",
+            "text": "MONSTER HUNTER RISE"
+          },
+          {
+            "lang": "pt",
+            "text": "MONSTER HUNTER RISE"
+          },
+          {
+            "lang": "ja",
+            "text": "MONSTER HUNTER RISE"
+          },
+          {
+            "lang": "ko",
+            "text": "MONSTER HUNTER RISE"
           }
         ],
         "type": "Game",
@@ -39168,6 +39264,10 @@
           {
             "lang": "zh-tw",
             "text": "白蛇2：青蛇劫起"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "白蛇Ⅱ：青蛇劫起"
           }
         ],
         "type": "Movie",
@@ -63760,6 +63860,18 @@
           {
             "lang": "pt",
             "text": "Gake no Ue no Ponyo"
+          },
+          {
+            "lang": "hr",
+            "text": "Gake no ue no Ponyo"
+          },
+          {
+            "lang": "it",
+            "text": "Ponyo sulla scogliera"
+          },
+          {
+            "lang": "pt-br",
+            "text": "Ponyo: Uma Amizade que Veio do Mar"
           }
         ],
         "type": "Movie",
@@ -73032,6 +73144,14 @@
           {
             "lang": "ko",
             "text": "타이타닉"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "铁达尼号"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "铁达尼号"
           }
         ],
         "type": "Movie",

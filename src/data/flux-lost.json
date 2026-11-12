@@ -1,5 +1,35 @@
 [
   {
+    "id": 109,
+    "title": "吉吉如律令",
+    "site_url": "https://type.nivo.life",
+    "reason": "error",
+    "first_seen_at": "2026-11-06T23:08:32.651Z",
+    "feed_url": "https://type.nivo.life/feed/",
+    "error": "由于意外的 HTTP 状态码 530，网站暂不可用。这不是 Miniflux 的问题，请稍后重试。",
+    "last_entry_at": "2026-10-22T06:41:00.000Z"
+  },
+  {
+    "id": 187,
+    "title": "木 竹 造 价",
+    "site_url": "https://www.laomuzhu.cn",
+    "reason": "error",
+    "first_seen_at": "2026-11-12T00:44:44.353Z",
+    "feed_url": "https://www.laomuzhu.cn/feed/",
+    "error": "未找到请求的资源。请检查 URL。",
+    "last_entry_at": "2026-11-06T11:18:00.000Z"
+  },
+  {
+    "id": 186,
+    "title": "瓦匠个人小站",
+    "site_url": "https://airy.ink",
+    "reason": "error",
+    "first_seen_at": "2026-11-09T19:51:14.236Z",
+    "feed_url": "https://airy.ink/feed",
+    "error": "无法解析订阅源格式：parser: unable to detect feed format。",
+    "last_entry_at": "2026-10-28T02:55:00.000Z"
+  },
+  {
     "id": 35,
     "title": "叶小明的博客 XIAOMING'S BLOG",
     "site_url": "https://vimin.cc",
@@ -7,6 +37,16 @@
     "first_seen_at": "2026-11-01T13:25:04.411Z",
     "feed_url": "https://vimin.cc/feed/",
     "error": "直连订阅源失败: HTTP 403 Forbidden"
+  },
+  {
+    "id": 99,
+    "title": "怡红院落",
+    "site_url": "https://imnerd.org",
+    "reason": "error",
+    "first_seen_at": "2026-11-09T06:27:20.978Z",
+    "feed_url": "https://imnerd.org/index.xml",
+    "error": "未找到请求的资源。请检查 URL。",
+    "last_entry_at": "2026-03-26T00:00:00.000Z"
   },
   {
     "id": 148,
