@@ -187,4 +187,7 @@ jobs:
                   echo "$VPS_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
                   chmod 600 ~/.ssh/id_rsa
                   echo "StrictHostKeyChecking no" >> ~/.ssh/config
-                  rsync -avz --delete --exclude='.prerender/' -e "ssh -p $VPS_PORT" dist/ $VPS_USER@$VPS_HOST:/var/11ty-data
+                  # 花园附件已在 R2，VPS 只收页面/脚本/样式：
+                  # /garden/99-Rsources/Assets/ 整目录排除，既不新传也不删（旧文件留在服务器上继续可访问）。
+                  # -c 按内容比较：每次构建都会重写 mtime，只靠 mtime 会误判成「全部有变化」而重传所有页面。
+                  rsync -avzc --delete --exclude='.prerender/' --exclude='/garden/99-Rsources/Assets/' -e "ssh -p $VPS_PORT" dist/ $VPS_USER@$VPS_HOST:/var/11ty-data
