@@ -9715,19 +9715,19 @@
       "rating_grade": 5,
       "item": {
         "id": "https://neodb.social/movie/3rsuSP1f283c5CuJdxyMIt",
-        "title": "Minecraft",
+        "title": "A Minecraft Movie",
         "category": "movie",
         "cover_image_url": "https://neodb.social/m/item/movie/2025/05/21/9695a980-3721-4fe5-8664-db5eb095e4ef.jpg",
         "url": "/movie/3rsuSP1f283c5CuJdxyMIt",
         "uuid": "3rsuSP1f283c5CuJdxyMIt",
         "localized_title": [
           {
-            "lang": "zh-cn",
-            "text": "我的世界"
+            "lang": "en",
+            "text": "A Minecraft Movie"
           },
           {
-            "lang": "en",
-            "text": "Minecraft"
+            "lang": "zh-cn",
+            "text": "我的世界"
           },
           {
             "lang": "zh-cn",
@@ -9742,24 +9742,12 @@
             "text": "マインクラフト／ザ・ムービー"
           },
           {
-            "lang": "pt",
-            "text": "A Minecraft Movie"
-          },
-          {
-            "lang": "de",
-            "text": "A Minecraft Movie"
-          },
-          {
             "lang": "fr",
             "text": "Minecraft, le film"
           },
           {
             "lang": "es",
             "text": "Una película de Minecraft"
-          },
-          {
-            "lang": "en",
-            "text": "A Minecraft Movie"
           },
           {
             "lang": "zh-hk",
@@ -9779,18 +9767,6 @@
           },
           {
             "lang": "nn",
-            "text": "A Minecraft Movie"
-          },
-          {
-            "lang": "nb",
-            "text": "A Minecraft Movie"
-          },
-          {
-            "lang": "no",
-            "text": "A Minecraft Movie"
-          },
-          {
-            "lang": "sv",
             "text": "A Minecraft Movie"
           },
           {
