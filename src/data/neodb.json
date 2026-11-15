@@ -7316,6 +7316,14 @@
           {
             "lang": "zh-hant",
             "text": "超人"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "新超人"
+          },
+          {
+            "lang": "en",
+            "text": "Superman: Legacy"
           }
         ],
         "type": "Movie",
@@ -17120,6 +17128,18 @@
           {
             "lang": "ko",
             "text": "퓨리오사"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "芙莉歐莎：瘋狂麥斯傳奇篇章（台）"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "芙莉歐莎：末日先鋒傳說（港）"
+          },
+          {
+            "lang": "es",
+            "text": "Furiosa: A Mad Max Saga"
           }
         ],
         "type": "Movie",
@@ -42880,6 +42900,10 @@
           {
             "lang": "ko",
             "text": "당인가탐안"
+          },
+          {
+            "lang": "en",
+            "text": "DETECTIVE CHINATOWN"
           }
         ],
         "type": "Movie",
@@ -43266,24 +43290,28 @@
             "text": "一出好戏"
           },
           {
-            "lang": "zh-cn",
-            "text": "大富翁"
-          },
-          {
-            "lang": "zh-cn",
-            "text": "诳想曲"
+            "lang": "zh",
+            "text": "一出好戏"
           },
           {
             "lang": "en",
             "text": "The Island"
           },
           {
-            "lang": "zh",
-            "text": "一出好戏"
+            "lang": "ja",
+            "text": "アイランド 一出好戯"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "诳想曲"
           },
           {
             "lang": "es",
             "text": "The Island"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "大富翁"
           },
           {
             "lang": "fr",
@@ -43292,10 +43320,6 @@
           {
             "lang": "de",
             "text": "Yi chu hao xi"
-          },
-          {
-            "lang": "ja",
-            "text": "アイランド 一出好戯"
           },
           {
             "lang": "ko",
@@ -44392,6 +44416,10 @@
           {
             "lang": "zh-tw",
             "text": "梦里乾坤"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "發夢王大歷險"
           }
         ],
         "type": "Movie",
@@ -58434,32 +58462,12 @@
             "text": "Hacksaw Ridge"
           },
           {
-            "lang": "zh-cn",
-            "text": "钢锯岭"
-          },
-          {
-            "lang": "zh-cn",
-            "text": "钢铁英雄(台)"
-          },
-          {
-            "lang": "en",
-            "text": "The Conscientious Objector"
+            "lang": "zh-tw",
+            "text": "鋼鐵英雄"
           },
           {
             "lang": "fr",
             "text": "Tu ne tueras point"
-          },
-          {
-            "lang": "de",
-            "text": "Hacksaw Ridge - Die Entscheidung"
-          },
-          {
-            "lang": "nn",
-            "text": "Hacksaw Ridge"
-          },
-          {
-            "lang": "nb",
-            "text": "Hacksaw Ridge"
           },
           {
             "lang": "no",
@@ -58472,10 +58480,6 @@
           {
             "lang": "da",
             "text": "Hacksaw Ridge"
-          },
-          {
-            "lang": "zh",
-            "text": "拉鋸戰"
           },
           {
             "lang": "es",
@@ -58496,6 +58500,14 @@
           {
             "lang": "ko",
             "text": "핵소 리지"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "鋼鋸嶺"
+          },
+          {
+            "lang": "zh-sg",
+            "text": "钢锯岭"
           }
         ],
         "type": "Movie",
@@ -62020,6 +62032,10 @@
           {
             "lang": "es",
             "text": "La vida de Pi"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "少年Pi的奇幻漂"
           }
         ],
         "type": "Movie",
@@ -67096,6 +67112,10 @@
           {
             "lang": "pt",
             "text": "Edward Scissorhands"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "幻海奇緣"
           }
         ],
         "type": "Movie",
