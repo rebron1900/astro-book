@@ -11,7 +11,7 @@
  *
  * 输出只打印「目录：篇数 / 各类计数」，不打印标题、路径或正文。
  */
-import { readdir, readFile, writeFile, mkdir, copyFile, rm, stat } from 'node:fs/promises';
+import { readdir, readFile, writeFile, mkdir, copyFile, rm, stat, chmod } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -54,6 +54,16 @@ const WRITE_PUBLISHED = args.has('--write-published');
 /* ------------------------------ 工具 ------------------------------ */
 
 const toPosix = (p) => p.split(path.sep).join('/');
+
+/** 目录 755 / 文件 644：静态附件要能被 nginx 读，不能继承 CI 的 umask 077。 */
+async function chmodTree(dir) {
+    await chmod(dir, 0o755);
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) await chmodTree(full);
+        else await chmod(full, 0o644);
+    }
+}
 
 async function walk(dir, base = dir) {
     const out = [];
@@ -371,6 +381,8 @@ async function main() {
         assetPaths.push(mirror);
         assetStats.copied += 1;
     }
+    // 附件要由 nginx 直接读：不跟着调用方的 umask（CI 里是 077）变成 600/700，否则线上 403。
+    await chmodTree(ASSET_DIR);
 
     // 8) 索引产物
     const folders = foldersOf(notes.map((note) => note.id));

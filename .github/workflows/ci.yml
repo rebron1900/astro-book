@@ -150,6 +150,8 @@ jobs:
                   fi
                   rm -f "$askpass"
                   unset GARDEN_VAULT_TOKEN GIT_ASKPASS GIT_TERMINAL_PROMPT
+                  # 克隆用 077，但同步产物要进 public/ 给 nginx 读：回到 022，避免附件变 600/700 后线上 403。
+                  umask 022
                   GARDEN_VAULT_DIR=.garden/vault yarn sync:garden
 
             - name: Check garden before build (fail closed)
@@ -190,4 +192,7 @@ jobs:
                   # 花园附件已在 R2，VPS 只收页面/脚本/样式：
                   # /garden/99-Rsources/Assets/ 整目录排除，既不新传也不删（旧文件留在服务器上继续可访问）。
                   # -c 按内容比较：每次构建都会重写 mtime，只靠 mtime 会误判成「全部有变化」而重传所有页面。
-                  rsync -avzc --delete --exclude='.prerender/' --exclude='/garden/99-Rsources/Assets/' -e "ssh -p $VPS_PORT" dist/ $VPS_USER@$VPS_HOST:/var/11ty-data
+                  rsync -avzc --delete --chmod=D755,F644 --exclude='.prerender/' --exclude='/garden/99-Rsources/Assets/' -e "ssh -p $VPS_PORT" dist/ $VPS_USER@$VPS_HOST:/var/11ty-data
+                  # 已排除的附件不会再传输，但之前用 umask 077 传上去的是 600/700，nginx 读不到（403）。
+                  # 这里只改权限、不传文件：一次性把服务器上已有的图片恢复成可读。
+                  ssh -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" "chmod -R a+rX /var/11ty-data/garden/99-Rsources/Assets 2>/dev/null || true"
