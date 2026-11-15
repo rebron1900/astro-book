@@ -43,6 +43,7 @@ const isFullWidth = post && (post.slug?.includes('albums') || post.tags?.some((t
                     <slot name="comments" />
                 </div>
                 <label for="menu-control" class="hidden book-menu-overlay"></label>
+                <label for="toc-control" class="hidden book-toc-overlay"></label>
             </div>
 
             {!hideToc && !isFullWidth && (
@@ -58,3 +59,9 @@ const isFullWidth = post && (post.slug?.includes('albums') || post.tags?.some((t
         <Fragment set:html={settings?.codeinjection_foot} />
     </body>
 </html>
+
+<script>
+    import { bindMobileDrawers } from '../lib/client/mobile-drawers';
+
+    bindMobileDrawers();
+</script>

@@ -447,6 +447,18 @@ body[dir='rtl'] .book-menu {
     small {
         opacity: 0.5;
     }
+
+    /* 键盘上下选择时的高亮；空态用一行灰字，不占满列表 */
+    #book-search-results li.active > a {
+        color: var(--color-link);
+        font-weight: 600;
+    }
+
+    #book-search-results .book-search-empty {
+        padding: $padding-8 0;
+        color: var(--gray-600);
+        list-style: none;
+    }
 }
 
 .full-width {
@@ -584,7 +596,15 @@ body[dir='rtl'] .book-menu {
         visibility: hidden;
         margin-inline-start: -$menu-width;
         font-size: $font-size-base;
-        z-index: 1;
+        /* 抽屉要压住遮罩（94）和正文 */
+        z-index: 95;
+    }
+
+    /* 目录/反链抽屉和左栏共用 fixed 定位；父级若有 will-change: transform，
+       fixed 会退化成相对 .book-page（滚到一半时抽屉会跑到视口外），这里关掉 */
+    .book-page,
+    .book-header aside {
+        will-change: auto;
     }
 
     .book-menu .book-menu-content {
@@ -610,7 +630,7 @@ body[dir='rtl'] .book-menu {
 
         .book-menu .book-menu-content {
             transform: translateX($menu-width);
-            box-shadow: 0 0 $padding-8 rgba(0, 0, 0, 0.1);
+            box-shadow: 14px 0 36px rgb(0 0 0 / 0.18);
             background-color: var(--body-background);
 
             span.menu-flag.current {
@@ -618,17 +638,8 @@ body[dir='rtl'] .book-menu {
             }
         }
 
-        .book-page {
-            opacity: 0.25;
-        }
-
         .book-menu-overlay {
             display: block;
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
         }
     }
 
@@ -636,10 +647,75 @@ body[dir='rtl'] .book-menu {
         @include outline;
     }
 
-    #toc-control:checked ~ main {
-        .book-header aside {
-            display: block;
+    /* 两个抽屉共用一块全屏遮罩：点空白处关闭；正文不再用整页 opacity 压暗 */
+    .book-menu-overlay,
+    .book-toc-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 94;
+        background: rgb(0 0 0 / 0.35);
+        backdrop-filter: blur(1px);
+        -webkit-backdrop-filter: blur(1px);
+    }
+
+    /* 只在真的有目录/反链面板的页面铺遮罩，避免首页之类按到目录图标时只锁滚动 */
+    #toc-control:checked ~ main:has(.book-header aside) .book-toc-overlay {
+        display: block;
+    }
+
+    /* 移动端目录/反链：从右侧滑入的抽屉（右栏本来就在右边），
+       和左栏导航同一套遮罩、阴影与滚动锁定 */
+    .book-header aside {
+        display: block;
+        position: fixed;
+        inset-block: 0;
+        inset-inline-end: 0;
+        z-index: 96;
+        inline-size: min(17rem, calc(100vw - 2.75rem));
+        max-inline-size: 17rem;
+        margin: 0;
+        padding: 1rem 0.85rem 1.5rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        background: var(--body-background);
+        box-shadow: -14px 0 36px rgb(0 0 0 / 0.18);
+        transform: translateX(100%);
+        visibility: hidden;
+        font-size: $font-size-12;
+        line-height: 1.5;
+        transition:
+            transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+            visibility 240ms;
+
+        /* 抽屉里没有 `.book-toc` 那层样式，补齐目录与反链的列表/链接/高亮 */
+        ul {
+            list-style: none;
         }
+
+        a {
+            color: inherit;
+        }
+
+        a:hover {
+            color: var(--color-hover-link);
+        }
+
+        a.active,
+        li.active > a {
+            color: var(--color-link);
+            font-weight: bold;
+        }
+
+        nav > ul > li:first-child {
+            margin-top: 0;
+        }
+    }
+
+    #toc-control:checked ~ main .book-header aside {
+        transform: translateX(0);
+        visibility: visible;
     }
 
     // for RTL support
@@ -647,6 +723,14 @@ body[dir='rtl'] .book-menu {
         .book-menu .book-menu-content {
             transform: translateX(-$menu-width);
         }
+    }
+}
+
+/* 抽屉打开时锁住背景滚动，抽屉内容自己滚（只在移动端断点内生效） */
+@media screen and (max-width: $mobile-breakpoint) {
+    html.drawer-open,
+    html.drawer-open body {
+        overflow: hidden;
     }
 }
 

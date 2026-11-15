@@ -47,6 +47,8 @@ const MenuTheme = () => {
     const initViewTrans = (theme: ThemeConfig) => {
         if (document.documentElement.classList.contains('reduce')) {
             changeTheme(theme);
+            // 走「减少动效」分支时也要通知监听者，否则图谱等按事件取色的组件会停在旧主题
+            document.dispatchEvent(new Event('theme-changed'));
             return;
         }
         // 因为我的侧边栏是没有启用动画效果的

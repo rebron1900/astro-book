@@ -110,6 +110,25 @@ export async function fetchArtalkPageStats(pageKey = artalkPageKey(), fetcher: t
 }
 
 /**
+ * 记录一次页面浏览（PV），返回该页最新 PV。
+ *
+ * 花园笔记很多没有评论区（短笔记不渲染 Artalk），评论组件也就不存在，
+ * page 记录不会被创建、点赞拿不到 page id。这里主动登记页面并 +1。
+ * 响应只有 `pv`，不含 page id；要 id 时再调 {@link fetchArtalkPageStats}。
+ */
+export async function logArtalkPagePv(pageKey = artalkPageKey(), pageTitle = '', fetcher: typeof fetch = fetch): Promise<number> {
+    const res = await fetcher(artalkApiUrl('/pages/pv'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ page_key: pageKey, page_title: pageTitle, site_name: ARTALK_SITE })
+    });
+    if (!res.ok) throw new Error(`Artalk pv API failed: ${res.status}`);
+
+    const data = (await res.json()) as { pv?: number };
+    return Number(data.pv ?? 0);
+}
+
+/**
  * 给页面点“赞”（page_up）。Artalk 按 IP 去重，同一 IP 重复调用等于取消。
  *
  * 注意：如果 Artalk 前面有 CDN / 反向代理，需要在 Artalk 配置里设置

@@ -9,6 +9,7 @@
     }
 
     h1,
+    h1,
     h2,
     h3,
     h4,
@@ -38,9 +39,15 @@
     h6 {
         font-weight: bolder;
     }
-    /** 引用自一个球博客 **/
+    /* 标题字号：clamp 响应式，桌面严格保持 2 / 1.6 / 1.35 / 1.15 / 1 / 0.9 的递减阶梯，
+       移动端 h1–h4 整体降一档，h5/h6 已接近或低于正文，不再降（避免又比正文还小）。
+       页面标题 `.book-title.page-title` 是全站独立口径，不受这里影响。 */
+    h1 {
+        font-size: clamp(1.7rem, 1.59rem + 0.46vw, 2rem);
+    }
+
     h2 {
-        font-size: 1.7rem;
+        font-size: clamp(1.4rem, 1.33rem + 0.3vw, 1.6rem);
 
         &:first-of-type {
             margin-top: 0;
@@ -48,19 +55,19 @@
     }
 
     h3 {
-        font-size: 1.4rem;
+        font-size: clamp(1.2rem, 1.14rem + 0.23vw, 1.35rem);
     }
 
     h4 {
-        font-size: 1.3rem;
+        font-size: clamp(1.05rem, 1.01rem + 0.15vw, 1.15rem);
     }
 
     h5 {
-        font-size: 0.875em;
+        font-size: 1rem;
     }
 
     h6 {
-        font-size: 0.75em;
+        font-size: 0.9rem;
     }
 
     b,

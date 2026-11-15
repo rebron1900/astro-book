@@ -1,26 +1,30 @@
 ---
-const { postID } = Astro.props;
+const { postID, countPv = true, showFediverse = true } = Astro.props as { postID?: string; countPv?: boolean; showFediverse?: boolean };
 ---
 
-<div id="activitypub" data-postid={postID}>
-    <div>
-        <h3 class="card-title">来自联邦宇宙的回应</h3>
-    </div>
+{
+    showFediverse && (
+        <div id="activitypub" data-postid={postID}>
+            <div>
+                <h3 class="card-title">来自联邦宇宙的回应</h3>
+            </div>
 
-    <div class="social-interactions">
-        <ol class="discussion-avatar-list"></ol>
-        <div class="social-note">
-            在 Mastodon 实例上搜索此 URL 来回复 (<a href="https://www.eallion.com/fediverse/" target="_blank">联邦宇宙及Mastodon简介 by eallion</a>)<br />
-            <code>https://social.1900.live/@1900/statuses/</code>
+            <div class="social-interactions">
+                <ol class="discussion-avatar-list"></ol>
+                <div class="social-note">
+                    在 Mastodon 实例上搜索此 URL 来回复 (<a href="https://www.eallion.com/fediverse/" target="_blank">联邦宇宙及Mastodon简介 by eallion</a>)<br />
+                    <code>https://social.1900.live/@1900/statuses/</code>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+    )
+}
 
 <div id="comments">
     <div>
         <h3 id="join-comments" class="card-title">加入评论</h3>
     </div>
-    <div class="at-comments"></div>
+    <div class="at-comments" data-count-pv={countPv ? 'true' : 'false'} data-show-fediverse={showFediverse ? 'true' : 'false'}></div>
 </div>
 
 <script>
@@ -50,12 +54,15 @@ const { postID } = Astro.props;
     });
 
     document.addEventListener('astro:page-load', () => {
-        if (!document.querySelector(commentinfo.el)) return;
+        const commentsEl = document.querySelector<HTMLElement>(commentinfo.el);
+        if (!commentsEl) return;
 
         const pageKey = artalkPageKey();
         // 与旧版自建计数保持一致：同一浏览器对同一页面只贡献一次 PV。
         // 想改成“每天首次访问计一次”，把 hasCountedPv 换成带时间戳 TTL 的判断即可。
-        const pvAdd = !hasCountedPv(pageKey);
+        // 花园笔记由 garden-stats.ts 统一登记 PV，这里通过 data-count-pv="false" 让位，
+        // 避免评论区先跑时抢先写标记、把花园那侧的登记挡掉。
+        const pvAdd = commentsEl.dataset.countPv !== 'false' && !hasCountedPv(pageKey);
 
         currentArtalk?.destroy?.();
         const artalk = Artalk.init({
@@ -70,7 +77,8 @@ const { postID } = Astro.props;
         currentArtalk = artalk as unknown as { destroy?: () => void };
         if (pvAdd) markPvCounted(pageKey);
 
-        loadInteractions();
+        // 花园笔记不显示「来自联邦宇宙的回应」这一块，也不发互动请求
+        if (commentsEl.dataset.showFediverse !== 'false') loadInteractions();
 
         artalk.on('comment-inserted', function () {
             cocoMessage.insertCSS();

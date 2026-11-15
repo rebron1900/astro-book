@@ -8,6 +8,7 @@ import {
     fetchArtalkPageStats,
     hasCountedPv,
     hasLiked,
+    logArtalkPagePv,
     markLiked,
     markPvCounted,
     voteArtalkPageUp
@@ -108,6 +109,29 @@ describe('fetchArtalkPageStats', () => {
         );
 
         await expect(fetchArtalkPageStats('/foo/')).rejects.toThrow('Artalk comments API failed: 500');
+    });
+});
+
+describe('logArtalkPagePv', () => {
+    it('posts the page identity and returns the new PV', async () => {
+        const fetchMock = vi.fn(() => Promise.resolve(okResponse({ pv: 124 })));
+        vi.stubGlobal('fetch', fetchMock);
+
+        await expect(logArtalkPagePv('/foo/', '标题')).resolves.toBe(124);
+        expect(fetchMock).toHaveBeenCalledWith(`${ARTALK_SERVER}/api/v2/pages/pv`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ page_key: '/foo/', page_title: '标题', site_name: ARTALK_SITE })
+        });
+    });
+
+    it('throws when the API responds with an error', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(() => Promise.resolve(new Response(null, { status: 500 })))
+        );
+
+        await expect(logArtalkPagePv('/foo/')).rejects.toThrow('Artalk pv API failed: 500');
     });
 });
 

@@ -1,5 +1,6 @@
 ---
 import { settings } from '../../api/store';
+import { isActiveUrl as matchesActiveUrl } from '../../lib/utils/active-url';
 import { StickyNote, HouseHeart, MessageCircleHeart, Sparkles, Sprout, Images, TentTree, Package, Tags, Flower2, DoorOpen, SportShoe } from '@lucide/astro';
 
 const { title } = Astro.props;
@@ -43,16 +44,7 @@ const menus = nav.map((rawItem) => {
 });
 
 // 站内路径统一去掉首尾差异；支持二级页面（如 /timeline/memo/2/）命中父级菜单。
-const normalizePath = (value: string) => {
-    const path = value.split(/[?#]/, 1)[0];
-    return path.replace(/\/+$/, '') || '/';
-};
-const isActiveUrl = (url: string) => {
-    if (!url.startsWith('/')) return false;
-    const current = normalizePath(Astro.url.pathname);
-    const target = normalizePath(url);
-    return current === target || (target !== '/' && current.startsWith(`${target}/`));
-};
+const isActiveUrl = (url: string) => matchesActiveUrl(Astro.url.pathname, url);
 const hasActiveNav = menus.some(({ item }) => isActiveUrl(item.url));
 ---
 
@@ -80,7 +72,7 @@ const hasActiveNav = menus.some(({ item }) => isActiveUrl(item.url));
                         <li class="menu-flag-item">
                             {isCurrent && <span class="menu-flag-marker" aria-hidden="true"></span>}
                             {/* prettier-ignore */}
-                            <a href={item.url} data-astro-reload={item.url === '/exercise/' || item.url === '/exercise/footprint/' ? true : undefined} class={`menu-flag ellipsis ${isCurrent ? 'current' : ''}`}>
+                            <a href={item.url} class={`menu-flag ellipsis ${isCurrent ? 'current' : ''}`}>
                                 {Icon && <Icon class="book-icon" />}{CleanLabel || item.label}
                             </a>
                         </li>

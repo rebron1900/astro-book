@@ -863,6 +863,174 @@ h3.card-title {
     border-radius: calc(0.7rem - 1px);
 }
 
+/* 花园正文链接：站内链（笔记互链、站内页面）用「高亮底纹 + 无下划线」，
+   站外链保留下划线并在末尾加 ↗。和 Quartz 的 internal / external 区分同一思路，
+   这里只借语义、配色仍用站点的链接色。 */
+.garden-note .garden-note-body {
+    a.link-internal {
+        padding: 0.05em 0.18em;
+        border-radius: 3px;
+        background: color-mix(in srgb, var(--color-link) 8%, transparent);
+        text-decoration: none;
+        -webkit-box-decoration-break: clone;
+        box-decoration-break: clone;
+
+        &:hover {
+            color: var(--color-hover-link);
+            background: color-mix(in srgb, var(--color-hover-link) 14%, transparent);
+        }
+
+        /* 图片链接不垫底色，否则图外会多一圈方块 */
+        &:has(> img) {
+            padding: 0;
+            background: none;
+        }
+    }
+
+    a.link-external {
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.22em;
+
+        &::after {
+            content: '↗';
+            display: inline-block;
+            margin-inline-start: 0.12em;
+            font-size: 0.78em;
+            line-height: 1;
+            transform: translateY(-0.18em);
+            opacity: 0.55;
+        }
+
+        &:hover::after {
+            opacity: 1;
+        }
+    }
+}
+
+/* 花园站内链预览：卡片外观沿用上面的 .tippy-box，这里只管内部排版 */
+.garden-popover {
+    inline-size: min(28rem, calc(100vw - 3rem));
+
+    .garden-popover-title {
+        display: block;
+        margin-bottom: 0.15em;
+        color: var(--color-link);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    /* 目标页正文整体预览：和 Quartz 一样限高滚动，避免一张卡片盖满屏幕 */
+    .garden-popover-body {
+        max-block-size: 18rem;
+        margin: 0.3em -0.2em 0;
+        padding: 0.1em 0.2em 0.2em;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        color: var(--body-font-color);
+        font-size: 0.95em;
+        line-height: 1.65;
+        scrollbar-width: thin;
+
+        &::-webkit-scrollbar {
+            inline-size: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: var(--gray-300);
+        }
+
+        :is(h1, h2, h3, h4, h5, h6) {
+            margin: 0.7em 0 0.3em;
+            font-size: 1.02em;
+            line-height: 1.35;
+        }
+
+        /* 目标页正文首个 H1 在真实页面已被页面标题替代，预览里也不再重复 */
+        > h1:first-child {
+            display: none;
+        }
+
+        p {
+            margin: 0.35em 0;
+        }
+
+        a {
+            color: var(--color-link);
+            text-decoration: underline;
+            text-underline-offset: 0.2em;
+        }
+
+        :is(ul, ol) {
+            margin: 0.35em 0;
+            padding-inline-start: 1.2em;
+        }
+
+        li {
+            margin: 0.15em 0;
+        }
+
+        img,
+        video {
+            max-inline-size: 100%;
+            block-size: auto;
+            border-radius: 0.3rem;
+        }
+
+        blockquote {
+            margin: 0.45em 0;
+            padding-inline-start: 0.7em;
+            border-inline-start: 2px solid var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        pre {
+            margin: 0.45em 0;
+            padding: 0.5em 0.6em;
+            overflow-x: auto;
+            font-size: 0.85em;
+        }
+
+        code {
+            font-size: 0.9em;
+        }
+
+        table {
+            display: block;
+            overflow-x: auto;
+        }
+
+        hr {
+            margin: 0.7em 0;
+        }
+
+        .garden-note-meta {
+            display: none;
+        }
+    }
+
+    .garden-popover-meta {
+        margin-top: 0.3em;
+        color: var(--gray-600);
+        font-size: 0.9em;
+    }
+
+    &.garden-popover-loading {
+        min-inline-size: 2.5rem;
+        color: var(--gray-600);
+        text-align: center;
+    }
+}
+
+/* 左右栏里的列表一律不留浏览器默认圆点。`aside nav ul` 只盖住了带 <nav> 的那几处
+   （左栏目录、TOC、反链），`.garden-graph-toc` 这种 div 里的列表会漏出小黑点 */
+.book-toc ul,
+.book-menu ul {
+    list-style: none;
+}
+
 .aspect-ratio {
     margin: 1rem 0;
 
@@ -1221,10 +1389,19 @@ $page-sequence-max-items: 12;
 .book-page h1.page-title {
     margin: 0;
     color: var(--body-font-color);
-    font-size: clamp(1.3rem, 1.55vw, 1.55rem);
+    /* 默认走「Page 档」：27.2px（两档一致），比首页导语 22.32/18.4 高一档、保留页头感；
+       同时必须压过正文 h2（1440 25.6 / 390 22.45），否则 /links、/activity 这类 h2 密集页
+       会重现「页面标题 < 小节标题」。文章帖与花园笔记由 .page-title--article 提到文章档。 */
+    font-size: 1.7rem;
     font-weight: 600;
     letter-spacing: -0.025em;
     line-height: 1.4;
+}
+
+/* 文章档：博客帖子 / 花园笔记的顶部标题。必须压过正文 h1(2rem)、h2(1.6rem)，恢复原来的大标题。 */
+h1.page-title.page-title--article,
+.book-article h1.page-title.page-title--article {
+    font-size: clamp(1.9rem, 2.4vw, 2.3rem);
 }
 
 .page-intro {
@@ -1249,9 +1426,78 @@ $page-sequence-max-items: 12;
         margin-block-end: 1.2rem;
     }
 
+    /* Page 档移动端降一档到 24px（仍高于 h2 的 22.45）。
+       选择器优先级低于 `h1.page-title.page-title--article`，文章档与花园笔记不受影响。 */
     .page-title,
     .book-article h1.page-title,
     .book-page h1.page-title {
-        font-size: 1.15rem;
+        font-size: 1.5rem;
     }
+}
+
+/* ===== Obsidian callout（`> [!NOTE] 标题`）=====
+   类型色沿用 Obsidian 官方色（同色相在深浅主题里都读得清），底色用 color-mix 跟主题融合；
+   不加图标，标题靠字重和颜色区分。 */
+.markdown .callout {
+    --callout-accent: #448aff;
+    margin: 1.2em 0;
+    padding: 0.7em 0.95em;
+    border-inline-start: 3px solid var(--callout-accent);
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--callout-accent) 9%, transparent);
+}
+
+.markdown .callout > :first-child {
+    margin-top: 0;
+}
+
+.markdown .callout > :last-child {
+    margin-bottom: 0;
+}
+
+.markdown .callout-title {
+    margin: 0 0 0.15em;
+    color: var(--callout-accent);
+    font-size: 0.95em;
+    font-weight: 600;
+    line-height: 1.6;
+}
+
+.markdown .callout-note {
+    --callout-accent: #448aff;
+}
+.markdown .callout-info {
+    --callout-accent: #00b0ff;
+}
+.markdown .callout-tip {
+    --callout-accent: #00bfa5;
+}
+.markdown .callout-success {
+    --callout-accent: #00c853;
+}
+.markdown .callout-question {
+    --callout-accent: #64dd17;
+}
+.markdown .callout-warning {
+    --callout-accent: #ff9100;
+}
+.markdown .callout-failure {
+    --callout-accent: #ff5252;
+}
+.markdown .callout-danger {
+    --callout-accent: #ff1744;
+}
+.markdown .callout-bug {
+    --callout-accent: #f50057;
+}
+.markdown .callout-example {
+    --callout-accent: #7c4dff;
+}
+.markdown .callout-quote {
+    --callout-accent: #9e9e9e;
+}
+
+/* book-article 的首个元素不要顶部 margin（标题或正文都一样） */
+.markdown.book-article > :first-child {
+    margin-top: 0;
 }

@@ -1,0 +1,430 @@
+---
+/**
+ * 右栏局部关系图 + 全站图弹窗。
+ *
+ * 数据是页面构建期内联的 1 跳子图（≤60 节点，超出时按度数裁剪），
+ * 所以这里不发请求、不拖慢首屏。画布 aria-hidden，同内容另给一份真锚点列表做降级。
+ *
+ * 全站图按 Quartz 的做法放在弹窗里：右上角 18px 图标 → fixed 遮罩 + blur，
+ * 容器 50vw×60vh 居中；点遮罩 / Esc 关闭。数据在打开时才 fetch `/garden-graph.json`。
+ * 弹窗用 `is-open` 类做淡入 + 面板缩放（不能用 hidden 直接切，display:none 会中断过渡）。
+ */
+import type { GardenGraphEdge, GardenGraphNode } from '../../lib/garden/graph';
+import { gardenHrefOf } from '../../lib/garden/path';
+import { Maximize2 } from '@lucide/astro';
+
+interface Props {
+    currentId: string;
+    nodes: GardenGraphNode[];
+    edges: GardenGraphEdge[];
+}
+
+const { currentId, nodes, edges } = Astro.props as Props;
+const neighbors = nodes.filter((node) => node.id !== currentId);
+const payload = JSON.stringify({ currentId, nodes, edges });
+---
+
+<section class="garden-graph-panel" data-garden-graph-panel>
+    <div class="garden-graph-head">
+        <strong>关系图</strong>
+        <button type="button" class="garden-graph-expand" data-garden-graph-open aria-label="打开全站关系图" title="全站关系图">
+            <Maximize2 aria-hidden="true" />
+        </button>
+    </div>
+
+    <div class="garden-graph-canvas-wrap">
+        <canvas data-garden-graph-canvas aria-hidden="true"></canvas>
+    </div>
+
+    <script type="application/json" data-garden-graph-data set:html={payload} />
+
+    <ul class="garden-graph-fallback garden-graph-sr">
+        {
+            neighbors.map((node) => (
+                <li>
+                    <a href={gardenHrefOf(node.id)}>{node.title}</a>
+                </li>
+            ))
+        }
+    </ul>
+
+    <div class="garden-graph-modal" data-garden-graph-modal hidden>
+        <div class="garden-graph-modal-backdrop" data-garden-graph-close></div>
+        <div class="garden-graph-modal-panel" role="dialog" aria-modal="true" aria-label="全站关系图">
+            <div class="garden-graph-modal-head">
+                <strong>全站关系图</strong>
+                <label class="garden-graph-modal-toggle">
+                    <input type="checkbox" data-garden-graph-isolated />
+                    显示孤立笔记（{/* 由脚本填数字 */}<span data-garden-graph-isolated-count>0</span>）
+                </label>
+                <button type="button" class="garden-graph-modal-close" data-garden-graph-close aria-label="关闭">×</button>
+            </div>
+            <div class="garden-graph-modal-canvas-wrap">
+                <canvas data-garden-graph-full aria-hidden="true"></canvas>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    import { onPageLoad } from '../../lib/client/mount';
+    import { createGraphView, type GraphEdge, type GraphNode, type GraphView } from '../../lib/client/garden/graph-view';
+
+    onPageLoad(() => {
+        const cleanups: Array<() => void> = [];
+
+        // 同一页可能有两个图谱面板：桌面右栏一个、移动端抽屉一个。
+        // 每个面板各自绑定自己的展开按钮与弹窗，避免点一个把两个遮罩都打开。
+        document.querySelectorAll<HTMLElement>('[data-garden-graph-panel]').forEach((panel) => {
+            const canvas = panel.querySelector<HTMLCanvasElement>('[data-garden-graph-canvas]');
+            const dataNode = panel.querySelector<HTMLScriptElement>('[data-garden-graph-data]');
+            if (!canvas || !dataNode?.textContent) return;
+
+            let payload: { currentId: string; nodes: GraphNode[]; edges: GraphEdge[] };
+            try {
+                payload = JSON.parse(dataNode.textContent);
+            } catch {
+                return;
+            }
+
+            const localView = createGraphView({
+                canvas,
+                nodes: payload.nodes,
+                edges: payload.edges,
+                currentId: payload.currentId,
+                compact: true
+            });
+
+            /* ------------------------------ 全站图弹窗 ------------------------------ */
+            const modal = panel.querySelector<HTMLElement>('[data-garden-graph-modal]');
+            // 弹窗必须挂到 body 上：右栏 `.book-toc-content` 有 `will-change: transform`，
+            // 会给 `position: fixed` 造一个 256px 宽的包含块，遮罩就只能盖住侧栏
+            if (modal && modal.parentElement !== document.body) document.body.appendChild(modal);
+            // 注意：弹窗已经移到 body，这些引用要从 modal 里查，别再查 panel
+            const fullCanvas = modal?.querySelector<HTMLCanvasElement>('[data-garden-graph-full]') ?? null;
+            const isolatedToggle = modal?.querySelector<HTMLInputElement>('[data-garden-graph-isolated]') ?? null;
+            const isolatedCount = modal?.querySelector<HTMLElement>('[data-garden-graph-isolated-count]') ?? null;
+
+            let fullView: GraphView | null = null;
+            let fullData: { nodes: GraphNode[]; edges: GraphEdge[] } | null = null;
+            let showIsolated = false;
+            let lastFocused: HTMLElement | null = null;
+            /** 关闭动画的收尾计时器（动画期间重新打开要取消） */
+            let closeTimer = 0;
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+            /** 和 CSS 里面板的退出时长保持一致；reduced-motion 时直接收尾 */
+            const CLOSE_MS = 340;
+
+            const renderFull = () => {
+                if (!fullCanvas || !fullData) return;
+                const nodes = showIsolated ? fullData.nodes : fullData.nodes.filter((node) => node.degree > 0);
+                const ids = new Set(nodes.map((node) => node.id));
+                const edges = fullData.edges.filter((edge) => ids.has(edge.source) && ids.has(edge.target));
+                fullView?.destroy();
+                fullView = createGraphView({
+                    canvas: fullCanvas,
+                    nodes,
+                    edges,
+                    currentId: payload.currentId,
+                    zoomable: true
+                });
+            };
+
+            const close = () => {
+                if (!modal || modal.hidden) return;
+                // 先撤掉 is-open 让 CSS 过渡跑完，再把 hidden 放回去（display:none 会中断过渡）
+                modal.classList.remove('is-open');
+                const finish = () => {
+                    closeTimer = 0;
+                    modal.hidden = true;
+                    document.documentElement.classList.remove('garden-graph-lock');
+                    fullView?.destroy();
+                    fullView = null;
+                    lastFocused?.focus?.();
+                };
+                if (reducedMotion.matches) {
+                    finish();
+                    return;
+                }
+                if (closeTimer) window.clearTimeout(closeTimer);
+                closeTimer = window.setTimeout(finish, CLOSE_MS);
+            };
+
+            const open = async () => {
+                if (!modal) return;
+                lastFocused = document.activeElement as HTMLElement | null;
+                // 关闭动画还没结束就再次打开：取消收尾，避免明明打开了又被 hidden 掉
+                if (closeTimer) {
+                    window.clearTimeout(closeTimer);
+                    closeTimer = 0;
+                }
+                modal.hidden = false;
+                // 读一次布局，确保 display 从 none 切过来的这一帧先落地，过渡才会生效
+                void modal.offsetWidth;
+                modal.classList.add('is-open');
+                document.documentElement.classList.add('garden-graph-lock');
+                modal.querySelector<HTMLElement>('.garden-graph-modal-close')?.focus();
+
+                if (!fullData) {
+                    try {
+                        const response = await fetch('/garden-graph.json');
+                        fullData = response.ok ? await response.json() : null;
+                    } catch {
+                        fullData = null;
+                    }
+                }
+                // 数据回来前已经关掉的话，不要再建视图（否则会留下一个没人销毁的 canvas 实例）
+                if (!modal.classList.contains('is-open')) return;
+                if (isolatedCount && fullData) {
+                    isolatedCount.textContent = String(fullData.nodes.filter((node) => node.degree === 0).length);
+                }
+                renderFull();
+            };
+
+            const onToggle = () => {
+                showIsolated = Boolean(isolatedToggle?.checked);
+                renderFull();
+            };
+
+            // 全站图入口就在图谱面板标题栏（移动端不再有页头入口），直接绑到本面板
+            const openButton = panel.querySelector<HTMLElement>('[data-garden-graph-open]');
+            const onOpen = () => void open();
+
+            openButton?.addEventListener('click', onOpen);
+            modal?.querySelectorAll('[data-garden-graph-close]').forEach((node) => node.addEventListener('click', close));
+            isolatedToggle?.addEventListener('change', onToggle);
+
+            const onKeydown = (event: KeyboardEvent) => {
+                if (event.key === 'Escape') close();
+            };
+            document.addEventListener('keydown', onKeydown);
+
+            cleanups.push(() => {
+                if (closeTimer) window.clearTimeout(closeTimer);
+                closeTimer = 0;
+                openButton?.removeEventListener('click', onOpen);
+                document.removeEventListener('keydown', onKeydown);
+                document.documentElement.classList.remove('garden-graph-lock');
+                fullView?.destroy();
+                localView.destroy();
+                modal?.remove();
+            });
+        });
+
+        return () => cleanups.forEach((cleanup) => cleanup());
+    });
+</script>
+
+<style>
+    /* 按站点卡片样式：1px 描边 + 圆角（与打卡/运动卡片一致） */
+    .garden-graph-panel {
+        position: relative;
+        margin-top: 1.5em;
+        padding: 0.7em 0.8em 0.75em;
+        border: 1px solid var(--gray-200);
+        border-radius: 0.5rem;
+        background: var(--body-background);
+    }
+
+    .garden-graph-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5em;
+    }
+
+    /* Quartz：#global-graph-icon 18px，absolute top/right */
+    .garden-graph-expand {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        inline-size: 18px;
+        block-size: 18px;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--gray-600);
+        cursor: pointer;
+    }
+
+    .garden-graph-expand:hover {
+        color: var(--color-hover-link);
+    }
+
+    .garden-graph-expand :global(svg) {
+        inline-size: 16px;
+        block-size: 16px;
+    }
+
+    .garden-graph-canvas-wrap {
+        position: relative;
+        width: 100%;
+        height: 200px;
+    }
+
+    .garden-graph-canvas-wrap canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        touch-action: pan-y;
+    }
+
+    /* 键盘/无 JS/读屏走这份真链接；画布只是视觉增强，列表本身不显示 */
+    .garden-graph-fallback {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .garden-graph-sr {
+        position: absolute;
+        inline-size: 1px;
+        block-size: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    /* 弹窗：fixed 全屏遮罩 + blur，容器 50vw×60vh 居中 */
+    .garden-graph-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* 弹窗整体淡入淡出；面板与画布再各自做位移/缩放，层次比单纯 fade 清楚 */
+        opacity: 0;
+        transition: opacity 240ms ease;
+    }
+
+    .garden-graph-modal.is-open {
+        opacity: 1;
+    }
+
+    .garden-graph-modal[hidden] {
+        display: none;
+    }
+
+    .garden-graph-modal-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgb(0 0 0 / 0.35);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+
+    .garden-graph-modal-panel {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        inline-size: 50vw;
+        block-size: 60vh;
+        min-inline-size: 320px;
+        padding: 0.6em 0.8em 0.8em;
+        border: 1px solid var(--gray-200);
+        border-radius: 0.6rem;
+        background: var(--body-background);
+        box-shadow: 0 20px 60px rgb(0 0 0 / 0.25);
+        /* 收起：向中心缩一点并下沉；打开时回正，弹性缓动收尾 */
+        opacity: 0;
+        transform: translateY(14px) scale(0.96);
+        transform-origin: 50% 55%;
+        transition:
+            opacity 200ms ease,
+            transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: transform, opacity;
+    }
+
+    .garden-graph-modal.is-open .garden-graph-modal-panel {
+        opacity: 1;
+        transform: none;
+    }
+
+    .garden-graph-modal-head {
+        display: flex;
+        align-items: center;
+        gap: 0.8em;
+        margin-bottom: 0.4em;
+    }
+
+    .garden-graph-modal-head strong {
+        flex: 0 0 auto;
+    }
+
+    .garden-graph-modal-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3em;
+        margin-inline-start: auto;
+        color: var(--gray-600);
+        font-size: 0.8em;
+        cursor: pointer;
+    }
+
+    .garden-graph-modal-close {
+        inline-size: 1.5em;
+        block-size: 1.5em;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--gray-600);
+        font-size: 1.1em;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .garden-graph-modal-close:hover {
+        color: var(--color-hover-link);
+    }
+
+    .garden-graph-modal-canvas-wrap {
+        position: relative;
+        flex: 1 1 auto;
+        min-block-size: 0;
+        opacity: 0;
+        /* 比面板晚一点出现，点开时先看到框、再看到点线 */
+        transition: opacity 300ms ease 70ms;
+    }
+
+    .garden-graph-modal.is-open .garden-graph-modal-canvas-wrap {
+        opacity: 1;
+    }
+
+    .garden-graph-modal-canvas-wrap canvas {
+        display: block;
+        inline-size: 100%;
+        block-size: 100%;
+        touch-action: none;
+    }
+
+    @media (max-width: 47.85rem) {
+        .garden-graph-modal-panel {
+            inline-size: 92vw;
+            block-size: 70vh;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .garden-graph-modal,
+        .garden-graph-modal-panel,
+        .garden-graph-modal-canvas-wrap {
+            transition: none;
+        }
+
+        .garden-graph-modal-panel {
+            transform: none;
+        }
+    }
+</style>
+
+<style is:global>
+    /* 弹窗打开时锁住页面滚动 */
+    html.garden-graph-lock,
+    html.garden-graph-lock body {
+        overflow: hidden;
+    }
+</style>

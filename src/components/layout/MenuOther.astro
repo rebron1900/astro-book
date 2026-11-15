@@ -2,17 +2,98 @@
 import config from '../../config';
 ---
 
-<ul class="book-copy">
-    <li class="book-section-flat">
-        <span>其他</span>
-        <ul class="book-collspan">
-            {
-                config.footer.map((item) => (
-                    <li>
-                        <Fragment set:html={item.html} />
-                    </li>
-                ))
-            }
-        </ul>
-    </li>
-</ul>
+<details class="book-copy-wrap" open>
+    <summary class="book-copy-summary">关于本站</summary>
+    <ul class="book-copy">
+        <li class="book-section-flat">
+            <span>其他</span>
+            <ul class="book-collspan">
+                {
+                    config.footer.map((item) => (
+                        <li>
+                            <Fragment set:html={item.html} />
+                        </li>
+                    ))
+                }
+            </ul>
+        </li>
+    </ul>
+    <script is:inline>
+        // 首屏在移动端同步收起，避免页脚先展开一帧再收起
+        if (window.matchMedia('(max-width: 47.84rem)').matches) {
+            document.currentScript?.closest('details')?.removeAttribute('open');
+        }
+    </script>
+</details>
+
+<script>
+    import { onPageLoad } from '../../lib/client/mount';
+
+    const MOBILE_QUERY = '(max-width: 47.84rem)';
+
+    // 桌面端保持展开；移动端默认收起。SPA 换页后新 DOM 会重新同步一次。
+    onPageLoad(() => {
+        const details = document.querySelector<HTMLDetailsElement>('.book-copy-wrap');
+        if (!details) return;
+
+        const media = window.matchMedia(MOBILE_QUERY);
+        const sync = () => {
+            details.open = !media.matches;
+        };
+
+        sync();
+        media.addEventListener('change', sync);
+
+        return () => media.removeEventListener('change', sync);
+    });
+</script>
+
+<style is:global>
+    /* 桌面端保持原样：隐藏 summary，details 默认就是展开的 */
+    @media screen and (min-width: 47.85rem) {
+        .book-copy-summary {
+            display: none;
+        }
+    }
+
+    /* 移动端左抽屉：底部「其他」收成一行，目录树多出约 220px 可视高度 */
+    @media screen and (max-width: 47.84rem) {
+        .book-copy-wrap {
+            margin-block-start: 10px;
+            padding-block-start: 10px;
+            border-block-start: 1px solid var(--gray-200);
+        }
+
+        .book-copy-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.35rem 0;
+            color: var(--gray-600);
+            font-size: 0.8rem;
+            font-weight: 600;
+            line-height: 1.4;
+            list-style: none;
+            cursor: pointer;
+        }
+
+        .book-copy-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .book-copy-summary::after {
+            content: '▾';
+            color: var(--gray-500);
+            transition: transform 160ms ease;
+        }
+
+        .book-copy-wrap[open] .book-copy-summary::after {
+            transform: rotate(180deg);
+        }
+
+        /* 展开后不再重复显示「其他」小标题，summary 本身就是标题 */
+        .book-copy-wrap .book-copy .book-section-flat > span {
+            display: none;
+        }
+    }
+</style>

@@ -1,0 +1,176 @@
+---
+/**
+ * 花园标签页：`/garden/tags/` 聚合页 + `/garden/tags/<key>/` 单个标签页。
+ *
+ * 层级 tag 按 Quartz 的规则向上累加（`privacy/email` 同时计入 `/tags/privacy/`），
+ * 父级页在列表前展示它的子标签。大小写合并已在 sync 的 tags 表里做过，URL 一律小写。
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Head from '../../../components/islands/Head.astro';
+import Header from '../../../components/layout/Header.astro';
+import Menu from '../../../components/layout/Menu.astro';
+import GardenAside from '../../../components/garden/GardenAside.astro';
+import GardenCrumbs from '../../../components/garden/GardenCrumbs.astro';
+import { listGardenTags, notesForTag } from '../../../lib/garden/tags';
+import { settings } from '../../../api/store';
+import { gardenHrefOf } from '../../../lib/garden/path';
+
+export async function getStaticPaths() {
+    const tags = listGardenTags();
+    return [
+        { params: { slug: '' }, props: { kind: 'index' as const } },
+        ...tags.map((tag) => ({
+            params: { slug: tag.key },
+            props: { kind: 'tag' as const, tagKey: tag.key, title: tag.display }
+        }))
+    ];
+}
+
+const props = Astro.props as { kind: 'index' | 'tag'; tagKey?: string; title?: string };
+
+const allTags = listGardenTags();
+const isIndex = props.kind === 'index';
+
+const tagKey = props.tagKey ?? '';
+const tagTitle = props.title ?? tagKey;
+const notes = isIndex ? [] : notesForTag(tagKey);
+const childTags = isIndex
+    ? []
+    : allTags.filter((tag) => tag.key.startsWith(`${tagKey}/`) && tag.key.split('/').length === tagKey.split('/').length + 1);
+
+const pageTitle = isIndex ? '花园标签' : `#${tagTitle}`;
+const description = isIndex ? '花园里全部标签' : `标签 ${tagTitle} 下的笔记`;
+---
+
+<BaseLayout>
+    <Head
+        slot="head"
+        site={settings}
+        title={`${pageTitle} | 花园 · ${settings?.title ?? ''}`}
+        post={{
+            title: pageTitle,
+            slug: isIndex ? 'garden/tags' : `garden/tags/${tagKey}`,
+            excerpt: isIndex ? '花园里全部标签' : `标签 ${tagTitle} 下的 ${notes.length} 篇笔记`
+        }}
+    />
+
+    <Header slot="header" title={pageTitle} />
+
+    <Menu slot="menu" title={pageTitle} garden />
+
+    <GardenCrumbs
+        slot="content"
+        crumbs={isIndex ? [] : [{ label: '标签', path: 'tags' }]}
+        current={isIndex ? undefined : tagTitle}
+    />
+
+    <article slot="content" class="markdown book-article garden-tags">
+        <h1 class="book-title page-title">{pageTitle}</h1>
+
+        {
+            isIndex ? (
+                <>
+                    <p class="garden-list-count">共 {allTags.length} 个标签</p>
+                    <ul class="garden-tag-cloud">
+                        {allTags.map((tag) => (
+                            <li>
+                                <a href={`/garden/tags/${tag.key}/`}>{tag.display}</a>
+                                <span class="garden-tag-count">{tag.count}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </>
+            ) : (
+                <>
+                    {childTags.length > 0 && (
+                        <ul class="garden-tag-children">
+                            {childTags.map((tag) => (
+                                <li>
+                                    <a href={`/garden/tags/${tag.key}/`}>{tag.display}</a>
+                                    <span class="garden-tag-count">{tag.count}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+
+                    <p class="garden-list-count">共 {notes.length} 篇</p>
+                    <ul class="garden-list">
+                        {notes.map((note) => (
+                            <li>
+                                <a href={gardenHrefOf(note.id)}>{note.title}</a>
+                            </li>
+                        ))}
+                    </ul>
+                </>
+            )
+        }
+    </article>
+
+    <Fragment slot="toc">
+        <GardenAside tocHtml="" entryId={tagKey} showComments={false} showBacklinks={false} />
+    </Fragment>
+
+    <Fragment slot="h-toc">
+        <aside class="hidden clearfix">
+            <GardenAside tocHtml="" entryId={tagKey} showComments={false} showBacklinks={false} />
+        </aside>
+    </Fragment>
+</BaseLayout>
+
+<script>
+    import { bindGardenPopover } from '../../../lib/client/garden-popover';
+
+    bindGardenPopover();
+</script>
+
+<style>
+    .garden-list-count {
+        margin: 1.6em 0 0.4em;
+        color: var(--gray-600);
+        font-size: 0.85em;
+    }
+
+    .garden-list {
+        margin: 0;
+        padding-inline-start: 0;
+        list-style: none;
+    }
+
+    .garden-list li {
+        margin: 0.35em 0;
+        line-height: 1.7;
+    }
+
+    .garden-tag-children {
+        margin: 1em 0 0;
+        padding-inline-start: 0;
+        list-style: none;
+        color: var(--gray-600);
+        font-size: 0.9em;
+    }
+
+    .garden-tag-children li {
+        display: inline-block;
+        margin-inline-end: 0.9em;
+    }
+
+    .garden-tag-cloud {
+        margin: 0.6em 0 0;
+        padding-inline-start: 0;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4em 0.9em;
+    }
+
+    .garden-tag-cloud li {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.3em;
+    }
+
+    .garden-tag-count {
+        color: var(--gray-600);
+        font-size: 0.75em;
+    }
+</style>

@@ -1,6 +1,5 @@
 import { For, Show, createEffect, createMemo, createSignal, onCleanup, onMount } from 'solid-js';
 import { Portal } from 'solid-js/web';
-import { navigate } from 'astro:transitions/client';
 import type { FootprintArticle, FootprintData, FootprintPlace, FootprintProvinceGroup } from '../../lib/footprint';
 import { articleMatchesSelection, groupPlacesByProvince } from '../../lib/footprint';
 import { createFootprintMap, type FootprintMapController, type FootprintPlaceInfo } from '../../lib/client/footprint-map';
@@ -30,14 +29,14 @@ interface FootprintArticleGroup {
 }
 
 /**
- * 足迹页（`/exercise/footprint/`）的主体：独立页面，不再由运动页页内切换进入。
+ * 足迹的主体（`/activity/` 的足迹模式）：合并页里只渲染地图与时间线，
+ * 顶部「运动 / 足迹」由 activity 页面自己的切换条负责。
  *
  * 左侧导航保留；中间是地图，占满「除了标题 / 副标题之外」的剩余高度，右上角悬浮「筛选」HUD；
  * 右侧时间线沿用首页 / 友邻页那套纵向时间轴（日期 + 竖线圆点 + 内容），宽度和 TOC 列一致（16rem），
  * 自己内部滚动；桌面端整页不滚动，窄屏地图在上、时间线在下，页面正常滚动。
  *
- * 两个页面之间的来回走：顶部 `.ex-switch`（ExerciseNav，真锚点）负责视觉入口，
- * Esc 也能退回运动页。地图在容器就位后创建，页面卸载时统一销毁。
+ * 地图在容器就位后创建，页面卸载时统一销毁。
  */
 export default function ExerciseFootprint(props: ExerciseFootprintProps) {
     const [mapHostReady, setMapHostReady] = createSignal(false);
@@ -362,20 +361,10 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
         }
     };
 
-    /* ------------------------------ 返回运动页 ------------------------------ */
-    /**
-     * Esc / 键盘退场用。顶部「运动 / 足迹」切换是真锚点，不走这里；
-     * 减弱动画时直接整页跳，省掉一次 View Transition。
-     */
-    const backToExercise = () => {
-        if (prefersReducedMotion()) window.location.assign('/exercise/');
-        else void navigate('/exercise/');
-    };
-
     // 地图容器拿到 ref 之后才建实例（此时 flex 高度已经就位），
     // 而且要等页面切换动画跑完、浏览器空闲：换页那几百毫秒里初始化 WebGL 会直接把过渡拖卡。
     let cancelMapInit: (() => void) | null = null;
-    /** 合并页里只有足迹模式需要这张地图；旧页面不传 activeMode，一直是 true */
+    /** 合并页里只有足迹模式需要这张地图；不传时保持一直激活 */
     const [active, setActive] = createSignal(true);
 
     createEffect(() => {
@@ -497,7 +486,7 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
                 return;
             }
             event.preventDefault();
-            backToExercise();
+            // 独立足迹页已删除，合并页里 Esc 退到最外层时保持当前视图
         };
         // 桌面 popover 点外面收起（窄屏是模态，不走这条）
         const onPointerDown = (event: PointerEvent) => {

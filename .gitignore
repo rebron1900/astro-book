@@ -33,6 +33,11 @@ astro-check-output.txt
 # 构建运行时缓存
 cache/
 
+# 数字花园同步产物：私有 vault 的镜像与被引用附件
+# 附件落在 public/ 下会进构建产物，但绝不能进 git
+.garden/
+public/garden/
+
 # 但 src/data/image-meta.json 是方案 B 的预取产物，需提交进仓库供构建离线读取
 !src/data/image-meta.json
 

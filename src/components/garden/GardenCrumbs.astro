@@ -1,0 +1,122 @@
+---
+import { gardenHrefOf } from '../../lib/garden/path';
+/**
+ * 花园面包屑。从 id 分段生成，每层都可点、都指向文件夹页（和左栏、文件夹页共用一个 URL 体系）。
+ * 分隔符用 `/ › ` 而不是 Quartz 的 `❯`，与站内其它页面一致；字号/颜色沿用 `.book-*` 的小字灰。
+ */
+interface Crumb {
+    label: string;
+    path: string;
+}
+
+interface Props {
+    crumbs: Crumb[];
+    current?: string;
+}
+
+const { crumbs, current } = Astro.props as Props;
+---
+
+<nav class="garden-crumbs" aria-label="面包屑">
+    <span class="garden-crumbs-path">
+    <a class="garden-crumb" href="/garden/">花园</a>
+    {
+        crumbs.map((crumb) => (
+            <span class="garden-crumb">
+                <span class="garden-crumbs-sep" aria-hidden="true">
+                    /
+                </span>
+                <a href={gardenHrefOf(crumb.path)}>{crumb.label}</a>
+            </span>
+        ))
+    }
+    {
+        current && (
+            <span class="garden-crumb">
+                <span class="garden-crumbs-sep" aria-hidden="true">
+                    /
+                </span>
+                <span aria-current="page">{current}</span>
+            </span>
+        )
+    }
+    </span>
+</nav>
+
+<style>
+    .garden-crumbs {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.8em;
+        margin-bottom: 0.6em;
+        color: var(--gray-600);
+        font-size: 0.8em;
+        line-height: 1.6;
+    }
+
+    /* 宽屏按段换行：每段和它前面的分隔符绑成一组，避免标题被从中间掰开。
+       窄屏在下面的媒体查询里改成整条单行省略。 */
+    .garden-crumbs-path {
+        display: flex;
+        flex: 0 1 auto;
+        flex-wrap: wrap;
+        align-items: baseline;
+        min-width: 0;
+        row-gap: 0.15em;
+    }
+
+    .garden-crumb {
+        display: inline-flex;
+        align-items: baseline;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .garden-crumb > a,
+    .garden-crumb > [aria-current='page'] {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    /* 窄屏只保留一行：整条路径不换行，超出部分用省略号收掉。
+       之前按段换行，长标题会把页头撑成三四行。 */
+    @media (max-width: 47.85rem) {
+        .garden-crumbs-path {
+            display: block;
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .garden-crumb {
+            display: inline;
+        }
+
+        .garden-crumb > a,
+        .garden-crumb > [aria-current='page'] {
+            display: inline;
+            overflow: visible;
+            white-space: inherit;
+        }
+    }
+
+    .garden-crumbs-sep {
+        margin: 0 0.35em;
+        opacity: 0.6;
+    }
+
+    .garden-crumbs a {
+        color: inherit;
+    }
+
+    .garden-crumbs a:hover {
+        color: var(--color-hover-link);
+    }
+
+    .garden-crumbs [aria-current='page'] {
+        color: var(--gray-700);
+    }
+</style>

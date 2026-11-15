@@ -25,7 +25,7 @@ export interface ExerciseMapProps {
     onReset: () => void;
     /**
      * 合并页（/activity/）用：只有当前模式等于它时地图才创建。
-     * 不传 = 一直激活（旧的 /exercise/ 页面行为不变）。
+     * 不传 = 一直激活。
      */
     activeMode?: 'exercise' | 'footprint';
 }

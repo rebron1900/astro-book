@@ -90,7 +90,7 @@ const tocHtml = tocGen(post.html);
 
     <Menu slot="menu" title=`${post.title}` />
     <article slot="content" class="markdown book-article">
-        <h1 class="book-title page-title">
+        <h1 class:list={['book-title', 'page-title', post.type === 'post' && 'page-title--article']}>
             {post.title}
         </h1>
         <PostMeta post={post} isFeature={true} />
@@ -123,7 +123,11 @@ const tocHtml = tocGen(post.html);
 
     <Fragment slot="h-toc">
         <aside class="hidden clearfix">
+            {/* 与电脑端右栏完全一致：有 TOC 就只放 TOC；没有 TOC 时才补标签列表 */}
+            {!tocHtml && <TocTagloop />}
+
             <Toc html={tocHtml} isToc={tocHtml && true} />
+            <Top />
         </aside>
     </Fragment>
 </BaseLayout>

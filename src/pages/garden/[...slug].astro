@@ -1,58 +1,259 @@
 ---
-import { settings } from '../../api/store';
-import { getCollection, render } from 'astro:content';
-
+/**
+ * 花园的笔记页（除根笔记）与文件夹页。
+ *
+ * - 笔记 → `/garden/<id>/`，渲染交给 `GardenNoteView`
+ * - 文件夹 → `/garden/<folderPath>/`，与同名笔记冲突时让位（笔记优先）
+ * - 根笔记 `index.md` → `/garden/`，由静态路由 `index.astro` 渲染：
+ *   rest 参数为空段时构建能出页、dev 的路由匹配不到，所以不能挂在这条动态路由上
+ *
+ * 视觉沿用书本页：BaseLayout 的三栏（左栏 GardenMenu / 正文 `.markdown` / 右栏 GardenAside）。
+ */
+import { getCollection } from 'astro:content';
+import { BookOpenText } from '@lucide/astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Head from '../../components/islands/Head.astro';
-import Comments from '../../components/islands/Comments.astro';
-import Relitu from '../../components/islands/Relitu.jsx';
 import Header from '../../components/layout/Header.astro';
-import Top from '../../components/ui/Top.astro';
 import Menu from '../../components/layout/Menu.astro';
-import Footer from '../../components/layout/Footer.astro';
+import GardenAside from '../../components/garden/GardenAside.astro';
+import GardenCrumbs from '../../components/garden/GardenCrumbs.astro';
+import GardenNoteView from '../../components/garden/GardenNoteView.astro';
+import { foldersOf } from '../../lib/garden/core';
+import { ancestorsOf, compareGardenTitle, gardenDateInfoOf } from '../../lib/garden/note';
+import { gardenMetaOf } from '../../lib/garden/meta';
+import { settings } from '../../api/store';
+// 文件夹页的列表复用站点的一列式时间轴（`.ledger-row`），不另写一套几何
+import '../../styles/blocks/_ledger.scss';
+import { gardenHrefOf } from '../../lib/garden/path';
 
 export async function getStaticPaths() {
-    const posts = await getCollection('Obsidian');
-    const postCount = posts.length;
-    return posts.map((post, index) => ({
-        params: { slug: post.id },
-        props: {
-            post,
-            nextPost: index + 1 !== postCount ? posts[index + 1] : null,
-            prevPost: index !== 0 ? posts[index - 1] : null
-        },
-        cacheKey: String(post.id) + (post.digest || '')
-    }));
+    const notes = await getCollection('garden');
+    const folders = foldersOf(notes.map((note) => note.id));
+    const noteById = new Map(notes.map((note) => [note.id, note]));
+
+    const paths: Array<Record<string, unknown>> = [];
+
+    for (const note of notes) {
+        // 根笔记由 src/pages/garden/index.astro 出，这里跳过，避免同一 URL 两个路由
+        if (note.id === 'index') continue;
+        paths.push({
+            params: { slug: note.id },
+            props: { kind: 'note', entry: note, ancestors: ancestorsOf(note.id) },
+            cacheKey: `garden:note:${note.id}:${note.digest ?? ''}`
+        });
+    }
+
+    for (const folder of folders) {
+        // 同名笔记优先：旧站 `/22-knowledge/工具/obsidian` 渲染的是笔记页（article 里没有列表），
+        // 所以这里不再让文件夹页覆盖它，否则 URL 200 但内容换了。
+        if (noteById.has(folder)) continue;
+        const depth = folder.split('/').length;
+        const childFolders = folders
+            .filter((item) => item.startsWith(`${folder}/`) && item.split('/').length === depth + 1)
+            .sort(compareGardenTitle)
+            .map((item) => ({ path: item, name: item.split('/').pop() ?? item }));
+        const childNotes = notes
+            .filter((note) => note.id.startsWith(`${folder}/`) && note.id.split('/').length === depth + 1)
+            .map((note) => {
+                const meta = gardenMetaOf(note.id);
+                return {
+                    path: note.id,
+                    title: meta?.title ?? note.id,
+                    tags: meta?.tags ?? [],
+                    date: gardenDateInfoOf(meta?.date)
+                };
+            })
+            // Quartz 的 byDateAndAlphabetical：有日期按日期倒序，无日期按标题
+            .sort((a, b) => {
+                if (a.date && b.date) return b.date.iso.localeCompare(a.date.iso) || compareGardenTitle(a.title, b.title);
+                if (a.date) return -1;
+                if (b.date) return 1;
+                return compareGardenTitle(a.title, b.title);
+            });
+
+        paths.push({
+            params: { slug: folder },
+            props: {
+                kind: 'folder',
+                folderPath: folder,
+                ancestors: ancestorsOf(folder),
+                childFolders,
+                childNotes
+            },
+            cacheKey: `garden:folder:${folder}:${childNotes.map((note) => `${note.path}@${note.date?.iso ?? '-'}#${note.tags.length}`).join(',')}:${childFolders.length}`
+        });
+    }
+
+    return paths;
 }
 
-const { post } = Astro.props;
-const { Content } = await render(post);
+const props = Astro.props as {
+    kind: 'note' | 'folder';
+    entry?: { id: string; data: Record<string, unknown>; body?: string | null; digest?: string | number };
+    ancestors: Array<{ label: string; path: string }>;
+    folderPath?: string;
+    childFolders?: Array<{ path: string; name: string }>;
+    childNotes?: Array<{ path: string; title: string; tags: string[]; date: ReturnType<typeof gardenDateInfoOf> }>;
+};
+
+const folderName = props.folderPath?.split('/').pop() ?? '';
+const childNotes = props.childNotes ?? [];
+const childFolders = props.childFolders ?? [];
 ---
 
-<BaseLayout>
-    <Head slot="head" site={settings} title={post.data.title + ' | ' + settings?.title + ' - ' + settings?.description} />
+{
+    props.kind === 'note' ? (
+        <GardenNoteView entry={props.entry!} ancestors={props.ancestors} />
+    ) : (
+        <BaseLayout>
+            <Head
+                slot="head"
+                post={{
+                    title: folderName,
+                    slug: `garden/${props.folderPath}`,
+                    excerpt: `${folderName} 目录，共 ${props.childNotes?.length ?? 0} 篇笔记${props.childFolders?.length ? `、${props.childFolders.length} 个子目录` : ''}`
+                }}
+                site={settings}
+                title={`${folderName} | 花园 · ${settings?.title ?? ''}`}
+            />
 
-    <Header slot="header" title={post.data.title} />
+            <Header slot="header" title={folderName} />
 
-    <Menu slot="menu" />
-    <article slot="content" class="markdown book-article">
-        <h1 class="book-title">
-            {post.data.title}
-        </h1>
-        <Content />
-    </article>
+            <Menu slot="menu" title={folderName} garden />
 
-    <Comments slot="comments" />
+            {/* 文件夹页没有局部图面板，不放「关系图 →」入口（点了没有弹窗可开） */}
+            <GardenCrumbs slot="content" crumbs={props.ancestors} current={folderName} />
 
-    <Footer slot="footer" post={post} />
+            <article slot="content" class="markdown book-article garden-folder">
+                <h1 class="book-title page-title">{folderName}</h1>
 
-    <Relitu slot="relitu" />
+                {
+                    childFolders.length > 0 && (
+                        <section class="garden-subfolders">
+                            <p class="garden-list-count">子目录（{childFolders.length}）</p>
+                            <ul class="garden-folder-list">
+                                {childFolders.map((child) => (
+                                    <li class="is-folder">
+                                        <a href={gardenHrefOf(child.path)}>{child.name}</a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )
+                }
 
-    <Fragment slot="toc">
-        <Top />
-    </Fragment>
+                <p class="garden-list-count">
+                    共 {childNotes.length} 篇
+                </p>
 
-    <Fragment slot="h-toc">
-        <aside class="hidden clearfix"></aside>
-    </Fragment>
-</BaseLayout>
+                {/* 一列式时间轴：日期 / 类型图标 / 竖线在一列，标题与标签在右侧列 */}
+                <div class="tl tl-ledger timeline-list garden-ledger">
+                    {
+                        childNotes.map((note) => (
+                            <article class="ledger-row" data-kind="post">
+                                <div class="ledger-date">
+                                    {note.date && note.date.year !== String(new Date().getFullYear()) && <span class="ledger-year">{note.date.year}</span>}
+                                    {note.date ? (
+                                        <time class="ledger-date-value" datetime={note.date.iso}>
+                                            {note.date.mmdd}
+                                        </time>
+                                    ) : (
+                                        <span class="ledger-date-value" aria-hidden="true" />
+                                    )}
+                                    {note.date && <span class="ledger-weekday">{note.date.weekday}</span>}
+                                </div>
+
+                                <div class="ledger-rail" aria-hidden="true">
+                                    <span class="rail-marker">
+                                        <BookOpenText />
+                                    </span>
+                                </div>
+
+                                <div class="ledger-body">
+                                    <div class="ledger-content">
+                                        <article class="ledger-post timeline-post-card">
+                                            <div class="timeline-post-content">
+                                                <h2 class="book-title">
+                                                    <a href={gardenHrefOf(note.path)}>{note.title}</a>
+                                                </h2>
+                                                {note.tags.length > 0 && (
+                                                    <p class="book-post-tags">{note.tags.map((tag) => `#${tag}`).join(' ')}</p>
+                                                )}
+                                            </div>
+                                        </article>
+                                    </div>
+                                </div>
+                            </article>
+                        ))
+                    }
+                </div>
+            </article>
+
+            <Fragment slot="toc">
+                <GardenAside tocHtml="" entryId="" showComments={false} showBacklinks={false} />
+            </Fragment>
+
+            <Fragment slot="h-toc">
+                <aside class="hidden clearfix">
+                    <GardenAside tocHtml="" entryId="" showComments={false} showBacklinks={false} />
+                </aside>
+            </Fragment>
+        </BaseLayout>
+    )
+}
+
+<script>
+    import { bindGardenPopover } from '../../lib/client/garden-popover';
+
+    bindGardenPopover();
+</script>
+
+<style>
+    .garden-list-count {
+        margin: 1.6em 0 0.4em;
+        color: var(--gray-600);
+        font-size: 0.85em;
+    }
+
+    /* 子目录单独一段，放在笔记列表上面：一排可换行的链接，不和笔记混排 */
+    .garden-folder-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3em 1.1em;
+        margin: 0;
+        padding-inline-start: 0;
+        list-style: none;
+    }
+
+    /* 文件夹项加粗并带尾斜杠，不用 Quartz 的 folder icon */
+    .garden-folder-list li.is-folder > a {
+        font-weight: 600;
+    }
+
+    .garden-folder-list li.is-folder > a::after {
+        content: '/';
+        margin-inline-start: 0.15em;
+        opacity: 0.5;
+    }
+
+    /* 复用时间轴的 `.ledger-row` 几何，只收一下卡片内边距，别比正文栏更宽 */
+    .garden-ledger {
+        margin-block: 0.4rem 1.2rem;
+    }
+
+    .garden-ledger .ledger-post {
+        padding: 0.7rem 0.9rem 0.6rem;
+    }
+
+    .garden-ledger .ledger-post .book-title {
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .garden-ledger .book-post-tags {
+        margin-block-start: 0.2rem;
+        color: var(--gray-500);
+        font-size: 0.7rem;
+        line-height: 1.4;
+    }
+</style>

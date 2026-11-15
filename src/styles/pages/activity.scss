@@ -159,7 +159,17 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
 }
 
 .act-mode--footprint .ex-fp-map-wrap.is-stuck {
-    box-shadow: 0 10px 26px rgb(0 0 0 / 0.12);
+    /* 12% 单层阴影在浅色下几乎看不出、深色下融进背景；悬浮态用双层投影明确抬起 */
+    box-shadow:
+        0 1px 3px rgb(0 0 0 / 0.12),
+        0 16px 38px rgb(0 0 0 / 0.26);
+}
+
+/* 深色背景上纯黑阴影会再次融进去，单独加深一档 */
+html.dark .act-mode--footprint .ex-fp-map-wrap.is-stuck {
+    box-shadow:
+        0 1px 3px rgb(0 0 0 / 0.4),
+        0 16px 38px rgb(0 0 0 / 0.55);
 }
 
 .act-mode--footprint .ex-fp-map {
@@ -677,9 +687,9 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
         inset-block: 0;
         inset-inline-end: 0;
         z-index: 90;
-        inline-size: min(20rem, calc(100vw - 2.75rem));
+        inline-size: min(17rem, calc(100vw - 2.75rem));
         min-inline-size: 0;
-        max-inline-size: 20rem;
+        max-inline-size: 17rem;
         margin: 0;
         background: var(--body-background);
         box-shadow: -14px 0 36px rgb(0 0 0 / 0.18);

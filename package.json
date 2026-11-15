@@ -11,7 +11,9 @@
         "test": "vitest run",
         "test:watch": "vitest",
         "sync:data": "node scripts/sync-data.mjs",
-        "import:strava-export": "node scripts/import-strava-export.mjs"
+        "import:strava-export": "node scripts/import-strava-export.mjs",
+        "sync:garden": "node --experimental-strip-types scripts/sync-garden.mjs",
+        "check:garden": "node --experimental-strip-types scripts/check-garden.mjs"
     },
     "dependencies": {
         "@astrojs/rss": "4.0.19",
@@ -22,9 +24,10 @@
         "@mapbox/mapbox-gl-language": "^1.0.1",
         "@ts-ghost/content-api": "^4.1.0",
         "artalk": "^2.9.0",
-        "astro": "7.2.0",
+        "astro": "7.4.11",
         "astro-masonry": "^1.2.2",
         "astro-remote": "^0.3.4",
+        "d3-force": "^3.0.0",
         "fuse.js": "^7.0.0",
         "html-parse-stringify": "^3.0.1",
         "htmx.org": "^1.9.12",
@@ -40,8 +43,12 @@
     },
     "devDependencies": {
         "@astrojs/check": "0.9.10",
+        "@astrojs/markdown-satteri": "0.4.9",
+        "@types/d3-force": "^3.0.10",
+        "js-yaml": "^4.1.0",
         "prettier": "^3.3.2",
         "sass": "^1.78.0",
+        "satteri": "0.11.7",
         "solid-devtools": "^0.34.5",
         "typescript": "^5.5.4",
         "vitest": "^4.1.9"

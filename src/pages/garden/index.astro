@@ -1,0 +1,54 @@
+---
+/**
+ * 花园入口 `/garden/`：根笔记 `index.md` 的静态路由。
+ *
+ * 为什么不用 `[...slug].astro` 的空 rest 段：构建能出 `/garden/index.html`，
+ * 但 dev 的路由匹配不到空段（`/garden`、`/garden/` 都是 404）。静态路由两边都稳。
+ *
+ * 两种「没有 index」要分开处理：
+ * - `.garden/content` 不存在 = 还没同步 → 给一个带 layout 的说明页；
+ * - 目录在、但里面没有 `index.md` = 数据异常 → **构建时**直接抛错，别让构建悄悄发一个空花园。
+ *   dev 下不抛：sync 是「先 rm 再写」，dev 的内容缓存可能正好读到中间状态，
+ *   抛错会把整页变成 500，重新 sync 或刷新就好了。
+ */
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { getCollection } from 'astro:content';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Head from '../../components/islands/Head.astro';
+import Header from '../../components/layout/Header.astro';
+import Menu from '../../components/layout/Menu.astro';
+import GardenNoteView from '../../components/garden/GardenNoteView.astro';
+import { settings } from '../../api/store';
+
+const notes = await getCollection('garden');
+const entry = notes.find((note) => note.id === 'index') ?? null;
+
+const contentDir = path.join(process.cwd(), '.garden', 'content');
+const synced = existsSync(contentDir);
+
+if (!entry && synced && import.meta.env.PROD) {
+    throw new Error('花园镜像里没有 index.md：sync 可能跑了一半，请重新运行 yarn sync:garden');
+}
+---
+
+{
+    entry ? (
+        <GardenNoteView entry={entry} ancestors={[]} />
+    ) : (
+        <BaseLayout>
+            <Head slot="head" site={settings} title={`花园入口 | ${settings?.title ?? ''}`} />
+            <Header slot="header" title="花园入口" />
+            <Menu slot="menu" title="花园入口" garden />
+            <article slot="content" class="markdown book-article">
+                <h1 class="book-title page-title">花园入口</h1>
+                <p>
+                    {synced
+                        ? '花园镜像里没有 index.md（sync 可能跑了一半），重新运行 yarn sync:garden 后再刷新。'
+                        : '花园还没有同步，请先运行 yarn sync:garden。'}
+                </p>
+            </article>
+        </BaseLayout>
+    )
+}

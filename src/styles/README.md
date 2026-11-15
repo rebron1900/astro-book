@@ -23,7 +23,7 @@
 | --- | --- | --- |
 | `pages/timeline.scss` | `components/islands/List.astro` | 首页、时间线、分页 |
 | `pages/timeline-month.scss` | `components/islands/TimelineMonthList.astro` | 时间线按月视图 |
-| `pages/exercise.scss`（base/map/stats/footprint） | `pages/exercise.astro` | /exercise/（含足迹全屏层） |
+| `pages/exercise.scss`（base/map/stats/footprint） | `pages/activity.astro` | /activity/（运动 / 足迹双模式） |
 | `pages/links.scss` | `pages/links.astro` | /links/ |
 | `pages/tags.scss` | `pages/tags.astro` | /tags/ |
 | `pages/archives.scss` | `components/islands/ArchiveTimeline.astro` | /archives/ |

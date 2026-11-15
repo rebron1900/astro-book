@@ -1,0 +1,116 @@
+---
+/**
+ * 花园右栏：TOC + 反向链接。
+ *
+ * 结构与博客右栏的 `Toc` 组件保持一致（`#TableOfContents > ul > li > strong`），
+ * 这样 `.book-toc` 现成的字号、链接色、滚动高亮（`a.active`）都不必重写。
+ * 反链数据在构建期从 `.garden/link-map.json` 反转得到，样式只借站内列表节奏。
+ */
+import { backlinksOf } from '../../lib/garden/backlinks';
+import { gardenHrefOf } from '../../lib/garden/path';
+import GardenGraphPanel from './GardenGraphPanel.astro';
+import Top from '../ui/Top.astro';
+
+interface Props {
+    tocHtml: string;
+    entryId: string;
+    showComments?: boolean;
+    showBacklinks?: boolean;
+    /** 局部关系图数据；桌面右栏与移动端抽屉共用同一份（各自渲染一个 canvas） */
+    graph?: { nodes: import('../../lib/garden/graph').GardenGraphNode[]; edges: import('../../lib/garden/graph').GardenGraphEdge[] };
+}
+
+const { tocHtml, entryId, showComments = false, showBacklinks = true, graph } = Astro.props as Props;
+const backlinks = backlinksOf(entryId);
+// 目录少于 2 条就不出「TOC」这块：一条的目录还不如不放，读者会以为右栏坏了
+// （waypoint 生成的目录全是 H1，正文里只有 H2–H4 才进 TOC）
+const tocLinks = (tocHtml.match(/<a\s/g) ?? []).length;
+const showToc = tocLinks >= 2;
+---
+
+{
+    /* 右栏顺序：关系图 → TOC → 反链（局部图是「找邻页」的入口，放最上面） */
+    graph && (
+        <div class="garden-aside-graph">
+            <GardenGraphPanel currentId={entryId} nodes={graph.nodes} edges={graph.edges} />
+        </div>
+    )
+}
+
+{
+    showToc && (
+        <nav id="TableOfContents">
+            <ul>
+                <li>
+                    <strong>TOC</strong>
+                    <Fragment set:html={tocHtml} />
+                </li>
+            </ul>
+        </nav>
+    )
+}
+
+<section class="garden-backlinks" aria-label="反向链接" hidden={!showBacklinks}>
+    <strong>反向链接</strong>
+    {
+        backlinks.length ? (
+            <ul>
+                {backlinks.map((entry) => (
+                    <li>
+                        <a href={gardenHrefOf(entry.id)}>{entry.title}</a>
+                    </li>
+                ))}
+            </ul>
+        ) : (
+            <p class="garden-backlinks-empty">还没有笔记链接到这里</p>
+        )
+    }
+</section>
+
+{
+    /* 评论区锚点不是目录条目，单独一条，别塞进 TOC */
+    showComments && (
+        <p class="garden-comments-jump">
+            <a href="#join-comments">加入评论</a>
+        </p>
+    )
+}
+
+<Top />
+
+<style>
+    /* 只加间距与空态，字号/颜色沿用 `.book-toc` */
+    .garden-backlinks {
+        margin-top: 1.5em;
+    }
+
+    .garden-comments-jump {
+        margin: 1.2em 0 0;
+        font-size: 0.95em;
+    }
+
+    /* 图在最上面，和下面的 TOC 拉开一档，别糊成一块 */
+    .garden-aside-graph {
+        margin-bottom: 1.6em;
+    }
+
+    .garden-backlinks ul {
+        margin: 0.4em 0 0;
+        padding-inline-start: 0;
+        list-style: none;
+    }
+
+    .garden-backlinks li {
+        margin: 0.25em 0;
+        line-height: 1.35;
+    }
+
+    .garden-backlinks li a {
+        word-break: break-word;
+    }
+
+    .garden-backlinks-empty {
+        margin: 0.4em 0 0;
+        color: var(--gray-600);
+    }
+</style>

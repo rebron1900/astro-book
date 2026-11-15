@@ -1,19 +1,39 @@
 ---
+import { HouseHeart } from '@lucide/astro';
 import Brand from '../ui/Brand.astro';
 import MenuNav from './MenuNav.astro';
+import GardenMenu from './GardenMenu.astro';
 import MenuOther from './MenuOther.astro';
 import MenuSearch from './MenuSearch.astro';
 import MenuTaxonomy from './MenuTaxonomy.astro';
 import MenuTheme from '../islands/MenuTheme';
 
-const { site, title,tag } = Astro.props;
+const { site, title, tag, garden = false } = Astro.props;
 ---
 
-<nav>
+<nav data-garden={garden ? 'true' : undefined}>
     <Brand />
     <MenuSearch />
     <MenuTheme client:load />
-    <MenuNav title={title} />
+
+    {garden ? (
+        <>
+            <GardenMenu />
+            <ul class="book-menu-nav garden-return-nav">
+                <li class="menu-flag-item">
+                    <a class="menu-flag ellipsis garden-return" href="/">
+                        <HouseHeart class="book-icon" aria-hidden="true" />
+                        返回博客
+                    </a>
+                </li>
+            </ul>
+            <MenuOther />
+        </>
+    ) : (
+        <>
+            <MenuNav title={title} />
+            <MenuOther />
+        </>
+    )}
     <!-- <MenuTaxonomy /> -->
-    <MenuOther />
 </nav>

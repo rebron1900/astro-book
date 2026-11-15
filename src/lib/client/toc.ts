@@ -7,18 +7,21 @@ let activeObserver: IntersectionObserver | null = null;
 export default function initToc() {
     activeObserver?.disconnect();
     activeObserver = null;
-    const links = document.querySelectorAll<HTMLAnchorElement>('.book-toc-content a');
+    const offset = 80;
+    // 桌面右栏 + 移动端抽屉里各有一份目录，两份都要跟着正文高亮
+    const links = document.querySelectorAll<HTMLAnchorElement>('.book-toc-content a, .book-header aside a');
     if (!links.length) return;
 
-    const headings: Array<{ el: HTMLElement; link: HTMLAnchorElement }> = [];
-    const offset = 80;
-
+    const byHeading = new Map<HTMLElement, HTMLAnchorElement[]>();
     links.forEach((a) => {
         const id = a.getAttribute('href')?.slice(1) ?? '';
-        const el = document.getElementById(id);
-        if (el) headings.push({ el, link: a });
+        const el = id ? document.getElementById(id) : null;
+        if (!el) return;
+        const group = byHeading.get(el) ?? [];
+        group.push(a);
+        byHeading.set(el, group);
     });
-    if (!headings.length) return;
+    if (!byHeading.size) return;
 
     /* 一次性清空所有高亮 */
     function clearAllActive() {
@@ -28,27 +31,29 @@ export default function initToc() {
         });
     }
 
-    const io = activeObserver = new IntersectionObserver(
+    const io = (activeObserver = new IntersectionObserver(
         (entries) => {
             entries.forEach((en) => {
-                const map = headings.find((m) => m.el === en.target);
-                if (!map) return;
+                const matched = byHeading.get(en.target as HTMLElement);
+                if (!matched) return;
 
                 if (en.isIntersecting) {
                     clearAllActive();
-                    map.link.classList.add('active');
-                    let li = map.link.closest('li');
-                    while (li) {
-                        li.classList.add('active');
-                        li = li.parentElement?.closest('li') ?? null;
-                    }
+                    matched.forEach((link) => {
+                        link.classList.add('active');
+                        let li = link.closest('li');
+                        while (li) {
+                            li.classList.add('active');
+                            li = li.parentElement?.closest('li') ?? null;
+                        }
+                    });
                 }
             });
         },
         {
             rootMargin: `-${offset}px 0px -60% 0px`
         }
-    );
+    ));
 
-    headings.forEach((m) => io.observe(m.el));
+    byHeading.forEach((_links, el) => io.observe(el));
 }

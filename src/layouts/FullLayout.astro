@@ -41,6 +41,7 @@ const isFullWidth = post && post.tags.some((tag: Tag) => tag.slug === 'hash-page
                 <slot name="pagination" transition:name="astro-pagination" />
                 <slot name="comments" transition:name="astro-comments" />
                 <label for="menu-control" class="hidden book-menu-overlay"></label>
+                <label for="toc-control" class="hidden book-toc-overlay"></label>
             </div>
 
             <aside class={`book-toc ${isFullWidth ? 'full-width' : ''}`}>
@@ -52,3 +53,9 @@ const isFullWidth = post && post.tags.some((tag: Tag) => tag.slug === 'hash-page
         <Fragment set:html={settings?.codeinjection_foot} />
     </body>
 </html>
+
+<script>
+    import { bindMobileDrawers } from '../lib/client/mobile-drawers';
+
+    bindMobileDrawers();
+</script>

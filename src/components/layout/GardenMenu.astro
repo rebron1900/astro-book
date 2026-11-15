@@ -1,0 +1,459 @@
+---
+/**
+ * 花园左栏的目录树。
+ *
+ * 行为借 Quartz 的 Explorer：树在构建期算好（文件夹在前、文件在后，同类按数字自然序）、
+ * 折叠状态存在 localStorage 的 `garden:explorer` 键里、当前页的祖先链默认展开。
+ * 外观**不借** Quartz：全部落成书本左栏现有的 `.book-menu-nav` / `.book-section-flat` /
+ * `.book-collspan` / `.menu-flag` / `.menu-flag-marker`，不引入它的箭头图标、字号与颜色。
+ *
+ * 文件夹行本身是展开/折叠按钮，用 FolderClosed / FolderOpen 图标表示状态；
+ * 文件行用 StickyNote 图标，和博客左栏导航项保持一致。
+ */
+import { getCollection } from 'astro:content';
+import { StickyNote } from '@lucide/astro';
+import GardenMenuNode from './GardenMenuNode.astro';
+import { gardenMetaOf } from '../../lib/garden/meta';
+
+interface FolderNode {
+    type: 'folder';
+    name: string;
+    path: string;
+    children: TreeNode[];
+}
+interface FileNode {
+    type: 'file';
+    name: string;
+    path: string;
+    title: string;
+}
+type TreeNode = FolderNode | FileNode;
+
+const notes = await getCollection('garden');
+
+const compareName = (a: string, b: string) =>
+    a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+
+const roots: TreeNode[] = [];
+const folderIndex = new Map<string, FolderNode>();
+let rootNote: FileNode | null = null;
+
+for (const note of notes) {
+    const segments = note.id.split('/');
+    const fallback = segments[segments.length - 1] ?? note.id;
+    // 标题以 link-map 为准（frontmatter 在同步时已剥离出镜像），没有才退到 slug 末段
+    const title = gardenMetaOf(note.id)?.title ?? fallback;
+
+    if (note.id === 'index') {
+        rootNote = { type: 'file', name: 'index', path: 'index', title };
+        continue;
+    }
+
+    // 文件夹笔记（`目录/index.md`）不单独进树：点文件夹行就是展开/折叠，文件夹页从面包屑/搜索进
+    if (segments[segments.length - 1] === 'index') continue;
+
+    let siblings = roots;
+    let prefix = '';
+    for (let i = 0; i < segments.length - 1; i += 1) {
+        prefix = prefix ? `${prefix}/${segments[i]}` : segments[i];
+        let folder = folderIndex.get(prefix);
+        if (!folder) {
+            folder = { type: 'folder', name: segments[i], path: prefix, children: [] };
+            folderIndex.set(prefix, folder);
+            siblings.push(folder);
+        }
+        siblings = folder.children;
+    }
+    siblings.push({ type: 'file', name: fallback, path: note.id, title });
+}
+
+/** 同一层内「单页文件在前、有子项的目录在后」；同类按显示名做数字自然序、大小写不敏感的比较 */
+const sortTree = (nodes: TreeNode[]): TreeNode[] => {
+    nodes.sort((a, b) => {
+        if (a.type !== b.type) return a.type === 'folder' ? 1 : -1;
+        const aName = a.type === 'folder' ? a.name : a.title;
+        const bName = b.type === 'folder' ? b.name : b.title;
+        return compareName(aName, bName);
+    });
+    for (const node of nodes) if (node.type === 'folder') sortTree(node.children);
+    return nodes;
+};
+sortTree(roots);
+
+// 当前页的 id：`/garden/<id>/` → `<id>`，根页 `/garden/` 为空串。
+// Astro.url.pathname 是百分号编码的（中文目录就是 %E5%B7%A5…），必须先解码才能和 id 比。
+const decodedPath = (() => {
+    try {
+        return decodeURIComponent(Astro.url.pathname);
+    } catch {
+        return Astro.url.pathname;
+    }
+})();
+const pathname = decodedPath.replace(/\/+$/, '');
+const currentId = pathname === '/garden' ? '' : pathname.replace(/^\/garden\//, '');
+---
+
+<div class="garden-explorer-head">
+    <span class="garden-explorer-title">花园目录</span>
+</div>
+
+<div class="garden-menu-scroll" data-garden-scroll>
+    <ul class="book-menu-nav garden-explorer" data-garden-explorer>
+        <li class="book-section-flat">
+            <ul class="book-collspan">
+                {
+                    rootNote && (
+                        <li class="menu-flag-item">
+                            {currentId === '' && <span class="menu-flag-marker" aria-hidden="true" />}
+                            <a href="/garden/" class:list={['menu-flag', 'ellipsis', { current: currentId === '' }]}>
+                                <StickyNote class="book-icon" aria-hidden="true" />
+                                {rootNote.title}
+                            </a>
+                        </li>
+                    )
+                }
+                {roots.map((node) => <GardenMenuNode node={node} currentId={currentId} />)}
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<style is:global>
+    /* 花园左栏：品牌 / 搜索 / 配色 / 「花园目录」标题固定在顶部，只有目录树滚动，页脚固定在底部。
+       整栏原来由 .book-menu-content 统一滚动，内容一多会把 logo、搜索甚至页脚一起卷走。 */
+    .book-menu-content:has(> nav[data-garden='true']) {
+        overflow-y: hidden;
+    }
+
+    .book-menu-content > nav[data-garden='true'] {
+        display: flex;
+        flex-direction: column;
+        block-size: 100%;
+        min-block-size: 0;
+    }
+
+    /* 固定区（品牌、搜索、配色、花园目录标题）和页脚不参与滚动 */
+    .book-menu-content > nav[data-garden='true'] > :not(.garden-menu-scroll) {
+        flex: 0 0 auto;
+    }
+
+    /* nav 改成 flex 后相邻外边距不再合并，下面几处按博客左栏的实测间距补齐。 */
+
+    /* 博客页品牌与搜索的 16px 下/上边距会合并成 16px，flex 下会叠成 32px */
+    .book-menu-content > nav[data-garden='true'] .book-brand {
+        margin-block-end: 0;
+    }
+
+    /* 「配色」在博客页靠 li 的 2rem 上下边距与相邻元素合并；
+       flex 下这些边距被包进 ul 内部，整块会多出 32px，改成由 ul 自己承担：
+       搜索的 16px 下边距 + 这里 16px 上边距 = 博客页合并后的 32px。 */
+    .book-menu-content > nav[data-garden='true'] .book-theme {
+        margin-block: 16px 32px;
+    }
+
+    .book-menu-content > nav[data-garden='true'] .book-theme .book-section-flat {
+        margin-block: 0;
+    }
+
+    /* 配色开关行的 1em 下边距原本在博客页会折叠到 ul 外，flex 下被算进高度，
+       会让「配色」整块比博客页高 14px；去掉它，展开配色时的内部间距不受影响。 */
+    .book-menu-content > nav[data-garden='true'] .book-theme .book-collspan > li {
+        margin-block-end: 0;
+    }
+
+    /* 「花园目录」标题脱离滚动区，高度和博客左栏的栏目标题一致 */
+    .book-menu-content > nav[data-garden='true'] .garden-explorer-head {
+        display: flex;
+        align-items: center;
+        min-block-size: 1.3em;
+    }
+
+    .book-menu-content > nav[data-garden='true'] .garden-explorer-title {
+        font-weight: bolder;
+    }
+
+    /* 侧栏底部的返回博客出口：和博客左栏导航项同一套结构，固定在「其他」上方 */
+    .garden-return-nav {
+        flex: 0 0 auto;
+        margin-block-start: 10px;
+        padding-block-start: 10px;
+        border-block-start: 1px solid var(--gray-200);
+    }
+
+    .garden-return-nav .menu-flag-item {
+        margin-block: 0;
+    }
+
+    .garden-return {
+        text-decoration: none;
+    }
+
+    .garden-menu-scroll {
+        position: relative;
+        flex: 1 1 auto;
+        min-block-size: 0;
+        /* 激活 flag 是 translateX(-10px) 的绝对定位元素，滚动容器会把它裁掉；
+           向左借 10px 再补等量内边距，内容仍对齐博客左栏，flag 留在可视区内。 */
+        margin-inline-start: -10px;
+        padding-inline-start: 10px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        /* 和首页 memo 卡片一样在边缘渐隐：滚动到顶/底时对应一侧自动收掉 */
+        --garden-fade-top: 0px;
+        --garden-fade-bottom: 0px;
+        -webkit-mask-image: linear-gradient(
+            to bottom,
+            transparent 0,
+            #000 var(--garden-fade-top),
+            #000 calc(100% - var(--garden-fade-bottom)),
+            transparent 100%
+        );
+        mask-image: linear-gradient(
+            to bottom,
+            transparent 0,
+            #000 var(--garden-fade-top),
+            #000 calc(100% - var(--garden-fade-bottom)),
+            transparent 100%
+        );
+    }
+
+    .garden-menu-scroll.is-faded-top {
+        --garden-fade-top: 16px;
+    }
+
+    .garden-menu-scroll.is-faded-bottom {
+        --garden-fade-bottom: 16px;
+    }
+
+    .garden-menu-scroll::-webkit-scrollbar {
+        inline-size: 0;
+        block-size: 0;
+    }
+
+    /* 目录首项贴着滚动区顶部，不再叠一层 2rem 上边距 */
+    .garden-menu-scroll > .book-menu-nav.garden-explorer > .book-section-flat:first-child {
+        margin-block-start: 0;
+    }
+
+    /* 页脚固定在底部：flex 下 li 的 2rem 上下边距会把整块撑高，改由 ul 留白 */
+    .book-menu-content > nav[data-garden='true'] .book-copy {
+        margin-block: 16px 0;
+        padding-block-start: 16px;
+    }
+
+    .book-menu-content > nav[data-garden='true'] .book-copy .book-section-flat {
+        margin-block: 0;
+    }
+
+    /* 节点在 GardenMenuNode.astro 里渲染，scoped 样式打不到，这里统一用容器前缀限定作用域。
+       行结构与博客左栏一致：`.book-icon` 内联在文字前，激活 flag 浮在行外。 */
+    .book-menu-nav.garden-explorer .garden-children {
+        padding-inline-start: var(--garden-indent, 1.2rem);
+    }
+
+    /* 博客左栏的 `.book-menu a svg` 会把链接内图标放大到 1.2em，文件夹行是 button，
+       不会被这条规则命中，图标就停在 .book-icon 的 1em，看起来大小不一。
+       这里统一按链接内图标的 1.2em 取尺寸，文章和文件夹图标视觉一致。 */
+    .garden-explorer svg.book-icon {
+        inline-size: 1.2em;
+        block-size: 1.2em;
+        flex: 0 0 auto;
+    }
+
+    .garden-explorer .menu-folder-row {
+        position: relative;
+        display: flex;
+        align-items: center;
+        inline-size: 100%;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: inherit;
+        font: inherit;
+        text-align: start;
+        cursor: pointer;
+    }
+
+    .garden-explorer .menu-folder-row:hover {
+        color: var(--color-hover-link);
+    }
+
+    .garden-explorer .garden-folder-name {
+        min-inline-size: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* 文件夹图标随展开状态切换：折叠用 FolderClosed，展开用 FolderOpen */
+    .garden-explorer .garden-folder-open,
+    .garden-explorer .menu-folder-row[aria-expanded='true'] .garden-folder-closed {
+        display: none;
+    }
+
+    .garden-explorer .menu-folder-row[aria-expanded='true'] .garden-folder-open {
+        display: inline-block;
+    }
+
+</style>
+
+<script>
+    const STORAGE_KEY = 'garden:explorer';
+    const SCROLL_KEY = 'garden:explorer-scroll';
+    /** 当前项离滚动区边缘留一点空隙，避免正好贴着上下渐隐 */
+    const SCROLL_PAD = 12;
+
+    type SavedState = Record<string, boolean>;
+
+    const readScrollTop = (): number | null => {
+        try {
+            const raw = sessionStorage.getItem(SCROLL_KEY);
+            if (raw === null) return null;
+            const value = Number(raw);
+            return Number.isFinite(value) ? value : null;
+        } catch {
+            return null;
+        }
+    };
+
+    const saveScrollTop = (top: number) => {
+        try {
+            sessionStorage.setItem(SCROLL_KEY, String(Math.round(top)));
+        } catch {
+            // 隐私模式下无法持久化，退化成仅本次页面内恢复
+        }
+    };
+
+    /**
+     * 换页后恢复目录树的滚动位置。
+     * 有上次记录就精确还原，保留用户浏览目录的位置；首次进入或深链没有记录时，
+     * 再把当前笔记滚进可视区，避免它落在屏幕外。
+     */
+    const restoreScroll = () => {
+        const scroll = document.querySelector<HTMLElement>('[data-garden-scroll]');
+        if (!scroll) return;
+
+        const saved = readScrollTop();
+        if (saved !== null) {
+            // 有上次位置就以它为准：用户可能刻意滚到别处看目录，不要强行拉回当前项
+            scroll.scrollTop = saved;
+            return;
+        }
+
+        // 没有记录（首次进入、深链）时，把当前笔记带进视野
+        const current = scroll.querySelector<HTMLElement>('a.menu-flag.current');
+        if (!current) return;
+
+        const box = scroll.getBoundingClientRect();
+        const item = current.getBoundingClientRect();
+        // 祖先文件夹被手动折叠时当前项没有布局，跳过
+        if (!item.height) return;
+
+        if (item.top < box.top + SCROLL_PAD) {
+            scroll.scrollTop += item.top - box.top - SCROLL_PAD;
+        } else if (item.bottom > box.bottom - SCROLL_PAD) {
+            scroll.scrollTop += item.bottom - box.bottom + SCROLL_PAD;
+        }
+    };
+
+    const readState = (): SavedState => {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            const parsed = raw ? JSON.parse(raw) : {};
+            return parsed && typeof parsed === 'object' ? (parsed as SavedState) : {};
+        } catch {
+            return {};
+        }
+    };
+
+    const writeState = (state: SavedState) => {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch {
+            // 隐私模式下 localStorage 不可写，折叠退化成仅本次会话生效
+        }
+    };
+
+    const applyOpen = (list: HTMLElement, toggle: HTMLElement | null, open: boolean) => {
+        list.hidden = !open;
+        if (toggle) toggle.setAttribute('aria-expanded', String(open));
+    };
+
+    const initExplorer = () => {
+        const root = document.querySelector<HTMLElement>('[data-garden-explorer]');
+        if (!root || root.dataset.gardenReady === 'true') return;
+        root.dataset.gardenReady = 'true';
+
+        const saved = readState();
+
+        root.querySelectorAll<HTMLElement>('.garden-children[data-folderpath]').forEach((list) => {
+            const path = list.dataset.folderpath;
+            if (!path) return;
+            const toggle = list.closest('li')?.querySelector<HTMLElement>('.menu-folder-row') ?? null;
+            // 记住的状态优先于服务端按「当前页祖先链」算出的默认值
+            if (path in saved) applyOpen(list, toggle, saved[path]);
+        });
+
+        // 换页后恢复目录树的滚动位置
+        restoreScroll();
+
+        root.addEventListener('click', (event) => {
+            const target = event.target as HTMLElement | null;
+            const toggle = target?.closest<HTMLElement>('.menu-folder-row');
+            if (!toggle) return;
+            event.preventDefault();
+            const item = toggle.closest('li');
+            const list = item?.querySelector<HTMLElement>('.garden-children') ?? null;
+            const path = list?.dataset.folderpath;
+            if (!list || !path) return;
+
+            const next = list.hidden;
+            applyOpen(list, toggle, next);
+            saved[path] = next;
+            writeState(saved);
+        });
+    };
+
+    const initScrollFade = () => {
+        const scroll = document.querySelector<HTMLElement>('[data-garden-scroll]');
+        if (!scroll || scroll.dataset.fadeReady === 'true') return;
+        scroll.dataset.fadeReady = 'true';
+
+        const update = () => {
+            const remaining = scroll.scrollHeight - scroll.clientHeight - scroll.scrollTop;
+            scroll.classList.toggle('is-faded-top', scroll.scrollTop > 1);
+            scroll.classList.toggle('is-faded-bottom', remaining > 1);
+        };
+
+        const onScroll = () => {
+            update();
+            saveScrollTop(scroll.scrollTop);
+        };
+
+        scroll.addEventListener('scroll', onScroll, { passive: true });
+
+        // 展开/收起文件夹或换页后会改变内容高度，尺寸监听顺带修正底部渐隐
+        if (typeof ResizeObserver !== 'undefined') {
+            const observer = new ResizeObserver(update);
+            observer.observe(scroll);
+            if (scroll.firstElementChild) observer.observe(scroll.firstElementChild);
+        }
+
+        update();
+    };
+
+    // 换页前再存一次，避免用户刚点链接、滚动事件还没落盘就换页
+    document.addEventListener('astro:before-swap', () => {
+        const scroll = document.querySelector<HTMLElement>('[data-garden-scroll]');
+        if (scroll) saveScrollTop(scroll.scrollTop);
+    });
+
+    initExplorer();
+    initScrollFade();
+    document.addEventListener('astro:page-load', initExplorer);
+    document.addEventListener('astro:page-load', initScrollFade);
+</script>

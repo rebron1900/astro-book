@@ -1,0 +1,270 @@
+---
+/**
+ * 花园笔记页的渲染主体（整页）。
+ *
+ * 抽成组件是为了让 `/garden/`（根笔记 index.md）能由 `src/pages/garden/index.astro`
+ * 这个静态路由渲染：rest 参数为空段时，构建能出页但 dev 的路由匹配不到，
+ * 所以根页不能挂在 `[...slug].astro` 上。
+ */
+import { render } from 'astro:content';
+import { Calendar, Heart, View } from '@lucide/astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Head from '../../components/islands/Head.astro';
+import Header from '../../components/layout/Header.astro';
+import Menu from '../../components/layout/Menu.astro';
+import Comments from '../../components/islands/Comments.astro';
+import GardenAside from '../../components/garden/GardenAside.astro';
+import GardenCrumbs from '../../components/garden/GardenCrumbs.astro';
+import { noteTitleOf, type GardenCrumb } from '../../lib/garden/note';
+import { getGardenGraph } from '../../lib/garden/graph-index';
+import { subgraphAround } from '../../lib/garden/graph';
+import { gardenMetaOf } from '../../lib/garden/meta';
+import { settings } from '../../api/store';
+
+interface Props {
+    entry: { id: string; data: Record<string, unknown>; body?: string | null; digest?: string | number };
+    ancestors?: GardenCrumb[];
+}
+
+const { entry, ancestors = [] } = Astro.props as Props;
+const { Content, headings } = await render(entry as Parameters<typeof render>[0]);
+
+const bodyText = entry.body ?? '';
+const firstLine = bodyText.replace(/^\s+/, '').split('\n', 1)[0] ?? '';
+const hasLeadingH1 = /^#\s+\S/.test(firstLine);
+
+const meta = gardenMetaOf(entry.id);
+const title = (meta?.title ?? noteTitleOf(entry)) || '花园手记';
+
+/** 纯文本口径：去掉代码块、行内代码、链接与常见标记，用于摘要和评论阈值 */
+const plainText = bodyText
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/\[![A-Za-z][\w-]*\][+-]?[ \t]*/g, ' ')
+    .replace(/`[^`]*`/g, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/^[>#\s*\-+|]+$/gm, ' ')
+    .replace(/[*_~>#|]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+const charCount = plainText.replace(/\s/g, '').length;
+const excerpt = plainText.slice(0, 120);
+const showComments = charCount >= 120;
+
+const rawDate = meta?.date ?? entry.data?.date;
+const dateValue = rawDate ? new Date(String(rawDate)) : undefined;
+const publishedAt = dateValue && !Number.isNaN(dateValue.getTime()) ? dateValue.toISOString() : undefined;
+const displayDate =
+    dateValue && !Number.isNaN(dateValue.getTime())
+        ? `${dateValue.getFullYear()}-${String(dateValue.getMonth() + 1).padStart(2, '0')}-${String(dateValue.getDate()).padStart(2, '0')}`
+        : null;
+
+const noteTags = meta?.tags?.filter((tag) => tag && tag.trim()) ?? [];
+
+/** 右栏 TOC：只取 h2–h4，输出嵌套 `ul > li > a`（与 tocGen 的结构一致） */
+const escapeHtml = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const tocHtml = (() => {
+    const items = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 4);
+    if (!items.length) return '';
+    // 用深度栈拼嵌套列表：父 <li> 保持打开，子层 <ul> 放进父 <li> 里
+    // （之前那版在升层时先补 `</li>`，产出 `<li>…</li></li>` 这种错配标签）
+    let html = '';
+    const open: number[] = [];
+    let prev = 0;
+    for (const item of items) {
+        if (prev === 0) {
+            html += '<ul>';
+            open.push(item.depth);
+        } else if (item.depth > prev) {
+            while (open[open.length - 1] < item.depth) {
+                html += '<ul>';
+                open.push(open[open.length - 1] + 1);
+            }
+        } else if (item.depth < prev) {
+            html += '</li>';
+            while (open.length > 1 && open[open.length - 1] > item.depth) {
+                html += '</ul></li>';
+                open.pop();
+            }
+            open[open.length - 1] = item.depth;
+        } else {
+            html += '</li>';
+        }
+        html += `<li><a href="#${item.slug}">${escapeHtml(item.text)}</a>`;
+        prev = item.depth;
+    }
+    html += '</li>';
+    while (open.length > 1) {
+        html += '</ul></li>';
+        open.pop();
+    }
+    return `${html}</ul>`;
+})();
+
+/** 右栏局部图：当前笔记 1 跳，最多 60 个节点（超出按度数裁剪，不再显示提示文案） */
+const localGraph = subgraphAround(getGardenGraph(), entry.id, 1, 60);
+
+const headPost = {
+    title,
+    slug: entry.id === 'index' ? 'garden' : `garden/${entry.id}`,
+    excerpt: excerpt || `${title} · 数字花园笔记`,
+    published_at: publishedAt
+};
+---
+
+<BaseLayout>
+    <Head slot="head" post={headPost} site={settings} title={`${title} | 花园 · ${settings?.title ?? ''}`} />
+
+    <Header slot="header" title={title} />
+
+    <Menu slot="menu" title={title} garden />
+
+    {/* 面包屑不进正文：放在 `.book-article` 之外，切页时不会跟着文章内容一起做进入动画 */}
+    <GardenCrumbs
+        slot="content"
+        crumbs={ancestors}
+        current={title}
+    />
+
+    <article
+        slot="content"
+        class:list={['markdown', 'book-article', 'garden-note', { 'garden-note--leading-h1': hasLeadingH1 }]}
+        data-garden-id={entry.id}
+    >
+        <h1 class="book-title page-title page-title--article">{title}</h1>
+
+        <div class="garden-note-body">
+            <Content />
+        </div>
+
+        <p class="garden-note-meta">
+            <span>{entry.id.split('/').slice(0, -1).join(' / ')}</span>
+            {noteTags.length ? <span>{noteTags.map((tag) => `#${tag}`).join(' ')}</span> : null}
+        </p>
+
+        {/* 点赞 / 浏览量：按博客文章页脚部的格式，大号爱心 + 日期/赞/浏览一行 */}
+        <div class="garden-note-stats" data-garden-stats data-page-title={title}>
+            <div class="post_action flex flex-wrap justify-center">
+                <button type="button" class="post_like" data-garden-like aria-label="点赞" aria-pressed="false">
+                    <Heart class="book-icon" aria-hidden="true" />
+                    <span class="post_like_desc">「 觉得本文不错？点个赞把！... 」</span>
+                </button>
+            </div>
+
+            <div class="flex flex-wrap justify-start book-post-meta">
+                {
+                    displayDate && (
+                        <div>
+                            <Calendar class="book-icon" aria-hidden="true" />
+                            <time datetime={displayDate}>{displayDate}</time>
+                        </div>
+                    )
+                }
+                <div title="点赞数">
+                    <Heart class="book-icon" aria-hidden="true" />
+                    <span data-garden-likes>—</span>
+                </div>
+                <div title="浏览量">
+                    <View class="book-icon" aria-hidden="true" />
+                    <span data-garden-views>—</span>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    {showComments && <Comments postID={`garden:${entry.id}`} countPv={false} showFediverse={false} slot="comments" />}
+
+    <Fragment slot="toc">
+        <GardenAside
+            tocHtml={tocHtml}
+            entryId={entry.id}
+            showComments={showComments}
+            graph={localGraph.nodes.length ? localGraph : undefined}
+        />
+    </Fragment>
+
+    <Fragment slot="h-toc">
+        <aside class="hidden clearfix">
+            {/* 移动端抽屉里也放完整右栏：局部图 + TOC + 反链；
+                全站图的入口是图谱面板右上角那个按钮 */}
+            <GardenAside
+                tocHtml={tocHtml}
+                entryId={entry.id}
+                showComments={showComments}
+                graph={localGraph.nodes.length ? localGraph : undefined}
+            />
+        </aside>
+    </Fragment>
+</BaseLayout>
+
+<script>
+    import { bindGardenPopover } from '../../lib/client/garden-popover';
+    import { bindGardenNoteStats } from '../../lib/client/garden-stats';
+
+    bindGardenPopover();
+    bindGardenNoteStats();
+</script>
+
+<style>
+    /* 标题已在 page-title 出现过，正文里的首个 H1 不重复显示。
+       正文 H1 由 <Content/> 生成、不带 scoped cid，故整段进 :global；
+       只命中 .garden-note-body 里的第一个 h1（正文），页面标题永远保留。 */
+    .garden-note--leading-h1 :global(.garden-note-body > h1:first-child) {
+        display: none;
+    }
+
+    .garden-note-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4em 0.8em;
+        margin-top: 2em;
+        padding-top: 0.8em;
+        border-top: 1px solid var(--gray-200);
+        color: var(--gray-600);
+        font-size: 0.8em;
+    }
+
+    .garden-note-stats {
+        margin-top: 1.5em;
+    }
+
+    /* 复用博客 `.post_action .post_like` 的 6rem 大爱心和文案样式；
+       div 换成 button 后把浏览器默认外观清掉，键盘也能直接触发。 */
+    .garden-note-stats button.post_like {
+        inline-size: 100%;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: inherit;
+        font: inherit;
+        /* 博客页脚在 14px 环境下，1.5em 爱心是 21px；这里在正文 16px 环境下要显式收回 */
+        font-size: 0.875rem;
+    }
+
+    .garden-note-stats .post_like_desc {
+        line-height: 1.15;
+    }
+
+    .garden-note-stats button.post_like[aria-busy='true'] {
+        cursor: progress;
+        opacity: 0.55;
+    }
+
+    .garden-note-stats .book-post-meta {
+        margin-top: 0;
+        color: var(--gray-600);
+        /* 博客页脚 .book-footer 里是 14px；花园这里在正文内，会继承 16px / 2 行高 */
+        font-size: 0.875rem;
+        line-height: 1.15;
+    }
+
+    /* 博客 .book-footer svg 的图标右间距固定 8px；花园继承 .book-icon 的 .5em 会小 1px */
+    .garden-note-stats .book-post-meta .book-icon {
+        margin-inline-end: 8px;
+    }
+
+    /* 博客的日期包在带 .8rem 右外边距的 span 里；这里用 time 保持语义，补同样的间距 */
+    .garden-note-stats .book-post-meta time {
+        margin-inline-end: 0.8rem;
+    }
+</style>

@@ -1,0 +1,60 @@
+---
+/**
+ * 花园目录树的单个节点（递归渲染）。
+ * 文件夹 = 整行按钮（点哪里都展开/折叠），用闭合/展开的文件夹图标表示状态；
+ * 文件 = 链接 + 文章图标。图标统一用 `.book-icon` 内联，和博客左栏的导航项结构一致。
+ */
+import { FolderClosed, FolderOpen, StickyNote } from '@lucide/astro';
+import Self from './GardenMenuNode.astro';
+import { gardenHrefOf } from '../../lib/garden/path';
+
+interface FolderNode {
+    type: 'folder';
+    name: string;
+    path: string;
+    children: TreeNode[];
+}
+interface FileNode {
+    type: 'file';
+    name: string;
+    path: string;
+    title: string;
+}
+type TreeNode = FolderNode | FileNode;
+
+const { node, currentId } = Astro.props as { node: TreeNode; currentId: string };
+
+const isCurrent = node.path === currentId;
+// 祖先链（含自己）默认展开：Quartz 没有、但书本左栏已有的前缀命中语义
+const isOnPath = currentId === node.path || currentId.startsWith(`${node.path}/`);
+---
+
+{
+    node.type === 'folder' ? (
+        <li class="menu-flag-item garden-folder-item">
+            <button
+                type="button"
+                class="menu-flag menu-folder-row"
+                aria-expanded={isOnPath}
+                aria-label={`${isOnPath ? '收起' : '展开'}目录 ${node.name}`}
+            >
+                <FolderClosed class="book-icon garden-folder-closed" aria-hidden="true" />
+                <FolderOpen class="book-icon garden-folder-open" aria-hidden="true" />
+                <span class="garden-folder-name ellipsis">{node.name}</span>
+            </button>
+            <ul class="book-collspan garden-children" data-folderpath={node.path} hidden={!isOnPath}>
+                {node.children.map((child) => (
+                    <Self node={child} currentId={currentId} />
+                ))}
+            </ul>
+        </li>
+    ) : (
+        <li class="menu-flag-item">
+            {isCurrent && <span class="menu-flag-marker" aria-hidden="true" />}
+            <a href={gardenHrefOf(node.path)} class:list={['menu-flag', 'ellipsis', { current: isCurrent }]}>
+                <StickyNote class="book-icon" aria-hidden="true" />
+                {node.title}
+            </a>
+        </li>
+    )
+}

@@ -17,6 +17,21 @@ const site = settings!;
                 maxWidth: 300
             });
             initWebSocket(actives);
+
+            // logo 的 tooltip 统一走 tippy（和站内其他 tooltip 同一套外观），位置固定在 logo 下方
+            const brand = document.querySelector<HTMLElement>('.book-brand');
+            // 只挂主 logo，避免和 .actives 上的在线状态 tooltip 叠加
+            const logo = brand?.querySelector<HTMLImageElement>('.site-logo > img');
+            if (!brand || !logo) return;
+
+            if (logo.dataset.logoTip) {
+                createTippy(logo, {
+                    content: logo.dataset.logoTip,
+                    placement: 'bottom',
+                    offset: [0, 8],
+                    appendTo: () => brand.closest<HTMLElement>('.book-menu-content') ?? document.body
+                });
+            }
         });
     </script>
     <a class="flex align-center" href="/" title="">
@@ -25,7 +40,7 @@ const site = settings!;
                 <div class="flex site-logo">
                     <div class="og-image bislight" style={'filter: blur(8px);height: 1.8em;width: 1.8em;background-image: url(/logo.svg);opacity: 1;'} />
 
-                    <img src="/logo.svg" alt={site.title} title={site.title} data-tippy-content={`${site.title} | ${site.description}`} />
+                    <img src="/logo.svg" alt={site.title} data-logo-tip={`${site.title} | ${site.description}`} />
                     <div class="actives">
                         <img
                             src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="

@@ -23,7 +23,7 @@ import ExerciseFootprint from '../components/islands/ExerciseFootprint';
 import '../styles/pages/exercise.scss';
 import '../styles/pages/activity.scss';
 
-// 沿用运动页的 Ghost 记录拿标题；页面布局与 /exercise/ 一致（中间内容 + 右侧栏）
+// 沿用运动页的 Ghost 记录拿标题；页面布局与旧 /exercise/ 一致（中间内容 + 右侧栏）
 const page = pages.find((post) => post.slug == 'exercise') ?? pages.find((post) => post.slug == 'strava');
 
 const allRecords = buildRecords(activitiesJson as unknown as Activity[]);

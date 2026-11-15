@@ -70,7 +70,7 @@ function entryHref(entry: TimelineEntry) {
     if (entry.kind === 'memo') return '/now/';
     if (entry.kind === 'neodb') return goLink(entry.data.item.id);
     // 运动条目跳到 intervals.icu 的活动页；同步结果里已带 url，缺省时退回时间线页
-    return goLink(entry.data.url ?? '/exercise/');
+    return goLink(entry.data.url ?? '/activity/');
 }
 
 type DayHeat = {

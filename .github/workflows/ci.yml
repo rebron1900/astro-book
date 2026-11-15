@@ -13,6 +13,7 @@ on:
     push:
         branches:
             - main
+            - release/garden-safe-20261115
 
 jobs:
     build:
@@ -48,8 +49,7 @@ jobs:
 
             - name: Install dependencies
               run: |
-                  yarn add sharp --ignore-engines
-                  yarn install
+                  yarn install --frozen-lockfile
                   python3 -m pip install --upgrade pip -r scripts/map/requirements.txt
 
             # 定时触发时：同步外部数据到 src/data/*.json（数据无变化则 writeJson 跳过写盘）
@@ -126,11 +126,56 @@ jobs:
                   echo "$CONFIG_FILE" > ./.env
                   sed -i -e 's/^MAP_KEY=/PUBLIC_MAP_KEY=/' ./.env
 
+            # 只读读取私有笔记；失败时只报阶段，不把仓库日志/笔记路径输出到公开日志。
+            # 放在 node_modules 缓存恢复之后，原始 vault 不进入任何缓存或 artifact。
+            - name: Fetch and sync garden vault (read-only)
+              env:
+                  GARDEN_VAULT_TOKEN: ${{ secrets.GARDEN_VAULT_TOKEN }}
+              run: |
+                  set -euo pipefail
+                  umask 077
+                  if [ -z "${GARDEN_VAULT_TOKEN:-}" ]; then
+                      echo "Missing GARDEN_VAULT_TOKEN; deployment blocked." >&2
+                      exit 1
+                  fi
+                  mkdir -p .garden
+                  askpass=$(mktemp "$RUNNER_TEMP/garden-askpass.XXXXXX")
+                  trap 'rm -f "$askpass" .garden/vault-fetch.log; rm -rf .garden/vault' EXIT
+                  printf '%s\n' '#!/bin/sh' 'case "$1" in' '*Username*) printf "%s\\n" x-access-token ;;' '*) printf "%s\\n" "$GARDEN_VAULT_TOKEN" ;;' 'esac' > "$askpass"
+                  chmod 700 "$askpass"
+                  export GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0
+                  if ! git -C "$RUNNER_TEMP" -c credential.helper= clone --quiet --depth 1 --single-branch https://github.com/rebron1900/Obsidian.git "$GITHUB_WORKSPACE/.garden/vault" > .garden/vault-fetch.log 2>&1; then
+                      echo "Garden vault fetch failed; check read-only token. Deployment blocked." >&2
+                      exit 1
+                  fi
+                  rm -f "$askpass"
+                  unset GARDEN_VAULT_TOKEN GIT_ASKPASS GIT_TERMINAL_PROMPT
+                  GARDEN_VAULT_DIR=.garden/vault yarn sync:garden
+
+            - name: Check garden before build (fail closed)
+              run: yarn check:garden
+
+            - name: Check Astro types
+              run: yarn astro check
+
+            - name: Run tests
+              run: yarn test
+
+            # 保留原有 cache key 表达式；每次部署构建强制冷启动，防止旧页面/资源残留。
+            - name: Clear incremental render cache
+              run: rm -rf node_modules/.astro/dist node_modules/.astro/incremental-build.json
+
             - name: Build Astro project
               run: yarn build
 
+            - name: Check built garden (fail closed)
+              run: |
+                  test -s dist/garden/index.html
+                  yarn check:garden
+
             # 部署到 VPS
             - name: Deploy to VPS
+              if: github.ref == 'refs/heads/main'
               env:
                   VPS_HOST: ${{ secrets.VPS_HOST }}
                   VPS_PORT: ${{ secrets.VPS_PORT }}
@@ -142,4 +187,4 @@ jobs:
                   echo "$VPS_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
                   chmod 600 ~/.ssh/id_rsa
                   echo "StrictHostKeyChecking no" >> ~/.ssh/config
-                  rsync -avz --delete -e "ssh -p $VPS_PORT" dist/ $VPS_USER@$VPS_HOST:/var/11ty-data
+                  rsync -avz --delete --exclude='.prerender/' -e "ssh -p $VPS_PORT" dist/ $VPS_USER@$VPS_HOST:/var/11ty-data
