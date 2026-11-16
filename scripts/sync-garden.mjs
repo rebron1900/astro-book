@@ -382,7 +382,8 @@ async function main() {
         assetStats.copied += 1;
     }
     // 附件要由 nginx 直接读：不跟着调用方的 umask（CI 里是 077）变成 600/700，否则线上 403。
-    await chmodTree(ASSET_DIR);
+    // 没有引用附件时目录不会创建（例如全部改用 R2 外链），此时不用 chmod。
+    if (existsSync(ASSET_DIR)) await chmodTree(ASSET_DIR);
 
     // 8) 索引产物
     const folders = foldersOf(notes.map((note) => note.id));
