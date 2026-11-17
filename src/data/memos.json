@@ -1,5 +1,27 @@
 [
   {
+    "id": "01M7MZYYS4N7W6DH6T761J2KEW",
+    "content": "<p>好几天了，没收到罚单，也许没事了？</p>",
+    "createdTs": 1794927196,
+    "updatedTs": 1794927196,
+    "creatorName": "1900",
+    "resourceList": [],
+    "visibility": "PUBLIC",
+    "pinned": false,
+    "type": "memo"
+  },
+  {
+    "id": "01M7MJPAP5FZT0E06MKBXSFAJ4",
+    "content": "<p>最近经常折腾bot，有朋友会问我bot和传统个人助手有什么区别，我大概想了一下，下面是我自己的理解。</p><p>hermes是通过目标建立会话和agent沟通，一个会话一个任务，会加载所有你配置的技能、skill等等来完成你的任务，记忆是和会话绑定的（当然这点可以通过用一些记忆工具来优化）。</p><p>bot现在主流的用法是通过和一个中枢bot进行对话，中枢bot把任务分配给对应的bot，你可以有很多不同的bot，他们有独立的记忆，加载不同的mcp、skill，只完成自己负责的部分，能力之外的会在自己的任务完成后交给对应的bot或者在自己做的时候同步交给其他bot进行。</p><p>好处就是只是知识、记忆累计在不同的bot上，大家都会成为各自领域服务你的专家。坏处就是如果bot分的太细，任务转接流程会过长，目标失真，token消耗量大等等。</p>",
+    "createdTs": 1794913282,
+    "updatedTs": 1794913282,
+    "creatorName": "1900",
+    "resourceList": [],
+    "visibility": "PUBLIC",
+    "pinned": false,
+    "type": "memo"
+  },
+  {
     "id": "01M7ENFC3PNM865SH2EG8YFD4E",
     "content": "<p><span class=\"h-card\"><a href=\"https://e5n.cc/@eallion\" class=\"u-url mention\" rel=\"nofollow noreferrer noopener\" target=\"_blank\">@<span>eallion</span></a></span> 今年到不是全靠韩国人，BLG就下路viper一个韩援，中上野辅都有C过，而且是经常C</p>",
     "createdTs": 1794714873,
