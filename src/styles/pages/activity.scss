@@ -132,6 +132,14 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
 
 /* ---------- 足迹模式：小地图（吸顶）+ 下面时间线卡片 ---------- */
 
+/* 吸顶哨兵：和运动地图的 .ex-map-sentinel 同样几何（1px 高、负边距抵消），
+   这样「滚过哨兵」的位置和地图上沿严格对应；零高度元素的交叉判定只落在一条线上，
+   滚动位置正好压线时会忽真忽假，吸顶态跟着抖 */
+.act-fp-sentinel {
+    block-size: 1px;
+    margin-block-end: -1px;
+}
+
 .act-mode--footprint .ex-fp {
     block-size: auto;
 }
@@ -158,18 +166,11 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
     transition: box-shadow 240ms ease;
 }
 
+/* 吸顶后和运动预览地图用同一枚投影：跟着主题变量走，深色 / 自定义配色都不会
+   出现「黑投影压在深色底上等于没有」的情况（原先只写了 html.dark，
+   默认的「自适应」深色走 prefers-color-scheme，匹配不到那条规则） */
 .act-mode--footprint .ex-fp-map-wrap.is-stuck {
-    /* 12% 单层阴影在浅色下几乎看不出、深色下融进背景；悬浮态用双层投影明确抬起 */
-    box-shadow:
-        0 1px 3px rgb(0 0 0 / 0.12),
-        0 16px 38px rgb(0 0 0 / 0.26);
-}
-
-/* 深色背景上纯黑阴影会再次融进去，单独加深一档 */
-html.dark .act-mode--footprint .ex-fp-map-wrap.is-stuck {
-    box-shadow:
-        0 1px 3px rgb(0 0 0 / 0.4),
-        0 16px 38px rgb(0 0 0 / 0.55);
+    box-shadow: var(--map-stuck-shadow);
 }
 
 .act-mode--footprint .ex-fp-map {

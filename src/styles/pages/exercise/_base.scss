@@ -47,6 +47,8 @@ body:has(.exercise-page) .book-toc .book-toc-content {
     margin-block-end: 1.6rem;
     padding-block: 0;
     background: transparent;
+    /* 未吸顶没有投影，吸顶才抬起：只过渡投影，避免顺带触发尺寸动画 */
+    transition: box-shadow 240ms ease;
 }
 
 /* 悬浮时地图贴边：不要内边距和白色底，否则底部会多出一条空白 */
@@ -55,7 +57,8 @@ body:has(.exercise-page) .book-toc .book-toc-content {
     border: 1px solid color-mix(in srgb, var(--gray-500) 45%, transparent);
     border-radius: 0.6rem;
     background: var(--body-background);
-    box-shadow: 0 10px 26px rgb(0 0 0 / 0.12);
+    /* 和足迹小地图共用同一枚主题投影：单层 12% 在深色底上等于没有 */
+    box-shadow: var(--map-stuck-shadow);
     overflow: hidden;
 }
 

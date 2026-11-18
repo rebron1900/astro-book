@@ -45,6 +45,9 @@ $hint-colors: (
     --color-visited-link: #0055bb;
     --color-hover-link: #0074ff;
 
+    /* 吸顶地图（运动预览 / 足迹小地图）抬起的投影：浅色底用单层几乎看不见，用接触层 + 环境层两层 */
+    --map-stuck-shadow: 0 1px 3px rgb(0 0 0 / 0.12), 0 16px 38px rgb(0 0 0 / 0.26);
+
     --body-background: white;
     --body-font-color: black;
 
@@ -74,6 +77,9 @@ $hint-colors: (
     --body-font-color: #e9ecef;
     --color-hover-link: #589ff2;
 
+    /* 深色底上纯黑投影会融进背景，整体加深一档 */
+    --map-stuck-shadow: 0 1px 3px rgb(0 0 0 / 0.4), 0 16px 38px rgb(0 0 0 / 0.55);
+
     --btn-color: red;
     --btn-bg: blue;
 
@@ -100,6 +106,8 @@ $hint-colors: (
     --body-font-color: #e3cc94;
     --color-hover-link: #85630f;
 
+    --map-stuck-shadow: 0 1px 3px rgb(0 0 0 / 0.4), 0 16px 38px rgb(0 0 0 / 0.55);
+
     --btn-color: red;
     --btn-bg: blue;
 
@@ -124,6 +132,8 @@ $hint-colors: (
     --body-font-color: #f6f8fa;
     --color-hover-link: #fbadb5;
 
+    --map-stuck-shadow: 0 1px 3px rgb(0 0 0 / 0.4), 0 16px 38px rgb(0 0 0 / 0.55);
+
     --btn-color: red;
     --btn-bg: blue;
 
@@ -144,6 +154,8 @@ $hint-colors: (
     --color-link: #7b88c8;
     --color-visited-link: #7b88c8;
     --color-hover-link: #4b63db;
+
+    --map-stuck-shadow: 0 1px 3px rgb(0 0 0 / 0.4), 0 16px 38px rgb(0 0 0 / 0.55);
 
     --body-background: #0b0c1b;
     --body-font-color: #a6b4d2;
@@ -169,6 +181,8 @@ $hint-colors: (
     --color-visited-link: #ff617b;
     --color-hover-link: #ff617b;
 
+    --map-stuck-shadow: 0 1px 3px rgb(0 0 0 / 0.4), 0 16px 38px rgb(0 0 0 / 0.55);
+
     --body-background: #363030;
     --body-font-color: #fdf9ef;
 
@@ -192,6 +206,9 @@ $hint-colors: (
     --color-link: #434343;
     --color-visited-link: #434343;
     --color-hover-link: #ab3b3a;
+
+    /* 米色纸面底：投影要极轻，否则像一块脏污 */
+    --map-stuck-shadow: 0 1px 3px rgb(69 73 81 / 0.1), 0 14px 32px rgb(69 73 81 / 0.16);
 
     --body-background: #e6dece;
     --body-font-color: #434343;

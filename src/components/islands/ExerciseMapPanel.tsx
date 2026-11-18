@@ -67,17 +67,19 @@ export default function ExerciseMapPanel(props: ExerciseMapPanelProps) {
         };
         window.addEventListener('resize', handleViewportResize);
 
-        // 用哨兵元素判断「是否已经吸顶」：滚过哨兵后给 hero 加 .is-stuck
+        // 用哨兵元素判断「是否已经吸顶」：滚过哨兵后给 hero 加 .is-stuck。
+        // 状态只从哨兵当前位置算，不采信 entry.isIntersecting：切模式瞬间那一份 entry
+        // 可能还是地图隐藏时的旧值，写进去就会出现「已经悬浮却没有投影」。
+        const syncStuck = () => {
+            if (!sentinel || !hero) return;
+            // display:none 时 rect 恒为 0，算出来的是假状态；等切回来时由 ACTIVITY_MODE_EVENT 补同步
+            if (!hero.offsetParent) return;
+            setStuck(sentinel.getBoundingClientRect().bottom <= 0);
+        };
+
         let observer: IntersectionObserver | null = null;
         if (sentinel && typeof IntersectionObserver !== 'undefined') {
-            observer = new IntersectionObserver(
-                (entries) => {
-                    const entry = entries[0];
-                    if (!entry) return;
-                    setStuck(!entry.isIntersecting);
-                },
-                { threshold: 0 }
-            );
+            observer = new IntersectionObserver(() => syncStuck(), { threshold: 0 });
             observer.observe(sentinel);
         }
 
@@ -88,7 +90,7 @@ export default function ExerciseMapPanel(props: ExerciseMapPanelProps) {
         if (props.activeMode) {
             onMode = (event: Event) => {
                 if ((event as CustomEvent<ActivityModeDetail>).detail?.mode !== props.activeMode) return;
-                setStuck(sentinel ? sentinel.getBoundingClientRect().bottom <= 0 : false);
+                syncStuck();
             };
             document.addEventListener(ACTIVITY_MODE_EVENT, onMode);
         }

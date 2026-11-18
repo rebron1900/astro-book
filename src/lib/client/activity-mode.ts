@@ -19,19 +19,24 @@ export default function initActivityMode(): () => void {
     /** 当前模式下负责占高度的地图块：运动是 hero（含筛选条），足迹是地图外层窗口 */
     const mapBlock = (mode: string) => document.querySelector<HTMLElement>(mode === 'footprint' ? '.ex-fp-map-wrap' : '.ex-map-hero');
 
+    /**
+     * 吸顶与否只认一个判据：哨兵是否已经滚出视口顶部。
+     * 不用 IntersectionObserver 回调里的 entry.isIntersecting —— 那个值可能在切模式、
+     * 布局刚变的那一刻就过期了，拿它覆盖 DOM 会让地图已经吸顶却没有投影（或反过来）。
+     */
+    const stickyBySentinel = (sentinel: Element | null) => (sentinel ? sentinel.getBoundingClientRect().bottom <= 0 : false);
+
     /** 切模式时按当前滚动位置确定新地图的吸顶态，避免 display:none → block 时误判 */
     const syncStuckState = (mode: string) => {
         if (mode === 'footprint') {
             const map = document.querySelector<HTMLElement>('.ex-fp-map-wrap');
-            const sentinel = document.querySelector('.act-fp-sentinel');
-            if (map) map.classList.toggle('is-stuck', sentinel ? sentinel.getBoundingClientRect().bottom <= 0 : false);
+            if (map) map.classList.toggle('is-stuck', stickyBySentinel(document.querySelector('.act-fp-sentinel')));
             return;
         }
         // 运动地图的 is-stuck 同时由 Solid 的 state 驱动；这里先按哨兵位置同步 DOM，
         // 下面广播 ACTIVITY_MODE_EVENT 后 Solid 会保持同一个值，后面测高度才不会读到旧高度。
         const hero = document.querySelector<HTMLElement>('.ex-map-hero');
-        const sentinel = document.querySelector('.ex-map-sentinel');
-        if (hero) hero.classList.toggle('is-stuck', sentinel ? sentinel.getBoundingClientRect().bottom <= 0 : false);
+        if (hero) hero.classList.toggle('is-stuck', stickyBySentinel(document.querySelector('.ex-map-sentinel')));
     };
 
     /**
@@ -183,9 +188,11 @@ export default function initActivityMode(): () => void {
     let observer: IntersectionObserver | null = null;
     if (sentinel && fpMap && typeof IntersectionObserver !== 'undefined') {
         observer = new IntersectionObserver(
-            (entries) => {
-                const entry = entries[0];
-                if (entry) fpMap.classList.toggle('is-stuck', !entry.isIntersecting);
+            () => {
+                // 运动模式下这张地图是 display:none，此时哨兵 rect 恒为 0，
+                // 拿它算出来的是假状态；等切回足迹时由 syncStuckState 补上
+                if (page.getAttribute('data-activity-mode') !== 'footprint') return;
+                fpMap.classList.toggle('is-stuck', stickyBySentinel(sentinel));
             },
             { threshold: 0 }
         );
