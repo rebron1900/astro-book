@@ -512,7 +512,9 @@
         0 0 0 5px var(--color-link);
 }
 
-/* 光晕单独一层，只动 transform/opacity，避免 box-shadow 逐帧重绘造成不丝滑 */
+/* 光晕单独一层，只动 transform/opacity，避免 box-shadow 逐帧重绘造成不丝滑。
+   will-change 不能写在基础类上：每个标点都带一枚光晕，常驻提升会变成上百个
+   合成层压在每帧重绘的地形画布上（自动旋转时最明显）。只在真的播放呼吸动画时提升。 */
 .ex-fp-halo {
     position: absolute;
     inset: -7px;
@@ -524,10 +526,10 @@
     opacity: 0;
     pointer-events: none;
     transform: scale(0.92);
-    will-change: transform, opacity;
 }
 
 .ex-fp-point.is-active .ex-fp-halo {
+    will-change: transform, opacity;
     animation: ex-fp-halo-breathe 2.2s ease-in-out infinite;
 }
 

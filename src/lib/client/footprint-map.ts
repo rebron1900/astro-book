@@ -174,6 +174,8 @@ class FootprintMapInstance implements FootprintMapController {
     private initialFitDone = false;
     private styleReady = false;
     private updateFrame: number | null = null;
+    /** 上一次聚合用的整数缩放层级：同一档内不需要重算标点 */
+    private markerZoomBucket: number | null = null;
 
     private resizeObserver: ResizeObserver | null = null;
     /** resize 防抖：吸顶过渡期间高度连续变化，别每帧都让 Mapbox 重排 */
@@ -259,10 +261,11 @@ class FootprintMapInstance implements FootprintMapController {
         map.addControl(new MapboxLanguage({ defaultLanguage: 'zh-Hans' }));
         map.on('style.load', this.handleStyleLoad);
         map.on('error', this.handleError);
-        // 缩放/平移过程中就要重排标点：只在 moveend 更新会让标签「停稳才跳」。
-        // scheduleMarkerUpdate 内部是 rAF 节流，一帧最多算一次。
+        // 只在缩放跨过整数层级时重算聚合：聚合半径按整数层级算，同一档里平移/俯仰/旋转
+        // 都不会改变谁和谁聚在一起。marker 的屏幕位置由 Mapbox 自己在 move 里更新，
+        // 这里若跟着 move 每帧重算，等于每帧给上百个标点重设经纬度 + 读一次布局，
+        // 自动旋转（每 40ms 一次 setBearing）时就会被拖成卡顿。
         map.on('zoom', this.scheduleMarkerUpdate);
-        map.on('move', this.scheduleMarkerUpdate);
         // 地图一移动，标点像素位置就变了：tooltip 直接收起，避免跟着旧坐标飘
         map.on('movestart', this.hideTooltip);
         map.on('zoomstart', this.hideTooltip);
@@ -315,6 +318,7 @@ class FootprintMapInstance implements FootprintMapController {
         this.themeObserver = null;
 
         this.clearMarkers();
+        this.markerZoomBucket = null;
         const map = this.map;
         // 退出足迹必须把地形收掉，否则地图层级会留给下一次进入
         if (map) {
@@ -774,7 +778,7 @@ class FootprintMapInstance implements FootprintMapController {
             this.readyTimer = null;
         }
         this.options.onReady?.();
-        this.updateMarkers();
+        this.updateMarkers(true);
         // 主题切换会重放 style，但 setStyle 本身不动相机：有激活点时只要不 fitAll，
         // 镜头和聚焦点就原样保留。别再补一次 easeTo，否则会把用户手动缩放的 zoom 夹回去
         const active = this.selectedId ? this.placeById.get(this.selectedId) : null;
@@ -804,6 +808,9 @@ class FootprintMapInstance implements FootprintMapController {
         this.selectedId = placeId;
         this.activeSource = source;
         this.applySelection();
+        // 聚焦时目标点可能还落在聚合桶里：立刻按当前聚合结果补/收补位标点，
+        // 不依赖下一帧的 move —— 现在 move 已经不重算标点了
+        this.syncFocusMarker();
         this.options.onSelect?.(placeId);
         this.emitState();
     }
@@ -813,18 +820,22 @@ class FootprintMapInstance implements FootprintMapController {
     }
 
     private scheduleMarkerUpdate = (): void => {
-        if (this.updateFrame !== null) return;
+        if (this.updateFrame !== null || !this.map) return;
+        if (Math.floor(this.map.getZoom()) === this.markerZoomBucket) return;
         this.updateFrame = requestAnimationFrame(() => {
             this.updateFrame = null;
             this.updateMarkers();
         });
     };
 
-    private updateMarkers(): void {
+    /** force：样式重载后标点要整体补一遍，不能按层级挡掉 */
+    private updateMarkers(force = false): void {
         const map = this.map;
         if (!map || !this.styleReady) return;
 
         const zoom = Math.floor(map.getZoom());
+        if (!force && zoom === this.markerZoomBucket) return;
+        this.markerZoomBucket = zoom;
         const features = this.cluster.getClusters([-180, -90, 180, 90], zoom) as unknown as FootprintPointFeature[];
         const alive = new Set<string>();
 
@@ -915,9 +926,10 @@ class FootprintMapInstance implements FootprintMapController {
             this.focusMarker.marker.setLngLat([place.lng, place.lat]);
             this.focusMarker.element.classList.add('is-active');
         }
-        // 常规标点在同一位置且真的可见时先藏起来；被聚合藏起来时补位标点必须显示
-        const regular = this.markerElements.get(id);
-        const regularVisible = !!regular && regular.style.display !== 'none' && regular.getBoundingClientRect().width > 0;
+        // 常规标点在同一位置且真的可见时先藏起来；被聚合藏起来时补位标点必须显示。
+        // 判据直接用聚合结果（entries 里的才在渲染），不再读 getBoundingClientRect：
+        // 那是强制同步布局，自动旋转时每帧都会把整页排版拽回来算一次
+        const regularVisible = this.entries.has(`p:${id}`);
         this.focusMarker.element.style.display = regularVisible ? 'none' : '';
     }
 
