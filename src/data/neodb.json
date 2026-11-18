@@ -8720,6 +8720,14 @@
           {
             "lang": "pt",
             "text": "Como Treinar o Seu Dragão"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "如何驯服你的龙"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "馴龍記"
           }
         ],
         "type": "Movie",
@@ -24231,7 +24239,7 @@
       "rating_grade": null,
       "item": {
         "id": "https://neodb.social/tv/season/0L5NZrMVQvUxisqOP9ByT4",
-        "title": "镖人",
+        "title": "Blades of the Guardians (镖人)",
         "category": "tv",
         "cover_image_url": "https://neodb.social/m/item/doubanmovie/2023/06/02/f106e8c0-d0a4-4f7f-963f-a8498c25685a.jpg",
         "url": "/tv/season/0L5NZrMVQvUxisqOP9ByT4",
@@ -47052,6 +47060,14 @@
           {
             "lang": "ja",
             "text": "ゲームウォーズ"
+          },
+          {
+            "lang": "pt",
+            "text": "Ready Player One: Jogador 1"
+          },
+          {
+            "lang": "pt-br",
+            "text": "Jogador N° 1"
           }
         ],
         "type": "Movie",
@@ -62884,6 +62900,18 @@
           {
             "lang": "ko",
             "text": "브이 포 벤데타"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "V煞（港）"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "V怪客（台）"
+          },
+          {
+            "lang": "no",
+            "text": "V For  Vendetta"
           }
         ],
         "type": "Movie",
