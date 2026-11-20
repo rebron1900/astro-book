@@ -69,6 +69,16 @@
     "last_entry_at": "2026-03-07T11:29:43.493Z"
   },
   {
+    "id": 134,
+    "title": "JustBB",
+    "site_url": "https://justbb.fun",
+    "reason": "error",
+    "first_seen_at": "2026-11-20T11:40:31.154Z",
+    "feed_url": "https://justbb.fun/atom.xml",
+    "error": "未找到请求的资源。请检查 URL。",
+    "last_entry_at": "2026-05-14T02:06:52.000Z"
+  },
+  {
     "id": 148,
     "title": "Kirby的博客",
     "site_url": "https://kirbyrun.com",
