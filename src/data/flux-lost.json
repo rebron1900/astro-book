@@ -86,5 +86,15 @@
     "first_seen_at": "2026-10-29T08:45:06.534Z",
     "feed_url": "https://kirbyrun.com/rss.xml",
     "error": "由于网络错误，Miniflux 无法访问此网站：Get \"https://kirbyrun.com/rss.xml\": dial tcp: lookup kirbyrun.com on 127.0.0.11:53: no such host。"
+  },
+  {
+    "id": 205,
+    "title": "Viki 写东西的地方",
+    "site_url": "https://blog.viki.moe",
+    "reason": "error",
+    "first_seen_at": "2026-11-21T02:14:25.502Z",
+    "feed_url": "https://blog.viki.moe/rss",
+    "error": "由于意外的 HTTP 状态码 402，网站暂不可用。这不是 Miniflux 的问题，请稍后重试。",
+    "last_entry_at": "2026-11-19T00:00:00.000Z"
   }
 ]

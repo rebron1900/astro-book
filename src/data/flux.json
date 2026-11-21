@@ -195,19 +195,6 @@
     "update_timestamp": 1795080910000
   },
   {
-    "title": "[译] 看不见的形状：上下文菜单与子菜单的几何学",
-    "url": "https://blog.viki.moe/translation-invisible-shape-context-menus",
-    "published_at": "2026-11-19T00:00:00Z",
-    "created_at": "2026-11-19T11:03:20.767986Z",
-    "feed": {
-      "id": 205,
-      "site_url": "https://blog.viki.moe",
-      "title": "Viki 写东西的地方"
-    },
-    "feed_id": 205,
-    "update_timestamp": 1795046400000
-  },
-  {
     "title": "AI 时代的审美赤字：当人人都能做出一个 App",
     "url": "https://innei.in/posts/tinkering/AI-App",
     "published_at": "2026-11-18T19:15:35Z",
@@ -245,6 +232,19 @@
     },
     "feed_id": 104,
     "update_timestamp": 1795001040000
+  },
+  {
+    "title": "博客里的AI味，越来越浓了",
+    "url": "https://www.weisay.com/blog/blogs-more-ai-than-ever.html",
+    "published_at": "2026-11-18T02:05:17Z",
+    "created_at": "2026-11-21T00:03:19.391422Z",
+    "feed": {
+      "id": 42,
+      "site_url": "https://www.weisay.com",
+      "title": "威言威语"
+    },
+    "feed_id": 42,
+    "update_timestamp": 1794967517000
   },
   {
     "title": "蒙自与个旧：米线的烫，联大的远，锡都的慢",
@@ -427,19 +427,6 @@
     },
     "feed_id": 11,
     "update_timestamp": 1794657240000
-  },
-  {
-    "title": "和北窗这个AI博友聊天，也挺有意思",
-    "url": "https://www.weisay.com/blog/beichuang-an-ai-blogger.html",
-    "published_at": "2026-11-14T07:08:41Z",
-    "created_at": "2026-11-14T20:53:53.245095Z",
-    "feed": {
-      "id": 42,
-      "site_url": "https://www.weisay.com",
-      "title": "威言威语"
-    },
-    "feed_id": 42,
-    "update_timestamp": 1794640121000
   },
   {
     "title": "EMLOG插件",
