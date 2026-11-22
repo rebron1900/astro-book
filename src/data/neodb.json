@@ -691,15 +691,15 @@
       "rating_grade": 7,
       "item": {
         "id": "https://neodb.social/tv/season/5iOnUmTJpfZC1RZHwPxXs9",
-        "title": "飞刀",
+        "title": "Xiao Cheng Liang Fang",
         "category": "tv",
-        "cover_image_url": "https://neodb.social/m/item/doubanmovie/2026/09/19/52238aaf-98f6-4377-b3df-368e5259ddad.webp",
+        "cover_image_url": "https://neodb.social/m/item/doubanmovie/2026/11/18/f93db56a-bc6b-41ca-93fa-c42743f67bbd.webp",
         "url": "/tv/season/5iOnUmTJpfZC1RZHwPxXs9",
         "uuid": "5iOnUmTJpfZC1RZHwPxXs9",
         "localized_title": [
           {
             "lang": "zh-cn",
-            "text": "飞刀"
+            "text": "小城良方"
           },
           {
             "lang": "zh-cn",
@@ -707,11 +707,51 @@
           },
           {
             "lang": "zh-cn",
-            "text": "小城良方"
+            "text": "飞刀"
+          },
+          {
+            "lang": "ko",
+            "text": "시즌 1"
+          },
+          {
+            "lang": "ja",
+            "text": "シーズン1"
+          },
+          {
+            "lang": "pt",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "de",
+            "text": "Staffel 1"
+          },
+          {
+            "lang": "fr",
+            "text": "Saison 1"
+          },
+          {
+            "lang": "es",
+            "text": "Temporada 1"
+          },
+          {
+            "lang": "zh-hk",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "第 1 季"
+          },
+          {
+            "lang": "en",
+            "text": "Season 1"
           }
         ],
         "type": "TVSeason",
-        "title_cn": "飞刀"
+        "title_cn": "小城良方"
       },
       "created_time": "2026-11-02T08:10:13.969Z",
       "visibility": 0
@@ -9062,28 +9102,56 @@
       "comment_text": "刻板的、不伦不类的中国功夫印象片。\r\n虽然知道是烂片，但是也看在成龙的面子上我才看一下，打斗设计很有成龙喜剧功夫的味道。",
       "rating_grade": 5,
       "item": {
-        "id": "https://neodb.social/movie/799DmZUge8vtJQgXbE27Sa",
-        "title": "功夫梦：融合之道",
+        "id": "https://neodb.social/movie/2gAgVEvkE2JU1CMnxuCtJj",
+        "title": "Karate Kid: Legends",
         "category": "movie",
-        "cover_image_url": "https://neodb.social/m/item/bangumi/2025/06/05/d50a6dd4-2eb3-4b8a-870b-a0405869fff7.jpg",
-        "url": "/movie/799DmZUge8vtJQgXbE27Sa",
-        "uuid": "799DmZUge8vtJQgXbE27Sa",
+        "cover_image_url": "https://neodb.social/m/item/doubanmovie/2025/09/01/793cdaf7-aeb9-4b81-b407-3ff339e5a830.jpg",
+        "url": "/movie/2gAgVEvkE2JU1CMnxuCtJj",
+        "uuid": "2gAgVEvkE2JU1CMnxuCtJj",
         "localized_title": [
           {
             "lang": "zh-cn",
-            "text": "功夫梦：融合之道"
+            "text": "功夫梦：传奇少年(港)"
+          },
+          {
+            "lang": "de",
+            "text": "Kung Fu Kid 2"
           },
           {
             "lang": "zh-cn",
             "text": "新龙威小子"
           },
           {
+            "lang": "zh-cn",
+            "text": "功夫梦：融合之道"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "龙威小子重启版"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "小子难缠：空手道传奇(台)"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "功夫梦2"
+          },
+          {
             "lang": "de",
+            "text": "Karate Kid: Legends"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "新龙威小子：传奇"
+          },
+          {
+            "lang": "en",
             "text": "Karate Kid: Legends"
           }
         ],
         "type": "Movie",
-        "title_cn": "功夫梦：融合之道"
+        "title_cn": "功夫梦：传奇少年(港)"
       },
       "created_time": "2025-07-10T01:59:50.856Z",
       "visibility": 0
@@ -23728,6 +23796,14 @@
           {
             "lang": "es",
             "text": "El hobbit: Un viaje inesperado"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "哈比人：不思議之旅（港）"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "哈比人：意外旅程（台）"
           }
         ],
         "type": "Movie",
@@ -24508,6 +24584,10 @@
           {
             "lang": "zh-cn",
             "text": "镖人动画版"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "镖人 第 1 季"
           }
         ],
         "type": "TVSeason",
@@ -25060,6 +25140,26 @@
           {
             "lang": "ko",
             "text": "분노의 질주: 라이드 오어 다이"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "狂野時速10（港）"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "玩命關頭X（台）"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "速度与激情完结篇（上）"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "素鸡10"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "速度与激情X"
           }
         ],
         "type": "Movie",
@@ -37660,6 +37760,38 @@
           {
             "lang": "ja",
             "text": "羅小黒戦記"
+          },
+          {
+            "lang": "pt-br",
+            "text": "A Lenda de Hei"
+          },
+          {
+            "lang": "x",
+            "text": "Luo Xiaohei Zhan Ji (Movie)"
+          },
+          {
+            "lang": "fi",
+            "text": "Ro Shaohei Senki"
+          },
+          {
+            "lang": "x",
+            "text": "Luo Xiao Hei Zhan Ji (Movie)"
+          },
+          {
+            "lang": "x",
+            "text": "A Lenda de Hei"
+          },
+          {
+            "lang": "x",
+            "text": "Luo Xiaohei Zhanji (Movie)"
+          },
+          {
+            "lang": "x",
+            "text": "The Legend of Luoxiaohei"
+          },
+          {
+            "lang": "x",
+            "text": "Luo Xiao Hei Zhan Ji Movie"
           }
         ],
         "type": "Movie",
@@ -49008,6 +49140,10 @@
           {
             "lang": "da",
             "text": "Harry Potter og Hemmelighedernes Kammer"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "哈利波特─消失的密室（港/台）"
           }
         ],
         "type": "Movie",
@@ -49560,6 +49696,14 @@
           {
             "lang": "da",
             "text": "Harry Potter og Fangen fra Azkaban"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "哈利·波特与阿兹卡班囚徒"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "哈利波特：阿茲卡班的逃犯（港/台）"
           }
         ],
         "type": "Movie",
@@ -61304,6 +61448,14 @@
           {
             "lang": "ko",
             "text": "장고: 분노의 추적자"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "黑殺令"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "絕殺令"
           }
         ],
         "type": "Movie",
@@ -65212,6 +65364,14 @@
           {
             "lang": "pt-br",
             "text": "Todo Mundo Quase Morto"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "笑死人凶間"
+          },
+          {
+            "lang": "zh-cn",
+            "text": "活人甡吃"
           }
         ],
         "type": "Movie",
@@ -71248,6 +71408,14 @@
           {
             "lang": "zh-my",
             "text": "钢铁人2"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "鐵甲奇俠2（港）"
+          },
+          {
+            "lang": "zh-tw",
+            "text": "鋼鐵人2（台）"
           }
         ],
         "type": "Movie",
