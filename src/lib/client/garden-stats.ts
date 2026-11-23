@@ -112,7 +112,7 @@ export function bindGardenNoteStats(): void {
             if (data && data.id > 0 && !votedInThisView) {
                 const vote = await fetchArtalkPageVote(data.id).catch(() => null);
                 if (vote && !disposed && root.isConnected && !votedInThisView) {
-                    stats.voteUp = vote.up;
+                    if (stats) stats.voteUp = vote.up;
                     setActive(vote.isUp);
                     if (likeCount) likeCount.textContent = String(vote.up);
                 }
