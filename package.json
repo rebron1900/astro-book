@@ -23,7 +23,7 @@
         "@mapbox/geojson-extent": "^1.0.1",
         "@mapbox/mapbox-gl-language": "^1.0.1",
         "@ts-ghost/content-api": "^4.1.0",
-        "artalk": "^2.9.0",
+        "artalk": "2.10.1",
         "astro": "7.4.11",
         "astro-masonry": "^1.2.2",
         "astro-remote": "^0.3.4",

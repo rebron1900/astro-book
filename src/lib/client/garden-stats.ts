@@ -8,8 +8,9 @@
  *   （localStorage 标记）。花园笔记的评论区通过 countPv=false 关闭 Artalk 自带的
  *   PV 登记，统一由这里计数，所以短笔记（不渲染评论区）也不会漏；请求失败时会
  *   撤回标记，下次访问还能重试。
- * - 点赞：POST /votes/page_up/{page_id}；page 记录先由 PV 登记创建，否则点赞没有 id。
- *   按站点惯例用 localStorage 记住本浏览器是否点过赞（Artalk 2.9 没有投票状态接口）。
+ * - 点赞：POST /votes/page/{page_id}/up；page 记录先由 PV 登记创建，否则点赞没有 id。
+ *   Artalk 2.10 起可以用 GET /votes/page/{page_id} 问服务端“我点过赞没有”，
+ *   localStorage 只作为首屏快速回显，最终状态以服务端为准。
  *
  * 结构约定见 GardenNoteView.astro：`[data-garden-stats]` 里放
  * `[data-garden-like]`、`[data-garden-likes]`、`[data-garden-views]`。
@@ -20,6 +21,7 @@ import {
     artalkPvSeenKey,
     type ArtalkPageStats,
     fetchArtalkPageStats,
+    fetchArtalkPageVote,
     hasCountedPv,
     hasLiked,
     logArtalkPagePv,
@@ -105,16 +107,20 @@ export function bindGardenNoteStats(): void {
             if (viewCount) viewCount.textContent = pv > 0 ? String(pv) : '—';
             // 用户刚点过赞时别用慢请求把数字盖回旧值
             if (likeCount && data && !votedInThisView) likeCount.textContent = String(data.voteUp);
+
+            // Artalk 2.10：以服务端的 is_up 为准，localStorage 只负责首屏快速回显
+            if (data && data.id > 0 && !votedInThisView) {
+                const vote = await fetchArtalkPageVote(data.id).catch(() => null);
+                if (vote && !disposed && root.isConnected && !votedInThisView) {
+                    stats.voteUp = vote.up;
+                    setActive(vote.isUp);
+                    if (likeCount) likeCount.textContent = String(vote.up);
+                }
+            }
         };
 
         const handleLike = async () => {
             if (disposed || voting) return;
-
-            if (hasLiked(pageKey)) {
-                setActive(true);
-                notify('success', '你已经点过赞了 ❤️');
-                return;
-            }
 
             voting = true;
             likeButton?.setAttribute('aria-busy', 'true');
@@ -128,18 +134,17 @@ export function bindGardenNoteStats(): void {
                     return;
                 }
 
-                const previousUp = Number(likeCount?.textContent || stats.voteUp || 0);
-                const { up } = await voteArtalkPageUp(stats.id);
+                const vote = await voteArtalkPageUp(stats.id);
                 if (disposed || !root.isConnected) return;
 
                 votedInThisView = true;
-                stats.voteUp = up;
-                if (likeCount) likeCount.textContent = String(up);
+                stats.voteUp = vote.up;
+                if (likeCount) likeCount.textContent = String(vote.up);
 
-                if (up < previousUp) {
-                    // Artalk 按 IP 去重：这次点击实际取消了此前的点赞
+                if (!vote.isUp) {
+                    // Artalk 2.10：再点一次即取消点赞
                     setActive(false);
-                    notify('info', '已取消此前的点赞');
+                    notify('info', '已取消点赞');
                     return;
                 }
 

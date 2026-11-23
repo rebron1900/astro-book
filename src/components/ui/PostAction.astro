@@ -12,7 +12,7 @@ import { Heart } from '@lucide/astro';
 
 <script>
     import cocoMessage from '../../lib/coco-message';
-    import { artalkPageKey, fetchArtalkPageStats, hasLiked, markLiked, voteArtalkPageUp } from '../../lib/artalk-stats';
+    import { artalkPageKey, fetchArtalkPageStats, fetchArtalkPageVote, hasLiked, markLiked, voteArtalkPageUp } from '../../lib/artalk-stats';
 
     const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -44,17 +44,19 @@ import { Heart } from '@lucide/astro';
             pageId = stats.id;
             // 避免慢请求在用户已经点赞之后把数字覆盖回旧值
             if (likeText && !votedInThisView) likeText.innerText = String(stats.voteUp);
+
+            // Artalk 2.10 能直接问服务端「这个 IP 点过赞没有」，比 localStorage 更准
+            if (!votedInThisView && stats.id > 0) {
+                const vote = await fetchArtalkPageVote(stats.id).catch(() => null);
+                if (vote && likeNode.isConnected && !votedInThisView) {
+                    likeNode.classList.toggle('active', vote.isUp);
+                    if (likeText) likeText.innerText = String(vote.up);
+                }
+            }
         };
 
         const handleLike = async () => {
             if (voting) return;
-
-            if (hasLiked(pageKey)) {
-                setActive();
-                cocoMessage.success('你已经点过赞了 ❤️');
-                return;
-            }
-
             voting = true;
 
             try {
@@ -71,22 +73,19 @@ import { Heart } from '@lucide/astro';
                     return;
                 }
 
-                const previousUp = Number(likeText?.innerText || 0);
-                const { up } = await voteArtalkPageUp(pageId);
+                // Artalk 2.10：再点一次即取消点赞，用返回的 is_up 判断最终状态
+                const vote = await voteArtalkPageUp(pageId);
                 votedInThisView = true;
 
-                if (up < previousUp) {
-                    // Artalk 按 IP 去重：这次点击实际取消了此前的点赞
-                    likeNode.classList.remove('active');
-                    if (likeText) likeText.innerText = String(up);
-                    cocoMessage.info('已取消此前的点赞');
-                    return;
-                }
+                likeNode.classList.toggle('active', vote.isUp);
+                if (likeText) likeText.innerText = String(vote.up);
 
-                markLiked(pageKey);
-                setActive();
-                if (likeText) likeText.innerText = String(up);
-                cocoMessage.success('点赞成功，谢谢你的 ❤️');
+                if (vote.isUp) {
+                    markLiked(pageKey);
+                    cocoMessage.success('点赞成功，谢谢你的 ❤️');
+                } else {
+                    cocoMessage.info('已取消点赞');
+                }
             } catch (error) {
                 console.error('Artalk vote failed:', error);
                 cocoMessage.error('点赞失败，请稍后再试');

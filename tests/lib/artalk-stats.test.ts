@@ -6,6 +6,7 @@ import {
     artalkPageKey,
     artalkPvSeenKey,
     fetchArtalkPageStats,
+    fetchArtalkPageVote,
     hasCountedPv,
     hasLiked,
     logArtalkPagePv,
@@ -135,13 +136,34 @@ describe('logArtalkPagePv', () => {
     });
 });
 
-describe('voteArtalkPageUp', () => {
-    it('posts to the page_up endpoint and returns the updated counts', async () => {
-        const fetchMock = vi.fn(() => Promise.resolve(okResponse({ up: 8, down: 1 })));
+describe('fetchArtalkPageVote', () => {
+    it('reads the vote state from the 2.10 vote endpoint', async () => {
+        const fetchMock = vi.fn(() => Promise.resolve(okResponse({ up: 8, down: 1, is_up: true, is_down: false })));
         vi.stubGlobal('fetch', fetchMock);
 
-        await expect(voteArtalkPageUp(42)).resolves.toEqual({ up: 8, down: 1 });
-        expect(fetchMock).toHaveBeenCalledWith(`${ARTALK_SERVER}/api/v2/votes/page_up/42`, {
+        await expect(fetchArtalkPageVote(42)).resolves.toEqual({ up: 8, down: 1, isUp: true, isDown: false });
+        expect(fetchMock).toHaveBeenCalledWith(`${ARTALK_SERVER}/api/v2/votes/page/42`, {
+            headers: { Accept: 'application/json' }
+        });
+    });
+
+    it('throws when the vote state cannot be read', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(() => Promise.resolve(new Response(null, { status: 500 })))
+        );
+
+        await expect(fetchArtalkPageVote(42)).rejects.toThrow('Artalk vote API failed: 500');
+    });
+});
+
+describe('voteArtalkPageUp', () => {
+    it('posts to the 2.10 up-vote endpoint and returns the final vote state', async () => {
+        const fetchMock = vi.fn(() => Promise.resolve(okResponse({ up: 9, down: 1, is_up: true, is_down: false })));
+        vi.stubGlobal('fetch', fetchMock);
+
+        await expect(voteArtalkPageUp(42)).resolves.toEqual({ up: 9, down: 1, isUp: true, isDown: false });
+        expect(fetchMock).toHaveBeenCalledWith(`${ARTALK_SERVER}/api/v2/votes/page/42/up`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
             body: '{}'
