@@ -36,7 +36,17 @@
     "reason": "error",
     "first_seen_at": "2026-11-01T13:25:04.411Z",
     "feed_url": "https://vimin.cc/feed/",
-    "error": "直连订阅源失败: Reader HTTP 401 Unauthorized"
+    "error": "直连订阅源失败: HTTP 403 Forbidden"
+  },
+  {
+    "id": 99,
+    "title": "怡红院落",
+    "site_url": "https://imnerd.org",
+    "reason": "error",
+    "first_seen_at": "2026-11-24T02:13:34.351Z",
+    "feed_url": "https://imnerd.org/index.xml",
+    "error": "无法解析订阅源格式：parser: unable to detect feed format。",
+    "last_entry_at": "2026-11-07T09:21:14.000Z"
   },
   {
     "id": 116,
