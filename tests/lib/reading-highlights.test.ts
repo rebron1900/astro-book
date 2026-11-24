@@ -55,11 +55,14 @@ describe('renderHighlights 结构', () => {
         expect(renderHighlights([])).toContain('当天没有划线');
     });
 
-    it('超过 30 条只渲染 30 条并提示剩余数量', () => {
+    it('超过 30 条只渲染最近 30 条并提示更早的条数', () => {
         const many: ReadingHighlight[] = Array.from({ length: 35 }, (_, i) => ({ chapter: '', content: `第 ${i} 条`, readerNote: '' }));
         const html = renderHighlights(many);
         expect((html.match(/rd-tip-quote/g) ?? []).length).toBe(30);
-        expect(html).toContain('还有 5 条');
+        expect(html).toContain('还有较早的 5 条');
+        // 面板里能读到卡片摘录引用的那条（最新一条）
+        expect(html).toContain('第 34 条');
+        expect(html).not.toContain('第 4 条');
     });
 });
 

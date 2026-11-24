@@ -56,7 +56,8 @@ export function renderHighlights(highlights: ReadingHighlight[]): string {
     if (!highlights || highlights.length === 0) {
         return '<p class="rd-tip-empty">当天没有划线</p>';
     }
-    const shown = highlights.slice(0, MAX_HIGHLIGHTS);
+    // 取最近 N 条：卡片摘录取的是最新一条，点开能读到同一句，不会出现「引文在面板里找不到」
+    const shown = highlights.slice(-MAX_HIGHLIGHTS);
 
     const body = groupByChapter(shown)
         .map((group) => {
@@ -71,7 +72,7 @@ export function renderHighlights(highlights: ReadingHighlight[]): string {
         })
         .join('');
 
-    const rest = highlights.length > MAX_HIGHLIGHTS ? `<p class="rd-tip-rest">还有 ${highlights.length - MAX_HIGHLIGHTS} 条</p>` : '';
+    const rest = highlights.length > MAX_HIGHLIGHTS ? `<p class="rd-tip-rest">还有较早的 ${highlights.length - MAX_HIGHLIGHTS} 条</p>` : '';
     return `${body}${rest}`;
 }
 

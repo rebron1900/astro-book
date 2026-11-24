@@ -22,6 +22,9 @@ export function initReadingTips(): (() => void) | void {
             if (!tip) return;
             const card = btn.closest<HTMLElement>('.reading-card');
             const state = { open: false, hover: false };
+            // Tab 进来时 focus 已经自动展开了，紧随其后的 Enter/Space 会再派发一次 click，
+            // 第一次键盘激活只「确认展开」，第二次才收起，避免「Tab 一看就没了」。
+            let openedByFocus = false;
 
             const render = () => {
                 const visible = state.open || state.hover;
@@ -33,11 +36,19 @@ export function initReadingTips(): (() => void) | void {
             const close = () => {
                 state.open = false;
                 state.hover = false;
+                openedByFocus = false;
                 render();
             };
 
             btn.addEventListener('click', (event) => {
                 event.preventDefault();
+                const keyboardActivation = (event as MouseEvent).detail === 0;
+                if (keyboardActivation && openedByFocus && state.open) {
+                    openedByFocus = false;
+                    render();
+                    return;
+                }
+                openedByFocus = false;
                 state.open = !state.open;
                 if (!state.open) state.hover = false;
                 render();
@@ -58,6 +69,7 @@ export function initReadingTips(): (() => void) | void {
                 // 鼠标点击也会 focus；只在键盘焦点（Tab）时自动展开，避免点击被 focus 抢先打开
                 if (btn.matches(':focus-visible')) {
                     state.open = true;
+                    openedByFocus = true;
                     render();
                 }
             });
