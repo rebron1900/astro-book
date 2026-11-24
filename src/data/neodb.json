@@ -1,6 +1,30 @@
 {
   "data": [
     {
+      "post_id": 648095981109642400,
+      "shelf": "complete",
+      "comment_text": "过了好一会儿，太安静了，我走下车，见车与回民帐篷之间横亘着一条宽河，“炮车”则在对岸。对岸帐篷里灯火暗昏，影影绰绰，不知是怎样的热闹，此岸静得只有流水声。不知怎样过河，忍住去饭店一探究竟的想法，再度回到冰冷黑暗的车里，裹着军大衣，头枕车窗，空洞地凝望着一弯星月。",
+      "rating_grade": 8,
+      "item": {
+        "id": "https://neodb.social/book/2bZJgDLOgKS1QcjL996NnP",
+        "title": "北方的空地",
+        "category": "book",
+        "cover_image_url": "https://neodb.social/m/book/2021/09/168253d731-6513-4f4c-993e-2f363ef2afa8.jpg",
+        "url": "/book/2bZJgDLOgKS1QcjL996NnP",
+        "uuid": "2bZJgDLOgKS1QcjL996NnP",
+        "localized_title": [
+          {
+            "lang": "zh-cn",
+            "text": "北方的空地"
+          }
+        ],
+        "type": "Edition",
+        "title_cn": "北方的空地"
+      },
+      "created_time": "2026-11-24T16:42:02.871Z",
+      "visibility": 0
+    },
+    {
       "post_id": 647232065689890000,
       "shelf": "complete",
       "comment_text": null,
