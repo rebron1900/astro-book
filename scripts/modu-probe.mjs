@@ -255,7 +255,7 @@ async function main() {
         for (const f of src.files) {
             let rows = [];
             try {
-                rows = queryDb(f.file, `SELECT kind, sync_id, local_id, clock, revision, deleted, payload FROM modu_sync_records WHERE kind = '${kind}' ORDER BY clock DESC LIMIT 1`);
+                rows = queryDb(f.file, `SELECT kind, sync_id, clock, revision, deleted, payload FROM modu_sync_records WHERE kind = '${kind}' ORDER BY clock DESC LIMIT 1`);
             } catch {
                 continue;
             }
@@ -263,8 +263,8 @@ async function main() {
             const r = rows[0];
             const sum = summarizePayload(r.payload);
             report.kinds[kind] = report.kinds[kind] ?? {};
-            report.kinds[kind][f.name] = { keys: sum.keys, sample: sum.sample, local_id: r.local_id, clock: r.clock, revision: r.revision, deleted: r.deleted, parseError: sum.parseError ?? false };
-            say(`  kind=${kind}  [${f.name}] sync_id=${r.sync_id} local_id=${r.local_id} clock=${r.clock} deleted=${r.deleted}`);
+            report.kinds[kind][f.name] = { keys: sum.keys, sample: sum.sample, clock: r.clock, revision: r.revision, deleted: r.deleted, parseError: sum.parseError ?? false };
+            say(`  kind=${kind}  [${f.name}] sync_id=${r.sync_id} clock=${r.clock} deleted=${r.deleted}`);
             say(`    键: ${sum.keys.join(', ') || '（payload 无法解析）'}`);
             say(`    示例: ${JSON.stringify(sum.sample)}`);
         }

@@ -86,11 +86,13 @@ export function excerptOf(highlights: ReadingHighlight[], limit = 60): string {
     return `“${clipped}”`;
 }
 
-/** 「25 min」/「1h 20m」——卡片 kicker 与 /reading 页共用。 */
+/** 「25 分钟」/「1 小时 20 分钟」——卡片 kicker 与 /reading 页共用（站内文案统一中文）。 */
 export function shortDuration(seconds: number): string {
-    const minutes = Math.max(0, Math.round(seconds / 60));
-    if (minutes < 60) return `${minutes} min`;
+    const raw = Math.max(0, Math.round(seconds / 60));
+    // 有阅读但不足一分钟的，按 1 分钟计，避免出现「0 分钟」
+    const minutes = raw === 0 && seconds > 0 ? 1 : raw;
+    if (minutes < 60) return `${minutes} 分钟`;
     const hours = Math.floor(minutes / 60);
     const rest = minutes % 60;
-    return rest === 0 ? `${hours}h` : `${hours}h ${rest}m`;
+    return rest === 0 ? `${hours} 小时` : `${hours} 小时 ${rest} 分钟`;
 }

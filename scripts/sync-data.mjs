@@ -47,7 +47,7 @@ function loadEnv() {
     }
     // 进程环境变量优先
     for (const [k, v] of Object.entries(process.env)) {
-        if ((k.startsWith('GHOST_') || k.startsWith('NEODB_') || k.startsWith('FLUX_') || k.startsWith('MAP_') || k.startsWith('CDN_') || k.startsWith('INTERVALS_') || k.startsWith('GOTOSOCIAL_')) && v !== undefined && v !== '') {
+        if ((k.startsWith('GHOST_') || k.startsWith('NEODB_') || k.startsWith('FLUX_') || k.startsWith('MAP_') || k.startsWith('CDN_') || k.startsWith('INTERVALS_') || k.startsWith('GOTOSOCIAL_') || k.startsWith('MODU_')) && v !== undefined && v !== '') {
             env[k] = v;
         }
     }

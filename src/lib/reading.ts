@@ -217,7 +217,7 @@ export function mergeSyncRows(rows: ModuSyncRow[], log?: (line: string) => void)
 }
 
 /** 线性同余式的稳定短摘要：不引 crypto，浏览器/Node 结果一致；只用于封面键。 */
-function coverKeyOf(fileMd5: string): string {
+export function coverKeyOf(fileMd5: string): string {
     let h1 = 0x811c9dc5;
     let h2 = 0x1000193;
     for (let i = 0; i < fileMd5.length; i += 1) {

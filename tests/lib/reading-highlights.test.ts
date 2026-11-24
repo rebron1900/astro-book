@@ -75,8 +75,9 @@ describe('卡片辅助', () => {
     });
 
     it('短时长格式：25 min / 1h 20m', () => {
-        expect(shortDuration(25 * 60)).toBe('25 min');
-        expect(shortDuration(80 * 60)).toBe('1h 20m');
-        expect(shortDuration(60 * 60)).toBe('1h');
+        expect(shortDuration(25 * 60)).toBe('25 分钟');
+        expect(shortDuration(56)).toBe('1 分钟');
+        expect(shortDuration(80 * 60)).toBe('1 小时 20 分钟');
+        expect(shortDuration(60 * 60)).toBe('1 小时');
     });
 });

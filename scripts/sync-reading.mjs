@@ -23,7 +23,8 @@ const MODU_DIR = 'modu';
 const LOG_DIR = 'record-log-v1';
 const COVER_DIR = 'data/cover';
 const SHARD_CHARS = '0123456789abcdef'.split('');
-const SELECT_COLUMNS = 'kind, sync_id, local_id, clock, revision, deleted, payload';
+// 实测库没有 local_id 列（schema: kind,sync_id,clock,revision,deleted,payload,narration），带上它会 SQL logic error。
+const SELECT_COLUMNS = 'kind, sync_id, clock, revision, deleted, payload';
 const CONCURRENCY = 4;
 const COVER_WIDTH = 240;
 const COVER_QUALITY = 78;
@@ -101,6 +102,15 @@ function absoluteHref(root, href) {
     return `${root}${href.startsWith('/') ? '' : '/'}${href}`;
 }
 
+/**
+ * WebDAV 返回的 href 是服务器绝对路径（含 /dav 前缀），不能拼在 root 后面，否则变成 /dav/dav/... → 404。
+ * 用 URL 解析：绝对路径按同源解析，相对路径按 root 目录解析。
+ */
+function resolveHref(root, href) {
+    if (/^https?:/i.test(href)) return href;
+    return new URL(href, `${root}/`).href;
+}
+
 /** file:// 调试：把本地目录当 WebDAV 根，读 <root>/modu/record-log-v1/<首字符>/*.db。 */
 function collectLocal(rootPath) {
     const logRoot = path.join(rootPath, MODU_DIR, LOG_DIR);
@@ -135,7 +145,7 @@ async function downloadShards(env, workDir, log) {
             const batch = shards.slice(i, i + CONCURRENCY);
             const got = await Promise.all(
                 batch.map(async (entry) => {
-                    const buf = await getBinary(absoluteHref(root, entry.href), env);
+                    const buf = await getBinary(resolveHref(root, entry.href), env);
                     if (!buf) return null;
                     const file = path.join(workDir, `${ch}_${entry.name}`);
                     writeFileSync(file, buf);
@@ -249,16 +259,20 @@ async function syncCovers(env, root, records, projectRoot, log) {
     }
     if (wanted.size === 0) return 0;
 
+    const { coverKeyOf } = await import('../src/lib/reading.ts');
     let done = 0;
     let bytes = 0;
-    for (const [, coverPath] of wanted) {
-        const url = /^https?:/i.test(coverPath) ? coverPath : absoluteHref(root, `/${MODU_DIR}/${COVER_DIR}/${coverPath}`);
+    for (const [md5, coverPath] of wanted) {
+        // 实测 payload.cover_path 自带目录前缀（"cover/xxx.png"），服务器实际位于 <root>/modu/data/cover/<文件名>。
+        const fileName = path.basename(coverPath);
+        const url = /^https?:/i.test(coverPath) ? coverPath : absoluteHref(root, `/${MODU_DIR}/${COVER_DIR}/${encodeURIComponent(fileName)}`);
         try {
             const buf = await getBinary(url, env);
             if (!buf) continue;
-            const name = path.basename(coverPath).replace(/\.[^.]+$/, '');
+            // 文件名必须等于 reading.json 里的 cover 键（coverKeyOf(file_md5)），否则页面找不到封面。
+            const key = coverKeyOf(md5);
             const webp = await sharp(buf).resize({ width: COVER_WIDTH, withoutEnlargement: true }).webp({ quality: COVER_QUALITY }).toBuffer();
-            writeFileSync(path.join(outDir, `${name}.webp`), webp);
+            writeFileSync(path.join(outDir, `${key}.webp`), webp);
             done += 1;
             bytes += webp.length;
         } catch (error) {
