@@ -386,8 +386,10 @@ export function buildReadingData(
     const days: ReadingDay[] = [...dayMap.entries()]
         .map(([date, booksOfDay]) => {
             // 当日按清洗后书名归并
+            // 告警要能看出「并进来的是哪一份」：原始书名 + 封面键 + 那一份的秒数，
+            // 否则两条都叫同一个名字、读起来像 bug。
             const byDayTitle = new Map<string, { bookId: string; title: string; seconds: number }>();
-            const mergedToday: [string, string][] = [];
+            const mergedToday: string[] = [];
             for (const [bookId, seconds] of booksOfDay) {
                 const title = titleOf(bookId);
                 const st = byDayTitle.get(title);
@@ -395,12 +397,15 @@ export function buildReadingData(
                     byDayTitle.set(title, { bookId, title, seconds });
                     continue;
                 }
+                const meta = bookById.get(bookId);
+                const raw = meta?.title ?? title;
+                const extra = [raw !== title ? `原始书名「${raw}」` : '书名相同', meta?.cover ? `封面 ${meta.cover}` : '无封面'].join('，');
+                mergedToday.push(`${date}：「${title}」并入了另一份 ${seconds} 秒的重复记录（${extra}）`);
                 if (seconds > st.seconds) st.bookId = bookId; // 封面取时长较长那条
                 st.seconds += seconds;
-                mergedToday.push([bookById.get(bookId)?.title ?? title, title]);
             }
-            for (const [from, to] of mergedToday) {
-                warnings.push(`同名书归并：「${from}」并入「${to}」`);
+            for (const line of mergedToday) {
+                warnings.push(`同名书归并 ${line}`);
             }
 
             const books: ReadingDayBook[] = [...byDayTitle.values()]

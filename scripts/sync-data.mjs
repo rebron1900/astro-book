@@ -886,13 +886,64 @@ const SOURCES = {
     map: { run: (env) => syncMap(env), file: 'geojson.json' },
     rank: { run: () => syncRank(), file: 'rank.json' },
     // reading：modureader 的 WebDAV 分片库，聚合/清洗在 src/lib/reading.ts 与 scripts/lib/book-title.mjs
-    reading: { run: (env) => import('./sync-reading.mjs').then((m) => m.syncReading(env)), file: 'reading.json' },
+    // optional：外部自建服务（NAS 上的 WebDAV）。它打吨时不应该把整轮定时任务 / 发布拖下水，
+    // 失败只告警并保留已有 reading.json。
+    reading: { run: (env) => import('./sync-reading.mjs').then((m) => m.syncReading(env)), file: 'reading.json', optional: true },
     imagemeta: { run: () => syncImageMeta(), file: 'image-meta.json' }
 };
+
+/**
+ * 源失败的分类：可选源失败只告警（返回 'warn'），其余源硬失败（返回 'fail'）。
+ * 供 main() 使用，也方便单测直接验。
+ */
+export function classifyFailure(name, sources = SOURCES) {
+    return sources[name]?.optional ? 'warn' : 'fail';
+}
+
+/**
+ * 跑一批源，返回 { changed, failed, warnings }。
+ * - 可选源抛错：计 warnings，不计 failed，已写的产物不动（不写空、不清理）。
+ * - 其它源抛错：计 failed，行为与以前一致。
+ */
+export async function runSources(sources, ctx = {}) {
+    const { env = {}, site = null, dryRun = false, write = null, log = console } = ctx;
+    let changed = 0;
+    let failed = 0;
+    const warnings = [];
+    for (const name of sources) {
+        const src = SOURCES[name];
+        try {
+            const data = await src.run(env, site);
+            const outputs = sourceFiles(src, data);
+            if (dryRun) {
+                for (const output of outputs) {
+                    log.log(`[dry-run] ${output.file} 将写入 ${Array.isArray(output.data) ? output.data.length : Object.keys(output.data).length} 项`);
+                }
+            } else {
+                for (const output of outputs) {
+                    const wrote = write ? await write(output.file, output.data, { allowEmpty: output.allowEmpty }) : false;
+                    if (wrote) changed++;
+                }
+            }
+        } catch (e) {
+            if (classifyFailure(name) === 'warn') {
+                warnings.push(`${name}: ${e.message}`);
+                log.warn(`[${name}] 可选源同步失败，已跳过（保留现有数据）: ${e.message}`);
+            } else {
+                failed++;
+                log.error(`[${name}] 同步失败: ${e.message}`);
+            }
+        }
+    }
+    return { changed, failed, warnings };
+}
 
 function sourceFiles(src, data) {
     return typeof src.files === 'function' ? src.files(data) : [{ file: src.file, data }];
 }
+
+// 仅在直接执行时跑主流程；被 import（单测 / 其它脚本）时不跑，避免副作用。
+const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
@@ -913,35 +964,20 @@ async function main() {
 
     let changed = 0;
     let failed = 0;
-    for (const name of sources) {
-        const src = SOURCES[name];
-        try {
-            const data = await src.run(env, site);
-            const outputs = sourceFiles(src, data);
-            if (dryRun) {
-                for (const output of outputs) {
-                    console.log(`[dry-run] ${output.file} 将写入 ${Array.isArray(output.data) ? output.data.length : Object.keys(output.data).length} 项`);
-                }
-            } else {
-                for (const output of outputs) {
-                    if (await writeJson(output.file, output.data, { allowEmpty: output.allowEmpty })) changed++;
-                }
-            }
-        } catch (e) {
-            failed++;
-            console.error(`[${name}] 同步失败: ${e.message}`);
-        }
-    }
+    const run = await runSources(sources, { env, site, dryRun, write: writeJson });
+    ({ changed, failed } = run);
+    for (const w of run.warnings) console.warn(`[warn] 可选源 ${w}`);
 
     console.log(dryRun ? 'dry-run 完成（未写盘）' : `同步完成，${changed} 个文件有变化`);
     return failed;
 }
 
-main().then((failed) => {
+if (isMain) main().then((failed) => {
     if (failed > 0) {
         console.error(`同步完成，${failed} 个源失败`);
         process.exit(1);
     }
+    console.log('同步完成，无硬失败源');
 }).catch((e) => {
     console.error('脚本异常:', e);
     process.exit(1);

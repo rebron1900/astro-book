@@ -253,7 +253,11 @@ describe('同名书归并（同一本书被多次导入 → file_md5 不同 → 
         expect(day.books[0].highlights.map((h) => h.content)).toEqual(['同一句划线', '另一句划线']);
         expect(day.books[0].highlights[1].readerNote).toBe('批注');
         expect(data.totals.books).toBe(1);
-        expect(data.warnings.some((w) => w.includes('同名书归并'))).toBe(true);
+        const warn = data.warnings.find((w) => w.includes('同名书归并'))!;
+        // 告警要能看出并了哪一份：带日期、被并走那份的秒数，不是两条同名字段相撞
+        expect(warn).toContain(NOTE_DAY_ISO);
+        expect(warn).toContain('46 秒');
+
     });
 
     it('跨日同名 → books 只 1 条，days 为并集；脏书名靠 titleMerger 归并', () => {
