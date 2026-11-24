@@ -1,6 +1,7 @@
 ---
 import type { Memo } from '../../api/types';
 import type { TimelineEntry } from '../../api/store';
+import type { ReadingDayBook } from '../../lib/reading';
 import type { Post } from '@ts-ghost/content-api';
 import { normalizeSlug } from '../../lib/utils/help';
 import { timeline } from '../../api/store';
@@ -9,6 +10,7 @@ import PostMeta from '../ui/PostMeta.astro';
 import LedgerMemo from './LedgerMemo.astro';
 import LedgerNeodb from './LedgerNeodb.astro';
 import LedgerStrava from './LedgerStrava.astro';
+import LedgerReading from './LedgerReading.astro';
 import NeodbCategoryIcon from '../ui/NeodbCategoryIcon.astro';
 import TimelineMonthList from './TimelineMonthList.astro';
 import '../../styles/pages/timeline.scss';
@@ -32,7 +34,7 @@ const isTimelinePage = page.data.some((item) => 'kind' in item);
 
 function isTimelineEntry(raw: RawItem): raw is TimelineEntry {
     const kind = (raw as { kind?: unknown }).kind;
-    return kind === 'post' || kind === 'memo' || kind === 'neodb' || kind === 'strava';
+    return kind === 'post' || kind === 'memo' || kind === 'neodb' || kind === 'strava' || kind === 'reading';
 }
 
 function isMemo(raw: RawItem): raw is Memo {
@@ -52,14 +54,21 @@ function toTimelineEntry(raw: RawItem): TimelineEntry {
     };
 }
 
+const coverModules = import.meta.glob<{ default: { src: string } }>('../../assets/reading-cover/*.webp', { eager: true });
+const coverByKey = new Map<string, string>();
+for (const [file, mod] of Object.entries(coverModules)) {
+    const key = file.split('/').pop()?.replace(/\.webp$/, '') ?? '';
+    if (key) coverByKey.set(key, mod.default.src);
+}
+
 const entries = page.data.map(toTimelineEntry);
-const activeKind = ['post', 'memo', 'neodb', 'strava'].includes(filterKind) ? filterKind : 'all';
+const activeKind = ['post', 'memo', 'neodb', 'strava', 'reading'].includes(filterKind) ? filterKind : 'all';
 const filterHref = (kind: string) => (kind === 'all' ? '/' : `/timeline/${kind}/`);
 const timelineTotals = timeline.reduce((totals, entry) => {
     totals.all += 1;
     if (totals[entry.kind] !== undefined) totals[entry.kind] += 1;
     return totals;
-}, { all: 0, post: 0, memo: 0, neodb: 0, strava: 0 });
+}, { all: 0, post: 0, memo: 0, neodb: 0, strava: 0, reading: 0 });
 
 const timelineIntros = {
     all: {
@@ -77,6 +86,10 @@ const timelineIntros = {
     neodb: {
         title: '在别人的故事里，度过一些时间。',
         copy: '这里记下我看过的电影、读过的书、追过的剧和听过的音乐。喜欢的会多写两句，不喜欢的也留个脚印，算是给自己的一份观影与阅读账本。'
+    },
+    reading: {
+        title: '翻过的页，都算数。',
+        copy: '这里记下我每天读了什么书、读了多久，以及当时划下来的句子。一本书一天一张卡片，没有读书的日子就不出现。'
     },
     strava: {
         title: '用身体，把日子往前推一点。',
@@ -179,6 +192,7 @@ function excerptText(value: string | null | undefined, max = 150) {
                     <a class:list={['filter-chip', { 'is-active': activeKind === 'memo' }]} href={filterHref('memo')} aria-current={activeKind === 'memo' ? 'page' : undefined}>随记 <span data-count="memo" data-total={timelineTotals.memo}>{timelineTotals.memo}</span></a>
                     <a class:list={['filter-chip', { 'is-active': activeKind === 'neodb' }]} href={filterHref('neodb')} aria-current={activeKind === 'neodb' ? 'page' : undefined}>书影音 <span data-count="neodb" data-total={timelineTotals.neodb}>{timelineTotals.neodb}</span></a>
                     <a class:list={['filter-chip', { 'is-active': activeKind === 'strava' }]} href={filterHref('strava')} aria-current={activeKind === 'strava' ? 'page' : undefined}>运动 <span data-count="strava" data-total={timelineTotals.strava}>{timelineTotals.strava}</span></a>
+                    <a class:list={['filter-chip', { 'is-active': activeKind === 'reading' }]} href={filterHref('reading')} aria-current={activeKind === 'reading' ? 'page' : undefined}>阅读 <span data-count="reading" data-total={timelineTotals.reading}>{timelineTotals.reading}</span></a>
                 </div>
             )}
             <p class="timeline-count" data-timeline-count data-active-kind={activeKind} aria-live="polite">
@@ -211,6 +225,7 @@ function excerptText(value: string | null | undefined, max = 150) {
                             {entry.kind === 'memo' && <MessageCircle />}
                             {entry.kind === 'neodb' && (neodbGroup ? <LibraryBig /> : <NeodbCategoryIcon category={entry.data.item.category} />)}
                             {entry.kind === 'strava' && <Footprints />}
+                            {entry.kind === 'reading' && <BookOpenText />}
                         </span>
                     </div>
 
@@ -244,6 +259,16 @@ function excerptText(value: string | null | undefined, max = 150) {
                                         <LedgerNeodb mark={entry.data} />
                                     </div>
                                 )
+                            )}
+                            {entry.kind === 'reading' && (
+                                <div class="neodb-cards reading-cards">
+                                    {entry.data.books.slice(0, 10).map((book: ReadingDayBook, bookIndex: number) => (
+                                        <LedgerReading book={book} date={entry.data.date} index={bookIndex} coverUrl={book.cover ? coverByKey.get(book.cover) ?? null : null} />
+                                    ))}
+                                </div>
+                            )}
+                            {entry.kind === 'reading' && entry.data.books.length > 10 && (
+                                <p class="reading-more">还有 {entry.data.books.length - 10} 本</p>
                             )}
                             {stravaGroup ? (
                                 <div class="strava-cards is-group">
@@ -291,7 +316,9 @@ function excerptText(value: string | null | undefined, max = 150) {
 <script>
     import { onPageLoad } from '../../lib/client/mount';
     import { initTimeline } from '../../lib/client/timeline';
+    import { initReadingTips } from '../../lib/client/reading-tips';
 
     onPageLoad(initTimeline);
+    onPageLoad(initReadingTips);
 </script>
 

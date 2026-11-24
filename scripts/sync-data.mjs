@@ -885,6 +885,8 @@ const SOURCES = {
     intervals: { run: (env) => syncIntervals(env), file: 'activities.json' },
     map: { run: (env) => syncMap(env), file: 'geojson.json' },
     rank: { run: () => syncRank(), file: 'rank.json' },
+    // reading：modureader 的 WebDAV 分片库，聚合/清洗在 src/lib/reading.ts 与 scripts/lib/book-title.mjs
+    reading: { run: (env) => import('./sync-reading.mjs').then((m) => m.syncReading(env)), file: 'reading.json' },
     imagemeta: { run: () => syncImageMeta(), file: 'image-meta.json' }
 };
 

@@ -2,6 +2,7 @@ import type { Post, Page, Tag } from '@ts-ghost/content-api';
 import type { Memo, FluxEntry, FluxLostFeed, NeoDBMark, NeoDBResponse } from './types';
 import type { Settings } from './ghost';
 import type { Activity } from '../lib/activity-types';
+import type { ReadingData, ReadingDay } from '../lib/reading';
 
 // 从本地同步的 JSON 读取数据（方案 B：GitHub Action 定时同步，构建零网络依赖）。
 // JSON 由 scripts/sync-data.mjs 生成，提交进仓库。
@@ -13,6 +14,7 @@ import fluxJson from '../data/flux.json';
 import fluxLostJson from '../data/flux-lost.json';
 import memosJson from '../data/memos.json';
 import activitiesJson from '../data/activities.json';
+import readingJson from '../data/reading.json';
 
 interface GhostAuthor {
     id: string;
@@ -55,6 +57,8 @@ export const allContent = [...postsAll, ...memosAll].sort((a, b) => {
     return bTime - aTime;
 });
 
+const readingData = readingJson as unknown as ReadingData;
+
 // 首页信息流：聚合文章 / 微博客 / NeoDB 书影标记 / 运动记录，各取「发生时间」统一降序。
 // ponytail: 每条用 discriminated union 区分类型，渲染端按 kind 分支；后续新增源只需加一个分支。
 export type TimelineEntry =
@@ -62,7 +66,9 @@ export type TimelineEntry =
     | { kind: 'memo'; time: number; data: Memo }
     | { kind: 'neodb'; time: number; data: NeoDBMark }
     // 运动条目沿用 'strava' 这个 kind：/timeline/strava 路由和 strava-cards 样式是既有 UI 概念
-    | { kind: 'strava'; time: number; data: Activity };
+    | { kind: 'strava'; time: number; data: Activity }
+    // 阅读：一本书一天一条，data 是当天的书目明细（见 src/lib/reading.ts 的白名单输出）
+    | { kind: 'reading'; time: number; data: ReadingDay };
 
 // neodb.visibility: 0=public 1=unlisted 2=private；只展示公开标记（值在 JSON 中是数字）
 const neodbMarks = (neodbJson as unknown as NeoDBResponse).data.filter((m) => Number(m.visibility ?? 0) === 0);
@@ -71,5 +77,11 @@ export const timeline: TimelineEntry[] = [
     ...postsAll.map((p) => ({ kind: 'post' as const, time: new Date(p.published_at ?? p.created_at).getTime(), data: p })),
     ...memosAll.map((m) => ({ kind: 'memo' as const, time: m.createdTs * 1000, data: m })),
     ...neodbMarks.map((m) => ({ kind: 'neodb' as const, time: new Date(m.created_time).getTime(), data: m })),
-    ...stravaActivities.map((a) => ({ kind: 'strava' as const, time: new Date(a.start_date_local.replace(' ', 'T')).getTime(), data: a }))
+    ...stravaActivities.map((a) => ({ kind: 'strava' as const, time: new Date(a.start_date_local.replace(' ', 'T')).getTime(), data: a })),
+    // 阅读按「当天 00:00 本地时间」入时间线，一天一条
+    ...(readingData.days ?? []).map((day) => ({
+        kind: 'reading' as const,
+        time: new Date(`${day.date}T00:00:00`).getTime(),
+        data: day
+    }))
 ].sort((a, b) => b.time - a.time);

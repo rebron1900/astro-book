@@ -12,7 +12,7 @@ import Top from '../../../components/ui/Top.astro';
 import Menu from '../../../components/layout/Menu.astro';
 
 export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
-    const kinds = ['post', 'memo', 'neodb', 'strava'];
+    const kinds = ['post', 'memo', 'neodb', 'strava', 'reading'];
     const paths = kinds.flatMap((kind) =>
         paginate(timeline.filter((entry) => entry.kind === kind), {
             params: { kind },
@@ -28,7 +28,8 @@ const kindLabels: Record<string, string> = {
     post: '文章',
     memo: '随记',
     neodb: '书影音',
-    strava: '运动'
+    strava: '运动',
+    reading: '阅读'
 };
 const title = kindLabels[kind] ?? '时间线';
 ---

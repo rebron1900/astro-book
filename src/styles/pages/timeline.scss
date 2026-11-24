@@ -282,9 +282,11 @@
 .timeline-list .ledger-post,
 .timeline-list .memo-block,
 .timeline-list .neodb-card,
+.timeline-list .reading-card,
 .timeline-list .strava-card,
 .timeline-month-list .memo-block,
 .timeline-month-list .neodb-card,
+.timeline-month-list .reading-card,
 .timeline-month-list .strava-card {
     transition:
         transform 160ms ease,
@@ -297,6 +299,7 @@
 .timeline-list .ledger-post:focus-within,
 .timeline-list .neodb-card:hover,
 .timeline-list .strava-card:hover,
+.timeline-list .reading-card:hover,
 .timeline-month-list .memo-block:hover,
 .timeline-month-list .neodb-card:hover,
 .timeline-month-list .strava-card:hover,
@@ -304,8 +307,10 @@
 .timeline-list .memo-block:focus-within,
 .timeline-list .neodb-card:focus-within,
 .timeline-list .strava-card:focus-within,
+.timeline-list .reading-card:focus-within,
 .timeline-month-list .memo-block:focus-within,
 .timeline-month-list .neodb-card:focus-within,
+.timeline-month-list .reading-card:focus-within,
 .timeline-month-list .strava-card:focus-within {
     --memo-border-color: color-mix(in srgb, var(--color-link) 30%, var(--gray-200));
     transform: translateY(-1px);
@@ -939,4 +944,116 @@
     .strava-stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+}
+
+/* 阅读卡片：几何沿用 .neodb-card（类名双双挂上），这里只补它独有的部分 */
+/* 阅读卡片没有 .rating，不需要为它预留右侧 3.4rem */
+.reading-card .media-info {
+    padding-inline-end: 0;
+}
+
+.reading-card .reading-author {
+    margin: 0.15rem 0 0;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.reading-card .entry-title {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+.reading-cards .reading-card {
+    align-content: start;
+}
+
+.reading-more {
+    margin: 0.4rem 0 0;
+    color: var(--gray-500);
+    font-size: 0.75rem;
+}
+
+/* 划线触发器：小号文本按钮，键盘可达 */
+.reading-card .rd-tip-trigger {
+    margin-block-start: 0.4rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-link);
+    font-size: 0.6875rem;
+    cursor: pointer;
+    text-decoration: underline dotted;
+    text-underline-offset: 0.15em;
+}
+
+.reading-card .rd-tip-trigger:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+    border-radius: 0.15rem;
+}
+
+/* tooltip：hover 与 .is-tip-open 都打开；键盘 focus 由脚本置 aria-expanded 并加类 */
+.reading-card .rd-tip {
+    --rd-hl-accent: color-mix(in srgb, var(--color-link) 60%, var(--gray-400));
+    position: absolute;
+    inset-block-start: calc(100% + 0.4rem);
+    inset-inline-start: 0;
+    z-index: 30;
+    inline-size: min(26rem, 92vw);
+    max-block-size: 18rem;
+    overflow: auto;
+    padding: 0.7rem 0.85rem;
+    border-radius: 0.5rem;
+    background: var(--gray-100);
+    box-shadow:
+        inset 0 0 0 1px var(--gray-200),
+        0 10px 28px rgb(0 0 0 / 0.12);
+    font-size: 0.75rem;
+    line-height: 1.6;
+}
+
+/* disclosure 面板：显示/隐藏完全由脚本写 hidden 控制，CSS 只看 hidden */
+.reading-card .rd-tip[hidden] {
+    display: none;
+}
+
+.reading-card .rd-tip-chapter {
+    margin: 0.55rem 0 0.3rem;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    font-weight: 600;
+}
+
+.reading-card .rd-tip-group:first-child .rd-tip-chapter {
+    margin-block-start: 0;
+}
+
+.reading-card .rd-tip-quote {
+    margin: 0 0 0.5rem;
+    padding-inline-start: 0.55rem;
+    border-inline-start: 3px solid var(--rd-hl-accent);
+    color: var(--body-font-color);
+}
+
+.reading-card .rd-tip-quote p {
+    margin: 0 0 0.3rem;
+}
+
+.reading-card .rd-tip-note {
+    margin: 0.15rem 0 0;
+    color: var(--gray-500);
+    font-style: italic;
+}
+
+.reading-card .rd-tip-rest,
+.reading-card .rd-tip-empty {
+    margin: 0.4rem 0 0;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
 }

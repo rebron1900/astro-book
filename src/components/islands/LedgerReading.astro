@@ -1,0 +1,46 @@
+---
+/**
+ * 时间线「阅读」卡片：一本书一天一张，沿用书影音卡片的几何（.reading-card 复用 neodb 那套样式）。
+ *
+ * 展示：封面（无则书名首字块）/ kicker 读过 · 时长 · N 处划线 / 书名 / 作者 / 摘录。
+ * tooltip 改成 disclosure：按钮 aria-expanded/aria-controls 指向面板，面板 role=region；
+ * 鼠标悬停、键盘焦点、触屏点按三态由 reading-tips.ts 统一置 hidden，CSS 不参与开关判断。
+ * 划线 HTML 构建期生成（先转义、无 HTML 透传），这里直接注入。
+ */
+import { renderHighlights, excerptOf, shortDuration } from '../../lib/reading-highlights';
+import type { ReadingDayBook } from '../../lib/reading';
+
+interface Props {
+    book: ReadingDayBook;
+    date: string;
+    index: number;
+    coverUrl?: string | null;
+}
+
+const { book, date, index, coverUrl = null } = Astro.props;
+const tipId = `rd-tip-${date.replace(/-/g, '')}-${index}`;
+const highlights = book.highlights ?? [];
+const highlightsHtml = renderHighlights(highlights);
+const excerpt = excerptOf(highlights);
+const kickerParts = ['读过', shortDuration(book.seconds)];
+if (highlights.length > 0) kickerParts.push(`${highlights.length} 处划线`);
+---
+
+<div class="reading-card neodb-card">
+    <div class="cover">
+        {coverUrl ? <img src={coverUrl} alt={`${book.title}封面`} loading="lazy" decoding="async" /> : <span aria-hidden="true">{book.title.slice(0, 1)}</span>}
+    </div>
+    <div class="media-info">
+        <p class="kicker">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19.5V6a2 2 0 0 1 2-2h13v16H6a2 2 0 0 1-2-2Z" /><path d="M8 4v16" /></svg>
+            {kickerParts.join(' · ')}
+        </p>
+        <h2 class="entry-title" title={book.title}>{book.title}</h2>
+        {book.author && <p class="reading-author">{book.author}</p>}
+        {excerpt && <p class="excerpt">{excerpt}</p>}
+        <button type="button" class="rd-tip-trigger" aria-expanded="false" aria-controls={tipId} data-rd-trigger>
+            {highlights.length > 0 ? `划线 ${highlights.length}` : '划线'}
+        </button>
+        <div class="rd-tip" id={tipId} role="region" aria-label={`${book.title} 的划线`} hidden data-rd-tip set:html={highlightsHtml} />
+    </div>
+</div>
