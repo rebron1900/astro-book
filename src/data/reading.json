@@ -4,7 +4,7 @@
   "totals": {
     "seconds": 58950,
     "days": 71,
-    "books": 32
+    "books": 30
   },
   "books": [
     {
@@ -105,25 +105,25 @@
       "cover": "2248c8661efb"
     },
     {
-      "title": "穷查理宝典（珍藏版）（1+2册）",
-      "seconds": 194,
-      "days": 3,
-      "author": "[美]查理·芒格",
-      "cover": "b852135ba7e2"
-    },
-    {
       "title": "高性价比人生指南",
-      "seconds": 176,
+      "seconds": 222,
       "days": 1,
       "author": "eternity4719",
       "cover": "443abba39ba5"
     },
     {
       "title": "Steve Jobs in Exile 史蒂夫·乔布斯流放记",
-      "seconds": 153,
-      "days": 1,
+      "seconds": 194,
+      "days": 2,
       "author": "Geoffrey Cain 杰弗里·凯恩, Ed Catmull 艾德·卡特穆尔, Dan'l Lewin 丹尼尔·列文",
-      "cover": "59cec6920145"
+      "cover": "2c7f6fa4b39f"
+    },
+    {
+      "title": "穷查理宝典（珍藏版）（1+2册）",
+      "seconds": 194,
+      "days": 3,
+      "author": "[美]查理·芒格",
+      "cover": "b852135ba7e2"
     },
     {
       "title": "一个瑜伽行者的自传 (瑜伽 灵修系列)",
@@ -151,20 +151,6 @@
       "days": 3,
       "author": "日本《朝日新闻》采访组",
       "cover": "e33fa9adf113"
-    },
-    {
-      "title": "高性价比人生指南",
-      "seconds": 46,
-      "days": 1,
-      "author": "eternity4719",
-      "cover": "ffd7cd60aa02"
-    },
-    {
-      "title": "Steve Jobs in Exile 史蒂夫·乔布斯流放记",
-      "seconds": 41,
-      "days": 2,
-      "author": "Geoffrey Cain 杰弗里·凯恩, Ed Catmull 艾德·卡特穆尔, Dan'l Lewin 丹尼尔·列文",
-      "cover": "2c7f6fa4b39f"
     },
     {
       "title": "北京人在纽约",
@@ -614,17 +600,10 @@
         },
         {
           "title": "高性价比人生指南",
-          "seconds": 176,
+          "seconds": 222,
           "highlights": [],
           "author": "eternity4719",
           "cover": "443abba39ba5"
-        },
-        {
-          "title": "高性价比人生指南",
-          "seconds": 46,
-          "highlights": [],
-          "author": "eternity4719",
-          "cover": "ffd7cd60aa02"
         }
       ]
     },
@@ -774,17 +753,10 @@
       "books": [
         {
           "title": "Steve Jobs in Exile 史蒂夫·乔布斯流放记",
-          "seconds": 153,
+          "seconds": 176,
           "highlights": [],
           "author": "Geoffrey Cain 杰弗里·凯恩, Ed Catmull 艾德·卡特穆尔, Dan'l Lewin 丹尼尔·列文",
           "cover": "59cec6920145"
-        },
-        {
-          "title": "Steve Jobs in Exile 史蒂夫·乔布斯流放记",
-          "seconds": 23,
-          "highlights": [],
-          "author": "Geoffrey Cain 杰弗里·凯恩, Ed Catmull 艾德·卡特穆尔, Dan'l Lewin 丹尼尔·列文",
-          "cover": "2c7f6fa4b39f"
         },
         {
           "title": "Steve Jobs in Exile",
@@ -1827,5 +1799,8 @@
       ]
     }
   ],
-  "warnings": []
+  "warnings": [
+    "同名书归并：「高性价比人生指南」并入「高性价比人生指南」",
+    "同名书归并：「Steve Jobs in Exile 史蒂夫·乔布斯流放记」并入「Steve Jobs in Exile 史蒂夫·乔布斯流放记」"
+  ]
 }

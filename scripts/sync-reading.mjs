@@ -308,7 +308,10 @@ export async function syncReading(env = process.env, options = {}) {
         if (!root.startsWith('file://')) await syncCovers(env, root, merged, projectRoot, log);
 
         const overrides = readOverrides(projectRoot);
-        const data = buildReadingData(merged, { titleOverrides: buildOverrideTable(overrides) });
+        // 同一本书被多次导入（file_md5 不同）会拆成多个 sync_id；聚合时就按清洗后的书名归并，
+        // 否则同一天会出现两张同名卡片、books 总数也多算。
+        const titleMerger = (title) => cleanBookTitle(title) || title;
+        const data = buildReadingData(merged, { titleOverrides: buildOverrideTable(overrides), titleMerger });
         cleanAppliedData(data, overrides);
         log(`[reading] 天数 ${data.totals.days}，书 ${data.totals.books} 本，合计 ${Math.round(data.totals.seconds / 60)} 分钟`);
         return data;

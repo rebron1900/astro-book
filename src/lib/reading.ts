@@ -271,7 +271,12 @@ const UNTITLED = '未命名书籍';
  */
 export function buildReadingData(
     records: ModuSyncRecord[],
-    options: { now?: Date; titleOverrides?: Record<string, { title?: string; author?: string; hide?: boolean }> } = {}
+    options: {
+        now?: Date;
+        titleOverrides?: Record<string, { title?: string; author?: string; hide?: boolean }>;
+        /** 归并同名书时用的书名归一（生产传清洗规则；不传则按书名原样相等判断）。 */
+        titleMerger?: (title: string) => string;
+    } = {}
 ): ReadingData {
     const now = options.now ?? new Date();
     const todayIso = beijingToday(now);
@@ -367,23 +372,62 @@ export function buildReadingData(
     }
 
     // 4) 组装 days（日期倒序，当日书目按时长降序）
+    //    同一本书可能被多次导入（file_md5 不同 → 两条 book 记录），同一天就会出现两张同名卡片。
+    //    这里只按「书名完全相同」归并：秒数相加、划线合并去重；不做模糊匹配，避免误合真同名的不同书。
+    const mergeTitle = options.titleMerger ?? ((title: string) => title);
+    const titleOf = (bookId: string) => {
+        const meta = bookById.get(bookId);
+        const title = meta?.title ?? UNTITLED;
+        return mergeTitle(title);
+    };
+
     let totalSeconds = 0;
-    const perBook = new Map<string, { seconds: number; days: Set<string> }>();
+    const perBook = new Map<string, { title: string; author?: string; cover?: string; seconds: number; days: Set<string> }>();
     const days: ReadingDay[] = [...dayMap.entries()]
         .map(([date, booksOfDay]) => {
-            const books: ReadingDayBook[] = [...booksOfDay.entries()]
-                .map(([bookId, seconds]) => {
+            // 当日按清洗后书名归并
+            const byDayTitle = new Map<string, { bookId: string; title: string; seconds: number }>();
+            const mergedToday: [string, string][] = [];
+            for (const [bookId, seconds] of booksOfDay) {
+                const title = titleOf(bookId);
+                const st = byDayTitle.get(title);
+                if (!st) {
+                    byDayTitle.set(title, { bookId, title, seconds });
+                    continue;
+                }
+                if (seconds > st.seconds) st.bookId = bookId; // 封面取时长较长那条
+                st.seconds += seconds;
+                mergedToday.push([bookById.get(bookId)?.title ?? title, title]);
+            }
+            for (const [from, to] of mergedToday) {
+                warnings.push(`同名书归并：「${from}」并入「${to}」`);
+            }
+
+            const books: ReadingDayBook[] = [...byDayTitle.values()]
+                .map(({ bookId, title, seconds }) => {
                     const meta = bookById.get(bookId);
-                    const title = meta?.title ?? UNTITLED;
-                    const stat = perBook.get(bookId) ?? { seconds: 0, days: new Set<string>() };
+                    // 不在这里截断：卡片要显示「还有 N 条」，截断在渲染层做（renderHighlights）
+                    // 同一本书的多个 sync_id 都要合并（按清洗后书名，去重后保留首次出现的章节 / 批注）
+                    const ids = [...booksOfDay.keys()].filter((id) => titleOf(id) === title);
+                    const seenContent = new Set<string>();
+                    const highlights: ReadingHighlight[] = [];
+                    for (const id of ids) {
+                        for (const note of (notesByDayBook.get(`${date}\u0000${id}`) ?? []).sort((a, b) => a.created - b.created)) {
+                            const content = String(note.content ?? '').trim();
+                            if (!content || seenContent.has(content)) continue;
+                            seenContent.add(content);
+                            highlights.push({ chapter: note.chapter, content, readerNote: note.readerNote });
+                        }
+                    }
+
+                    const stat = perBook.get(title) ?? { title, seconds: 0, days: new Set<string>() };
                     stat.seconds += seconds;
                     stat.days.add(date);
-                    perBook.set(bookId, stat);
+                    if (!stat.author && meta?.author) stat.author = meta.author;
+                    if (!stat.cover && meta?.cover) stat.cover = meta.cover;
+                    perBook.set(title, stat);
 
                     // 不在这里截断：卡片要显示「还有 N 条」，截断在渲染层做（renderHighlights）
-                    const highlights = (notesByDayBook.get(`${date}\u0000${bookId}`) ?? [])
-                        .sort((a, b) => a.created - b.created)
-                        .map(({ chapter, content, readerNote }) => ({ chapter, content, readerNote }));
                     const entry: ReadingDayBook = { title, seconds, highlights };
                     if (meta?.author) entry.author = meta.author;
                     if (meta?.cover) entry.cover = meta.cover;
@@ -398,16 +442,15 @@ export function buildReadingData(
         .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
 
     // 5) 每本累计（时长降序）
-    const books: ReadingBookSummary[] = [...perBook.entries()]
-        .map(([bookId, stat]) => {
-            const meta = bookById.get(bookId);
+    const books: ReadingBookSummary[] = [...perBook.values()]
+        .map((stat) => {
             const row: ReadingBookSummary = {
-                title: meta?.title ?? UNTITLED,
+                title: stat.title,
                 seconds: stat.seconds,
                 days: stat.days.size
             };
-            if (meta?.author) row.author = meta.author;
-            if (meta?.cover) row.cover = meta.cover;
+            if (stat.author) row.author = stat.author;
+            if (stat.cover) row.cover = stat.cover;
             return row;
         })
         .sort((a, b) => b.seconds - a.seconds || a.title.localeCompare(b.title));
