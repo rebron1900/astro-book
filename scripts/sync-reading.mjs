@@ -196,6 +196,29 @@ export function overrideOutputs(overrides) {
 }
 
 /**
+ * 落盘前按规则清洗书名 / 作者（映射表优先，规则兜底）。
+ * buildReadingData 已按 byTitle + byMd5 应用过映射，这里不能再按清洗后的书名去查表；
+ * 直接看「当前值是否是某条映射的输出」，**逐字段**决定是否跳过，
+ * 避免「只修了作者」连带把脏书名留着。
+ */
+export function cleanAppliedData(data, overrides) {
+    const fixed = overrideOutputs(overrides);
+    const applyClean = (book) => {
+        const titleFixed = fixed.titles.has(book.title);
+        const authorFixed = fixed.authors.has(book.author);
+        if (titleFixed && authorFixed) return;
+        const c = { title: cleanBookTitle(book.title) || book.title, author: cleanBookAuthor(book.author) };
+        if (!titleFixed) book.title = c.title;
+        if (authorFixed) return;
+        if (c.author) book.author = c.author;
+        else delete book.author;
+    };
+    for (const day of data.days ?? []) for (const book of day.books ?? []) applyClean(book);
+    for (const book of data.books ?? []) applyClean(book);
+    return data;
+}
+
+/**
  * 跟着 book 记录的 cover_path 抓封面并压成 webp。
  * 拉不到 / sharp 不可用 / 压缩失败一律跳过（返回空），绝不让同步失败。
  */
@@ -272,20 +295,7 @@ export async function syncReading(env = process.env, options = {}) {
 
         const overrides = readOverrides(projectRoot);
         const data = buildReadingData(merged, { titleOverrides: buildOverrideTable(overrides) });
-        // 清洗书名 / 作者（映射表优先，规则兜底）。
-        // buildReadingData 已按 byTitle + byMd5 应用过映射，这里不能再按清洗后的书名去查表；
-        // 直接看「当前值是否是某条映射的输出」，命中就原样保留。
-        const fixed = overrideOutputs(overrides);
-        const clean = (title, author) => ({ title: cleanBookTitle(title) || title, author: cleanBookAuthor(author) });
-        const applyClean = (book) => {
-            if (fixed.titles.has(book.title) || fixed.authors.has(book.author)) return;
-            const c = clean(book.title, book.author);
-            book.title = c.title;
-            if (c.author) book.author = c.author;
-            else delete book.author;
-        };
-        for (const day of data.days) for (const book of day.books) applyClean(book);
-        for (const book of data.books) applyClean(book);
+        cleanAppliedData(data, overrides);
         log(`[reading] 天数 ${data.totals.days}，书 ${data.totals.books} 本，合计 ${Math.round(data.totals.seconds / 60)} 分钟`);
         return data;
     } finally {

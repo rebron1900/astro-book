@@ -95,3 +95,39 @@ describe('overrideOutputs（后处理跳过二次清洗）', () => {
         expect(wouldClean).not.toBe('三体【全集】');
     });
 });
+
+describe('cleanAppliedData（落盘前的逐字段清洗）', () => {
+    // buildReadingData 之后的状态：映射命中的字段已是人工定稿，其余仍是脏数据
+    const dataOf = (book: { title: string; author?: string }) => ({
+        days: [{ books: [{ ...book }] }],
+        books: [{ ...book }]
+    });
+
+    it('只覆盖作者时，脏书名仍按规则清洗', async () => {
+        const { cleanAppliedData } = await import('../../scripts/sync-reading.mjs');
+        const data = cleanAppliedData(dataOf({ title: '怀孕呵护指南【豆瓣评分9.3！】', author: '六层楼' }), { byMd5: { 'md5:a': { author: '六层楼' } } });
+        expect(data.days[0].books[0]).toEqual({ title: '怀孕呵护指南', author: '六层楼' });
+        expect(data.books[0]).toEqual({ title: '怀孕呵护指南', author: '六层楼' });
+    });
+
+    it('只覆盖书名时，作者仍按规则清洗（Unknown 被剔除）', async () => {
+        const { cleanAppliedData } = await import('../../scripts/sync-reading.mjs');
+        const data = cleanAppliedData(dataOf({ title: '怀孕呵护指南【豆瓣评分9.3！】', author: 'Unknown' }), {
+            byMd5: { 'md5:a': { title: '怀孕呵护指南' } }
+        });
+        expect(data.books[0]).toEqual({ title: '怀孕呵护指南' });
+    });
+
+    it('书名与作者都被覆盖时原样保留（含营销词）', async () => {
+        const { cleanAppliedData } = await import('../../scripts/sync-reading.mjs');
+        const fixedBook = { title: '三体【全集】', author: '刘慈欣' };
+        const data = cleanAppliedData(dataOf(fixedBook), { byMd5: { 'md5:a': fixedBook } });
+        expect(data.books[0]).toEqual(fixedBook);
+        expect(data.days[0].books[0]).toEqual(fixedBook);
+    });
+
+    it('空 data 不抛错', async () => {
+        const { cleanAppliedData } = await import('../../scripts/sync-reading.mjs');
+        expect(cleanAppliedData({ days: [], books: [] }, {})).toEqual({ days: [], books: [] });
+    });
+});
