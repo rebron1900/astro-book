@@ -29,9 +29,14 @@ export interface EmbyItem {
     Overview?: string;
     RunTimeTicks?: number;
     CommunityRating?: number;
+    /** 原型/离线预览用：剧集所在剧的 CommunityRating / Overview（正式取数需另取 Series）。 */
+    SeriesRating?: number;
+    SeriesOverview?: string;
     ProductionYear?: number;
     Genres?: string[];
     ImageTags?: { Primary?: string };
+    /** 原型/离线预览用：本地缓存的封面路径（真实接口可填 Emby 图片地址）。 */
+    CoverUrl?: string;
     UserData?: {
         Played?: boolean;
         PlayedPercentage?: number;
@@ -54,6 +59,10 @@ export interface EmbyEntry {
     /** 片长（分钟，四舍五入）。RunTimeTicks 是 100 纳秒单位：ticks / 600_000_000。 */
     minutes: number | null;
     rating: number | null;
+    /** 剧集所在剧的评分；电影为 null。 */
+    seriesRating: number | null;
+    /** 剧集所在剧的简介；电影为 null。 */
+    seriesOverview: string | null;
     played: boolean;
     /** 0–100 整数。 */
     playedPercent: number;
@@ -61,6 +70,8 @@ export interface EmbyEntry {
     lastPlayedAt: number | null;
     /** ImageTags.Primary 只作标识，卡片不使用 Emby 外链图片。 */
     imageTag?: string;
+    /** 卡片封面地址；缺省时由页面回退到占位图。 */
+    cover?: string;
 }
 
 export type EmbyWatchState = 'watched' | 'progress' | 'started' | 'unwatched';
@@ -133,10 +144,13 @@ export function mapEmbyItem(item: EmbyItem): EmbyEntry {
         overview: item.Overview?.trim() || undefined,
         minutes: toMinutes(item.RunTimeTicks),
         rating: typeof item.CommunityRating === 'number' ? item.CommunityRating : null,
+        seriesRating: typeof item.SeriesRating === 'number' ? item.SeriesRating : null,
+        seriesOverview: item.SeriesOverview?.trim() || null,
         played,
         playedPercent: played ? 100 : clampPercent(item.UserData?.PlayedPercentage),
         lastPlayedAt: Number.isFinite(lastPlayedAt) ? lastPlayedAt : null,
-        imageTag: item.ImageTags?.Primary
+        imageTag: item.ImageTags?.Primary,
+        cover: item.CoverUrl
     };
 }
 

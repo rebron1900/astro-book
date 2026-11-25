@@ -19,12 +19,17 @@ interface Props {
 const { entry, coverUrl = null } = Astro.props;
 const watch = embyCardState(entry);
 const tier = progressTier(watch.barPercent);
-const duration = entry.minutes === null ? '' : `${entry.minutes} 分钟`;
+const watchedMinutes =
+    entry.minutes === null ? null : Math.max(0, Math.round(entry.minutes * (watch.barPercent / 100)));
 const subtitle =
     entry.type === 'episode'
         ? [entry.episodeCode, entry.episodeTitle].filter(Boolean).join(' · ')
         : entry.meta ?? '';
 const stateLabel = `${entry.title}，${watch.label}${watch.bubble ? `（${watch.bubble}）` : ''}`;
+const overview = entry.overview ?? entry.seriesOverview;
+const ratingValue = entry.seriesRating ?? entry.rating;
+const ratingText =
+    ratingValue === null ? null : Number.isInteger(ratingValue) ? String(ratingValue) : ratingValue.toFixed(1);
 ---
 
 <div class="reading-card neodb-card emby-card" data-emby-state={watch.state}>
@@ -34,20 +39,27 @@ const stateLabel = `${entry.title}，${watch.label}${watch.bubble ? `（${watch.
     <div class="media-info">
         <div class="reading-head">
             <p class="reading-stats">
-                {duration && (
-                    <span class="rd-stat rd-stat-duration">
-                        <strong>{entry.minutes}</strong>
+                {watchedMinutes !== null && (
+                    <span class="rd-stat rd-stat-duration" title={entry.minutes !== null ? `共 ${entry.minutes} 分钟` : undefined}>
+                        <span class="rd-stat-prefix">已看</span>
+                        <strong>{watchedMinutes}</strong>
                         <span class="rd-unit">分钟</span>
                     </span>
                 )}
             </p>
-            <span class="emby-status">{watch.label}</span>
+            {ratingText !== null ? (
+                <p class="rating">
+                    <span aria-hidden="true">★</span> {ratingText}<small>/10</small>
+                </p>
+            ) : (
+                <span class="emby-no-rating">暂无评分</span>
+            )}
         </div>
         <h2 class="reading-titleline">
             <span class="entry-title" title={entry.title}>{entry.title}</span>
             {subtitle && <span class="reading-author emby-sub" title={subtitle}>{subtitle}</span>}
         </h2>
-        {entry.overview && <p class="reading-desc">{entry.overview}</p>}
+        {overview && <p class="reading-desc">{overview}</p>}
     </div>
     <div class="rd-progress" role="img" aria-label={stateLabel} title={stateLabel} data-tier={tier} style={`--p: ${watch.barPercent}%`}>
         <span class="rd-progress-fill" style={`inline-size: ${watch.barPercent}%`}></span>

@@ -54,6 +54,11 @@ function detach(el: Host): void {
 function refresh(root: ParentNode = document): void {
     root.querySelectorAll<Host>(SELECTOR).forEach((el) => {
         try {
+            // 集数区间有自己的「本组集数」面板，不再挂全文提示
+            if (el.closest('.emby-episode-range')) {
+                detach(el);
+                return;
+            }
             if (isTruncated(el)) attach(el);
             else detach(el);
         } catch (error) {

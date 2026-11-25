@@ -16,6 +16,7 @@ import fluxLostJson from '../data/flux-lost.json';
 import memosJson from '../data/memos.json';
 import activitiesJson from '../data/activities.json';
 import readingJson from '../data/reading.json';
+import embyJson from '../data/emby.json';
 
 interface GhostAuthor {
     id: string;
@@ -59,6 +60,7 @@ export const allContent = [...postsAll, ...memosAll].sort((a, b) => {
 });
 
 const readingData = readingJson as unknown as ReadingData;
+const embyEntries = embyJson as unknown as EmbyEntry[];
 /** 阅读汇总（已按 MIN_DAY_SECONDS 过滤后的口径）：页头总览用。 */
 export const reading = readingData;
 
@@ -78,7 +80,6 @@ export type TimelineEntry =
     // 阅读：一本书一天一条，data 是当天的书目明细（见 src/lib/reading.ts 的白名单输出）
     | { kind: 'reading'; time: number; data: ReadingDay }
     // 影视：Emby 观看记录（一部电影 / 一集剧），与阅读合并成「阅读与影视」。
-    // 目前只有原型页使用（fixtures/emby-sample.json），真实时间线等 API key 到位后再接入。
     | { kind: 'media'; time: number; data: EmbyEntry };
 
 // neodb.visibility: 0=public 1=unlisted 2=private；只展示公开标记（值在 JSON 中是数字）
@@ -94,7 +95,11 @@ export const timeline: TimelineEntry[] = [
         kind: 'reading' as const,
         time: new Date(`${day.date}T00:00:00`).getTime(),
         data: day
-    }))
+    })),
+    // 影视：同步脚本只写入有观看时间的条目；按最后观看时间入时间线。
+    ...embyEntries
+        .filter((entry) => typeof entry.lastPlayedAt === 'number')
+        .map((entry) => ({ kind: 'media' as const, time: entry.lastPlayedAt as number, data: entry }))
 ].sort((a, b) => b.time - a.time);
 
 /**

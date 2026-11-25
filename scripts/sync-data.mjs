@@ -47,7 +47,7 @@ function loadEnv() {
     }
     // 进程环境变量优先
     for (const [k, v] of Object.entries(process.env)) {
-        if ((k.startsWith('GHOST_') || k.startsWith('NEODB_') || k.startsWith('FLUX_') || k.startsWith('MAP_') || k.startsWith('CDN_') || k.startsWith('INTERVALS_') || k.startsWith('GOTOSOCIAL_') || k.startsWith('MODU_')) && v !== undefined && v !== '') {
+        if ((k.startsWith('GHOST_') || k.startsWith('NEODB_') || k.startsWith('FLUX_') || k.startsWith('MAP_') || k.startsWith('CDN_') || k.startsWith('INTERVALS_') || k.startsWith('GOTOSOCIAL_') || k.startsWith('MODU_') || k.startsWith('EMBY_')) && v !== undefined && v !== '') {
             env[k] = v;
         }
     }
@@ -889,6 +889,8 @@ const SOURCES = {
     // optional：外部自建服务（NAS 上的 WebDAV）。它打吨时不应该把整轮定时任务 / 发布拖下水，
     // 失败只告警并保留已有 reading.json。
     reading: { run: (env) => import('./sync-reading.mjs').then((m) => m.syncReading(env)), file: 'reading.json', optional: true },
+    // emby：自建 Emby 的观看记录；可选源，服务打吨/密钥没配时保留已有 emby.json。
+    emby: { run: (env) => import('./sync-emby.mjs').then((m) => m.syncEmby(env)), file: 'emby.json', optional: true },
     imagemeta: { run: () => syncImageMeta(), file: 'image-meta.json' }
 };
 

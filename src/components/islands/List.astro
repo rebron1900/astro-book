@@ -12,6 +12,7 @@ import LedgerNeodb from './LedgerNeodb.astro';
 import LedgerStrava from './LedgerStrava.astro';
 import LedgerReading from './LedgerReading.astro';
 import LedgerEmby from './LedgerEmby.astro';
+import LedgerEmbyGroup from './LedgerEmbyGroup.astro';
 import NeodbCategoryIcon from '../ui/NeodbCategoryIcon.astro';
 import TimelineMonthList from './TimelineMonthList.astro';
 import '../../styles/pages/timeline.scss';
@@ -68,7 +69,10 @@ const mediaCovers = [...coverByKey.values()];
 const mediaCoverById = new Map<string, string | null>(
     entries
         .filter((entry): entry is Extract<TimelineEntry, { kind: 'media' }> => entry.kind === 'media')
-        .map((entry, index) => [entry.data.id, mediaCovers.length ? mediaCovers[index % mediaCovers.length] : null])
+        .map((entry, index) => [
+            entry.data.id,
+            entry.data.cover ?? (mediaCovers.length ? mediaCovers[index % mediaCovers.length] : null)
+        ])
 );
 const activeKind = ['post', 'memo', ...(TIMELINE_INCLUDE_NEODB ? ['neodb'] : []), 'strava', 'reading'].includes(filterKind) ? filterKind : 'all';
 const filterHref = (kind: string) => (kind === 'all' ? '/' : `/timeline/${kind}/`);
@@ -138,6 +142,47 @@ entries.forEach((entry, index) => {
     }
     if (group.length > 1) neodbGroupLeads.set(index, group);
 });
+
+// 同一天的影视条目合成一行，两列并排（一天连看多集时不再一集一行）
+type MediaEntry = Extract<TimelineEntry, { kind: 'media' }>;
+const mediaGroupLeads = new Map<number, MediaEntry[]>();
+const mediaGroupMembers = new Set<number>();
+entries.forEach((entry, index) => {
+    if (entry.kind !== 'media' || mediaGroupMembers.has(index)) return;
+    const group: MediaEntry[] = [entry];
+    for (let nextIndex = index + 1; nextIndex < entries.length; nextIndex += 1) {
+        const next = entries[nextIndex];
+        if (next.kind !== 'media' || dateKey(next.time) !== dateKey(entry.time)) break;
+        group.push(next);
+        mediaGroupMembers.add(nextIndex);
+    }
+    if (group.length > 1) mediaGroupLeads.set(index, group);
+});
+
+type MediaCard = { kind: 'single'; entry: MediaEntry } | { kind: 'group'; entries: MediaEntry[] };
+
+// 一天里同一部剧看了 2 集以上就合成一张聚合卡；只看了 1 集保持单集卡。
+function mediaCardsOf(group: MediaEntry[]): MediaCard[] {
+    const cards: MediaCard[] = [];
+    const seriesPosition = new Map<string, number>();
+    for (const item of group) {
+        if (item.data.type !== 'episode') {
+            cards.push({ kind: 'single', entry: item });
+            continue;
+        }
+        const key = item.data.title;
+        const position = seriesPosition.get(key);
+        if (position === undefined) {
+            seriesPosition.set(key, cards.length);
+            cards.push({ kind: 'single', entry: item });
+            continue;
+        }
+        const current = cards[position];
+        if (current.kind === 'group') current.entries.push(item);
+        else cards[position] = { kind: 'group', entries: [current.entry, item] };
+    }
+    return cards;
+}
 const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
 function dateAt(time: number) {
@@ -224,10 +269,12 @@ function excerptText(value: string | null | undefined, max = 150) {
         ) : (
             <div class="tl tl-ledger timeline-list" data-timeline-list data-auto-load={autoLoad ? 'true' : 'false'} data-next={page.url?.next ?? ''}>
         {entries.map((entry, index) => {
-            if (stravaGroupMembers.has(index) || neodbGroupMembers.has(index)) return null;
+            if (stravaGroupMembers.has(index) || neodbGroupMembers.has(index) || mediaGroupMembers.has(index)) return null;
             const showDate = index === 0 || dateKey(entries[index - 1].time) !== dateKey(entry.time);
             const stravaGroup = stravaGroupLeads.get(index) ?? null;
             const neodbGroup = neodbGroupLeads.get(index) ?? null;
+            const mediaGroup = mediaGroupLeads.get(index) ?? null;
+            const mediaCards = entry.kind === 'media' ? mediaCardsOf(mediaGroup ?? [entry]) : null;
 
             return (
                 <article class:list={['ledger-row', { 'is-repeat': !showDate }]} data-kind={entry.kind} data-date-key={dateKey(entry.time)}>
@@ -290,9 +337,15 @@ function excerptText(value: string | null | undefined, max = 150) {
                             {entry.kind === 'reading' && entry.data.books.length > 10 && (
                                 <p class="reading-more">还有 {entry.data.books.length - 10} 本</p>
                             )}
-                            {entry.kind === 'media' && (
+                            {entry.kind === 'media' && mediaCards && (
                                 <div class="neodb-cards reading-cards emby-cards">
-                                    <LedgerEmby entry={entry.data} coverUrl={mediaCoverById.get(entry.data.id) ?? null} />
+                                    {mediaCards.map((card) =>
+                                        card.kind === 'group' ? (
+                                            <LedgerEmbyGroup entries={card.entries.map((item) => item.data)} coverUrl={mediaCoverById.get(card.entries[0].data.id) ?? null} />
+                                        ) : (
+                                            <LedgerEmby entry={card.entry.data} coverUrl={mediaCoverById.get(card.entry.data.id) ?? null} />
+                                        )
+                                    )}
                                 </div>
                             )}
                             {stravaGroup ? (
@@ -343,9 +396,11 @@ function excerptText(value: string | null | undefined, max = 150) {
     import { initTimeline } from '../../lib/client/timeline';
     import { initReadingTips } from '../../lib/client/reading-tips';
     import { initReadingTruncation } from '../../lib/client/reading-truncation';
+    import { initEmbyGroups } from '../../lib/client/emby-group';
 
     onPageLoad(initTimeline);
     onPageLoad(initReadingTips);
     onPageLoad(initReadingTruncation);
+    onPageLoad(initEmbyGroups);
 </script>
 

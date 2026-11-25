@@ -1,0 +1,112 @@
+---
+/**
+ * 时间线「剧集聚合」卡片：同一天、同一部剧看了 2 集以上时合成一张平铺卡。
+ *
+ * - 不做堆叠装饰；悬停/聚焦时用 tippy 列出当天每集和进度（第二行进度条）；
+ * - 当天只看了一集仍走 LedgerEmby 单集卡；
+ * - 卡片只保留这一组的汇总信息：集数、剧名、集数范围、简介、评分；
+ * - 多集卡不显示进度条，进度属于单集卡和 Emby 本身的观看记录。
+ * 评分优先取剧的 CommunityRating，其次分集评分，都没有就显示「暂无评分」。
+ */
+import { embyCardState, type EmbyEntry } from '../../lib/emby';
+import { progressTier } from '../../lib/reading';
+
+interface Props {
+    entries: EmbyEntry[];
+    coverUrl?: string | null;
+}
+
+const { entries, coverUrl = null } = Astro.props;
+const latest = entries[0];
+const watch = embyCardState(latest);
+const ratingValue =
+    latest.seriesRating ??
+    latest.rating ??
+    entries.find((item) => item.seriesRating !== null)?.seriesRating ??
+    entries.find((item) => item.rating !== null)?.rating ??
+    null;
+const ratingText =
+    ratingValue === null ? null : Number.isInteger(ratingValue) ? String(ratingValue) : ratingValue.toFixed(1);
+
+// 列表按季集升序，和「看了哪些集」的阅读顺序一致
+const episodeOrder = [...entries].sort((a, b) => (a.episodeCode ?? '').localeCompare(b.episodeCode ?? ''));
+
+function codeLabel(list: EmbyEntry[]): string {
+    const codes = list.map((entry) => entry.episodeCode).filter((code): code is string => Boolean(code));
+    if (!codes.length) return `${entries.length} 集`;
+    const seasons = new Set(codes.map((code) => code.slice(0, 3)));
+    if (seasons.size === 1) {
+        const numbers = codes.map((code) => Number(code.slice(4))).sort((a, b) => a - b);
+        const contiguous = numbers.every((number, index) => index === 0 || number === numbers[index - 1] + 1);
+        if (contiguous) {
+            const season = codes[0].slice(0, 3);
+            return `${season}E${String(numbers[0]).padStart(2, '0')}–E${String(numbers[numbers.length - 1]).padStart(2, '0')}`;
+        }
+        return `${codes[0]} 等 ${entries.length} 集`;
+    }
+    return `${codes[0]}–${codes[codes.length - 1]}`;
+}
+
+const subtitle = codeLabel(episodeOrder);
+const overview = latest.overview ?? latest.seriesOverview;
+const stateLabel = `${latest.title}，${entries.length} 集，最后一条 ${latest.episodeCode ?? ''} ${watch.label}`;
+---
+
+<div
+    class="reading-card neodb-card emby-card emby-group"
+    data-emby-state={watch.state}
+    data-episode-count={entries.length}
+    aria-label={stateLabel}
+>
+    <div class="cover">
+        {coverUrl ? <img src={coverUrl} alt={`${latest.title}封面`} loading="lazy" decoding="async" /> : <span aria-hidden="true">{latest.title.slice(0, 1)}</span>}
+    </div>
+    <div class="media-info">
+        <div class="reading-head">
+            <p class="reading-stats">
+                <span class="rd-stat rd-stat-duration">
+                    <span class="rd-stat-prefix">看了</span>
+                    <strong>{entries.length}</strong>
+                    <span class="rd-unit">集</span>
+                </span>
+            </p>
+            {ratingText !== null ? (
+                <p class="rating">
+                    <span aria-hidden="true">★</span> {ratingText}<small>/10</small>
+                </p>
+            ) : (
+                <span class="emby-no-rating">暂无评分</span>
+            )}
+        </div>
+        <h2 class="reading-titleline">
+            <span class="entry-title" title={latest.title}>{latest.title}</span>
+            <span class="reading-author emby-sub emby-episode-range" data-episode-range>{subtitle}</span>
+        </h2>
+        {overview && <p class="reading-desc">{overview}</p>}
+    </div>
+
+    <template class="emby-episode-template">
+        <div class="emby-episode-panel">
+            <p class="emby-episode-head">{latest.title} · 共 {entries.length} 集</p>
+            <ul class="emby-episode-list">
+                {episodeOrder.map((entry) => {
+                    const state = embyCardState(entry);
+                    const stateText =
+                        state.state === 'watched' ? '看完' : state.state === 'started' ? '刚开始' : `${state.barPercent}%`;
+                    return (
+                        <li class="emby-episode-item">
+                            <span class="emby-episode-code">{entry.episodeCode}</span>
+                            <span class="emby-episode-name">{entry.episodeTitle}</span>
+                            <span class="emby-episode-state" data-state={state.state} data-tier={progressTier(state.barPercent)}>
+                                {stateText}
+                            </span>
+                            <span class="emby-episode-bar" data-tier={progressTier(state.barPercent)} aria-hidden="true">
+                                <span style={`inline-size: ${state.barPercent}%`}></span>
+                            </span>
+                        </li>
+                    );
+                })}
+            </ul>
+        </div>
+    </template>
+</div>

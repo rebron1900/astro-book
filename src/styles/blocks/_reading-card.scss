@@ -68,20 +68,20 @@
     gap: 0.4rem;
 }
 
-/* 影视卡：第一行右侧的状态角标（看过 · 电影 / 看完 · S02E05 / 看到 42% / 刚开始），
-   位置与阅读卡的划线入口同一行，字号沿用 kicker 的 11px。 */
-.reading-card .emby-status {
-    flex: none;
-    max-inline-size: 58%;
+/* 影视卡：第一行右侧的评分，和 neodb 卡片同一套 .rating（★ 8.6 /10）；
+   状态仍由轨道填充、颜色和气泡表达。 */
+.reading-head .rating {
+    margin-block-start: 0;
+}
+
+/* 没有评分的剧集：右上角不留空白，直接说明 */
+.reading-card .emby-no-rating {
     margin-inline-start: auto;
-    overflow: hidden;
     color: var(--gray-500);
     font-size: 0.6875rem;
     line-height: 1.35;
-    letter-spacing: 0.035em;
-    text-align: end;
+    letter-spacing: 0.03em;
     white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
 /* 卡片主信息：分钟数 / 新增划线数 / 本书进度 */
@@ -306,4 +306,155 @@
     margin: 0.4rem 0 0;
     color: var(--gray-500);
     font-size: 0.6875rem;
+}
+
+/* ---------- 剧集聚合卡：卡片堆叠 + 集数清单 tooltip ---------- */
+
+/* 聚合卡的集数前缀：看了 3 集 */
+.reading-card .rd-stat-prefix {
+    margin-inline-end: 0.12rem;
+    color: var(--gray-600);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+/* 集数区间：聚合卡唯一的面板触发点，用虚线下划线提示可悬停。 */
+.reading-card .emby-episode-range {
+    cursor: help;
+    text-decoration: underline dotted;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+    text-decoration-color: color-mix(in srgb, var(--gray-500) 55%, transparent);
+}
+
+.reading-card .emby-episode-range:hover {
+    color: var(--gray-700);
+}
+
+.reading-card .emby-episode-range:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+    border-radius: 0.15rem;
+}
+
+/* 聚合卡悬停时不要全局的蓝边框、阴影和上移；面板仍由 tippy 负责。 */
+.timeline-list .reading-card.emby-group:hover,
+.timeline-month-list .reading-card.emby-group:hover {
+    transform: none;
+    box-shadow: inset 0 0 0 1px var(--gray-200);
+}
+
+/* ---------- 集数清单 tooltip（每集第二行一条进度条） ---------- */
+.tippy-box[data-theme~='emby-episodes'] {
+    max-inline-size: min(30rem, 92vw);
+    font-size: 0.75rem;
+}
+
+.tippy-box[data-theme~='emby-episodes'] .tippy-content {
+    max-block-size: min(24rem, 60vh);
+    padding: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    white-space: normal;
+}
+
+.emby-episode-panel {
+    min-inline-size: 16rem;
+    padding: 0.65rem 0.75rem;
+}
+
+.emby-episode-head {
+    margin: 0 0 0.45rem;
+    color: var(--gray-600);
+    font-size: 0.75rem;
+    font-weight: 650;
+}
+
+.emby-episode-list {
+    display: grid;
+    gap: 0.3rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.emby-episode-item {
+    display: grid;
+    grid-template-columns: 3.6rem minmax(0, 1fr) auto;
+    grid-template-rows: auto 3px;
+    align-items: baseline;
+    column-gap: 0.5rem;
+    row-gap: 0.28rem;
+    line-height: 1.5;
+}
+
+.emby-episode-code {
+    grid-column: 1;
+    grid-row: 1;
+    color: var(--gray-500);
+    font-variant-numeric: tabular-nums;
+}
+
+.emby-episode-name {
+    grid-column: 2;
+    grid-row: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.emby-episode-state {
+    grid-column: 3;
+    grid-row: 1;
+    color: var(--gray-600);
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+}
+
+.emby-episode-bar {
+    grid-column: 2 / -1;
+    grid-row: 2;
+    display: block;
+    block-size: 3px;
+    border-radius: 999px;
+    background: var(--gray-200);
+    overflow: hidden;
+}
+
+.emby-episode-bar > span {
+    display: block;
+    block-size: 100%;
+    border-radius: inherit;
+    background: var(--emby-episode-bar, var(--hint-color-info));
+}
+
+.emby-episode-bar[data-tier='danger'] {
+    --emby-episode-bar: var(--hint-color-danger);
+}
+
+.emby-episode-bar[data-tier='warning'] {
+    --emby-episode-bar: var(--hint-color-warning);
+}
+
+.emby-episode-bar[data-tier='info'] {
+    --emby-episode-bar: var(--hint-color-info);
+}
+
+.emby-episode-state[data-tier='danger'] {
+    color: var(--hint-color-danger);
+}
+
+.emby-episode-state[data-tier='warning'] {
+    color: var(--hint-color-warning);
+}
+
+.emby-episode-state[data-tier='info'] {
+    color: var(--hint-color-info);
+}
+
+/* 状态词优先于进度档位：看完 / 刚开始保持中性灰，只有数字带档位色 */
+.emby-episode-state[data-state='watched'],
+.emby-episode-state[data-state='started'] {
+    color: var(--gray-500);
 }
