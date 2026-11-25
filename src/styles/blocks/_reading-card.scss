@@ -204,6 +204,13 @@
     font-weight: 650;
     line-height: 1.2;
     white-space: nowrap;
+    /* 卡片 hover 会向上抬 1px，气泡在卡片外面，要同步跟着抬，否则看着像掉队的 */
+    transition: transform 160ms ease;
+}
+
+.reading-card-shell:has(> .reading-card:hover) > .rd-progress-badge,
+.reading-card-shell:has(> .reading-card:focus-within) > .rd-progress-badge {
+    transform: translate(-50%, calc(50% - 1px));
 }
 
 

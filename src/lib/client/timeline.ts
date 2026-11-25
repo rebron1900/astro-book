@@ -255,7 +255,15 @@ import initZoom from './zoom';
                         }
                     });
                 } else {
-                    incoming.forEach((row) => list.append(row));
+                    // 分页边界可能把同一天切成两段：首行与上一段末日相同时按「重复日期」处理，
+                    // 否则会再渲染一次日期标签（同一天出现两个 11.12 这种）。
+                    const lastKey = list.lastElementChild?.getAttribute('data-date-key') ?? null;
+                    incoming.forEach((row, idx) => {
+                        if (idx === 0 && lastKey && row.getAttribute('data-date-key') === lastKey) {
+                            row.classList.add('is-repeat');
+                        }
+                        list.append(row);
+                    });
                 }
                 list.dataset.next = nextList.getAttribute('data-next') || '';
                 setupNewRows();

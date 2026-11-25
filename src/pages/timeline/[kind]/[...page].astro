@@ -1,5 +1,4 @@
 ---
-import type { GetStaticPathsOptions } from 'astro';
 import { timelineVisible, TIMELINE_INCLUDE_NEODB, settings } from '../../../api/store';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Head from '../../../components/islands/Head.astro';
@@ -11,19 +10,67 @@ import Header from '../../../components/layout/Header.astro';
 import Top from '../../../components/ui/Top.astro';
 import Menu from '../../../components/layout/Menu.astro';
 
-export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
+export async function getStaticPaths() {
     // 「阅读与影视」沿用 /timeline/reading/ 这个稳定地址，内容 = reading + media。
     // 书影音是否恢复由 store.ts 的 TIMELINE_INCLUDE_NEODB 控制（true 时重新生成 /timeline/neodb/）。
     const kinds = ['post', 'memo', ...(TIMELINE_INCLUDE_NEODB ? ['neodb'] : []), 'strava', 'reading'];
-    const paths = kinds.flatMap((kind) =>
-        paginate(
-            timelineVisible.filter((entry) => (kind === 'reading' ? entry.kind === 'reading' || entry.kind === 'media' : entry.kind === kind)),
-            {
-                params: { kind },
-                pageSize: 10
+    const PAGE_SIZE = 10;
+    // 同一天不跨页：跨页会让「当天多集合成一张卡」和日期标签都被切开，
+    // 线下会出现同一天两张卡、日期重复（2026-11-25 实测：末路兼职 11.12 出现两次）。
+    // 所以按「天」切页：每页累计到 PAGE_SIZE 条且下一条换了天，才开新页。
+    const dayKey = (time: number) => {
+        const date = new Date(time);
+        return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    };
+
+    const paths: { params: { kind: string; page?: string }; props: { page: Record<string, unknown> } }[] = [];
+
+    for (const kind of kinds) {
+        const items = timelineVisible.filter((entry) =>
+            kind === 'reading' ? entry.kind === 'reading' || entry.kind === 'media' : entry.kind === kind
+        );
+        if (!items.length) continue;
+
+        const pages: typeof items[] = [];
+        let current: typeof items = [];
+        let lastDay: string | null = null;
+        for (const entry of items) {
+            const day = dayKey(entry.time);
+            if (current.length >= PAGE_SIZE && day !== lastDay) {
+                pages.push(current);
+                current = [];
             }
-        )
-    );
+            current.push(entry);
+            lastDay = day;
+        }
+        if (current.length) pages.push(current);
+
+        const base = `/timeline/${kind}`;
+        pages.forEach((data, index) => {
+            const number = index + 1;
+            const urlFor = (n: number) => (n === 1 ? `${base}/` : `${base}/${n}`);
+            paths.push({
+                params: { kind, page: number === 1 ? undefined : String(number) },
+                props: {
+                    page: {
+                        data,
+                        url: {
+                            current: urlFor(number),
+                            prev: number > 1 ? urlFor(number - 1) : undefined,
+                            next: number < pages.length ? urlFor(number + 1) : undefined
+                        },
+                        currentPage: number,
+                        lastPage: pages.length,
+                        start: 0,
+                        end: data.length,
+                        total: items.length,
+                        size: PAGE_SIZE
+                    }
+                }
+            });
+        });
+    }
+
     return paths;
 }
 
