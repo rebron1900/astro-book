@@ -130,8 +130,16 @@ export function initReadingTips(): (() => void) | void {
         const btn = (event.target as Element | null)?.closest?.(TRIGGER_SELECTOR) as TippyHost | null;
         if (btn) ensure(btn);
     };
+    // Esc 关闭（tippy 默认不管 Esc）：悬停中或键盘聚焦中都能收起
+    const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key !== 'Escape') return;
+        document.querySelectorAll<TippyHost>(TRIGGER_SELECTOR).forEach((btn) => {
+            if (btn._tippy?.state.isVisible) btn._tippy.hide();
+        });
+    };
     document.addEventListener('pointerover', onOver);
     document.addEventListener('focusin', onFocus);
+    document.addEventListener('keydown', onKeyDown);
 
     // 无限滚动新插入的卡片也要绑上
     const list = document.querySelector('[data-timeline-list]');
@@ -140,6 +148,7 @@ export function initReadingTips(): (() => void) | void {
             boot();
             document.removeEventListener('pointerover', onOver);
             document.removeEventListener('focusin', onFocus);
+            document.removeEventListener('keydown', onKeyDown);
         };
     }
     const observer = new MutationObserver(() => bind(list));
@@ -149,5 +158,6 @@ export function initReadingTips(): (() => void) | void {
         boot();
         document.removeEventListener('pointerover', onOver);
         document.removeEventListener('focusin', onFocus);
+        document.removeEventListener('keydown', onKeyDown);
     };
 }
