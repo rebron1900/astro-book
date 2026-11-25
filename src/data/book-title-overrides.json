@@ -1,0 +1,12 @@
+{
+    "$comment": "人工改名表。键可以是 file_md5 对应的 sync_id（md5:…），也可以是清洗后的书名；同书多次导入时，非保留项的 sync_id 标 hide:true。展示名只从这里取，清洗规则改版不影响历史卡片。",
+    "byTitle": {
+        "于谦动物园 (于谦)": { "title": "于谦动物园", "author": "于谦" },
+        "三十岁的成人礼_搭车去柏林": { "title": "搭车去柏林", "author": "刘畅" },
+        "怀孕呵护指南": { "title": "怀孕呵护指南", "author": "六层楼先生" },
+        "挽救计划": { "title": "挽救计划", "author": "安迪·威尔" },
+        "高性价比人生指南": { "title": "高性价比人生指南" },
+        "Steve Jobs in Exile": { "title": "Steve Jobs in Exile" }
+    },
+    "byMd5": {}
+}

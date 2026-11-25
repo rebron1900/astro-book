@@ -1,14 +1,18 @@
 ---
 import type { Memo } from '../../api/types';
 import type { TimelineEntry } from '../../api/store';
+import type { ReadingDayBook } from '../../lib/reading';
 import type { Post } from '@ts-ghost/content-api';
 import { normalizeSlug } from '../../lib/utils/help';
-import { timeline } from '../../api/store';
-import { BookOpenText, Footprints, LibraryBig, MessageCircle } from '@lucide/astro';
+import { timelineVisible, TIMELINE_INCLUDE_NEODB } from '../../api/store';
+import { BookHeart, BookOpenText, Clapperboard, Footprints, LibraryBig, MessageCircle } from '@lucide/astro';
 import PostMeta from '../ui/PostMeta.astro';
 import LedgerMemo from './LedgerMemo.astro';
 import LedgerNeodb from './LedgerNeodb.astro';
 import LedgerStrava from './LedgerStrava.astro';
+import LedgerReading from './LedgerReading.astro';
+import LedgerEmby from './LedgerEmby.astro';
+import LedgerEmbyGroup from './LedgerEmbyGroup.astro';
 import NeodbCategoryIcon from '../ui/NeodbCategoryIcon.astro';
 import TimelineMonthList from './TimelineMonthList.astro';
 import '../../styles/pages/timeline.scss';
@@ -32,7 +36,7 @@ const isTimelinePage = page.data.some((item) => 'kind' in item);
 
 function isTimelineEntry(raw: RawItem): raw is TimelineEntry {
     const kind = (raw as { kind?: unknown }).kind;
-    return kind === 'post' || kind === 'memo' || kind === 'neodb' || kind === 'strava';
+    return kind === 'post' || kind === 'memo' || kind === 'neodb' || kind === 'strava' || kind === 'reading' || kind === 'media';
 }
 
 function isMemo(raw: RawItem): raw is Memo {
@@ -52,19 +56,39 @@ function toTimelineEntry(raw: RawItem): TimelineEntry {
     };
 }
 
+const coverModules = import.meta.glob<{ default: { src: string } }>('../../assets/reading-cover/*.webp', { eager: true });
+const coverByKey = new Map<string, string>();
+for (const [file, mod] of Object.entries(coverModules)) {
+    const key = file.split('/').pop()?.replace(/\.webp$/, '') ?? '';
+    if (key) coverByKey.set(key, mod.default.src);
+}
+
 const entries = page.data.map(toTimelineEntry);
-const activeKind = ['post', 'memo', 'neodb', 'strava'].includes(filterKind) ? filterKind : 'all';
+// 影视卡封面用站内已有的 reading-cover 真图（不外链 Emby）；按条目顺序循环取。
+const mediaCovers = [...coverByKey.values()];
+const mediaCoverById = new Map<string, string | null>(
+    entries
+        .filter((entry): entry is Extract<TimelineEntry, { kind: 'media' }> => entry.kind === 'media')
+        .map((entry, index) => [
+            entry.data.id,
+            entry.data.cover ?? (mediaCovers.length ? mediaCovers[index % mediaCovers.length] : null)
+        ])
+);
+const activeKind = ['post', 'memo', ...(TIMELINE_INCLUDE_NEODB ? ['neodb'] : []), 'strava', 'reading'].includes(filterKind) ? filterKind : 'all';
 const filterHref = (kind: string) => (kind === 'all' ? '/' : `/timeline/${kind}/`);
-const timelineTotals = timeline.reduce((totals, entry) => {
+// 计数只算时间线可见数据（TIMELINE_INCLUDE_NEODB=false 时 neodb 已剔除）；
+// 「阅读与影视」= reading + media。
+const timelineTotals = timelineVisible.reduce((totals, entry) => {
     totals.all += 1;
     if (totals[entry.kind] !== undefined) totals[entry.kind] += 1;
     return totals;
-}, { all: 0, post: 0, memo: 0, neodb: 0, strava: 0 });
+}, { all: 0, post: 0, memo: 0, neodb: 0, strava: 0, reading: 0, media: 0 });
+const readingMediaTotal = timelineTotals.reading + timelineTotals.media;
 
 const timelineIntros = {
     all: {
         title: '沿着时间，慢慢往下读。',
-        copy: '这里收录了博主的文章、随记、书影音和运动记录，也收录日常里值得留下的片段。所有内容按时间依次排列，左侧细线与类型图标标出每一天的开始；'
+        copy: '这里收录了博主的文章、随记、阅读与影视记录，也收录日常里值得留下的片段。所有内容按时间依次排列，左侧细线与类型图标标出每一天的开始；'
     },
     post: {
         title: '把想说的话，慢慢写下来。',
@@ -77,6 +101,10 @@ const timelineIntros = {
     neodb: {
         title: '在别人的故事里，度过一些时间。',
         copy: '这里记下我看过的电影、读过的书、追过的剧和听过的音乐。喜欢的会多写两句，不喜欢的也留个脚印，算是给自己的一份观影与阅读账本。'
+    },
+    reading: {
+        title: '翻过的页、看过的片，都算数。',
+        copy: '这里记下我每天读了什么书、看了什么片，读了多久、看到哪一集。一本书一天一张卡片，一条观看记录一张卡片；没有记录的日子就不出现。'
     },
     strava: {
         title: '用身体，把日子往前推一点。',
@@ -114,6 +142,47 @@ entries.forEach((entry, index) => {
     }
     if (group.length > 1) neodbGroupLeads.set(index, group);
 });
+
+// 同一天的影视条目合成一行，两列并排（一天连看多集时不再一集一行）
+type MediaEntry = Extract<TimelineEntry, { kind: 'media' }>;
+const mediaGroupLeads = new Map<number, MediaEntry[]>();
+const mediaGroupMembers = new Set<number>();
+entries.forEach((entry, index) => {
+    if (entry.kind !== 'media' || mediaGroupMembers.has(index)) return;
+    const group: MediaEntry[] = [entry];
+    for (let nextIndex = index + 1; nextIndex < entries.length; nextIndex += 1) {
+        const next = entries[nextIndex];
+        if (next.kind !== 'media' || dateKey(next.time) !== dateKey(entry.time)) break;
+        group.push(next);
+        mediaGroupMembers.add(nextIndex);
+    }
+    if (group.length > 1) mediaGroupLeads.set(index, group);
+});
+
+type MediaCard = { kind: 'single'; entry: MediaEntry } | { kind: 'group'; entries: MediaEntry[] };
+
+// 一天里同一部剧看了 2 集以上就合成一张聚合卡；只看了 1 集保持单集卡。
+function mediaCardsOf(group: MediaEntry[]): MediaCard[] {
+    const cards: MediaCard[] = [];
+    const seriesPosition = new Map<string, number>();
+    for (const item of group) {
+        if (item.data.type !== 'episode') {
+            cards.push({ kind: 'single', entry: item });
+            continue;
+        }
+        const key = item.data.title;
+        const position = seriesPosition.get(key);
+        if (position === undefined) {
+            seriesPosition.set(key, cards.length);
+            cards.push({ kind: 'single', entry: item });
+            continue;
+        }
+        const current = cards[position];
+        if (current.kind === 'group') current.entries.push(item);
+        else cards[position] = { kind: 'group', entries: [current.entry, item] };
+    }
+    return cards;
+}
 const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
 function dateAt(time: number) {
@@ -159,6 +228,11 @@ function excerptText(value: string | null | undefined, max = 150) {
                         </a>
                     )}
                 </p>
+                {activeKind === 'reading' && (
+                    <p class="reading-progress-note">
+                        进度：只有最后一次同步的是真实值，其余按阅读时长推算（≈）。
+                    </p>
+                )}
             </header>
         )}
 
@@ -177,12 +251,15 @@ function excerptText(value: string | null | undefined, max = 150) {
                     <a class:list={['filter-chip', { 'is-active': activeKind === 'all' }]} href={filterHref('all')} aria-current={activeKind === 'all' ? 'page' : undefined}>全部 <span data-count="all" data-total={timelineTotals.all}>{timelineTotals.all}</span></a>
                     <a class:list={['filter-chip', { 'is-active': activeKind === 'post' }]} href={filterHref('post')} aria-current={activeKind === 'post' ? 'page' : undefined}>文章 <span data-count="post" data-total={timelineTotals.post}>{timelineTotals.post}</span></a>
                     <a class:list={['filter-chip', { 'is-active': activeKind === 'memo' }]} href={filterHref('memo')} aria-current={activeKind === 'memo' ? 'page' : undefined}>随记 <span data-count="memo" data-total={timelineTotals.memo}>{timelineTotals.memo}</span></a>
-                    <a class:list={['filter-chip', { 'is-active': activeKind === 'neodb' }]} href={filterHref('neodb')} aria-current={activeKind === 'neodb' ? 'page' : undefined}>书影音 <span data-count="neodb" data-total={timelineTotals.neodb}>{timelineTotals.neodb}</span></a>
+                    {TIMELINE_INCLUDE_NEODB && (
+                        <a class:list={['filter-chip', { 'is-active': activeKind === 'neodb' }]} href={filterHref('neodb')} aria-current={activeKind === 'neodb' ? 'page' : undefined}>书影音 <span data-count="neodb" data-total={timelineTotals.neodb}>{timelineTotals.neodb}</span></a>
+                    )}
                     <a class:list={['filter-chip', { 'is-active': activeKind === 'strava' }]} href={filterHref('strava')} aria-current={activeKind === 'strava' ? 'page' : undefined}>运动 <span data-count="strava" data-total={timelineTotals.strava}>{timelineTotals.strava}</span></a>
+                    <a class:list={['filter-chip', { 'is-active': activeKind === 'reading' }]} href={filterHref('reading')} aria-current={activeKind === 'reading' ? 'page' : undefined}>阅读与影视 <span data-count="reading+media" data-total={readingMediaTotal}>{readingMediaTotal}</span></a>
                 </div>
             )}
             <p class="timeline-count" data-timeline-count data-active-kind={activeKind} aria-live="polite">
-                共 {filterNav ? (filterNav.find((item) => item.active)?.count ?? filterNav[0]?.count ?? 0) : (activeKind === 'all' ? timelineTotals.all : timelineTotals[activeKind as keyof typeof timelineTotals])} 条
+                共 {filterNav ? (filterNav.find((item) => item.active)?.count ?? filterNav[0]?.count ?? 0) : (activeKind === 'all' ? timelineTotals.all : activeKind === 'reading' ? readingMediaTotal : timelineTotals[activeKind as keyof typeof timelineTotals])} 条
             </p>
         </div>
         )}
@@ -192,10 +269,12 @@ function excerptText(value: string | null | undefined, max = 150) {
         ) : (
             <div class="tl tl-ledger timeline-list" data-timeline-list data-auto-load={autoLoad ? 'true' : 'false'} data-next={page.url?.next ?? ''}>
         {entries.map((entry, index) => {
-            if (stravaGroupMembers.has(index) || neodbGroupMembers.has(index)) return null;
+            if (stravaGroupMembers.has(index) || neodbGroupMembers.has(index) || mediaGroupMembers.has(index)) return null;
             const showDate = index === 0 || dateKey(entries[index - 1].time) !== dateKey(entry.time);
             const stravaGroup = stravaGroupLeads.get(index) ?? null;
             const neodbGroup = neodbGroupLeads.get(index) ?? null;
+            const mediaGroup = mediaGroupLeads.get(index) ?? null;
+            const mediaCards = entry.kind === 'media' ? mediaCardsOf(mediaGroup ?? [entry]) : null;
 
             return (
                 <article class:list={['ledger-row', { 'is-repeat': !showDate }]} data-kind={entry.kind} data-date-key={dateKey(entry.time)}>
@@ -211,6 +290,9 @@ function excerptText(value: string | null | undefined, max = 150) {
                             {entry.kind === 'memo' && <MessageCircle />}
                             {entry.kind === 'neodb' && (neodbGroup ? <LibraryBig /> : <NeodbCategoryIcon category={entry.data.item.category} />)}
                             {entry.kind === 'strava' && <Footprints />}
+                            {/* 阅读用书+心形，和文章的 BookOpenText 区分开 */}
+                            {entry.kind === 'reading' && <BookHeart />}
+                            {entry.kind === 'media' && <Clapperboard />}
                         </span>
                     </div>
 
@@ -244,6 +326,27 @@ function excerptText(value: string | null | undefined, max = 150) {
                                         <LedgerNeodb mark={entry.data} />
                                     </div>
                                 )
+                            )}
+                            {entry.kind === 'reading' && (
+                                <div class="neodb-cards reading-cards">
+                                    {entry.data.books.slice(0, 10).map((book: ReadingDayBook, bookIndex: number) => (
+                                        <LedgerReading book={book} date={entry.data.date} index={bookIndex} coverUrl={book.cover ? coverByKey.get(book.cover) ?? null : null} />
+                                    ))}
+                                </div>
+                            )}
+                            {entry.kind === 'reading' && entry.data.books.length > 10 && (
+                                <p class="reading-more">还有 {entry.data.books.length - 10} 本</p>
+                            )}
+                            {entry.kind === 'media' && mediaCards && (
+                                <div class="neodb-cards reading-cards emby-cards">
+                                    {mediaCards.map((card) =>
+                                        card.kind === 'group' ? (
+                                            <LedgerEmbyGroup entries={card.entries.map((item) => item.data)} coverUrl={mediaCoverById.get(card.entries[0].data.id) ?? null} />
+                                        ) : (
+                                            <LedgerEmby entry={card.entry.data} coverUrl={mediaCoverById.get(card.entry.data.id) ?? null} />
+                                        )
+                                    )}
+                                </div>
                             )}
                             {stravaGroup ? (
                                 <div class="strava-cards is-group">
@@ -291,7 +394,13 @@ function excerptText(value: string | null | undefined, max = 150) {
 <script>
     import { onPageLoad } from '../../lib/client/mount';
     import { initTimeline } from '../../lib/client/timeline';
+    import { initReadingTips } from '../../lib/client/reading-tips';
+    import { initReadingTruncation } from '../../lib/client/reading-truncation';
+    import { initEmbyGroups } from '../../lib/client/emby-group';
 
     onPageLoad(initTimeline);
+    onPageLoad(initReadingTips);
+    onPageLoad(initReadingTruncation);
+    onPageLoad(initEmbyGroups);
 </script>
 

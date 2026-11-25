@@ -22,6 +22,7 @@
 | `yarn astro check`          | TypeScript / Astro 类型检查            |
 | `yarn test`                 | Vitest 单测（`tests/`）                |
 | `yarn sync:data`            | 拉取外部数据到 `src/data/*.json`       |
+| `node scripts/sync-book-descriptions.mjs` | 按书名去 NeoDB 取书籍简介 → `src/data/book-descriptions.json`（`--force` 全部重取） |
 | `yarn import:strava-export` | 导入 Strava 导出文件（历史数据迁移用） |
 
 **提交前至少跑：`yarn astro check`、`yarn test`、`yarn build`。** 改了 CSS/JS 分块或共享样式时，还必须用「冷构建」验证（见第 6 节）。
@@ -46,7 +47,8 @@
 
 ## 2. 数据层规则
 
-1. **不要手改 `src/data/*.json`**：它们由 `yarn sync:data` 生成（ghost、memos、neodb、flux、activities、geojson、rank、image-meta）。需要改数据 → 改同步脚本或数据源。
+1. **不要手改 `src/data/*.json`**：它们由 `yarn sync:data` 生成（ghost、memos、neodb、flux、activities、geojson、rank、image-meta、reading）。需要改数据 → 改同步脚本或数据源。
+   - 例外：`src/data/book-meta.json` 是**人工维护**的书籍信息（目前只有 `description`），优先级高于自动取回的 `book-descriptions.json`；想改某一本的简介写这里，不要动 `reading.json`。
 2. 数据源在 `scripts/sync-data.mjs` 的 `SOURCES` 表里：`ghost / neodb / flux / memos / intervals / map / rank / imagemeta`；可按源同步：`node scripts/sync-data.mjs ghost,intervals`，`--full` 忽略增量缓存，`--dry-run` 只预览。
 3. 定时任务会同步数据并自动提交 `chore(data): … [skip ci]`（防止循环触发 CI）。不要手动提交数据文件除非确实需要。
 4. **运动数据契约是 `src/lib/activity-types.ts`**（intervals.icu 的 `Activity`，扁平字段）。改字段时同步更新：`src/lib/exercise.ts`（`buildRecords` 等）、`src/lib/intervals.ts`、`src/lib/strava-preview.ts`、`src/api/store.ts`、`exercise.astro`/`exercise-routes.json.ts` 以及测试。旧的 `StravaActivity` 只在历史迁移/测试里保留，不要在新代码里使用。
@@ -65,7 +67,8 @@
    - `_custom.scss` 只保留真正全局的内容；页面专用样式**不要**往里加。
 2. **页面级**：`src/styles/pages/*.scss`，由页面/页面内组件在 frontmatter `import`，只随该页加载：
    - `timeline.scss`、`timeline-month.scss`、`exercise.scss`（`exercise/` 子目录）、`links.scss`、`tags.scss`、`archives.scss`、`now.scss`、`albums.scss`。
-3. **共享块**：`src/styles/blocks/*.scss`，被两个以上页面复用（`_filter-chips.scss`、`_strava-card.scss`、`_metric-icons.scss`、`scroll-reveal.scss`）。被 scss `@import` 的块用下划线开头；被 Astro `import` 的块**不能**用下划线（Vite 不做 Sass partial 解析）。
+3. **共享块**：`src/styles/blocks/*.scss`，被两个以上页面复用（`_filter-chips.scss`、`_strava-card.scss`、`_metric-icons.scss`、`scroll-reveal.scss`、`_ledger.scss`）。被 scss `@import` 的块用下划线开头；被 Astro `import` 的块**不能**用下划线（Vite 不做 Sass partial 解析）。
+   - 只有一个页面用的组件样式（如 `_reading-card.scss`）也放在 `src/styles/blocks/`、由该页面级 scss `@import`，**不要**写进组件 `<style>`：实测给 `LedgerReading.astro` 加的 `<style is:global>` 在 dev 里没被插进页面（样式完全不生效），页面级 scss 的 @import 链则稳定生效。
 4. **组件内 `<style>`**：只服务该组件自身、不会复用时才用（默认 scoped）。只有要命中第三方 DOM（Mapbox/artalk）或多个组件共同输出同一套类名时，才用 `<style is:global>`。**不要再新增「只含样式」的 `.astro` 组件。**
 
 约定：
@@ -180,6 +183,8 @@ onPageLoad(() => {
 - Astro 按组件切 CSS chunk：`<style is:global>` 只在渲染它的页面加载；不要因为「别处也能用」把页面样式塞进全局。
 - 挂载在 `astro:page-load` 的逻辑要能重复执行；不要用 `window.onscroll = …`（覆盖别人），用 `addEventListener` + 清理。
 - 第三方 tooltip/评论/地图实例必须销毁，否则 View Transitions 后越积越多。
+- tippy 的 popper 首次定位：全局样式没给 `.tippy-box` 定 `display`，定位那一帧若从 `display:none` 切过来会量出 0×0，面板看起来「没弹出来」。需要稳定定位的 tooltip 在 `onCreate` 里把 `instance.popper.style.display = 'block'`，并在 `onShow` 里先摆到屏外量尺寸再定位（做法见 `reading-tips.ts`）。
+- 外部工具处理文本时注意转义层级：脚本里的正则要直接写进单行（用 `String.fromCharCode(92)` 拼反斜杠时容易写出 `\\s` 这种双转义，`\s` 会变成字面量「s」）。
 - 地图相关代码顶层不能碰 `window`；`/map/`、`/exercise/`、足迹地图是三套控制器，不要互相 import。
 - 足迹是**独立路由** `/exercise/footprint/`：页面靠 `body:has(.footprint-page)` 把 `.book-page` 锁成 `100svh`，`.exercise-page` 变 flex 列，剩余高度交给 `.ex-fp`。宽度不要自己写 `max-width`——直接把 Ghost 页原样交给 `BaseLayout`（它带 `hash-page-fullwidth`），`isFullWidth` 会跳过右侧 TOC 空栏并给 `.container` 上 `.full-width`；滤掉那个标签再用 `:has()` 硬压宽度，右边就会留一列空的 16rem。
 - 外部接口失败要降级（读缓存 / 显示提示），不要让整页构建或交互崩掉。
@@ -193,6 +198,8 @@ onPageLoad(() => {
 
 ## 10. 当前状态 / 待办（会变化，供接手参考）
 
+- **阅读卡片（feat/reading-timeline）**：`src/lib/client/reading-tips.ts` 目前挂在 `List.astro` 的 `<script>` 里（`onPageLoad(initReadingTips)`）。调试时发现这个脚本在 dev 下不一定被执行（`astro:page-load` 只触发一次也能复现），所以 `reading-tips.ts` 的绑定状态放在 `globalThis.__readingTips`，**不**依赖 dataset/模块变量；换页/刷新都安全。如果以后想让阅读 tooltip 与页面脚本解耦，把这一行搬到 `Head.astro` 的 `astro:page-load` 监听里即可。
+- 书籍简介：`src/data/book-descriptions.json` 由 `node scripts/sync-book-descriptions.mjs` 从 NeoDB 取（`yarn sync:data` 不包含这一步，需要单独跑）；人工定稿写 `src/data/book-meta.json`（优先级更高）。
 - 数据源正在从 Strava 迁到 **intervals.icu**（`activity-types.ts` / `intervals.ts` / `store.ts` / `exercise.astro` / `sync-data.mjs`）。若 `astro check` 报缺少 `src/data/activities.json`，说明迁移未收尾：先运行 `node scripts/sync-data.mjs intervals`（需 `INTERVALS_ICU_*` 环境变量）或恢复数据文件。
 - 旧的 `tests/lib/exercise.test.ts`、`tests/api/store.test.ts` 等断言可能还在用 `StravaActivity` 字段（`run_id`/`summary_polyline`/`location`），迁移完成时要一起更新。
 - `/activity/` 是「运动 + 足迹」合并页（新页面，2026-11-11 起）：一张地图 + 右上角 `act-switch` 切模式，时间线和右侧栏跟着 `.activity-page[data-activity-mode]` 用 CSS 切换。地图由 `src/components/islands/ActivityShell.tsx` 统一持有，切换模式时先 `destroy()` 旧控制器再建新的，**同一时刻只允许一个 Mapbox 实例**。旧的 `/exercise/`、`/exercise/footprint/` 保持原样。

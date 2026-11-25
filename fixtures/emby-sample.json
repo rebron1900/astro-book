@@ -1,0 +1,203 @@
+{
+    "_comment": "Emby 4.10 /Users/{userId}/Items 与 /Users/{userId}/Items/Resume 的裁剪样本（假数据，仅原型页使用）。Items 里 #7（沙丘2）也在 Resume 中出现，用来验证按 Id 去重、Resume 进度优先。",
+    "Items": [
+        {
+            "Id": "e1a0movie0001",
+            "Name": "花束般的恋爱",
+            "Type": "Movie",
+            "Overview": "错过末班车的两个年轻人在深夜咖啡馆相遇，从喜欢的音乐、电影到生活习惯都惊人地合拍。五年后，他们坐在同一家店里，平静地决定分手。电影把一段关系从开始到结束的每一个微小转折都摊开来看。",
+            "RunTimeTicks": 70800000000,
+            "CommunityRating": 8.6,
+            "ProductionYear": 2021,
+            "Genres": [
+                "剧情",
+                "爱情"
+            ],
+            "ImageTags": {
+                "Primary": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+            },
+            "UserData": {
+                "Played": true,
+                "PlayedPercentage": 100,
+                "LastPlayedDate": "2026-11-24T22:40:00+08:00"
+            }
+        },
+        {
+            "Id": "e1a0movie0002",
+            "Name": "我们在无法停止的时间里慢慢走散又重逢",
+            "Type": "Movie",
+            "Overview": "一对恋人从大学到工作、从同一座城市到隔着时差，十年里反复靠近又分开。影片用大量生活细节堆出一段关系真实的重量，也留下一个不急着回答的问题：重逢之后，两个人还能不能重新开始。",
+            "RunTimeTicks": 79200000000,
+            "CommunityRating": 8.1,
+            "ProductionYear": 2024,
+            "Genres": [
+                "剧情"
+            ],
+            "ImageTags": {
+                "Primary": "b1c2d3e4f5a60718293a4b5c6d7e8f91"
+            },
+            "UserData": {
+                "Played": false,
+                "PlayedPercentage": 42,
+                "LastPlayedDate": "2026-11-24T20:05:00+08:00"
+            }
+        },
+        {
+            "Id": "e1a0movie0003",
+            "Name": "奥本海默",
+            "Type": "Movie",
+            "Overview": "原子弹之父一生的两个面向：实验室里推动历史的科学家，和听证会上被反复审问的普通人。三条时间线交错推进，把一个人的荣耀与代价放在同一张桌上。",
+            "RunTimeTicks": 64800000000,
+            "CommunityRating": 8.4,
+            "ProductionYear": 2023,
+            "Genres": [
+                "剧情",
+                "历史"
+            ],
+            "ImageTags": {
+                "Primary": "c1d2e3f4a5b60718293a4b5c6d7e8f92"
+            },
+            "UserData": {
+                "Played": false,
+                "PlayedPercentage": 0,
+                "LastPlayedDate": "2026-11-23T23:12:00+08:00"
+            }
+        },
+        {
+            "Id": "e1a0episode001",
+            "Name": "第五集",
+            "Type": "Episode",
+            "SeriesName": "漫长的季节",
+            "ParentIndexNumber": 2,
+            "IndexNumber": 5,
+            "Overview": "案子往前推了一步，三个老人各自的那点心事也藏不住了。录像厅的灯亮到很晚，谁也没先开口。",
+            "RunTimeTicks": 27000000000,
+            "CommunityRating": 9.2,
+            "ProductionYear": 2023,
+            "Genres": [
+                "剧情",
+                "悬疑"
+            ],
+            "ImageTags": {
+                "Primary": "d1e2f3a4b5c60718293a4b5c6d7e8f93"
+            },
+            "UserData": {
+                "Played": true,
+                "PlayedPercentage": 100,
+                "LastPlayedDate": "2026-11-23T21:30:00+08:00"
+            }
+        },
+        {
+            "Id": "e1a0episode002",
+            "Name": "第六集",
+            "Type": "Episode",
+            "SeriesName": "漫长的季节",
+            "ParentIndexNumber": 2,
+            "IndexNumber": 6,
+            "Overview": "旧厂的铁轨边长满草，王响又一次走到那里。过去像一列晚点的火车，终于在这个晚上进站。",
+            "RunTimeTicks": 31200000000,
+            "CommunityRating": 9.3,
+            "ProductionYear": 2023,
+            "Genres": [
+                "剧情",
+                "悬疑"
+            ],
+            "ImageTags": {
+                "Primary": "e1f2a3b4c5d60718293a4b5c6d7e8f94"
+            },
+            "UserData": {
+                "Played": false,
+                "PlayedPercentage": 63,
+                "LastPlayedDate": "2026-11-23T20:15:00+08:00"
+            }
+        },
+        {
+            "Id": "e1a0episode003",
+            "Name": "第十集",
+            "Type": "Episode",
+            "SeriesName": "三体",
+            "ParentIndexNumber": 2,
+            "IndexNumber": 10,
+            "Overview": "面壁计划走到最后一步，所有人都在等一个答案。宇宙很大，人类能做的选择却不多。",
+            "RunTimeTicks": 28200000000,
+            "CommunityRating": 8.8,
+            "ProductionYear": 2024,
+            "Genres": [
+                "科幻",
+                "剧情"
+            ],
+            "ImageTags": {
+                "Primary": "f1a2b3c4d5e60718293a4b5c6d7e8f95"
+            },
+            "UserData": {
+                "Played": true,
+                "PlayedPercentage": 100,
+                "LastPlayedDate": "2026-11-24T19:20:00+08:00"
+            }
+        },
+        {
+            "Id": "e1a0movie0004",
+            "Name": "沙丘2",
+            "Type": "Movie",
+            "Overview": "保罗与弗雷曼人并肩作战，复仇的代价逐渐超出他能承受的范围。沙丘上的每一步都踩在预言里，也踩在自己的选择上。",
+            "RunTimeTicks": 64800000000,
+            "CommunityRating": 8.3,
+            "ProductionYear": 2024,
+            "Genres": [
+                "科幻",
+                "冒险"
+            ],
+            "ImageTags": {
+                "Primary": "a2b3c4d5e6f70718293a4b5c6d7e8f96"
+            },
+            "UserData": {
+                "Played": false,
+                "PlayedPercentage": 17,
+                "LastPlayedDate": "2026-11-22T22:00:00+08:00"
+            }
+        },
+        {
+            "Id": "e1a0movie0005",
+            "Name": "驾驶我的车",
+            "Type": "Movie",
+            "Overview": "",
+            "RunTimeTicks": 57600000000,
+            "CommunityRating": 8,
+            "ProductionYear": 2021,
+            "Genres": [
+                "剧情"
+            ],
+            "ImageTags": {
+                "Primary": "b2c3d4e5f6a70718293a4b5c6d7e8f97"
+            },
+            "UserData": {
+                "Played": false,
+                "PlayedPercentage": 8,
+                "LastPlayedDate": "2026-11-22T20:40:00+08:00"
+            }
+        }
+    ],
+    "Resume": [
+        {
+            "Id": "e1a0movie0004",
+            "Name": "沙丘2",
+            "Type": "Movie",
+            "Overview": "保罗与弗雷曼人并肩作战，复仇的代价逐渐超出他能承受的范围。沙丘上的每一步都踩在预言里，也踩在自己的选择上。",
+            "RunTimeTicks": 64800000000,
+            "CommunityRating": 8.3,
+            "ProductionYear": 2024,
+            "Genres": [
+                "科幻",
+                "冒险"
+            ],
+            "ImageTags": {
+                "Primary": "a2b3c4d5e6f70718293a4b5c6d7e8f96"
+            },
+            "UserData": {
+                "Played": false,
+                "PlayedPercentage": 93,
+                "LastPlayedDate": "2026-11-22T22:00:00+08:00"
+            }
+        }
+    ]
+}

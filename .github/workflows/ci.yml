@@ -78,10 +78,16 @@ jobs:
                   GOTOSOCIAL_TOKEN: ${{ secrets.GOTOSOCIAL_TOKEN }}
                   GOTOSOCIAL_ACCOUNT_ID: ${{ secrets.GOTOSOCIAL_ACCOUNT_ID }}
                   MAP_KMZ_URL: ${{ secrets.MAP_KMZ_URL }}
+                  # modureader 阅读数据（只读 WebDAV；URL 写 WebDAV 根，不带 /modu）
+                  MODU_WEBDAV_URL: ${{ secrets.MODU_WEBDAV_URL }}
+                  MODU_WEBDAV_USER: ${{ secrets.MODU_WEBDAV_USER }}
+                  MODU_WEBDAV_PASS: ${{ secrets.MODU_WEBDAV_PASS }}
+                  # Emby 观看记录（只读；URL 与用户 Id 在 scripts/sync-emby.mjs 有默认值）
+                  EMBY_API_KEY: ${{ secrets.EMBY_API_KEY }}
               run: |
                   echo "$CONFIG_FILE" > ./.env
                   node scripts/sync-data.mjs
-                  echo "changed=$(git status --porcelain src/data/ | wc -l)" >> "$GITHUB_ENV"
+                  echo "changed=$(git status --porcelain src/data/ src/assets/reading-cover/ public/emby-cover/ | wc -l)" >> "$GITHUB_ENV"
 
             # 数据有变化时提交（用 [skip ci] 防止触发自身 workflow 造成循环）
             # push 触发时 changed 未设置(空)自动跳过；schedule/dispatch 触发且数据有变化时执行
@@ -90,7 +96,7 @@ jobs:
               run: |
                   git config user.name "github-actions[bot]"
                   git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-                  git add src/data/
+                  git add src/data/ src/assets/reading-cover/ public/emby-cover/
                   git commit -m "chore(data): 定时同步外部数据源 [skip ci]"
                   # 同步期间 main 可能已经合入代码提交；先 rebase 再推，避免 non-fast-forward。
                   # 只重放这条数据提交，不会覆盖远端代码；连续被抢推时最多重试 3 次。
@@ -169,6 +175,10 @@ jobs:
 
             - name: Build Astro project
               run: yarn build
+
+            # 公开仓库闸门：原始 .db / record-log / modu_sync 绝不进仓库或 dist
+            - name: Guard against leaked modureader database
+              run: node scripts/check-no-modu-db.mjs
 
             - name: Check built garden (fail closed)
               run: |

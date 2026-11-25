@@ -1,6 +1,6 @@
 ---
 import type { GetStaticPathsOptions } from 'astro';
-import { timeline, settings } from '../../../api/store';
+import { timelineVisible, TIMELINE_INCLUDE_NEODB, settings } from '../../../api/store';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Head from '../../../components/islands/Head.astro';
 import List from '../../../components/islands/List.astro';
@@ -12,12 +12,17 @@ import Top from '../../../components/ui/Top.astro';
 import Menu from '../../../components/layout/Menu.astro';
 
 export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
-    const kinds = ['post', 'memo', 'neodb', 'strava'];
+    // 「阅读与影视」沿用 /timeline/reading/ 这个稳定地址，内容 = reading + media。
+    // 书影音是否恢复由 store.ts 的 TIMELINE_INCLUDE_NEODB 控制（true 时重新生成 /timeline/neodb/）。
+    const kinds = ['post', 'memo', ...(TIMELINE_INCLUDE_NEODB ? ['neodb'] : []), 'strava', 'reading'];
     const paths = kinds.flatMap((kind) =>
-        paginate(timeline.filter((entry) => entry.kind === kind), {
-            params: { kind },
-            pageSize: 10
-        })
+        paginate(
+            timelineVisible.filter((entry) => (kind === 'reading' ? entry.kind === 'reading' || entry.kind === 'media' : entry.kind === kind)),
+            {
+                params: { kind },
+                pageSize: 10
+            }
+        )
     );
     return paths;
 }
@@ -28,7 +33,8 @@ const kindLabels: Record<string, string> = {
     post: '文章',
     memo: '随记',
     neodb: '书影音',
-    strava: '运动'
+    strava: '运动',
+    reading: '阅读与影视'
 };
 const title = kindLabels[kind] ?? '时间线';
 ---

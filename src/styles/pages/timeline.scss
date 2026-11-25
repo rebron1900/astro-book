@@ -5,6 +5,7 @@
 @import '../blocks/filter-chips';
 @import '../blocks/strava-card';
 @import '../blocks/ledger';
+@import '../blocks/reading-card';
 .timeline-intro {
     max-inline-size: 44rem;
     margin-block: 0.3rem 1.45rem;
@@ -282,9 +283,11 @@
 .timeline-list .ledger-post,
 .timeline-list .memo-block,
 .timeline-list .neodb-card,
+.timeline-list .reading-card,
 .timeline-list .strava-card,
 .timeline-month-list .memo-block,
 .timeline-month-list .neodb-card,
+.timeline-month-list .reading-card,
 .timeline-month-list .strava-card {
     transition:
         transform 160ms ease,
@@ -297,6 +300,7 @@
 .timeline-list .ledger-post:focus-within,
 .timeline-list .neodb-card:hover,
 .timeline-list .strava-card:hover,
+.timeline-list .reading-card:hover,
 .timeline-month-list .memo-block:hover,
 .timeline-month-list .neodb-card:hover,
 .timeline-month-list .strava-card:hover,
@@ -304,8 +308,10 @@
 .timeline-list .memo-block:focus-within,
 .timeline-list .neodb-card:focus-within,
 .timeline-list .strava-card:focus-within,
+.timeline-list .reading-card:focus-within,
 .timeline-month-list .memo-block:focus-within,
 .timeline-month-list .neodb-card:focus-within,
+.timeline-month-list .reading-card:focus-within,
 .timeline-month-list .strava-card:focus-within {
     --memo-border-color: color-mix(in srgb, var(--color-link) 30%, var(--gray-200));
     transform: translateY(-1px);
@@ -722,7 +728,24 @@
 
 .neodb-card .media-info {
     min-inline-size: 0;
+}
+
+/* 阅读卡沿用旧几何（它的文字区一直留了 3.4rem 让位，为不动上一轮验收好的视觉，保留） */
+.neodb-card.reading-card .media-info {
     padding-inline-end: 3.4rem;
+}
+
+/* 上段：kicker（含分类图标）与评分同一行，评分同行右对齐，不再绝对定位压标题 */
+.neodb-card .neodb-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-inline-size: 0;
+}
+
+.neodb-card .neodb-head .kicker {
+    min-inline-size: 0;
 }
 .neodb-card .kicker {
     display: flex;
@@ -750,21 +773,24 @@
     text-overflow: ellipsis;
 }
 .neodb-card .rating {
-    position: absolute;
-    top: 0.7rem;
-    right: 0.8rem;
-    z-index: 2;
+    flex: none;
     margin: 0;
-    background: color-mix(in srgb, var(--gray-100) 82%, transparent);
     border-radius: 999px;
     padding: 0.1rem 0.25rem;
+    background: color-mix(in srgb, var(--gray-100) 82%, transparent);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
+
+/* 下段：简介独立整行（跨两列），宽度 = 卡片内宽 − 左右内边距（12px × 2） */
 .neodb-card .excerpt {
     display: -webkit-box;
-    margin: 0.35rem 0 0;
+    grid-column: 1 / -1;
+    max-inline-size: none;
+    margin: 0.4rem 0 0;
     overflow: hidden;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
 }
 
 .kicker {
@@ -904,7 +930,8 @@
     .neodb-card {
         grid-template-columns: 3.8rem minmax(0, 1fr);
         gap: 0.65rem;
-        padding: 0.6rem 0.65rem;
+        /* 窄屏也保留左右各 12px：简介整行宽度 = 卡片宽 − 24px，三档宽度口径一致 */
+        padding: 0.6rem 0.75rem;
     }
     .neodb-card .cover {
         inline-size: 3.8rem;
@@ -940,3 +967,87 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
+
+/* 阅读卡片：几何沿用 .neodb-card（类名双双挂上），这里只补它独有的部分 */
+/* 划线入口已移到第一行，右内边距不再为角上图标预留，书名可用满列宽；
+   底部不再预先留一整条气泡占位：有气泡的卡只让轨道让出「气泡高 + 5px 间隙」，
+   没有气泡的读完卡只留 3.2px 收尾。 */
+.reading-card .media-info {
+    padding-inline-end: 0;
+    padding-block-end: 0;
+}
+
+/* 封面按原样展示：3.8rem 宽、2:3，不拉伸不裁切；卡片高度由右侧文字决定 */
+.reading-card .cover {
+    align-self: start;
+}
+
+/* 书名 + 作者同一行：书名左、作者紧跟，按基线对齐。
+   书名可压缩并省略（min-inline-size: 0 + flex-shrink），作者先限宽 46%、超了再省略；
+   两者都保留真实文本与 title，悬停可看全名。没有作者时书名独占整行。 */
+.reading-card .reading-titleline {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    min-inline-size: 0;
+    margin: 0.2rem 0 0;
+}
+
+.reading-card .reading-titleline .entry-title {
+    flex: 0 1 auto;
+    min-inline-size: 0;
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.reading-card .reading-titleline .reading-author {
+    flex: 0 0 auto;
+    max-inline-size: 46%;
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    line-height: inherit;
+}
+
+/* 阅读卡片两行：封面/文字占满上方，进度条紧跟内容贴底。
+   卡片不被行高拉伸（align-self: start），否则短卡会在简介与轨道之间留出一条空带；
+   轨道上方 8.8px 由自己的 margin 给出，下方 8.8px 只由卡片 padding-block-end 承担，
+   不再叠加两份空间；气泡越出卡片下边的部分落在卡片下方的空白里。 */
+.reading-cards .reading-card {
+    align-self: start;
+    align-content: start;
+    grid-template-rows: minmax(0, 1fr) auto;
+    row-gap: 0;
+    padding-block-end: 0.55rem;
+}
+
+/* 窄屏（≤30rem）书名会被压到 95px 左右（≈6 个字，不可读）：书名独行、作者另起一行小字。 */
+@media (max-width: 30rem) {
+    .reading-card .reading-titleline {
+        display: block;
+    }
+
+    .reading-card .reading-titleline .entry-title {
+        display: block;
+    }
+
+    .reading-card .reading-titleline .reading-author {
+        display: block;
+        max-inline-size: none;
+        margin-block-start: 0.1rem;
+        font-size: 0.625rem;
+    }
+}
+
+.reading-more {
+    margin: 0.4rem 0 0;
+    color: var(--gray-500);
+    font-size: 0.75rem;
+}
+

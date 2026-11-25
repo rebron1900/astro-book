@@ -32,7 +32,10 @@ export default defineConfig({
         }
     },
     integrations: [
-        sitemap(),
+        // 原型预览页只给内部看：不进 sitemap（页面本身也带 noindex）
+        sitemap({
+            filter: (page) => !page.includes('/timeline/preview-')
+        }),
         solidJs({
             devtools: false
         })

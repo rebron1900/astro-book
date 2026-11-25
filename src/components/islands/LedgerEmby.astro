@@ -1,0 +1,68 @@
+---
+/**
+ * 时间线「影视」卡片（Emby）：复用阅读卡的几何与视觉，只换语义。
+ *
+ * 顶部行：片长（电影=全片，剧集=该集）；右侧是状态角标（看过 / 看到 42% / 刚开始）。
+ * 标题行：电影=片名 + 「2024 · 剧情」；剧集=剧名 + 「S02E05 · 集名」。
+ * 简介两行钳制（.reading-desc），截断才挂 tippy——直接复用 reading-truncation，不另写。
+ * 底部轨道 4px、上下各 8.8px；气泡挂轨道下方、中心对准填充末端，规则与阅读卡一致。
+ * 状态判定集中在 src/lib/emby.ts 的 embyCardState()。
+ */
+import { embyCardState, type EmbyEntry } from '../../lib/emby';
+import { progressTier } from '../../lib/reading';
+
+interface Props {
+    entry: EmbyEntry;
+    coverUrl?: string | null;
+}
+
+const { entry, coverUrl = null } = Astro.props;
+const watch = embyCardState(entry);
+const tier = progressTier(watch.barPercent);
+const watchedMinutes =
+    entry.minutes === null ? null : Math.max(0, Math.round(entry.minutes * (watch.barPercent / 100)));
+const subtitle =
+    entry.type === 'episode'
+        ? [entry.episodeCode, entry.episodeTitle].filter(Boolean).join(' · ')
+        : entry.meta ?? '';
+const stateLabel = `${entry.title}，${watch.label}${watch.bubble ? `（${watch.bubble}）` : ''}`;
+const overview = entry.overview ?? entry.seriesOverview;
+const ratingValue = entry.seriesRating ?? entry.rating;
+const ratingText =
+    ratingValue === null ? null : Number.isInteger(ratingValue) ? String(ratingValue) : ratingValue.toFixed(1);
+---
+
+<div class="reading-card neodb-card emby-card" data-emby-state={watch.state}>
+    <div class="cover">
+        {coverUrl ? <img src={coverUrl} alt={`${entry.title}封面`} loading="lazy" decoding="async" /> : <span aria-hidden="true">{entry.title.slice(0, 1)}</span>}
+    </div>
+    <div class="media-info">
+        <div class="reading-head">
+            <p class="reading-stats">
+                {watchedMinutes !== null && (
+                    <span class="rd-stat rd-stat-duration" title={entry.minutes !== null ? `共 ${entry.minutes} 分钟` : undefined}>
+                        <span class="rd-stat-prefix">已看</span>
+                        <strong>{watchedMinutes}</strong>
+                        <span class="rd-unit">分钟</span>
+                    </span>
+                )}
+            </p>
+            {ratingText !== null ? (
+                <p class="rating">
+                    <span aria-hidden="true">★</span> {ratingText}<small>/10</small>
+                </p>
+            ) : (
+                <span class="emby-no-rating">暂无评分</span>
+            )}
+        </div>
+        <h2 class="reading-titleline">
+            <span class="entry-title" title={entry.title}>{entry.title}</span>
+            {subtitle && <span class="reading-author emby-sub" title={subtitle}>{subtitle}</span>}
+        </h2>
+        {overview && <p class="reading-desc">{overview}</p>}
+    </div>
+    <div class="rd-progress" role="img" aria-label={stateLabel} title={stateLabel} data-tier={tier} style={`--p: ${watch.barPercent}%`}>
+        <span class="rd-progress-fill" style={`inline-size: ${watch.barPercent}%`}></span>
+        {watch.bubble && <span class="rd-progress-badge" aria-hidden="true">{watch.bubble}</span>}
+    </div>
+</div>

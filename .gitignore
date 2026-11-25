@@ -45,3 +45,11 @@ public/garden/
 __pycache__/
 *.pyc
 .alma-snapshots
+
+# modureader 同步产物：原始数据库与临时下载绝不能进公开仓库
+*.db
+*.db-wal
+*.db-shm
+modu/
+record-log-v1/
+.cache/modu/

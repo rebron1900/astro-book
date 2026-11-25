@@ -22,11 +22,13 @@ const href = `/golink?target=${btoa(encodeURIComponent(mark.item.id ?? `https://
         )}
     </div>
     <div class="media-info">
-        <p class="kicker"><NeodbCategoryIcon category={mark.item.category} /> {action} · {category}</p>
+        <div class="neodb-head">
+            <p class="kicker"><NeodbCategoryIcon category={mark.item.category} /> {action} · {category}</p>
+            {hasRating && <p class="rating"><span aria-hidden="true">★</span> {rating}<small>/10</small></p>}
+        </div>
         <h2 class="entry-title">
             <a href={href}>{title}<span class="ext">↗</span></a>
         </h2>
-        {hasRating && <p class="rating"><span aria-hidden="true">★</span> {rating}<small>/10</small></p>}
-        {mark.comment_text && <p class="excerpt">“{mark.comment_text}”</p>}
     </div>
+    {mark.comment_text && <p class="excerpt">“{mark.comment_text}”</p>}
 </div>
