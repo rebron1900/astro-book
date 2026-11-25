@@ -4,23 +4,35 @@
  * 卡片本身带一个 <template>，里面是这组剧集的集号 / 集名 / 进度和进度条；
  * 只有集数区间（S01E131–E133）是触发点，悬停或键盘聚焦时把模板克隆进 tippy。
  * 卡片标题和简介的截断仍走全站统一的 reading-truncation，不受这里影响。
+ *
+ * 为什么改成「悬停时才建实例」（2026-11-25 线上实测）：
+ * - 预建实例会被 tippy.ts 的 `astro:before-swap → destroyAllTippy()` 清掉，而这个事件
+ *   在首屏比本模块的挂载还晚到；之后没有新的 DOM 变更，refresh 不再触发，
+ *   结果就是 tabindex 还在、tippy 已经被销毁，悬停完全没反应（与页面加载时机强相关）。
+ * - 所以在 pointerover / focusin 的当下才建实例并立刻 show：没有任何时机可以被抢走。
+ * 事件走 document 上的委托，换页与无限滚动新插入的卡片自动生效，无需重新扫描。
  */
 import type { Instance } from 'tippy.js';
 import { createTippy } from './tippy';
-import { afterTransition } from './idle';
 
 type Host = HTMLElement & { _tippy?: Instance };
 
 const SELECTOR = '.emby-episode-range';
+const BOOTSTRAP = '__embyGroups';
+type GlobalWithGroups = typeof globalThis & { [BOOTSTRAP]?: boolean };
 
-function attach(el: Host): void {
-    if (el._tippy) return;
-    const card = el.closest('.emby-group');
-    const template = card?.querySelector('template.emby-episode-template');
-    if (!(template instanceof HTMLTemplateElement)) return;
+/** 自己留一份引用：tippy 销毁时会 delete 元素上的 _tippy，WeakMap 用来判断是否需要重建。 */
+const owned = new WeakMap<HTMLElement, Instance>();
+
+function ensure(el: Host): Instance | null {
+    const existing = el._tippy ?? owned.get(el);
+    if (existing && !existing.state.isDestroyed) return existing;
+
+    const template = el.closest('.emby-group')?.querySelector('template.emby-episode-template');
+    if (!(template instanceof HTMLTemplateElement)) return null;
 
     el.setAttribute('tabindex', '0');
-    createTippy(el, {
+    const [instance] = createTippy(el, {
         content: () => {
             const wrap = document.createElement('div');
             wrap.className = 'emby-episode-wrap';
@@ -31,51 +43,69 @@ function attach(el: Host): void {
         appendTo: () => document.body,
         maxWidth: 'min(30rem, 92vw)',
         interactive: false,
-        trigger: 'mouseenter focus',
-        delay: [140, 0],
+        trigger: 'manual',
         offset: [0, 8]
     });
+    if (instance) owned.set(el, instance);
+    return instance ?? null;
 }
 
-function detach(el: Host): void {
-    if (!el._tippy) return;
-    el._tippy.destroy();
-    el.removeAttribute('tabindex');
+function targetOf(event: Event): Host | null {
+    const node = event.target;
+    if (!(node instanceof Element)) return null;
+    return node.closest<Host>(SELECTOR);
 }
 
-function refresh(root: ParentNode = document): void {
-    root.querySelectorAll<Host>(SELECTOR).forEach((el) => {
-        try {
-            attach(el);
-        } catch (error) {
-            console.warn('[emby-group] tippy 挂载失败', error);
-        }
-    });
-}
+function bootstrap(): void {
+    const g = globalThis as GlobalWithGroups;
+    if (g[BOOTSTRAP]) return;
+    g[BOOTSTRAP] = true;
 
-export function initEmbyGroups(): () => void {
-    // 先同步挂一次（服务端已渲染的卡片），再等过渡结束补一次，避免首次刷新跑在卡片插入前
-    refresh();
-    const boot = afterTransition(() => refresh());
+    const show = (event: Event) => {
+        const el = targetOf(event);
+        if (el) ensure(el)?.show();
+    };
 
-    const onKeyDown = (event: KeyboardEvent) => {
+    const hide = (event: Event) => {
+        const el = targetOf(event);
+        if (!el) return;
+        const next = (event as PointerEvent | FocusEvent).relatedTarget;
+        if (next instanceof Node && el.contains(next)) return;
+        (el._tippy ?? owned.get(el))?.hide();
+    };
+
+    document.addEventListener('pointerover', show);
+    document.addEventListener('pointerout', hide);
+    document.addEventListener('focusin', show);
+    document.addEventListener('focusout', hide);
+
+    document.addEventListener('keydown', (event) => {
         if (event.key !== 'Escape') return;
         document.querySelectorAll<Host>(SELECTOR).forEach((el) => {
-            if (el._tippy?.state.isVisible) el._tippy.hide();
+            const inst = el._tippy ?? owned.get(el);
+            if (inst?.state.isVisible) inst.hide();
+        });
+    });
+
+    // 只为键盘可达性打标记（不建实例）；新插入的卡片由观察器补
+    const mark = (root: ParentNode = document) => {
+        root.querySelectorAll<HTMLElement>(SELECTOR).forEach((el) => {
+            if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
         });
     };
+    mark();
+    document.addEventListener('astro:page-load', () => mark());
+    document.addEventListener('astro:after-swap', () => mark());
 
-    document.addEventListener('keydown', onKeyDown);
+    if (typeof MutationObserver === 'undefined') return;
+    const observer = new MutationObserver(() => mark());
+    const start = () => observer.observe(document.body, { childList: true, subtree: true });
+    if (document.body) start();
+    else document.addEventListener('DOMContentLoaded', start, { once: true });
+}
 
-    const list = document.querySelector('[data-timeline-list]');
-    const observer =
-        list && typeof MutationObserver !== 'undefined' ? new MutationObserver(() => refresh()) : null;
-    observer?.observe(list as Node, { childList: true, subtree: true });
-
-    return () => {
-        boot();
-        observer?.disconnect();
-        document.removeEventListener('keydown', onKeyDown);
-        document.querySelectorAll<Host>(SELECTOR).forEach(detach);
-    };
+/** 由 List.astro 通过 onPageLoad 调用；引导器常驻，导航后不需要重新装。 */
+export function initEmbyGroups(): () => void {
+    bootstrap();
+    return () => {};
 }

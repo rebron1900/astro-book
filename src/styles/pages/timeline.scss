@@ -730,9 +730,9 @@
     min-inline-size: 0;
 }
 
-/* 阅读卡沿用旧几何（它的文字区一直留了 3.4rem 让位，为不动上一轮验收好的视觉，保留） */
+/* 阅读卡：文字区不再为角上图标预留右侧内边距（划线入口已移到第一行，评分走 flex 右对齐） */
 .neodb-card.reading-card .media-info {
-    padding-inline-end: 3.4rem;
+    padding-inline-end: 0;
 }
 
 /* 上段：kicker（含分类图标）与评分同一行，评分同行右对齐，不再绝对定位压标题 */

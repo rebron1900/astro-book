@@ -178,6 +178,10 @@
     border-radius: 0.25rem;
     background: var(--rd-bar);
     color: var(--rd-bar-ink);
+    /* 一点阴影：气泡浮在卡片下沿之上，避免与下方内容糊在一起 */
+    box-shadow:
+        0 1px 3px rgb(0 0 0 / 0.18),
+        0 2px 8px rgb(0 0 0 / 0.1);
     font-size: 0.625rem;
     font-weight: 650;
     line-height: 1.2;
