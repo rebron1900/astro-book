@@ -82,7 +82,9 @@ jobs:
                   MODU_WEBDAV_URL: ${{ secrets.MODU_WEBDAV_URL }}
                   MODU_WEBDAV_USER: ${{ secrets.MODU_WEBDAV_USER }}
                   MODU_WEBDAV_PASS: ${{ secrets.MODU_WEBDAV_PASS }}
-                  # Emby 观看记录（只读；URL 与用户 Id 在 scripts/sync-emby.mjs 有默认值）
+                  # Emby 观看记录（只读；地址与用户 Id 也走 Secrets，仓库里不写死内网域名）
+                  EMBY_BASE_URL: ${{ secrets.EMBY_BASE_URL }}
+                  EMBY_USER_ID: ${{ secrets.EMBY_USER_ID }}
                   EMBY_API_KEY: ${{ secrets.EMBY_API_KEY }}
               run: |
                   echo "$CONFIG_FILE" > ./.env

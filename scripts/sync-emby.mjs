@@ -9,8 +9,8 @@
  * - 封面按「剧=SeriesId、电影=影片 Id」下载到 public/emby-cover/，卡片只引本地路径；
  * - 只输出最近 90 天，避免时间线无限长。
  *
- * 密钥只从环境变量 EMBY_API_KEY 读，绝不写进 JSON、封面或日志。
- * EMBY_BASE_URL / EMBY_USER_ID 有默认值，换服务器时用环境变量覆盖。
+ * 服务器地址、用户 Id、密钥全部只从环境变量读（EMBY_BASE_URL / EMBY_USER_ID / EMBY_API_KEY），
+ * 仓库里不写死内网域名；三者缺一个就跳过本轮（保留已有 emby.json），不影响其它源。
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -18,8 +18,9 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COVER_DIR = path.join(ROOT, 'public', 'emby-cover');
-const BASE = (process.env.EMBY_BASE_URL || 'https://strm.190102.xyz:4433').replace(/\/+$/, '');
-const USER_ID = process.env.EMBY_USER_ID || '4d842fc5d7dc41c1b11ebe4625d69aaf';
+// 由 syncEmby() 从传入的 env 填入（读取 env 参数而不是 process.env，便于测试注入）
+let BASE = '';
+let USER_ID = '';
 const WINDOW_DAYS = 90;
 const FIELDS = 'Overview,RunTimeTicks,CommunityRating,UserData,SeriesName,ParentIndexNumber,IndexNumber,ProductionYear,Genres,ImageTags';
 
@@ -103,6 +104,9 @@ async function downloadCover(key, coverKey) {
 export async function syncEmby(env = process.env) {
     const key = env.EMBY_API_KEY;
     if (!key) throw new Error('未设置 EMBY_API_KEY，跳过 Emby 同步（保留已有数据）');
+    BASE = (env.EMBY_BASE_URL || '').replace(/\/+$/, '');
+    USER_ID = env.EMBY_USER_ID || '';
+    if (!BASE || !USER_ID) throw new Error('未设置 EMBY_BASE_URL / EMBY_USER_ID，跳过 Emby 同步（保留已有数据）');
 
     // 全量列表只用来拿候选 Id；观看时间必须逐条取详情。
     const list = await embyGet(
