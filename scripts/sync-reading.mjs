@@ -189,6 +189,26 @@ function readOverrides(rootDir) {
     }
 }
 
+/**
+ * 简介表（允许缺失）：book-descriptions.json 由 scripts/sync-book-descriptions.mjs 从 NeoDB 取回，
+ * book-meta.json 是人工定稿。人工优先——只按书名合并，人工写过的书名直接覆盖自动结果。
+ * modureader 的 book 记录没有简介字段，也不该把 epub 原件搬进构建。
+ */
+function readBookMeta(rootDir) {
+    const read = (name) => {
+        const file = path.join(rootDir, 'src/data', name);
+        if (!existsSync(file)) return {};
+        try {
+            const parsed = JSON.parse(readFileSync(file, 'utf8'));
+            const books = parsed?.books ?? {};
+            return books && typeof books === 'object' ? books : {};
+        } catch {
+            return {};
+        }
+    };
+    return { ...read('book-descriptions.json'), ...read('book-meta.json') };
+}
+
 /** 把清洗规则 + 人工映射表合成 buildReadingData 需要的 override 表。 */
 function buildOverrideTable(overrides) {
     return { ...overrides.byTitle, ...overrides.byMd5 };
@@ -311,7 +331,7 @@ export async function syncReading(env = process.env, options = {}) {
         // 同一本书被多次导入（file_md5 不同）会拆成多个 sync_id；聚合时就按清洗后的书名归并，
         // 否则同一天会出现两张同名卡片、books 总数也多算。
         const titleMerger = (title) => cleanBookTitle(title) || title;
-        const data = buildReadingData(merged, { titleOverrides: buildOverrideTable(overrides), titleMerger });
+        const data = buildReadingData(merged, { titleOverrides: buildOverrideTable(overrides), bookMeta: readBookMeta(projectRoot), titleMerger });
         cleanAppliedData(data, overrides);
         log(`[reading] 天数 ${data.totals.days}，书 ${data.totals.books} 本，合计 ${Math.round(data.totals.seconds / 60)} 分钟`);
         return data;

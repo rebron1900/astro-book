@@ -1,0 +1,142 @@
+/* ==========================================================================
+   时间线「阅读」卡片（LedgerReading.astro）：划线入口图标 + 简介行 + 划线面板。
+   卡片几何沿用 .neodb-card（timeline.scss），这里只补它独有的部分。
+   划线面板是 tippy 的 DOM（挂在 body 上），所以按 .tippy-box[data-theme~='reading-hl'] 选；
+   面板外观（边框 / 圆角 / 阴影 / 箭头）仍由全局 .tippy-box 决定，这里只管限高与内部排版。
+   被 timeline.scss @import（只在时间线页面加载）。
+   ========================================================================== */
+
+/* 划线入口：卡片右上角的图标，和 .neodb-card .rating 同一个角位 */
+.reading-card .rd-tip-trigger {
+    position: absolute;
+    inset-block-start: 0.6rem;
+    inset-inline-end: 0.6rem;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    inline-size: 1.6rem;
+    block-size: 1.6rem;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--gray-100) 82%, transparent);
+    color: var(--gray-500);
+    cursor: pointer;
+    transition:
+        color 120ms ease-out,
+        background-color 120ms ease-out;
+}
+
+.reading-card .rd-tip-trigger svg {
+    inline-size: 0.82rem;
+    block-size: 0.82rem;
+}
+
+.reading-card .rd-tip-trigger:hover,
+.reading-card .rd-tip-trigger:focus-visible {
+    color: var(--color-hover-link);
+    background: color-mix(in srgb, var(--color-link) 12%, transparent);
+}
+
+.reading-card .rd-tip-trigger:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+/* 书籍简介：没有简介时整行不渲染，卡片自动收回到书名 + 作者 */
+.reading-card .reading-desc {
+    display: -webkit-box;
+    margin: 0.3rem 0 0;
+    overflow: hidden;
+    color: var(--gray-600);
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+/* ---------- 划线面板（tippy 内容） ---------- */
+.tippy-box[data-theme~='reading-hl'] {
+    max-block-size: min(22rem, 60vh);
+    overflow: hidden;
+}
+
+/* 长划线限高滚动：滚动条给内容层，圆角留白不跟着滚 */
+.tippy-box[data-theme~='reading-hl'] .tippy-content {
+    max-block-size: min(22rem, 60vh);
+    padding: 0.6rem 0.8rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.tippy-box[data-theme~='reading-hl'] .rd-tip {
+    --rd-hl-accent: color-mix(in srgb, var(--color-link) 60%, var(--gray-400));
+    font-size: 0.75rem;
+    line-height: 1.6;
+}
+
+.tippy-box[data-theme~='reading-hl'] .rd-tip-day + .rd-tip-day {
+    margin-block-start: 0.6rem;
+    padding-block-start: 0.55rem;
+    border-block-start: 1px dashed var(--gray-200);
+}
+
+/* 日期标签：同一本书不同日子划的线，靠它区分 */
+.tippy-box[data-theme~='reading-hl'] .rd-tip-date {
+    margin: 0 0 0.35rem;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.tippy-box[data-theme~='reading-hl'] .rd-tip-date time::before {
+    content: '';
+    display: inline-block;
+    inline-size: 0.35rem;
+    block-size: 0.35rem;
+    margin-inline-end: 0.3rem;
+    border-radius: 999px;
+    background: var(--rd-hl-accent);
+    vertical-align: 0.08em;
+}
+
+.tippy-box[data-theme~='reading-hl'] .rd-tip-chapter {
+    margin: 0.5rem 0 0.28rem;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    font-weight: 600;
+}
+
+.tippy-box[data-theme~='reading-hl'] .rd-tip-day:first-child .rd-tip-group:first-child .rd-tip-chapter {
+    margin-block-start: 0;
+}
+
+.tippy-box[data-theme~='reading-hl'] .rd-tip-quote {
+    margin: 0 0 0.45rem;
+    padding-inline-start: 0.55rem;
+    border-inline-start: 3px solid var(--rd-hl-accent);
+    color: var(--body-font-color);
+}
+
+.tippy-box[data-theme~='reading-hl'] .rd-tip-quote p {
+    margin: 0 0 0.3rem;
+}
+
+.tippy-box[data-theme~='reading-hl'] .rd-tip-quote p:last-child {
+    margin-block-end: 0;
+}
+
+.tippy-box[data-theme~='reading-hl'] .rd-tip-note {
+    margin: 0.15rem 0 0;
+    color: var(--gray-500);
+    font-style: italic;
+}
+
+.tippy-box[data-theme~='reading-hl'] .rd-tip-rest,
+.tippy-box[data-theme~='reading-hl'] .rd-tip-empty {
+    margin: 0.4rem 0 0;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+}

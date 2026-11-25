@@ -1,6 +1,8 @@
 /**
  * 划线 tooltip 的 HTML 生成（构建期执行，纯字符串操作，不引任何依赖）。
  *
+ * 结构：日期 → 章节 → 引文/批注，每个层级就是一个 section，样式在 timeline.scss 的 .rd-tip-*。
+ *
  * 为什么不套 markdown 解析器：划线是电子书里的用户文本，走通用 markdown 会把
  * `[x](javascript:…)`、`<img onerror>` 这类输入带进 HTML 通道，而仓库现有
  * markdown 管线（Sätteri + astro-remote 的 Markup）只对「已渲染好的 HTML」做消毒，
@@ -49,8 +51,10 @@ function groupByChapter(highlights: ReadingHighlight[]): ChapterGroup[] {
 }
 
 /**
- * 渲染某天某本书的划线。
- * @param highlights 当天该书全部划线，已按时间升序（未截断）
+ * 渲染某天某本书的划线，按「日期 → 章节」两级分组。
+ * 卡片本身是一天一张，所以大多数情况只有一组；日期不同说明划线是别的日子留下的
+ * （note 的 create_time 与阅读日不一致），此时日期标签才真正起到区分作用。
+ * @param highlights 该书全部划线，已按时间升序（未截断）
  */
 export function renderHighlights(highlights: ReadingHighlight[]): string {
     if (!highlights || highlights.length === 0) {
@@ -59,21 +63,44 @@ export function renderHighlights(highlights: ReadingHighlight[]): string {
     // 取最近 N 条：卡片摘录取的是最新一条，点开能读到同一句，不会出现「引文在面板里找不到」
     const shown = highlights.slice(-MAX_HIGHLIGHTS);
 
-    const body = groupByChapter(shown)
-        .map((group) => {
-            const heading = group.chapter ? `<h3 class="rd-tip-chapter">${escapeHtml(group.chapter)}</h3>` : '';
-            const quotes = group.items
-                .map((item) => {
-                    const note = item.readerNote ? `<p class="rd-tip-note">${escapeHtml(item.readerNote)}</p>` : '';
-                    return `<blockquote class="rd-tip-quote">${paragraphs(item.content)}${note}</blockquote>`;
+    // 按日期分组，日期新的在前（和卡片「最近的先看」一致），组内仍按时间升序
+    const byDate = new Map<string, ReadingHighlight[]>();
+    for (const item of shown) {
+        const key = item.date || '';
+        const list = byDate.get(key) ?? [];
+        list.push(item);
+        byDate.set(key, list);
+    }
+    const dates = [...byDate.keys()].sort((a, b) => (a < b ? 1 : a > b ? -1 : 0));
+
+    const body = dates
+        .map((date) => {
+            const heading = date ? `<p class="rd-tip-date"><time datetime="${date}">${formatDayLabel(date)}</time></p>` : '';
+            const groups = groupByChapter(byDate.get(date) ?? [])
+                .map((group) => {
+                    const chapter = group.chapter ? `<h3 class="rd-tip-chapter">${escapeHtml(group.chapter)}</h3>` : '';
+                    const quotes = group.items
+                        .map((item) => {
+                            const note = item.readerNote ? `<p class="rd-tip-note">${escapeHtml(item.readerNote)}</p>` : '';
+                            return `<blockquote class="rd-tip-quote">${paragraphs(item.content)}${note}</blockquote>`;
+                        })
+                        .join('');
+                    return `<section class="rd-tip-group">${chapter}${quotes}</section>`;
                 })
                 .join('');
-            return `<section class="rd-tip-group">${heading}${quotes}</section>`;
+            return `<section class="rd-tip-day">${heading}${groups}</section>`;
         })
         .join('');
 
     const rest = highlights.length > MAX_HIGHLIGHTS ? `<p class="rd-tip-rest">还有较早的 ${highlights.length - MAX_HIGHLIGHTS} 条</p>` : '';
     return `${body}${rest}`;
+}
+
+/** 「2026-11-20」→「2026 年 11 月 20 日」，构建期纯字符串处理，不受运行环境时区影响。 */
+export function formatDayLabel(isoDate: string): string {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+    if (!m) return isoDate;
+    return `${m[1]} 年 ${Number(m[2])} 月 ${Number(m[3])} 日`;
 }
 
 /** 卡片上的摘录：取最近一条划线，截 60 字，加中文引号。 */

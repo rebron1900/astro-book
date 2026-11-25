@@ -72,7 +72,7 @@ describe('buildReadingData', () => {
     it('划线按当天+该书归组，按时间升序，带 readerNote', () => {
         const book = data.days.find((d) => d.date === NOTE_DAY_ISO)!.books.find((b) => b.title === '夜航西飞')!;
         expect(book.highlights).toHaveLength(2);
-        expect(book.highlights[0]).toEqual({ chapter: '第一章', content: '海面像一块锡纸。', readerNote: '' });
+        expect(book.highlights[0]).toEqual({ chapter: '第一章', content: '海面像一块锡纸。', readerNote: '', date: NOTE_DAY_ISO });
         expect(book.highlights[1].readerNote).toBe('写得真好');
     });
 
@@ -97,6 +97,32 @@ describe('buildReadingData', () => {
             ['人类简史', 900, 1],
             ['夜航西飞', 420, 3]
         ]);
+    });
+
+    it('划线带日期（取 note 的 create_time，按北京时间），可跨日区分', () => {
+        const rows = [
+            row('book', BOOK_A, { title: '夜航西飞', author: '柏瑞尔·马卡姆' }),
+            row('note', 'd1', { book_id: BOOK_A, chapter: '第一章', content: '昨天划的', create_time: D_NOTE - 86400 }),
+            row('note', 'd2', { book_id: BOOK_A, chapter: '第一章', content: '今天划的', create_time: D_NOTE }),
+            row('time', 'dx', { book_id: BOOK_A, date: NOTE_DAY_ISO, reading_time: 60 }),
+            row('time', 'dy', { book_id: BOOK_A, date: '2026-09-22', reading_time: 60 })
+        ];
+        const built = buildReadingData(rows, { now: NOW });
+        expect(built.days.map((d) => d.date)).toEqual([NOTE_DAY_ISO, '2026-09-22']);
+        // 划线日期取自 note 自己的 create_time，不是卡片日期；两天各归自己那张卡片
+        expect(built.days[0].books[0].highlights.map((h) => [h.content, h.date])).toEqual([['今天划的', NOTE_DAY_ISO]]);
+        expect(built.days[1].books[0].highlights.map((h) => [h.content, h.date])).toEqual([['昨天划的', '2026-09-22']]);
+    });
+
+    it('简介只来自人工 book-meta，按书名匹配，没填就整个字段不出现', () => {
+        const withMeta = buildReadingData(fixture(), { now: NOW, bookMeta: { 夜航西飞: { description: '一个人独自飞越大西洋。' }, 人类简史: { description: '   ' } } });
+        const day = withMeta.days.find((d) => d.date === '2026-11-21')!;
+        expect(day.books.find((b) => b.title === '夜航西飞')!.description).toBe('一个人独自飞越大西洋。');
+        // 空白简介当没填
+        expect('description' in day.books.find((b) => b.title === '人类简史')!).toBe(false);
+        expect(withMeta.books.find((b) => b.title === '夜航西飞')!.description).toBe('一个人独自飞越大西洋。');
+        // 不传 bookMeta 时公开 JSON 里根本没有 description 键
+        expect(JSON.stringify(buildReadingData(fixture(), { now: NOW }))).not.toContain('description');
     });
 });
 

@@ -2,12 +2,14 @@
 /**
  * 时间线「阅读」卡片：一本书一天一张，沿用书影音卡片的几何（.reading-card 复用 neodb 那套样式）。
  *
- * 展示：封面（无则书名首字块）/ kicker 读过 · 时长 · N 处划线 / 书名 / 作者 / 摘录。
- * tooltip 改成 disclosure：按钮 aria-expanded/aria-controls 指向面板，面板 role=region；
- * 鼠标悬停、键盘焦点、触屏点按三态由 reading-tips.ts 统一置 hidden，CSS 不参与开关判断。
- * 划线 HTML 构建期生成（先转义、无 HTML 透传），这里直接注入。
+ * 展示：封面（无则书名首字块）/ kicker 读过 · 时长 / 书名 / 作者 / 简介（有则显示）/ 摘录。
+ * 划线入口是卡片右上角的 SVG 图标：悬停或键盘聚焦才弹出面板，走全站同一套 tippy
+ * （createTippy + theme 'auto'，appendTo body）——面板挂到 body 上，不会再被卡片裁掉，
+ * 样式也和站内其它 tooltip 一致（全局 .tippy-box 卡片外观）。交互见 reading-tips.ts。
+ * 划线 HTML 构建期生成（先转义、无 HTML 透传），这里以字符串交给 tippy 的 content。
  */
 import { renderHighlights, excerptOf, shortDuration } from '../../lib/reading-highlights';
+import { TextQuote } from '@lucide/astro';
 import type { ReadingDayBook } from '../../lib/reading';
 
 interface Props {
@@ -18,12 +20,14 @@ interface Props {
 }
 
 const { book, date, index, coverUrl = null } = Astro.props;
-const tipId = `rd-tip-${date.replace(/-/g, '')}-${index}`;
 const highlights = book.highlights ?? [];
 const highlightsHtml = renderHighlights(highlights);
 const excerpt = excerptOf(highlights);
+const hasHighlights = highlights.length > 0;
 const kickerParts = ['读过', shortDuration(book.seconds)];
-if (highlights.length > 0) kickerParts.push(`${highlights.length} 处划线`);
+if (hasHighlights) kickerParts.push(`${highlights.length} 处划线`);
+// 书名被截断时由 tippy 展示全名；没截断就不建实例，避免每个卡片都挂一个空 tooltip
+const titleLabel = `${book.title} 的划线，共 ${highlights.length} 处`;
 ---
 
 <div class="reading-card neodb-card">
@@ -32,15 +36,25 @@ if (highlights.length > 0) kickerParts.push(`${highlights.length} 处划线`);
     </div>
     <div class="media-info">
         <p class="kicker">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19.5V6a2 2 0 0 1 2-2h13v16H6a2 2 0 0 1-2-2Z" /><path d="M8 4v16" /></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></svg>
             {kickerParts.join(' · ')}
         </p>
         <h2 class="entry-title" title={book.title}>{book.title}</h2>
         {book.author && <p class="reading-author">{book.author}</p>}
+        {book.description && <p class="reading-desc">{book.description}</p>}
         {excerpt && <p class="excerpt">{excerpt}</p>}
-        <button type="button" class="rd-tip-trigger" aria-expanded="false" aria-controls={tipId} data-rd-trigger>
-            {highlights.length > 0 ? `划线 ${highlights.length}` : '划线'}
-        </button>
-        <div class="rd-tip" id={tipId} role="region" aria-label={`${book.title} 的划线`} hidden data-rd-tip set:html={highlightsHtml} />
+        {hasHighlights && (
+            <button
+                type="button"
+                class="rd-tip-trigger"
+                aria-label={titleLabel}
+                data-rd-trigger
+                data-rd-date={date}
+                data-rd-kind="reading"
+                data-tip-html={highlightsHtml}
+            >
+                <TextQuote size={13} stroke-width={2} aria-hidden="true" />
+            </button>
+        )}
     </div>
 </div>

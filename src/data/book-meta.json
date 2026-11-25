@@ -1,0 +1,4 @@
+{
+    "$comment": "人工维护的书籍信息，key 是 reading.json 里的书名（清洗后）。目前只支持 description。优先级高于自动取回的 book-descriptions.json（同名字段以本文件为准，写成空字符串即视为不显示简介）。这里的内容会进公开仓库，只写简介，不要写路径、md5 或未公开的私密信息。",
+    "books": {}
+}

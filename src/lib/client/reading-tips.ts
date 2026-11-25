@@ -1,118 +1,116 @@
 /**
- * 阅读卡片划线的展开交互（disclosure，不是 tooltip）。
+ * 阅读卡片划线的 tooltip。
  *
- * 状态由脚本统一管：`state.open`（点击/键盘）或 `state.hover`（鼠标悬停）任一为真即展开，
- * `hidden` 与 `aria-expanded` 永远由同一个 render() 写入，CSS 不再参与开关判断。
- * 这样避免「CSS hover 打开、aria-expanded 仍是 false」以及「focus 先开、click 又关」的错位。
+ * 走全站同一套 tippy（createTippy + appendTo body，卡片外观来自全局 .tippy-box），而不是自建 disclosure 面板：
+ * - 面板挂在 body 上，不再被卡片自身的层叠/裁剪压住（卡片在网格里，往下展开会被后面的卡片盖住）；
+ * - 外观和站内其它 tooltip（书籍作者、评论摘录、花园预览）一致，统一在全局 .tippy-box 里定义。
  *
- * - 鼠标：pointerenter/pointerleave（只认 mouse），移出且未点击固定时关闭
- * - 键盘：focus 时若 :focus-visible（说明是 Tab 进来）则展开；Esc 关闭并归还焦点
- * - 触屏：点按钮切换，点卡片外部关闭
+ * 「已绑定」记录放在 globalThis 上、每次 init 换一份新的：调试时发现这个模块可能被重复求值，
+ * 用 dataset 或模块变量做标记，会出现「新节点被当成已绑过」，面板再也不建。
  *
- * 由 List.astro 通过 onPageLoad(initReadingTips) 挂载，重复导航安全（返回清理函数）。
+ * 两个实测坑（都在浏览器里复现过）：
+ * 1. 懒绑定（第一次 hover 才建实例）时，tippy 首次定位量出 0×0，面板不出现；
+ *    所以等一次过渡动画结束后统一预建实例（afterTransition）。
+ * 2. 预建实例的第一次 show 也可能定位失败；而同一实例 hide 再 show 就正常。
+ *    因此悬停时先把面板在屏外（-9999px）摆好、量出真实尺寸，再按图标位置把它放好，
+ *    之后交给 tippy 正常管理（trigger 用 tippy 默认的 mouseenter/focus 链）。
+ *
+ * 由 List.astro 通过 onPageLoad(initReadingTips) 挂载；无限滚动新插入的卡片靠 MutationObserver 补挂。
  */
+import type { Instance } from 'tippy.js';
+import { createTippy } from './tippy';
+import { afterTransition } from './idle';
+
+const TRIGGER_SELECTOR = '[data-rd-trigger]';
+const GAP = 8;
+const EDGE = 8;
+const MIN_WIDTH = 240;
+
+/** tippy 把实例挂在元素上，类型里没声明。 */
+type TippyHost = HTMLElement & { _tippy?: Instance };
+type ReadingTipsState = { ids: WeakSet<HTMLElement>; seq: number };
+type GlobalWithTips = typeof globalThis & { __readingTips?: ReadingTipsState };
+
+function state(): ReadingTipsState {
+    const g = globalThis as GlobalWithTips;
+    if (!g.__readingTips) g.__readingTips = { ids: new WeakSet<HTMLElement>(), seq: 0 };
+    return g.__readingTips;
+}
+
+/** 先把面板放到屏外量尺寸，再按图标位置把它放到「图标左下方、避开视口边缘」的位置。 */
+function placeBeside(instance: Instance): void {
+    const popper = instance.popper;
+    const box = popper.querySelector('.tippy-box') as HTMLElement | null;
+    if (!box) return;
+
+    // 1) 屏外摆好并量尺寸（此时 display 必须是 block，全局样式没给 .tippy-box 定 display）
+    popper.style.display = 'block';
+    box.style.visibility = 'hidden';
+    popper.style.transform = 'translate(0px, -9999px)';
+    const width = Math.max(box.offsetWidth, MIN_WIDTH);
+    const height = box.offsetHeight;
+
+    // 2) 按图标矩形算位置：默认放在下方左侧，放不下就翻上去 / 贴右边缘
+    const ref = instance.reference.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    let left = ref.left;
+    if (left + width > vw - EDGE) left = vw - EDGE - width;
+    if (left < EDGE) left = EDGE;
+    let top = ref.bottom + GAP;
+    if (top + height > vh - EDGE && ref.top - GAP - height > EDGE) top = ref.top - GAP - height;
+
+    popper.style.left = '0px';
+    popper.style.top = '0px';
+    popper.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
+    box.style.visibility = '';
+}
+
+function attach(btn: HTMLElement): void {
+    const html = btn.dataset.tipHtml ?? '';
+    if (!html) return;
+    createTippy(btn, {
+        content: html,
+        allowHTML: true,
+        // reading-hl 只是这一个面板的限定（限高滚动），卡片外观仍由全局 .tippy-box 决定
+        theme: 'reading-hl',
+        interactive: true,
+        appendTo: () => document.body,
+        maxWidth: 'min(26rem, 92vw)',
+        onCreate(instance) {
+            instance.popper.style.display = 'block';
+        },
+        onShow(instance) {
+            placeBeside(instance);
+        }
+    });
+    state().ids.add(btn);
+}
+
+function bind(root: ParentNode = document): void {
+    const { ids } = state();
+    root.querySelectorAll<TippyHost>(TRIGGER_SELECTOR).forEach((btn) => {
+        if (ids.has(btn)) return;
+        attach(btn);
+    });
+}
+
 export function initReadingTips(): (() => void) | void {
-    const closers = new Set<() => void>();
+    // 新的一次页面挂载：旧 DOM 已随页面换掉，记录按当前窗口序号重开
+    const s = state();
+    s.seq += 1;
+    s.ids = new WeakSet<HTMLElement>();
 
-    const bind = (root: ParentNode = document) => {
-        root.querySelectorAll<HTMLButtonElement>('[data-rd-trigger]').forEach((btn) => {
-            if (btn.dataset.rdBound === '1') return;
-            btn.dataset.rdBound = '1';
-            const tip = document.getElementById(btn.getAttribute('aria-controls') ?? '');
-            if (!tip) return;
-            const card = btn.closest<HTMLElement>('.reading-card');
-            const state = { open: false, hover: false };
-            // Tab 进来时 focus 已经自动展开了，紧随其后的 Enter/Space 会再派发一次 click，
-            // 第一次键盘激活只「确认展开」，第二次才收起，避免「Tab 一看就没了」。
-            let openedByFocus = false;
-
-            const render = () => {
-                const visible = state.open || state.hover;
-                btn.setAttribute('aria-expanded', String(visible));
-                tip.hidden = !visible;
-                card?.classList.toggle('is-tip-open', visible);
-            };
-
-            const close = () => {
-                state.open = false;
-                state.hover = false;
-                openedByFocus = false;
-                render();
-            };
-
-            btn.addEventListener('click', (event) => {
-                event.preventDefault();
-                const keyboardActivation = (event as MouseEvent).detail === 0;
-                if (keyboardActivation && openedByFocus && state.open) {
-                    openedByFocus = false;
-                    render();
-                    return;
-                }
-                openedByFocus = false;
-                state.open = !state.open;
-                if (!state.open) state.hover = false;
-                render();
-            });
-
-            card?.addEventListener('pointerenter', (event) => {
-                if ((event as PointerEvent).pointerType !== 'mouse') return;
-                state.hover = true;
-                render();
-            });
-            card?.addEventListener('pointerleave', (event) => {
-                if ((event as PointerEvent).pointerType !== 'mouse') return;
-                state.hover = false;
-                if (!state.open) render();
-            });
-
-            btn.addEventListener('focus', () => {
-                // 鼠标点击也会 focus；只在键盘焦点（Tab）时自动展开，避免点击被 focus 抢先打开
-                if (btn.matches(':focus-visible')) {
-                    state.open = true;
-                    openedByFocus = true;
-                    render();
-                }
-            });
-
-            const onFocusOut = (event: FocusEvent) => {
-                const next = event.relatedTarget as Node | null;
-                if (!next || !card?.contains(next)) close();
-            };
-            card?.addEventListener('focusout', onFocusOut);
-
-            const onKeyDown = (event: KeyboardEvent) => {
-                if (event.key !== 'Escape') return;
-                close();
-                btn.blur();
-            };
-            btn.addEventListener('keydown', onKeyDown);
-
-            const onDocPointerDown = (event: PointerEvent) => {
-                const target = event.target as Node | null;
-                if (!target || card?.contains(target)) return;
-                close();
-            };
-            document.addEventListener('pointerdown', onDocPointerDown);
-
-            closers.add(() => {
-                document.removeEventListener('pointerdown', onDocPointerDown);
-                card?.removeEventListener('focusout', onFocusOut);
-            });
-        });
-    };
-
+    const boot = afterTransition(() => bind());
     bind();
 
     // 无限滚动新插入的卡片也要绑上
     const list = document.querySelector('[data-timeline-list]');
-    if (!list || typeof MutationObserver === 'undefined') {
-        return () => closers.forEach((fn) => fn());
-    }
+    if (!list || typeof MutationObserver === 'undefined') return boot;
     const observer = new MutationObserver(() => bind(list));
     observer.observe(list, { childList: true, subtree: true });
     return () => {
         observer.disconnect();
-        closers.forEach((fn) => fn());
-        closers.clear();
+        boot();
     };
 }

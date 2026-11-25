@@ -18,7 +18,10 @@
  * - 只统计 deleted=0 的记录；book 的墓碑会连带剔除其 time/note。
  *
  * 输出是**公开白名单**——这个仓库是公开的，reading.json 会进版本库：
- * 只留书名 / 作者 / 封面键 / 日期 / 当日秒数 / 划线正文、章节、批注 / 每本累计。
+ * 只留书名 / 作者 / 简介 / 封面键 / 日期 / 当日秒数 / 划线正文、章节、批注、划线日期 / 每本累计。
+ * 简介有两种来源（顺序即优先级）：src/data/book-meta.json 里人工写死的；以及
+ * src/data/book-descriptions.json 里由 scripts/sync-book-descriptions.mjs 从 NeoDB 取回的（已剔除宣传语）。
+ * 两边都没有就不输出该字段，页面自动收回到「书名 + 作者 + 摘录」。
  * 绝不输出 file_md5、file_path、cover_path、cfi、last_read_position、reading_percentage、
  * clock、revision、deleted、原始 db 路径。
  */
@@ -44,11 +47,19 @@ export interface ReadingHighlight {
     chapter: string;
     content: string;
     readerNote: string;
+    /**
+     * 划线日期（北京时间 YYYY-MM-DD，取自 note 的 create_time）。
+     * 卡片是「一本书一天一张」，所以它通常等于卡片日期；只有 create_time
+     * 缺失或与阅读日不一致时才不同——面板据此按日期分组，区分是哪天划的。
+     */
+    date: string;
 }
 
 export interface ReadingDayBook {
     title: string;
     author?: string;
+    /** 书籍简介：book-meta.json（人工）优先，其次 book-descriptions.json（NeoDB 自动取回）。 */
+    description?: string;
     seconds: number;
     /** 封面键：sha256(file_md5) 前 12 位，不是 file_md5 本身。取不到就省略。 */
     cover?: string;
@@ -64,6 +75,7 @@ export interface ReadingDay {
 export interface ReadingBookSummary {
     title: string;
     author?: string;
+    description?: string;
     seconds: number;
     days: number;
     cover?: string;
@@ -268,12 +280,14 @@ const UNTITLED = '未命名书籍';
  * @param records 已按 (kind, sync_id) 合并好的行
  * @param options.now 生成时间（测试里固定）
  * @param options.titleOverrides 人工映射表（key 为 sync_id 或书名），见 scripts/lib/book-title.mjs
+ * @param options.bookMeta 书籍简介表（key 为书名）：人工 book-meta.json 与 NeoDB 自动取回的表合并，前者优先。
  */
 export function buildReadingData(
     records: ModuSyncRecord[],
     options: {
         now?: Date;
         titleOverrides?: Record<string, { title?: string; author?: string; hide?: boolean }>;
+        bookMeta?: Record<string, { description?: string }>;
         /** 归并同名书时用的书名归一（生产传清洗规则；不传则按书名原样相等判断）。 */
         titleMerger?: (title: string) => string;
     } = {}
@@ -281,6 +295,8 @@ export function buildReadingData(
     const now = options.now ?? new Date();
     const todayIso = beijingToday(now);
     const overrides = options.titleOverrides ?? {};
+    const bookMeta = options.bookMeta ?? {};
+    const descriptionOf = (title: string) => asText(bookMeta[title]?.description).trim();
     const warnings: string[] = [];
     let droppedDates = 0;
     let unmappedNotes = 0;
@@ -322,7 +338,7 @@ export function buildReadingData(
     }
 
     // 2) 划线：按 (日期, 书) 归组，note 用 payload.book_id 关联
-    const notesByDayBook = new Map<string, { chapter: string; content: string; readerNote: string; created: number }[]>();
+    const notesByDayBook = new Map<string, { chapter: string; content: string; readerNote: string; date: string; created: number }[]>();
     for (const record of records) {
         if (record.kind !== KIND_NOTE || isDeleted(record.deleted)) continue;
         const payload = parsePayload(record.payload);
@@ -346,6 +362,7 @@ export function buildReadingData(
             chapter: asText(payload.chapter).trim(),
             content,
             readerNote: asText(payload.reader_note).trim(),
+            date,
             created: asNumber(payload.create_time ?? payload.created_at)
         });
         notesByDayBook.set(key, list);
@@ -421,7 +438,7 @@ export function buildReadingData(
                             const content = String(note.content ?? '').trim();
                             if (!content || seenContent.has(content)) continue;
                             seenContent.add(content);
-                            highlights.push({ chapter: note.chapter, content, readerNote: note.readerNote });
+                            highlights.push({ chapter: note.chapter, content, readerNote: note.readerNote, date: note.date });
                         }
                     }
 
@@ -436,6 +453,8 @@ export function buildReadingData(
                     const entry: ReadingDayBook = { title, seconds, highlights };
                     if (meta?.author) entry.author = meta.author;
                     if (meta?.cover) entry.cover = meta.cover;
+                    const description = descriptionOf(title);
+                    if (description) entry.description = description;
                     return entry;
                 })
                 .sort((a, b) => b.seconds - a.seconds || a.title.localeCompare(b.title));
@@ -456,6 +475,8 @@ export function buildReadingData(
             };
             if (stat.author) row.author = stat.author;
             if (stat.cover) row.cover = stat.cover;
+            const description = descriptionOf(stat.title);
+            if (description) row.description = description;
             return row;
         })
         .sort((a, b) => b.seconds - a.seconds || a.title.localeCompare(b.title));
