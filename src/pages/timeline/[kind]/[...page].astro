@@ -1,5 +1,5 @@
 ---
-import { timelineVisible, TIMELINE_INCLUDE_NEODB, settings } from '../../../api/store';
+import { timelineVisible, TIMELINE_INCLUDE_NEODB, settings, type TimelineEntry } from '../../../api/store';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Head from '../../../components/islands/Head.astro';
 import List from '../../../components/islands/List.astro';
@@ -23,7 +23,18 @@ export async function getStaticPaths() {
         return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
     };
 
-    const paths: { params: { kind: string; page?: string }; props: { page: Record<string, unknown> } }[] = [];
+    type TimelinePage = {
+        data: TimelineEntry[];
+        url: { current: string; prev?: string; next?: string };
+        currentPage: number;
+        lastPage: number;
+        start: number;
+        end: number;
+        total: number;
+        size: number;
+    };
+
+    const paths: { params: { kind: string; page?: string }; props: { page: TimelinePage } }[] = [];
 
     for (const kind of kinds) {
         const items = timelineVisible.filter((entry) =>
@@ -31,8 +42,8 @@ export async function getStaticPaths() {
         );
         if (!items.length) continue;
 
-        const pages: typeof items[] = [];
-        let current: typeof items = [];
+        const pages: TimelineEntry[][] = [];
+        let current: TimelineEntry[] = [];
         let lastDay: string | null = null;
         for (const entry of items) {
             const day = dayKey(entry.time);
