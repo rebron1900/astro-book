@@ -83,7 +83,7 @@ async function downloadCover(key, coverKey) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 20000);
     try {
-        const res = await fetch(`${BASE}/Items/${encodeURIComponent(coverKey)}/Images/Primary?maxWidth=320&quality=85`, {
+        const res = await fetch(`${BASE}/Items/${encodeURIComponent(coverKey)}/Images/Primary?maxWidth=780&quality=90`, {
             headers: { 'X-Emby-Token': key },
             signal: controller.signal
         });

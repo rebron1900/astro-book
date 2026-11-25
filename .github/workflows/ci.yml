@@ -89,6 +89,7 @@ jobs:
               run: |
                   echo "$CONFIG_FILE" > ./.env
                   node scripts/sync-data.mjs
+                  node scripts/sync-book-covers.mjs
                   echo "changed=$(git status --porcelain src/data/ src/assets/reading-cover/ public/emby-cover/ | wc -l)" >> "$GITHUB_ENV"
 
             # 数据有变化时提交（用 [skip ci] 防止触发自身 workflow 造成循环）
