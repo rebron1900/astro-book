@@ -103,13 +103,14 @@
     --rd-bar: var(--hint-color-info);
     --rd-bar-ink: #fff;
     /* 绝对定位在卡片底部内缘：不参与布局，有进度条和没进度条的卡片同高。
-       横向从卡片最左边画到最右边（不是内容区），底部两个角跟随卡片圆角。 */
+       横向从卡片最左到最右（不是内容区）；只让 1px 出来，避让卡片那圈 1px 描边，
+       两个下角用「卡片圆角 − 描边」的内圆角，和描边衔接才不会出现断口。 */
     position: absolute;
-    inset-inline: 0;
-    inset-block-end: 0;
+    inset-inline: 1px;
+    inset-block-end: 1px;
     block-size: 4px;
     margin: 0;
-    border-radius: 0 0 0.5rem 0.5rem;
+    border-radius: 0 0 calc(0.5rem - 1px) calc(0.5rem - 1px);
     background: var(--gray-200);
     font-variant-numeric: tabular-nums;
 }

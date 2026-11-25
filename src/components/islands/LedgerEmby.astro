@@ -21,8 +21,10 @@ const watch = embyCardState(entry);
 const tier = progressTier(watch.barPercent);
 const watchedMinutes =
     entry.minutes === null ? null : Math.max(0, Math.round(entry.minutes * (watch.barPercent / 100)));
-// 电影不再展示「年份 · 类型」副标题；剧集保留季集号（如 S01E05 · 集名）
+// 电影不再展示「年份 · 类型」副标题；剧集把季集号（如 S01E05 · 集名）并入统计行，标题后不再挂副标题
 const subtitle = entry.type === 'episode' ? [entry.episodeCode, entry.episodeTitle].filter(Boolean).join(' · ') : '';
+const headline = watch.state === 'watched' ? '已看完' : watchedMinutes !== null ? `已看 ${watchedMinutes} 分钟` : null;
+const statsText = [headline, subtitle].filter(Boolean).join(' / ');
 const stateLabel = `${entry.title}，${watch.label}${watch.bubble ? `（${watch.bubble}）` : ''}`;
 const overview = entry.overview ?? entry.seriesOverview;
 const ratingValue = entry.seriesRating ?? entry.rating;
@@ -37,12 +39,8 @@ const ratingText =
     <div class="media-info">
         <div class="reading-head">
             <p class="reading-stats">
-                {watch.state === 'watched' ? (
-                    <span class="rd-stat" title={entry.minutes !== null ? `共 ${entry.minutes} 分钟` : undefined}>已看完</span>
-                ) : (
-                    watchedMinutes !== null && (
-                        <span class="rd-stat" title={entry.minutes !== null ? `共 ${entry.minutes} 分钟` : undefined}>已看 {watchedMinutes} 分钟</span>
-                    )
+                {statsText && (
+                    <span class="rd-stat" title={entry.minutes !== null ? `共 ${entry.minutes} 分钟` : undefined}>{statsText}</span>
                 )}
             </p>
             {ratingText !== null ? (
@@ -55,7 +53,6 @@ const ratingText =
         </div>
         <h2 class="reading-titleline">
             <span class="entry-title" title={entry.title}>{entry.title}</span>
-            {subtitle && <span class="reading-author emby-sub" title={subtitle}>{subtitle}</span>}
         </h2>
         {overview && <p class="reading-desc">{overview}</p>}
     </div>
