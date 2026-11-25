@@ -58,6 +58,8 @@ export const allContent = [...postsAll, ...memosAll].sort((a, b) => {
 });
 
 const readingData = readingJson as unknown as ReadingData;
+/** 阅读汇总（已按 MIN_DAY_SECONDS 过滤后的口径）：页头总览用。 */
+export const reading = readingData;
 
 // 首页信息流：聚合文章 / 微博客 / NeoDB 书影标记 / 运动记录，各取「发生时间」统一降序。
 // ponytail: 每条用 discriminated union 区分类型，渲染端按 kind 分支；后续新增源只需加一个分支。

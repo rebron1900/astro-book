@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildReadingData, compareVersion, emptyReadingData, formatDuration, isPlausibleDate, mergeSyncRows, readingStreak, MAX_HIGHLIGHTS, type ModuSyncRecord } from '../../src/lib/reading';
+import { buildReadingData, compareVersion, emptyReadingData, formatDuration, isPlausibleDate, mergeSyncRows, readingStreak, MAX_HIGHLIGHTS, MIN_DAY_SECONDS, type ModuSyncRecord } from '../../src/lib/reading';
 
 const NOW = new Date('2026-11-24T06:00:00Z');
 const BOOK_A = 'md5:aaaa1111bbbb2222';
@@ -36,7 +36,7 @@ function fixture(): ModuSyncRecord[] {
         row('note', 'note-x2', { book_id: BOOK_A, chapter: '第二章', content: '他读完了坐标。', reader_note: '写得真好', create_time: D_NOTE + 300 }),
         row('position', BOOK_A, { last_read_position: '/body[1]/p[9]', reading_percentage: 0.42 }),
         // 划线落在 NOTE_DAY_ISO，那条 date 只为让该日进 days（划线本身不产日期）
-        row('time', 'tx-note-day', { book_id: BOOK_A, date: NOTE_DAY_ISO, reading_time: 60 })
+        row('time', 'tx-note-day', { book_id: BOOK_A, date: NOTE_DAY_ISO, reading_time: 120 })
     ];
 }
 
@@ -44,8 +44,8 @@ describe('buildReadingData', () => {
     const data = buildReadingData(fixture(), { now: NOW });
 
     it('同日同书多轮相加，字符串秒数也认', () => {
-        // 11-21：夜航西飞 60+120、人类简史 900；11-22：夜航西飞 180；NOTE_DAY_ISO：夜航西飞 60（为划线那条补的日期）
-        expect(data.totals.seconds).toBe(60 + 120 + 900 + 180 + 60);
+        // 11-21：夜航西飞 60+120、人类简史 900；11-22：夜航西飞 180；NOTE_DAY_ISO：夜航西飞 120（为划线那条补的日期）
+        expect(data.totals.seconds).toBe(60 + 120 + 900 + 180 + 120);
         expect(data.totals.days).toBe(3);
         expect(data.totals.books).toBe(2);
     });
@@ -93,9 +93,9 @@ describe('buildReadingData', () => {
 
     it('每本累计：时长升序倒排、天数正确', () => {
         expect(data.books.map((b) => [b.title, b.seconds, b.days])).toEqual([
-            // 夜航西飞：11-21 的 180 + 11-22 的 180 + NOTE_DAY_ISO 的 60，跨 3 天
+            // 夜航西飞：11-21 的 180 + 11-22 的 180 + NOTE_DAY_ISO 的 120，跨 3 天
             ['人类简史', 900, 1],
-            ['夜航西飞', 420, 3]
+            ['夜航西飞', 480, 3]
         ]);
     });
 
@@ -104,8 +104,8 @@ describe('buildReadingData', () => {
             row('book', BOOK_A, { title: '夜航西飞', author: '柏瑞尔·马卡姆' }),
             row('note', 'd1', { book_id: BOOK_A, chapter: '第一章', content: '昨天划的', create_time: D_NOTE - 86400 }),
             row('note', 'd2', { book_id: BOOK_A, chapter: '第一章', content: '今天划的', create_time: D_NOTE }),
-            row('time', 'dx', { book_id: BOOK_A, date: NOTE_DAY_ISO, reading_time: 60 }),
-            row('time', 'dy', { book_id: BOOK_A, date: '2026-09-22', reading_time: 60 })
+            row('time', 'dx', { book_id: BOOK_A, date: NOTE_DAY_ISO, reading_time: 120 }),
+            row('time', 'dy', { book_id: BOOK_A, date: '2026-09-22', reading_time: 120 })
         ];
         const built = buildReadingData(rows, { now: NOW });
         expect(built.days.map((d) => d.date)).toEqual([NOTE_DAY_ISO, '2026-09-22']);
@@ -126,13 +126,117 @@ describe('buildReadingData', () => {
     });
 });
 
+describe('阅读进度 position', () => {
+    it('按 sync_id 取 clock 最新的一条，reading_percentage × 100 取整', () => {
+        const data = buildReadingData(
+            [
+                row('book', BOOK_A, { title: '进度书' }),
+                row('position', BOOK_A, { last_read_position: 'epubcfi(/6/10!/4)', reading_percentage: 0.18176 }, { clock: 100 }),
+                row('position', BOOK_A, { last_read_position: 'epubcfi(/6/20!/4)', reading_percentage: 0.555 }, { clock: 200 }),
+                row('time', 't', { book_id: BOOK_A, date: '2026-11-21', reading_time: 600 })
+            ],
+            { now: NOW }
+        );
+        expect(data.days[0].books[0].progress).toBe(56);
+        expect(data.books[0].progress).toBe(56);
+    });
+
+    it('没开始读（last_read_position 为空 + 0.0）不输出进度；百分比缺失同样省略', () => {
+        const data = buildReadingData(
+            [
+                row('book', BOOK_A, { title: '没开始' }),
+                row('position', BOOK_A, { last_read_position: '', reading_percentage: 0 }),
+                row('book', BOOK_B, { title: '没记录' }),
+                row('time', 'a', { book_id: BOOK_A, date: '2026-11-21', reading_time: 300 }),
+                row('time', 'b', { book_id: BOOK_B, date: '2026-11-21', reading_time: 300 })
+            ],
+            { now: NOW }
+        );
+        // 0% 进度条不出现，整个 progress 字段省略
+        expect('progress' in data.days[0].books.find((b) => b.title === '没开始')!).toBe(false);
+        expect('progress' in data.books.find((b) => b.title === '没记录')!).toBe(false);
+    });
+
+    it('真正读到 0%（位置非空）保留 0，不误判成未开始', () => {
+        const data = buildReadingData(
+            [
+                row('book', BOOK_A, { title: '刚开头' }),
+                row('position', BOOK_A, { last_read_position: 'epubcfi(/6/2!/4)', reading_percentage: 0 }),
+                row('time', 'a', { book_id: BOOK_A, date: '2026-11-21', reading_time: 300 })
+            ],
+            { now: NOW }
+        );
+        expect(data.days[0].books[0].progress).toBe(0);
+    });
+
+    it('同名书多个 sync_id：取 clock 最新的那条进度', () => {
+        const data = buildReadingData(
+            [
+                row('book', BOOK_A, { title: '同名书' }),
+                row('book', BOOK_B, { title: '同名书' }),
+                row('position', BOOK_A, { last_read_position: 'epubcfi(/6/8!/4)', reading_percentage: 0.1 }, { clock: 100 }),
+                row('position', BOOK_B, { last_read_position: 'epubcfi(/6/12!/4)', reading_percentage: 0.3 }, { clock: 200 }),
+                row('time', 'a', { book_id: BOOK_A, date: '2026-11-21', reading_time: 200 }),
+                row('time', 'b', { book_id: BOOK_B, date: '2026-11-21', reading_time: 200 })
+            ],
+            { now: NOW }
+        );
+        expect(data.days[0].books).toHaveLength(1);
+        expect(data.days[0].books[0].progress).toBe(30);
+        expect(data.books[0].progress).toBe(30);
+    });
+});
+
+describe('当日不足 MIN_DAY_SECONDS 的卡片', () => {
+    it('119 秒过滤、120 秒保留，整天被滤掉则日期整个消失', () => {
+        const data = buildReadingData(
+            [
+                row('book', BOOK_A, { title: '长读' }),
+                row('book', BOOK_B, { title: '短读' }),
+                row('time', 'only-short', { book_id: BOOK_B, date: '2026-11-20', reading_time: 119 }),
+                row('time', 'kept', { book_id: BOOK_A, date: '2026-11-21', reading_time: MIN_DAY_SECONDS }),
+                row('time', 'dropped', { book_id: BOOK_B, date: '2026-11-21', reading_time: 119 })
+            ],
+            { now: NOW }
+        );
+        expect(MIN_DAY_SECONDS).toBe(120);
+        expect(data.days.map((d) => d.date)).toEqual(['2026-11-21']);
+        expect(data.days[0].books.map((b) => b.title)).toEqual(['长读']);
+        expect(data.totals.days).toBe(1);
+        expect(data.warnings.join()).toContain('不足 2 分钟');
+    });
+
+    it('过滤后当日合计 / 书籍累计 / 页头总计同一口径', () => {
+        const data = buildReadingData(
+            [
+                row('book', BOOK_A, { title: '甲' }),
+                row('book', BOOK_B, { title: '乙' }),
+                row('time', 'a1', { book_id: BOOK_A, date: '2026-11-20', reading_time: 300 }),
+                row('time', 'a2', { book_id: BOOK_A, date: '2026-11-21', reading_time: 119 }),
+                row('time', 'b1', { book_id: BOOK_B, date: '2026-11-21', reading_time: 400 }),
+                row('time', 'b2', { book_id: BOOK_B, date: '2026-11-22', reading_time: 119 })
+            ],
+            { now: NOW }
+        );
+        const sumDays = data.days.reduce((sum, day) => sum + day.seconds, 0);
+        expect(sumDays).toBe(data.totals.seconds);
+        expect(data.totals.seconds).toBe(300 + 400);
+        // 卡片加总必须等于当日合计
+        for (const day of data.days) expect(day.books.reduce((sum, b) => sum + b.seconds, 0)).toBe(day.seconds);
+        // 书籍累计只算留下的卡片
+        expect(data.books.find((b) => b.title === '甲')!.seconds).toBe(300);
+        expect(data.books.find((b) => b.title === '乙')!.seconds).toBe(400);
+        expect(data.totals.books).toBe(2);
+    });
+});
+
 describe('日期合理区间', () => {
     it('1970 之类假时间被丢弃并计数告警，不毒化连续天数', () => {
         const data = buildReadingData(
             [
                 row('book', BOOK_A, { title: 'X' }),
                 row('time', 'a', { book_id: BOOK_A, date: '1970-01-01', reading_time: 600 }),
-                row('time', 'b', { book_id: BOOK_A, date: '2026-11-24', reading_time: 60 })
+                row('time', 'b', { book_id: BOOK_A, date: '2026-11-24', reading_time: 120 })
             ],
             { now: NOW }
         );
@@ -160,13 +264,13 @@ describe('墓碑过滤', () => {
             [
                 row('book', BOOK_A, { title: '留着' }),
                 row('book', BOOK_B, { title: '删掉' }, { deleted: 1 }),
-                row('time', 'a', { book_id: BOOK_A, date: '2026-11-21', reading_time: 60 }),
+                row('time', 'a', { book_id: BOOK_A, date: '2026-11-21', reading_time: 120 }),
                 row('time', 'b', { book_id: BOOK_B, date: '2026-11-21', reading_time: 5000 }),
                 row('note', 'n', { book_id: BOOK_B, chapter: '', content: '不该出现', create_time: D_NOTE })
             ],
             { now: NOW }
         );
-        expect(data.totals.seconds).toBe(60);
+        expect(data.totals.seconds).toBe(120);
         expect(data.days[0].books.map((b) => b.title)).toEqual(['留着']);
         expect(JSON.stringify(data)).not.toContain('不该出现');
     });
@@ -300,13 +404,14 @@ describe('同名书归并（同一本书被多次导入 → file_md5 不同 → 
             // 生产用 cleanBookTitle；这里给最小等价实现，验证「清洗后同名才归并」
             titleMerger: (title) => title.replace(/\s*\(z-library[^)]*\)/, '')
         });
-        // 只清 z-library 尾巴：三本仍是三本（高性价比 + 带副标题 + 无副标题）
-        expect(data.totals.books).toBe(3);
+        // 只清 z-library 尾巴：DIRTY 与两个 Steve Jobs 各算一本；但 Steve Jobs in Exile（仅 2 秒）
+        // 不足当天 2 分钟阈值，被过滤后只剩两本。
+        expect(data.totals.books).toBe(2);
         const dirty = data.books.find((b) => b.title === DIRTY)!;
         expect(dirty.days).toBe(1);
         expect(data.books.find((b) => b.title === 'Steve Jobs in Exile 史蒂夫·乔布斯流放记')!.days).toBe(1);
-        // 不做模糊匹配："Steve Jobs in Exile" 与带中文副标题的算两本
-        expect(data.books.some((b) => b.title === 'Steve Jobs in Exile')).toBe(true);
+        // 不做模糊匹配；且 2 秒的短读不进 books
+        expect(data.books.some((b) => b.title === 'Steve Jobs in Exile')).toBe(false);
 
         const merged = buildReadingData(rows, {
             now: NOW,
@@ -323,10 +428,10 @@ describe('同名书归并（同一本书被多次导入 → file_md5 不同 → 
             row('book', BOOK_A, { title: DIRTY, file_md5: 'aaaa1111bbbb2222' }),
             row('book', BOOK_B, { title: DIRTY, file_md5: 'cccc3333dddd4444' }),
             row('time', 'p1', { book_id: BOOK_A, date: '2026-09-18', reading_time: 176 }),
-            row('time', 'p2', { book_id: BOOK_B, date: '2026-09-19', reading_time: 46 })
+            row('time', 'p2', { book_id: BOOK_B, date: '2026-09-19', reading_time: 120 })
         ];
         const data = buildReadingData(rows, { now: NOW });
         expect(data.books).toHaveLength(1);
-        expect(data.books[0]).toMatchObject({ title: DIRTY, seconds: 222, days: 2 });
+        expect(data.books[0]).toMatchObject({ title: DIRTY, seconds: 296, days: 2 });
     });
 });

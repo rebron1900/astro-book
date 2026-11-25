@@ -4,7 +4,7 @@ import type { TimelineEntry } from '../../api/store';
 import type { ReadingDayBook } from '../../lib/reading';
 import type { Post } from '@ts-ghost/content-api';
 import { normalizeSlug } from '../../lib/utils/help';
-import { timeline } from '../../api/store';
+import { timeline, reading } from '../../api/store';
 import { BookHeart, BookOpenText, Footprints, LibraryBig, MessageCircle } from '@lucide/astro';
 import PostMeta from '../ui/PostMeta.astro';
 import LedgerMemo from './LedgerMemo.astro';
@@ -14,6 +14,7 @@ import LedgerReading from './LedgerReading.astro';
 import NeodbCategoryIcon from '../ui/NeodbCategoryIcon.astro';
 import TimelineMonthList from './TimelineMonthList.astro';
 import '../../styles/pages/timeline.scss';
+import { shortDuration } from '../../lib/reading-highlights';
 
 type PostItem = Post & { type: string };
 type RawItem = TimelineEntry | PostItem | Memo;
@@ -69,6 +70,12 @@ const timelineTotals = timeline.reduce((totals, entry) => {
     if (totals[entry.kind] !== undefined) totals[entry.kind] += 1;
     return totals;
 }, { all: 0, post: 0, memo: 0, neodb: 0, strava: 0, reading: 0 });
+
+// 阅读页头总览：与卡片同口径（不足 MIN_DAY_SECONDS 的卡片已被数据层剔除）。
+const readingOverview = {
+    finished: reading.books.filter((book) => book.progress === 100).length,
+    inProgress: reading.books.filter((book) => typeof book.progress === 'number' && book.progress < 100).length
+};
 
 const timelineIntros = {
     all: {
@@ -172,6 +179,14 @@ function excerptText(value: string | null | undefined, max = 150) {
                         </a>
                     )}
                 </p>
+                {activeKind === 'reading' && (
+                    <p class="reading-overview">
+                        <span>累计 <strong>{shortDuration(reading.totals.seconds)}</strong></span>
+                        <span>共 <strong>{reading.totals.books}</strong> 本</span>
+                        <span>已读完 <strong>{readingOverview.finished}</strong> 本</span>
+                        <span>在读 <strong>{readingOverview.inProgress}</strong> 本</span>
+                    </p>
+                )}
             </header>
         )}
 

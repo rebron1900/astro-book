@@ -15,14 +15,15 @@
  * 口径（写死）：
  * - `reading_time` 单位秒；同一 (date, book) 的多个 round 全部相加。
  * - `date` 必须是合理自然日：≥2000-01-01 且 ≤北京时间今天 + 1 天，越界丢弃并计入 warnings。
- * - 只统计 deleted=0 的记录；book 的墓碑会连带剔除其 time/note。
+ * - 只统计 deleted=0 的记录；book 的墓碑会连带剔除其 time/note/position。
+ * - 某天某书累计秒数 < MIN_DAY_SECONDS（默认 120 秒）的卡片不输出，也不计入任何合计。
  *
  * 输出是**公开白名单**——这个仓库是公开的，reading.json 会进版本库：
- * 只留书名 / 作者 / 简介 / 封面键 / 日期 / 当日秒数 / 划线正文、章节、批注、划线日期 / 每本累计。
+ * 只留书名 / 作者 / 简介 / 封面键 / 日期 / 当日秒数 / 划线正文、章节、批注、划线日期 / 每本累计 / 取整后的阅读进度百分比。
  * 简介有两种来源（顺序即优先级）：src/data/book-meta.json 里人工写死的；以及
  * src/data/book-descriptions.json 里由 scripts/sync-book-descriptions.mjs 从 NeoDB 取回的（已剔除宣传语）。
- * 两边都没有就不输出该字段，页面自动收回到「书名 + 作者 + 摘录」。
- * 绝不输出 file_md5、file_path、cover_path、cfi、last_read_position、reading_percentage、
+ * 两边都没有就不输出该字段，页面自动收回到「书名 + 作者」。
+ * 绝不输出 file_md5、file_path、cover_path、cfi、last_read_position、原始 reading_percentage 小数、
  * clock、revision、deleted、原始 db 路径。
  */
 
@@ -61,6 +62,12 @@ export interface ReadingDayBook {
     /** 书籍简介：book-meta.json（人工）优先，其次 book-descriptions.json（NeoDB 自动取回）。 */
     description?: string;
     seconds: number;
+    /**
+     * 这本书的阅读进度（0-100 的整数，取自 position 记录的 reading_percentage）。
+     * 「没开始读」（last_read_position 为空且 reading_percentage 为 0）时整个字段不出现，
+     * 页面据此区分「0%」和「未开始」，不会渲染成一排 0% 进度条。
+     */
+    progress?: number;
     /** 封面键：sha256(file_md5) 前 12 位，不是 file_md5 本身。取不到就省略。 */
     cover?: string;
     highlights: ReadingHighlight[];
@@ -78,6 +85,8 @@ export interface ReadingBookSummary {
     description?: string;
     seconds: number;
     days: number;
+    /** 同 ReadingDayBook.progress：0-100 整数，未开始时省略。 */
+    progress?: number;
     cover?: string;
 }
 
@@ -95,9 +104,16 @@ export const READING_SOURCE = 'modureader-webdav';
 /** 单卡最多带多少条划线（超出只留计数文字，不进 DOM）。 */
 export const MAX_HIGHLIGHTS = 30;
 
+/**
+ * 一张「某天某书」卡片的最低时长（秒）。不足这个数的卡片不展示，也不计入任何合计。
+ * 2 分钟以内的碎片阅读多半是打开书翻了两页，会把时间线撑得很碎。阈值集中在这里，便于以后调整。
+ */
+export const MIN_DAY_SECONDS = 120;
+
 const KIND_TIME = 'time';
 const KIND_BOOK = 'book';
 const KIND_NOTE = 'note';
+const KIND_POSITION = 'position';
 
 function asText(value: unknown): string {
     if (value === null || value === undefined) return '';
@@ -300,6 +316,7 @@ export function buildReadingData(
     const warnings: string[] = [];
     let droppedDates = 0;
     let unmappedNotes = 0;
+    let droppedShortCards = 0;
 
     const overrideFor = (syncId: string, title: string) => overrides[syncId] ?? overrides[title] ?? null;
 
@@ -388,6 +405,25 @@ export function buildReadingData(
         dayMap.set(date, booksOfDay);
     }
 
+    // 3.5) position：书 id → 阅读进度。payload 里没有 book_id，靠 sync_id 关联。
+    //      「last_read_position 为空 + 0.0」是没开始读，不是读到 0%，整条丢掉（进度字段不出现）。
+    const positionByBook = new Map<string, { pct: number; clock: number }>();
+    for (const record of records) {
+        if (record.kind !== KIND_POSITION || isDeleted(record.deleted)) continue;
+        const syncId = asText(record.sync_id).trim();
+        if (!syncId || deletedBooks.has(syncId)) continue;
+        const payload = parsePayload(record.payload);
+        if (!payload) continue;
+        const position = asText(payload.last_read_position).trim();
+        const raw = asNumber(payload.reading_percentage, NaN);
+        if (!position || !Number.isFinite(raw)) continue;
+        const pct = Math.max(0, Math.min(100, Math.round(raw * 100)));
+        const clock = asNumber(record.clock);
+        const prev = positionByBook.get(syncId);
+        if (prev && prev.clock > clock) continue;
+        positionByBook.set(syncId, { pct, clock });
+    }
+
     // 4) 组装 days（日期倒序，当日书目按时长降序）
     //    同一本书可能被多次导入（file_md5 不同 → 两条 book 记录），同一天就会出现两张同名卡片。
     //    这里只按「书名完全相同」归并：秒数相加、划线合并去重；不做模糊匹配，避免误合真同名的不同书。
@@ -399,7 +435,16 @@ export function buildReadingData(
     };
 
     let totalSeconds = 0;
-    const perBook = new Map<string, { title: string; author?: string; cover?: string; seconds: number; days: Set<string> }>();
+    const perBook = new Map<string, { title: string; author?: string; cover?: string; seconds: number; days: Set<string>; progress?: number; progressClock?: number }>();
+    /** 同名书可能有多个 sync_id，取 clock 最新的那条进度（最近在读的那份）。 */
+    const latestPosition = (ids: string[]) => {
+        let best: { pct: number; clock: number } | null = null;
+        for (const id of ids) {
+            const found = positionByBook.get(id);
+            if (found && (!best || found.clock > best.clock)) best = found;
+        }
+        return best;
+    };
     const days: ReadingDay[] = [...dayMap.entries()]
         .map(([date, booksOfDay]) => {
             // 当日按清洗后书名归并
@@ -425,7 +470,12 @@ export function buildReadingData(
                 warnings.push(`同名书归并 ${line}`);
             }
 
-            const books: ReadingDayBook[] = [...byDayTitle.values()]
+            // 不足 MIN_DAY_SECONDS 的当日卡片不展示；若整天都没留下来，这一天整条消失。
+            // 归并之后才判断，算的是这本书当天真实的累计秒数。
+            const keptToday = [...byDayTitle.values()].filter(({ seconds }) => seconds >= MIN_DAY_SECONDS);
+            droppedShortCards += byDayTitle.size - keptToday.length;
+
+            const books: ReadingDayBook[] = keptToday
                 .map(({ bookId, title, seconds }) => {
                     const meta = bookById.get(bookId);
                     // 不在这里截断：卡片要显示「还有 N 条」，截断在渲染层做（renderHighlights）
@@ -447,12 +497,18 @@ export function buildReadingData(
                     stat.days.add(date);
                     if (!stat.author && meta?.author) stat.author = meta.author;
                     if (!stat.cover && meta?.cover) stat.cover = meta.cover;
+                    const position = latestPosition(ids);
+                    if (position && (!stat.progressClock || position.clock > stat.progressClock)) {
+                        stat.progress = position.pct;
+                        stat.progressClock = position.clock;
+                    }
                     perBook.set(title, stat);
 
                     // 不在这里截断：卡片要显示「还有 N 条」，截断在渲染层做（renderHighlights）
                     const entry: ReadingDayBook = { title, seconds, highlights };
                     if (meta?.author) entry.author = meta.author;
                     if (meta?.cover) entry.cover = meta.cover;
+                    if (position) entry.progress = position.pct;
                     const description = descriptionOf(title);
                     if (description) entry.description = description;
                     return entry;
@@ -475,6 +531,7 @@ export function buildReadingData(
             };
             if (stat.author) row.author = stat.author;
             if (stat.cover) row.cover = stat.cover;
+            if (stat.progress !== undefined) row.progress = stat.progress;
             const description = descriptionOf(stat.title);
             if (description) row.description = description;
             return row;
@@ -483,6 +540,7 @@ export function buildReadingData(
 
     if (droppedDates > 0) warnings.push(`丢弃 ${droppedDates} 条日期越界或缺少日期的记录`);
     if (unmappedNotes > 0) warnings.push(`${unmappedNotes} 条笔记没有 payload.book_id，未进划线`);
+    if (droppedShortCards > 0) warnings.push(`忽略 ${droppedShortCards} 张当日不足 ${MIN_DAY_SECONDS / 60} 分钟的卡片`);
 
     return {
         generatedAt: now.toISOString(),
