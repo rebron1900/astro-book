@@ -996,20 +996,14 @@
 
 /* 阅读卡片两行：封面/文字占满上方，进度条紧跟内容贴底。
    卡片不被行高拉伸（align-self: start），否则短卡会在简介与轨道之间留出一条空带；
-   气泡需要的空间由 .rd-progress 自己的 margin 精确给出，行间距为 0，避免叠加。 */
+   轨道上方 8.8px 由自己的 margin 给出，下方 8.8px 只由卡片 padding-block-end 承担，
+   不再叠加两份空间；气泡越出卡片下边的部分落在卡片下方的空白里。 */
 .reading-cards .reading-card {
     align-self: start;
     align-content: start;
     grid-template-rows: minmax(0, 1fr) auto;
     row-gap: 0;
-}
-
-/* 单列时卡片内边距从 12px 收到 9.6px，气泡（18.53px）会比「8.8 + 9.6」差 0.13px；
-   底部补到 10px，气泡底边刚好落在卡片内，不靠撑高卡片。 */
-@media (max-width: 64rem) {
-    .reading-card {
-        padding-block-end: 0.625rem;
-    }
+    padding-block-end: 0.55rem;
 }
 
 /* 窄屏（≤30rem）书名会被压到 95px 左右（≈6 个字，不可读）：书名独行、作者另起一行小字。 */

@@ -113,7 +113,7 @@
     position: relative;
     grid-column: 1 / -1;
     block-size: 4px;
-    margin-block: var(--rd-bar-space);
+    margin-block: var(--rd-bar-space) 0;
     border-radius: 999px;
     background: var(--gray-200);
     font-variant-numeric: tabular-nums;
@@ -141,15 +141,23 @@
     background: var(--rd-bar);
 }
 
-/* 百分比气泡：挂在轨道下方（4px 间隙），小三角朝上指向轨道；
-   水平仍用 clamp + translateX(-50%)，0% / 100% 都不出卡片。
-   下方可用空间 = 8.8px 轨道下间距 + 12px 卡片内边距 = 20.8px，气泡 14.53px + 4px = 18.53px 放得下。 */
+/* 百分比气泡：挂在轨道下方（4px 间隙），小三角朝上指向轨道。
+   气泡中心严格等于填充末端（inset-inline-start: var(--p) + translateX(-50%)），
+   0% / 100% 也精确对准；为此允许气泡左右越出卡片——卡片内边距 12px、气泡半宽约 17px，
+   越界约 5px，落在列间距（12.8px）里，不进邻居卡片也不出视口。
+   下方只留一份空间（卡片 padding-block-end 8.8px），气泡底部越出卡片约 9.7px，
+   落在卡片下方 81.9px 的空白里；z-index 保证越界部分不被相邻卡片底色盖住。 */
+.reading-card:has(.rd-progress-badge) {
+    z-index: 1;
+}
+
 .reading-card .rd-progress-badge {
     position: absolute;
     inset-block-start: calc(100% + 4px);
     inset-block-end: auto;
-    inset-inline-start: clamp(0.9rem, var(--p, 0%), calc(100% - 0.9rem));
+    inset-inline-start: var(--p, 0%);
     transform: translateX(-50%);
+    z-index: 2;
     padding: 0.08rem 0.3rem;
     border-radius: 0.25rem;
     background: var(--rd-bar);
