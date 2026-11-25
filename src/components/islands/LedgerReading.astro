@@ -53,6 +53,7 @@ const progressLabel =
 const highlightsLabel = `${highlights.length} 条划线`;
 ---
 
+<div class="reading-card-shell" data-tier={tier} style={shownProgress !== null ? `--p: ${shownProgress}%` : undefined}>
 <div class="reading-card neodb-card">
     <div class="cover">
         {coverUrl ? <img src={coverUrl} alt={`${book.title}封面`} loading="lazy" decoding="async" /> : <span aria-hidden="true">{book.title.slice(0, 1)}</span>}
@@ -86,7 +87,8 @@ const highlightsLabel = `${highlights.length} 条划线`;
     {shownProgress !== null && !isCompleted && (
         <div class="rd-progress" role="img" aria-label={progressLabel} title={progressLabel} data-tier={tier} style={`--p: ${shownProgress}%`}>
             <span class="rd-progress-fill" style={`inline-size: ${shownProgress}%`}></span>
-            {showBadge && <span class="rd-progress-badge" aria-hidden="true">{progressText}</span>}
         </div>
     )}
+</div>
+{showBadge && shownProgress !== null && !isCompleted && <span class="rd-progress-badge" aria-hidden="true">{progressText}</span>}
 </div>

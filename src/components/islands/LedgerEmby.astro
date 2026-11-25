@@ -32,6 +32,7 @@ const ratingText =
     ratingValue === null ? null : Number.isInteger(ratingValue) ? String(ratingValue) : ratingValue.toFixed(1);
 ---
 
+<div class="reading-card-shell" data-tier={tier} style={watch.state !== 'watched' ? `--p: ${watch.barPercent}%` : undefined}>
 <div class="reading-card neodb-card emby-card" data-emby-state={watch.state}>
     <div class="cover">
         {coverUrl ? <img src={coverUrl} alt={`${entry.title}封面`} loading="lazy" decoding="async" /> : <span aria-hidden="true">{entry.title.slice(0, 1)}</span>}
@@ -59,7 +60,8 @@ const ratingText =
     {watch.state !== 'watched' && (
         <div class="rd-progress" role="img" aria-label={stateLabel} title={stateLabel} data-tier={tier} style={`--p: ${watch.barPercent}%`}>
             <span class="rd-progress-fill" style={`inline-size: ${watch.barPercent}%`}></span>
-            {watch.bubble && <span class="rd-progress-badge" aria-hidden="true">{watch.bubble}</span>}
         </div>
     )}
+</div>
+{watch.state !== 'watched' && watch.bubble && <span class="rd-progress-badge" aria-hidden="true">{watch.bubble}</span>}
 </div>

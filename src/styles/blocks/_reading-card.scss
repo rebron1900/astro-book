@@ -76,16 +76,37 @@
     white-space: nowrap;
 }
 
-/* 描边覆盖层：进度条要贴到卡片底边，用最上层的 1px 内描边盖住它；
-   卡片本身不设 overflow:hidden，比例气泡不会被裁掉。 */
-.reading-card::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    box-shadow: inset 0 0 0 1px var(--memo-border-color, var(--gray-200));
-    pointer-events: none;
-    z-index: 3;
+
+/* 卡片外壳：进度条要贴卡片底边（由卡片自己的 overflow 裁圆角/描边），
+   比例气泡必须画在卡片外面才不会被裁掉，所以气泡挂在 shell 上、按 --p 定位。 */
+.reading-card-shell {
+    position: relative;
+    display: grid;
+    min-inline-size: 0;
+}
+
+.reading-card-shell > .reading-card {
+    inline-size: 100%;
+    overflow: hidden;
+}
+
+/* 分档色带在 shell 上也定义一份：气泡挂在 shell 上，取不到卡片内的变量 */
+.reading-card-shell {
+    --rd-bar: var(--hint-color-info);
+    --rd-bar-ink: #fff;
+}
+
+.reading-card-shell[data-tier='danger'] {
+    --rd-bar: var(--hint-color-danger);
+}
+
+.reading-card-shell[data-tier='warning'] {
+    --rd-bar: var(--hint-color-warning);
+    --rd-bar-ink: #1b1b1b;
+}
+
+.reading-card-shell[data-tier='info'] {
+    --rd-bar: var(--hint-color-info);
 }
 
 /* 卡片主信息：一分钟数 / 集数 / 划线数，统一小字、同一字号 */
@@ -120,14 +141,13 @@
     --rd-bar: var(--hint-color-info);
     --rd-bar-ink: #fff;
     /* 绝对定位在卡片底部内缘：不参与布局，有进度条和没进度条的卡片同高。
-       横向铺满卡片（最左到最右），下角跟随卡片圆角；那圈 1px 描边由 ::after 覆盖层
-       画在最上面，所以进度条不会把描边盖掉，衔接处是一条完整的线。 */
+       横向铺满整张卡片（不是内容区），端头不做圆角——圆角和描边由卡片的 overflow:hidden 裁。 */
     position: absolute;
     inset-inline: 0;
     inset-block-end: 0;
     block-size: 4px;
     margin: 0;
-    border-radius: 0 0 0.5rem 0.5rem;
+    border-radius: 0;
     background: var(--gray-200);
     font-variant-numeric: tabular-nums;
 }
@@ -164,13 +184,13 @@
     z-index: 1;
 }
 
-.reading-card .rd-progress-badge {
+.reading-card-shell > .rd-progress-badge {
     position: absolute;
-    /* 气泡垂直居中压在进度条上：只占轨道那 4px 的高度感，不额外撑高卡片 */
-    inset-block-start: 50%;
-    inset-block-end: auto;
+    /* 挂在 shell 上（卡片外）：垂直居中压在 4px 进度条上，横向 = 填充末端 */
+    inset-block-end: 2px;
+    inset-block-start: auto;
     inset-inline-start: var(--p, 0%);
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, 50%);
     z-index: 2;
     padding: 0.08rem 0.3rem;
     border-radius: 0.25rem;
