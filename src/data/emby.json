@@ -1,5 +1,56 @@
 [
   {
+    "id": "30313",
+    "type": "episode",
+    "title": "奇案84的奇趣民宿",
+    "episodeCode": "S01E03",
+    "episodeTitle": "第 3 集",
+    "overview": "浑然不知会发生什么的房客们在这家海滨民宿入住，结果被翻墙爬杆弄得苦不堪言。但很快，民宿的魅力开始显现。",
+    "minutes": 60,
+    "rating": 8,
+    "seriesRating": 8.1,
+    "seriesOverview": "奇案 84 凭借奇思妙想打造了一家独特民宿。他携手值得信赖的明星员工，带领嘉宾体验令人难忘的惊喜与混乱。",
+    "played": false,
+    "playedPercent": 61,
+    "lastPlayedAt": 1795617462000,
+    "imageTag": "54dafaaea34a71d07756b770790df727_639308843933884538",
+    "cover": "/emby-cover/30308.jpg"
+  },
+  {
+    "id": "30312",
+    "type": "episode",
+    "title": "奇案84的奇趣民宿",
+    "episodeCode": "S01E02",
+    "episodeTitle": "第 2 集",
+    "overview": "奇案 84 民宿的第一晚在烟熏火燎、烹饪灾难等一片混乱中开场。然而，这只是个前奏，一场滑稽的海滨民宿冒险之旅正待开演。",
+    "minutes": 63,
+    "rating": 8.5,
+    "seriesRating": 8.1,
+    "seriesOverview": "奇案 84 凭借奇思妙想打造了一家独特民宿。他携手值得信赖的明星员工，带领嘉宾体验令人难忘的惊喜与混乱。",
+    "played": true,
+    "playedPercent": 100,
+    "lastPlayedAt": 1795613657000,
+    "imageTag": "6c44bdbe8921d470a08932de458dffef_639308843922990973",
+    "cover": "/emby-cover/30308.jpg"
+  },
+  {
+    "id": "30311",
+    "type": "episode",
+    "title": "奇案84的奇趣民宿",
+    "episodeCode": "S01E01",
+    "episodeTitle": "第 1 集",
+    "overview": "奇案 84 建了一家非传统民宿，防弹少年团的金硕珍和池睿恩应招成为值得信赖的员工。然而，台风来袭，他们转而实施备选计划。",
+    "minutes": 61,
+    "rating": 8.3,
+    "seriesRating": 8.1,
+    "seriesOverview": "奇案 84 凭借奇思妙想打造了一家独特民宿。他携手值得信赖的明星员工，带领嘉宾体验令人难忘的惊喜与混乱。",
+    "played": true,
+    "playedPercent": 100,
+    "lastPlayedAt": 1795610746000,
+    "imageTag": "61c432eec2999158c13eb3378d0b1f8d_639308843910115911",
+    "cover": "/emby-cover/30308.jpg"
+  },
+  {
     "id": "28091",
     "type": "episode",
     "title": "师兄啊师兄",
@@ -1240,23 +1291,6 @@
     "cover": "/emby-cover/40886.jpg"
   },
   {
-    "id": "30311",
-    "type": "episode",
-    "title": "奇案84的奇趣民宿",
-    "episodeCode": "S01E01",
-    "episodeTitle": "第 1 集",
-    "overview": "奇案 84 建了一家非传统民宿，防弹少年团的金硕珍和池睿恩应招成为值得信赖的员工。然而，台风来袭，他们转而实施备选计划。",
-    "minutes": 61,
-    "rating": 8.3,
-    "seriesRating": 8.1,
-    "seriesOverview": "奇案 84 凭借奇思妙想打造了一家独特民宿。他携手值得信赖的明星员工，带领嘉宾体验令人难忘的惊喜与混乱。",
-    "played": false,
-    "playedPercent": 19,
-    "lastPlayedAt": 1793802883000,
-    "imageTag": "61c432eec2999158c13eb3378d0b1f8d_639308843910115911",
-    "cover": "/emby-cover/30308.jpg"
-  },
-  {
     "id": "40703",
     "type": "episode",
     "title": "小城良方",
@@ -2123,7 +2157,7 @@
     "played": false,
     "playedPercent": 62,
     "lastPlayedAt": 1792681828000,
-    "imageTag": "cd98c71a9f7f5c3575ffde6767dd5b6f_639308800164367154",
+    "imageTag": "cd98c71a9f7f5c3575ffde6767dd5b6f_639312295884970191",
     "cover": "/emby-cover/7812.jpg"
   },
   {
@@ -2140,7 +2174,7 @@
     "played": true,
     "playedPercent": 100,
     "lastPlayedAt": 1792681781000,
-    "imageTag": "eb69ec6643c311990144d36f41a2f844_639308800044748502",
+    "imageTag": "eb69ec6643c311990144d36f41a2f844_639312295836207597",
     "cover": "/emby-cover/7812.jpg"
   },
   {
