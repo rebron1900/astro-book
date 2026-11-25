@@ -20,6 +20,16 @@
     "last_entry_at": "2024-08-05T13:09:45.000Z"
   },
   {
+    "id": 132,
+    "title": "刘郎阁",
+    "site_url": "https://yjvc.cn",
+    "reason": "error",
+    "first_seen_at": "2026-11-25T08:33:44.113Z",
+    "feed_url": "https://vjo.cc/feed/",
+    "error": "由于网络错误，Miniflux 无法访问此网站：Get \"https://liuz.cn/feed/\": stream error: stream ID 1; PROTOCOL_ERROR; received from peer。",
+    "last_entry_at": "2026-11-10T08:08:00.000Z"
+  },
+  {
     "id": 187,
     "title": "木 竹 造 价",
     "site_url": "https://www.laomuzhu.cn",
@@ -36,7 +46,7 @@
     "reason": "error",
     "first_seen_at": "2026-11-01T13:25:04.411Z",
     "feed_url": "https://vimin.cc/feed/",
-    "error": "直连订阅源失败: HTTP 403 Forbidden"
+    "error": "直连订阅源失败: Reader HTTP 401 Unauthorized"
   },
   {
     "id": 99,
