@@ -19,11 +19,8 @@ body {
     color: var(--body-font-color);
     background: var(--body-background);
 
-    /* 2026-11-25 按 mobius.blog 的正文排版：18px / 行高 2 / 字重 300 / 字距 0.45px */
-    font-size: 18px;
-    line-height: 2;
-    letter-spacing: 0.45px;
-    font-weight: 300;
+    letter-spacing: 0.33px;
+    font-weight: $body-font-weight;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     box-sizing: border-box;
@@ -37,8 +34,7 @@ h2,
 h3,
 h4,
 h5 {
-    font-weight: 900;
-    letter-spacing: -0.02em;
+    font-weight: $body-font-weight;
 }
 
 a {

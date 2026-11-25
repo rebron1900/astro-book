@@ -33,11 +33,15 @@
 /* 正文统一衬线：与 _defaults.scss 的 body 保持一致（这里的规则后加载，覆盖上面那条无衬线） */
 body {
     font-family:
-        'Noto Serif SC',
-        'Noto Serif TC',
-        Georgia,
-        STSong,
-        serif;
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        Roboto,
+        Oxygen-Sans,
+        Ubuntu,
+        Cantarell,
+        'Helvetica Neue',
+        sans-serif;
 }
 
 code {
