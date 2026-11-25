@@ -1,7 +1,9 @@
 /**
  * 划线 tooltip 的 HTML 生成（构建期执行，纯字符串操作，不引任何依赖）。
  *
- * 结构：日期 → 章节 → 引文/批注，每个层级就是一个 section，样式在 timeline.scss 的 .rd-tip-*。
+ * 结构：章节 → 引文/批注，每个层级就是一个 section，样式在 timeline.scss 的 .rd-tip-*。
+ * 卡片本身是「一天一本书」，所以卡片自己那天的日期头不渲染（面板直接从章节/第一条划线开始）；
+ * 只有划线来自别的日子（note 的 create_time 与阅读日不一致）时，那一组才带一行日期做区分。
  *
  * 为什么不套 markdown 解析器：划线是电子书里的用户文本，走通用 markdown 会把
  * `[x](javascript:…)`、`<img onerror>` 这类输入带进 HTML 通道，而仓库现有
@@ -51,12 +53,12 @@ function groupByChapter(highlights: ReadingHighlight[]): ChapterGroup[] {
 }
 
 /**
- * 渲染某天某本书的划线，按「日期 → 章节」两级分组。
- * 卡片本身是一天一张，所以大多数情况只有一组；日期不同说明划线是别的日子留下的
- * （note 的 create_time 与阅读日不一致），此时日期标签才真正起到区分作用。
+ * 渲染某天某本书的划线，按「章节」分组；划线来自别的日子时那一组额外带一行日期。
+ * 卡片本身是一天一张，所以面板顶部不再重复卡片日期（2026-11 起老板要求去掉），
+ * 直接从章节目录/第一条划线开始。
  * @param highlights 该书全部划线，已按时间升序（未截断）
- * @param fallbackDate 划线自身没带日期时用它（卡片日期）。旧数据升级前没有逐条日期，
- *   这时显示的日期就是这张卡片的阅读日，不会出现空白标签。
+ * @param fallbackDate 卡片日期：与它相同的分组不渲染日期头。旧数据升级前没有逐条日期，
+ *   兜底的日期就是这张卡片的阅读日，同样不出日期头。
  */
 export function renderHighlights(highlights: ReadingHighlight[], fallbackDate = ''): string {
     if (!highlights || highlights.length === 0) {
@@ -77,7 +79,9 @@ export function renderHighlights(highlights: ReadingHighlight[], fallbackDate = 
 
     const body = dates
         .map((date) => {
-            const heading = date ? `<p class="rd-tip-date"><time datetime="${date}">${formatDayLabel(date)}</time></p>` : '';
+            // 卡片自己那天的日期头不渲染（面板顶部不再重复卡片日期）；
+            // 来自别的日子的分组仍带日期，那里日期才真的在区分信息。
+            const heading = date && date !== fallbackDate ? `<p class="rd-tip-date"><time datetime="${date}">${formatDayLabel(date)}</time></p>` : '';
             const groups = groupByChapter(byDate.get(date) ?? [])
                 .map((group) => {
                     const chapter = group.chapter ? `<h3 class="rd-tip-chapter">${escapeHtml(group.chapter)}</h3>` : '';

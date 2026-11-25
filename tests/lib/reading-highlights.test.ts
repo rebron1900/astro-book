@@ -81,9 +81,36 @@ describe('renderHighlights 结构', () => {
         expect(html).toContain('datetime="2026-09-23"');
     });
 
-    it('划线没带日期时用卡片日期兜底；连兜底都没有才不输出日期标签', () => {
+    it('卡片自己那天的日期头不渲染（面板直接从章节/第一条划线开始）', () => {
+        const sameDay: ReadingHighlight[] = [
+            { chapter: '第一章', content: '当天的划线', readerNote: '', date: DAY },
+            { chapter: '第一章', content: '当天的第二条', readerNote: '', date: DAY }
+        ];
+        const html = renderHighlights(sameDay, DAY);
+        expect(html).not.toContain('rd-tip-date');
+        expect(html).not.toContain('2026 年 9 月 23 日');
+        expect(html.trimStart().startsWith('<section class="rd-tip-day">')).toBe(true);
+        expect(html.indexOf('rd-tip-chapter')).toBeGreaterThan(-1);
+        // 章节 mdash 结构仍在，第一条划线仍在
+        expect(html).toContain('当天的划线');
+    });
+
+    it('划线来自别的日子时，那一组仍带日期做区分', () => {
+        const html = renderHighlights(
+            [
+                { chapter: '', content: '早一天划的', readerNote: '', date: DAY2 },
+                { chapter: '', content: '当天划的', readerNote: '', date: DAY }
+            ],
+            DAY
+        );
+        expect((html.match(/rd-tip-date/g) ?? []).length).toBe(1);
+        expect(html).toContain('2026 年 9 月 21 日');
+        expect(html).not.toContain('2026 年 9 月 23 日');
+    });
+
+    it('划线没带日期时用卡片日期兜底，也不出日期头；连兜底都没有同样不出', () => {
         const withFallback = renderHighlights([{ chapter: '', content: '无日期的划线', readerNote: '', date: '' }], '2026-11-02');
-        expect(withFallback).toContain('2026 年 11 月 2 日');
+        expect(withFallback).not.toContain('rd-tip-date');
         expect(withFallback).toContain('无日期的划线');
 
         const bare = renderHighlights([{ chapter: '', content: '无日期的划线', readerNote: '', date: '' }]);
