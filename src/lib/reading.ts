@@ -19,7 +19,7 @@
  * - 某天某书累计秒数 < MIN_DAY_SECONDS（默认 120 秒）的卡片不输出，也不计入任何合计。
  *
  * 输出是**公开白名单**——这个仓库是公开的，reading.json 会进版本库：
- * 只留书名 / 作者 / 简介 / 封面键 / 日期 / 当日秒数 / 划线正文、章节、批注、划线日期 / 每本累计 / 取整后的阅读进度百分比。
+ * 只留书名 / 作者 / 简介 / 封面键 / 日期 / 当日秒数 / 划线正文、章节、批注、划线日期 / 每本累计 / 取整后的阅读进度百分比（含按当天累计时长推算的进度）。
  * 简介有两种来源（顺序即优先级）：src/data/book-meta.json 里人工写死的；以及
  * src/data/book-descriptions.json 里由 scripts/sync-book-descriptions.mjs 从 NeoDB 取回的（已剔除宣传语）。
  * 两边都没有就不输出该字段，页面自动收回到「书名 + 作者」。
@@ -68,6 +68,14 @@ export interface ReadingDayBook {
      * 页面据此区分「0%」和「未开始」，不会渲染成一排 0% 进度条。
      */
     progress?: number;
+    /**
+     * 截至当天的**推算**进度（0-100 整数），与 progress 语义分开：
+     * position 是覆盖式快照、没有历史，所以只有「最后一次同步」那天是真实值，
+     * 其余日期按 `最终 progress × 截至当天累计秒数 ÷ 该书总秒数` 线性分摊。
+     * 分母只算入选卡片（≥ MIN_DAY_SECONDS）的秒数，因此最后一天的推算值必然等于 progress。
+     * 渲染层据此决定是否加 `≈`（等值时不加）。progress 字段保持原义，不参与推算。
+     */
+    progressEst?: number;
     /** 封面键：sha256(file_md5) 前 12 位，不是 file_md5 本身。取不到就省略。 */
     cover?: string;
     highlights: ReadingHighlight[];
@@ -520,6 +528,20 @@ export function buildReadingData(
         })
         .filter((day) => day.books.length > 0)
         .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+
+    // 4.5) 每日推算进度：只有 position 那个点是真的（覆盖式快照，无历史），其余按累计时长分摊。
+    //      按日期升序累加，最后一天累计 = 该书总秒数 → 必然等于最终 progress（单测断言这条性质）。
+    const cumByTitle = new Map<string, number>();
+    for (const day of [...days].reverse()) {
+        for (const book of day.books) {
+            const total = perBook.get(book.title)?.seconds ?? 0;
+            const cum = (cumByTitle.get(book.title) ?? 0) + book.seconds;
+            cumByTitle.set(book.title, cum);
+            if (typeof book.progress !== 'number' || total <= 0) continue;
+            book.progressEst =
+                cum >= total ? book.progress : Math.min(book.progress, Math.round((book.progress * cum) / total));
+        }
+    }
 
     // 5) 每本累计（时长降序）
     const books: ReadingBookSummary[] = [...perBook.values()]

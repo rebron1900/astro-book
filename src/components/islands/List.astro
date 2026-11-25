@@ -187,6 +187,11 @@ function excerptText(value: string | null | undefined, max = 150) {
                         <span>在读 <strong>{readingOverview.inProgress}</strong> 本</span>
                     </p>
                 )}
+                {activeKind === 'reading' && (
+                    <p class="reading-progress-note">
+                        进度说明：每本书只有最后一次同步时的进度是真实的，其余日期按截至当天的累计阅读时长推算，显示为「≈xx%」。
+                    </p>
+                )}
             </header>
         )}
 

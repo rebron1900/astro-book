@@ -6,17 +6,18 @@
    被 timeline.scss @import（只在时间线页面加载）。
    ========================================================================== */
 
-/* 划线入口：卡片右上角的图标，和 .neodb-card .rating 同一个角位 */
+/* 划线入口：卡片右上角的图标 + 条数，和 .neodb-card .rating 同一个角位 */
 .reading-card .rd-tip-trigger {
     position: absolute;
     inset-block-start: 0.6rem;
     inset-inline-end: 0.6rem;
     z-index: 2;
-    display: grid;
-    place-items: center;
-    inline-size: 1.6rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.18rem;
+    min-inline-size: 1.6rem;
     block-size: 1.6rem;
-    padding: 0;
+    padding: 0 0.35rem;
     border: 0;
     border-radius: 999px;
     background: color-mix(in srgb, var(--gray-100) 82%, transparent);
@@ -30,6 +31,16 @@
 .reading-card .rd-tip-trigger svg {
     inline-size: 0.82rem;
     block-size: 0.82rem;
+    flex: none;
+}
+
+/* 条数紧跟图标，视觉上只留「图标 数字」，不写「新增/条划线」 */
+.reading-card .rd-tip-count {
+    color: inherit;
+    font-size: 0.6875rem;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
 }
 
 .reading-card .rd-tip-trigger:hover,
@@ -58,6 +69,14 @@
 .reading-overview strong {
     color: var(--body-font-color);
     font-weight: 600;
+}
+
+/* 进度口径说明：真实进度只有最后一次同步的点，其余按阅读时长推算 */
+.reading-progress-note {
+    margin: 0.3rem 0 0;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    line-height: 1.55;
 }
 
 /* 卡片主信息：分钟数 / 新增划线数 / 本书进度 */
@@ -92,35 +111,37 @@
     letter-spacing: 0;
 }
 
-.reading-card .rd-stat-highlights {
-    padding: 0.1rem 0.4rem;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--color-link) 10%, transparent);
-    color: color-mix(in srgb, var(--color-link) 78%, var(--gray-600));
-    font-weight: 600;
-}
-
-.reading-card .rd-stat-progress {
-    color: color-mix(in srgb, var(--color-link) 72%, var(--gray-600));
-    font-weight: 600;
-}
-
-/* 阅读进度细条：0% 也保留轨道，能看出「开始了但刚开始」 */
+/* 阅读进度条：卡片最底一行，横跨内容区整宽；百分比数字直接放在条内右端。
+   推算值以 ≈ 前缀区分（见 LedgerReading.astro），真实值不加。 */
 .reading-card .rd-progress {
-    display: flex;
-    max-inline-size: 12rem;
-    block-size: 0.28rem;
-    margin-block-start: 0.4rem;
+    position: relative;
+    grid-column: 1 / -1;
+    block-size: 1.1rem;
+    margin-block-start: 0.2rem;
     overflow: hidden;
     border-radius: 999px;
     background: var(--gray-200);
+    font-variant-numeric: tabular-nums;
 }
 
 .reading-card .rd-progress-fill {
-    display: block;
-    block-size: 100%;
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
     border-radius: inherit;
-    background: color-mix(in srgb, var(--color-link) 85%, var(--gray-500));
+    /* 半透明填充：数字压在条上，在浅轨道和填充上都读得清 */
+    background: color-mix(in srgb, var(--color-link) 34%, transparent);
+}
+
+.reading-card .rd-progress-value {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: 0.45rem;
+    transform: translateY(-50%);
+    color: var(--gray-700);
+    font-size: 0.625rem;
+    font-weight: 650;
+    line-height: 1;
 }
 
 /* 书籍简介：没有简介时整行不渲染，卡片自动收回到书名 + 作者 */

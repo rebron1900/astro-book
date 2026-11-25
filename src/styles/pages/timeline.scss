@@ -971,8 +971,10 @@
     overflow: hidden;
 }
 
+/* 阅读卡片两行：封面/文字占满上方，进度条钉在卡片最底部（同行卡片被拉齐时也不悬空） */
 .reading-cards .reading-card {
     align-content: start;
+    grid-template-rows: minmax(0, 1fr) auto;
 }
 
 .reading-more {

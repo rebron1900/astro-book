@@ -187,6 +187,52 @@ describe('阅读进度 position', () => {
     });
 });
 
+describe('每日推算进度 progressEst', () => {
+    const rows = () => [
+        row('book', BOOK_A, { title: '进度书' }),
+        row('position', BOOK_A, { last_read_position: 'epubcfi(/6/10!/4)', reading_percentage: 0.42 }),
+        row('time', 'a', { book_id: BOOK_A, date: '2026-11-20', reading_time: 300 }),
+        row('time', 'b', { book_id: BOOK_A, date: '2026-11-21', reading_time: 600 }),
+        row('time', 'c', { book_id: BOOK_A, date: '2026-11-22', reading_time: 300 })
+    ];
+    const data = buildReadingData(rows(), { now: NOW });
+    const byDate = (date: string) => data.days.find((day) => day.date === date)!.books[0];
+
+    it('按「最终 pct × 截至当天累计秒数 ÷ 总秒数」线性分摊，四舍五入', () => {
+        // 总 1200 秒（每天都不低于 2 分钟门槛），最终 42%：300s → 10.5 → 11；900s → 31.5 → 32；1200s → 42
+        expect(byDate('2026-11-20').progressEst).toBe(11);
+        expect(byDate('2026-11-21').progressEst).toBe(32);
+        expect(byDate('2026-11-22').progressEst).toBe(42);
+    });
+
+    it('最后一天必然等于真实 progress（推算的边界性质）', () => {
+        const ascending = [...data.days].sort((a, b) => (a.date < b.date ? -1 : 1));
+        const last = ascending[ascending.length - 1].books[0];
+        expect(last.progressEst).toBe(last.progress);
+        expect(last.progressEst).toBe(42);
+    });
+
+    it('真实 progress 字段保持原义：每天都是最终快照值，不被推算值覆盖', () => {
+        expect(byDate('2026-11-20').progress).toBe(42);
+        expect(byDate('2026-11-21').progress).toBe(42);
+        expect(byDate('2026-11-22').progress).toBe(42);
+    });
+
+    it('不足 2 分钟被滤除的碎片不计入分母，最后一天仍等于真实值', () => {
+        const withDropped = buildReadingData([...rows(), row('time', 'dropped', { book_id: BOOK_A, date: '2026-11-19', reading_time: 60 })], { now: NOW });
+        expect(withDropped.days.some((day) => day.date === '2026-11-19')).toBe(false);
+        const last = withDropped.days.find((day) => day.date === '2026-11-22')!.books[0];
+        // 若把 60 秒算进分母，会得到 round(42*1200/1260)=40，这里断言分母是 1200
+        expect(last.progressEst).toBe(42);
+        expect(withDropped.days.find((day) => day.date === '2026-11-21')!.books[0].progressEst).toBe(32);
+    });
+
+    it('没有 position 的书不输出 progressEst', () => {
+        const noPosition = buildReadingData([row('book', BOOK_B, { title: '没进度' }), row('time', 'x', { book_id: BOOK_B, date: '2026-11-21', reading_time: 300 })], { now: NOW });
+        expect('progressEst' in noPosition.days[0].books[0]).toBe(false);
+    });
+});
+
 describe('当日不足 MIN_DAY_SECONDS 的卡片', () => {
     it('119 秒过滤、120 秒保留，整天被滤掉则日期整个消失', () => {
         const data = buildReadingData(
