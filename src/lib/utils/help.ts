@@ -154,3 +154,28 @@ export function normalizeData(data: string | number | null | undefined): string 
 //         console.log('compress font success\n');
 //     });
 // }
+
+/** 站点固定按北京时间（UTC+8）算日期：CI 在 UTC 上构建，直接用本地时间会把 00:00–08:00 的记录算到前一天。 */
+const CN_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+export function cnDateParts(time: number): { year: number; month: number; day: number; weekday: number } {
+    const date = new Date(time + CN_OFFSET_MS);
+    return {
+        year: date.getUTCFullYear(),
+        month: date.getUTCMonth() + 1,
+        day: date.getUTCDate(),
+        weekday: date.getUTCDay()
+    };
+}
+
+/** `2026-11-13`（北京时间） */
+export function cnDateKey(time: number): string {
+    const { year, month, day } = cnDateParts(time);
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+/** `11.13`（北京时间） */
+export function cnDayLabel(time: number): string {
+    const { month, day } = cnDateParts(time);
+    return `${String(month).padStart(2, '0')}.${String(day).padStart(2, '0')}`;
+}

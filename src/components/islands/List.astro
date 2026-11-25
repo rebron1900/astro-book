@@ -3,7 +3,7 @@ import type { Memo } from '../../api/types';
 import type { TimelineEntry } from '../../api/store';
 import type { ReadingDayBook } from '../../lib/reading';
 import type { Post } from '@ts-ghost/content-api';
-import { normalizeSlug } from '../../lib/utils/help';
+import { normalizeSlug, cnDateKey, cnDayLabel, cnDateParts } from '../../lib/utils/help';
 import { timelineVisible, TIMELINE_INCLUDE_NEODB } from '../../api/store';
 import { BookHeart, BookOpenText, Clapperboard, Footprints, LibraryBig, MessageCircle } from '@lucide/astro';
 import PostMeta from '../ui/PostMeta.astro';
@@ -112,7 +112,7 @@ const timelineIntros = {
     }
 };
 const intro = timelineIntros[activeKind as keyof typeof timelineIntros] ?? timelineIntros.all;
-const currentYear = new Date().getFullYear();
+const currentYear = cnDateParts(Date.now()).year;
 
 // 按真实类型收窄：分组后的条目一定是 strava 那条分支，data 才能当 Activity 用
 const stravaGroupLeads = new Map<number, Array<Extract<TimelineEntry, { kind: 'strava' }>>>();
@@ -190,22 +190,20 @@ function dateAt(time: number) {
 }
 
 function dateKey(time: number) {
-    const date = dateAt(time);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    return cnDateKey(time);
 }
 
 function dayLabel(time: number) {
-    const date = dateAt(time);
-    return `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+    return cnDayLabel(time);
 }
 
 function weekday(time: number) {
-    return WEEKDAYS[dateAt(time).getDay()];
+    return WEEKDAYS[cnDateParts(time).weekday];
 }
 
 function fullDate(time: number) {
-    const date = dateAt(time);
-    return `${dateKey(time)} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    const date = new Date(time + 8 * 60 * 60 * 1000);
+    return `${dateKey(time)} ${String(date.getUTCHours()).padStart(2, '0')}:${String(date.getUTCMinutes()).padStart(2, '0')}`;
 }
 
 function excerptText(value: string | null | undefined, max = 150) {
@@ -274,7 +272,7 @@ function excerptText(value: string | null | undefined, max = 150) {
             return (
                 <article class:list={['ledger-row', { 'is-repeat': !showDate }]} data-kind={entry.kind} data-date-key={dateKey(entry.time)}>
                     <div class="ledger-date">
-                        {dateAt(entry.time).getFullYear() !== currentYear && <span class="ledger-year">{dateAt(entry.time).getFullYear()}</span>}
+                        {cnDateParts(entry.time).year !== currentYear && <span class="ledger-year">{cnDateParts(entry.time).year}</span>}
                         <time class="ledger-date-value" datetime={dateKey(entry.time)}>{dayLabel(entry.time)}</time>
                         <span class="ledger-weekday">{weekday(entry.time)}</span>
                     </div>

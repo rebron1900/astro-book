@@ -1,7 +1,7 @@
 ---
 import type { Post } from '@ts-ghost/content-api';
 import { BookOpenText } from '@lucide/astro';
-import { normalizeData, normalizeSlug } from '../../lib/utils/help';
+import { normalizeData, normalizeSlug, cnDateParts } from '../../lib/utils/help';
 import '../../styles/pages/archives.scss';
 
 type ArchivePost = Post & { type?: string };
@@ -18,10 +18,12 @@ type MonthGroup = {
 const groups = new Map<string, MonthGroup>();
 
 posts.forEach((post) => {
-    const date = new Date(post.published_at ?? post.created_at);
-    if (Number.isNaN(date.getTime())) return;
-    const year = String(date.getFullYear());
-    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const time = new Date(post.published_at ?? post.created_at).getTime();
+    if (Number.isNaN(time)) return;
+    // 按北京时间分月，避免 UTC 构建把凌晨发布的文章算到上个月
+    const parts = cnDateParts(time);
+    const year = String(parts.year);
+    const month = String(parts.month).padStart(2, '0');
     const key = `${year}-${month}`;
     let group = groups.get(key);
     if (!group) {

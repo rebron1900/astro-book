@@ -2,6 +2,7 @@
 import type { TimelineEntry } from '../../api/store';
 import { LibraryBig } from '@lucide/astro';
 import LedgerNeodb from './LedgerNeodb.astro';
+import { cnDateParts } from '../../lib/utils/help';
 import NeodbCategoryIcon from '../ui/NeodbCategoryIcon.astro';
 import '../../styles/pages/timeline-month.scss';
 
@@ -21,11 +22,11 @@ type MonthGroup = {
 
 const groups: MonthGroup[] = [];
 entries.forEach((entry) => {
-    const date = new Date(entry.time);
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const parts = cnDateParts(entry.time);
+    const key = `${parts.year}-${String(parts.month).padStart(2, '0')}`;
     let group = groups.find((item) => item.key === key);
     if (!group) {
-        group = { key, year: String(date.getFullYear()), month: String(date.getMonth() + 1), items: [] };
+        group = { key, year: String(parts.year), month: String(parts.month), items: [] };
         groups.push(group);
     }
     group.items.push(entry);
