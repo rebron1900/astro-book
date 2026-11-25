@@ -40,7 +40,7 @@ const ratingText =
         <div class="reading-head">
             <p class="reading-stats">
                 {statsText && (
-                    <span class="rd-stat" title={entry.minutes !== null ? `共 ${entry.minutes} 分钟` : undefined}>{statsText}</span>
+                    <span class="rd-stat" title={statsText}>{statsText}</span>
                 )}
             </p>
             {ratingText !== null ? (

@@ -76,6 +76,18 @@
     white-space: nowrap;
 }
 
+/* 描边覆盖层：进度条要贴到卡片底边，用最上层的 1px 内描边盖住它；
+   卡片本身不设 overflow:hidden，比例气泡不会被裁掉。 */
+.reading-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px var(--memo-border-color, var(--gray-200));
+    pointer-events: none;
+    z-index: 3;
+}
+
 /* 卡片主信息：一分钟数 / 集数 / 划线数，统一小字、同一字号 */
 .reading-card .reading-stats {
     display: flex;
@@ -92,6 +104,11 @@
     font-weight: 400;
     font-variant-numeric: tabular-nums;
     line-height: 1.4;
+    /* 统计行只占一行：集数区间太长时省略，完整内容看 title 或悬停面板 */
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* 阅读进度条：卡片最底一行，横跨内容区整宽。
@@ -103,14 +120,14 @@
     --rd-bar: var(--hint-color-info);
     --rd-bar-ink: #fff;
     /* 绝对定位在卡片底部内缘：不参与布局，有进度条和没进度条的卡片同高。
-       横向从卡片最左到最右（不是内容区）；只让 1px 出来，避让卡片那圈 1px 描边，
-       两个下角用「卡片圆角 − 描边」的内圆角，和描边衔接才不会出现断口。 */
+       横向铺满卡片（最左到最右），下角跟随卡片圆角；那圈 1px 描边由 ::after 覆盖层
+       画在最上面，所以进度条不会把描边盖掉，衔接处是一条完整的线。 */
     position: absolute;
-    inset-inline: 1px;
-    inset-block-end: 1px;
+    inset-inline: 0;
+    inset-block-end: 0;
     block-size: 4px;
     margin: 0;
-    border-radius: 0 0 calc(0.5rem - 1px) calc(0.5rem - 1px);
+    border-radius: 0 0 0.5rem 0.5rem;
     background: var(--gray-200);
     font-variant-numeric: tabular-nums;
 }
