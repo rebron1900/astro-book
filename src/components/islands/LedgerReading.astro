@@ -2,9 +2,10 @@
 /**
  * 时间线「阅读」卡片：一本书一天一张，沿用书影音卡片的几何（.reading-card 复用 neodb 那套样式）。
  *
- * 主信息是这一天的阅读量：第一行是分钟数（左）+ 划线图标与条数（右），书名／作者／两行简介在其下。
- * 进度条在卡片最底部、横跨内容区整宽，只有 4px 细条；百分比做成小气泡浮在填充右端上方
- * （absolute、不进文档流，不占卡片高度，也不为它留一整行）。条和气泡按进度取语义色（见 PROGRESS_TIERS）：
+ * 主信息是这一天的阅读量：第一行是分钟数（左）+ 划线图标与条数（右），书名与作者同一行
+ * （书名可省略、作者先限宽 46%），下面是两行简介。
+ * 进度条在卡片最底部、横跨内容区整宽，只有 4px 细条，轨道上下各留 8.8px；百分比做成小气泡挂在
+ * 轨道下方（absolute、不进文档流）。条和气泡按进度取语义色（见 PROGRESS_TIERS）：
  * <34% 红、34–66% 黄、≥67% 蓝。真实进度已到 100%（即最后一天）的卡照样留满条（蓝），但不出气泡、不显示 100%。
  * 进度口径：position 只有「最后一次同步」那个点是真的，其余日期按累计阅读时长推算，
  * 推算值前加 `≈`，aria-label / title 里写明「按阅读时长推算」。
@@ -79,8 +80,10 @@ const highlightsLabel = `${highlights.length} 条划线`;
                 </button>
             )}
         </div>
-        <h2 class="entry-title" title={book.title}>{book.title}</h2>
-        {book.author && <p class="reading-author">{book.author}</p>}
+        <h2 class="reading-titleline">
+            <span class="entry-title" title={book.title}>{book.title}</span>
+            {book.author && <span class="reading-author" title={book.author}>{book.author}</span>}
+        </h2>
         {book.description && <p class="reading-desc">{book.description}</p>}
     </div>
     {shownProgress !== null && (

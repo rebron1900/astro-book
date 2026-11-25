@@ -52,23 +52,6 @@
     outline-offset: 2px;
 }
 
-/* 阅读页头总览：累计时长 + 书数 + 读完 / 在读（与卡片同口径） */
-.reading-overview {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem 0.9rem;
-    margin: 0.7rem 0 0;
-    color: var(--gray-600);
-    font-size: 0.75rem;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.5;
-}
-
-.reading-overview strong {
-    color: var(--body-font-color);
-    font-weight: 600;
-}
-
 /* 进度口径说明：真实进度只有最后一次同步的点，其余按阅读时长推算 */
 .reading-progress-note {
     margin: 0.3rem 0 0;
@@ -120,16 +103,17 @@
 
 /* 阅读进度条：卡片最底一行，横跨内容区整宽。
    轨道只有 4px（.rd-progress 本体就是轨道，容器高度就是 4px）；
-   百分比气泡绝对定位浮在轨道上方，不进文档流，不占卡片高度。
+   轨道上下各留同一个 --rd-bar-space（8.8px），气泡挂到轨道下方，不再向上占位。
    颜色按进度分三档，只把档名挂在 [data-tier] 上，真实颜色复用系统 --hint-color-* 变量
    （阈值见 src/lib/reading.ts 的 PROGRESS_TIERS）。 */
 .reading-card .rd-progress {
     --rd-bar: var(--hint-color-info);
     --rd-bar-ink: #fff;
+    --rd-bar-space: 0.55rem;
     position: relative;
     grid-column: 1 / -1;
     block-size: 4px;
-    margin-block-start: 0.2rem;
+    margin-block: var(--rd-bar-space);
     border-radius: 999px;
     background: var(--gray-200);
     font-variant-numeric: tabular-nums;
@@ -157,10 +141,13 @@
     background: var(--rd-bar);
 }
 
-/* 百分比气泡：浮在填充右端上方，三角指向轨道；clamp 保证 0% / 100% 都不出卡片 */
+/* 百分比气泡：挂在轨道下方（4px 间隙），小三角朝上指向轨道；
+   水平仍用 clamp + translateX(-50%)，0% / 100% 都不出卡片。
+   下方可用空间 = 8.8px 轨道下间距 + 12px 卡片内边距 = 20.8px，气泡 14.53px + 4px = 18.53px 放得下。 */
 .reading-card .rd-progress-badge {
     position: absolute;
-    inset-block-end: calc(100% + 5px);
+    inset-block-start: calc(100% + 4px);
+    inset-block-end: auto;
     inset-inline-start: clamp(0.9rem, var(--p, 0%), calc(100% - 0.9rem));
     transform: translateX(-50%);
     padding: 0.08rem 0.3rem;
@@ -176,12 +163,12 @@
 .reading-card .rd-progress-badge::after {
     content: '';
     position: absolute;
-    inset-block-start: 100%;
+    inset-block-end: 100%;
     inset-inline-start: 50%;
     transform: translateX(-50%);
     border: 3px solid transparent;
-    border-block-start-color: var(--rd-bar);
-    border-block-end-width: 0;
+    border-block-end-color: var(--rd-bar);
+    border-block-start-width: 0;
 }
 
 /* 书籍简介：没有简介时整行不渲染，卡片自动收回到书名 + 作者 */
@@ -194,6 +181,21 @@
     line-height: 1.5;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+}
+
+/* ---------- 全文 tooltip（书名 / 作者 / 简介被截断时） ---------- */
+.tippy-box[data-theme~='reading-full'] {
+    font-size: 0.75rem;
+    line-height: 1.55;
+}
+
+/* 简介可能很长：限高滚动，滚动条只给内容层 */
+.tippy-box[data-theme~='reading-full'] .tippy-content {
+    max-block-size: min(22rem, 60vh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 /* ---------- 划线面板（tippy 内容） ---------- */

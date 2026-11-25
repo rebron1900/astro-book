@@ -949,10 +949,11 @@
 
 /* 阅读卡片：几何沿用 .neodb-card（类名双双挂上），这里只补它独有的部分 */
 /* 划线入口已移到第一行，右内边距不再为角上图标预留，书名可用满列宽；
-   底部 1.1rem 是空白呼吸区，给浮在轨道上方的百分比气泡留位置（气泡本身不占布局）。 */
+   底部不再预先留一整条气泡占位：有气泡的卡只让轨道让出「气泡高 + 5px 间隙」，
+   没有气泡的读完卡只留 3.2px 收尾。 */
 .reading-card .media-info {
     padding-inline-end: 0;
-    padding-block-end: 1.1rem;
+    padding-block-end: 0;
 }
 
 /* 封面按原样展示：3.8rem 宽、2:3，不拉伸不裁切；卡片高度由右侧文字决定 */
@@ -960,30 +961,73 @@
     align-self: start;
 }
 
-.reading-card .reading-author {
-    margin: 0.1rem 0 0;
-    color: var(--gray-500);
-    font-size: 0.6875rem;
+/* 书名 + 作者同一行：书名左、作者紧跟，按基线对齐。
+   书名可压缩并省略（min-inline-size: 0 + flex-shrink），作者先限宽 46%、超了再省略；
+   两者都保留真实文本与 title，悬停可看全名。没有作者时书名独占整行。 */
+.reading-card .reading-titleline {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    min-inline-size: 0;
+    margin: 0.2rem 0 0;
+}
+
+.reading-card .reading-titleline .entry-title {
+    flex: 0 1 auto;
+    min-inline-size: 0;
+    margin: 0;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    display: block;
 }
 
-.reading-card .entry-title {
-    margin-block-start: 0.2rem;
-    white-space: normal;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+.reading-card .reading-titleline .reading-author {
+    flex: 0 0 auto;
+    max-inline-size: 46%;
+    margin: 0;
     overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    line-height: inherit;
 }
 
-/* 阅读卡片两行：封面/文字占满上方，进度条钉在卡片最底部（同行卡片被拉齐时也不悬空） */
+/* 阅读卡片两行：封面/文字占满上方，进度条紧跟内容贴底。
+   卡片不被行高拉伸（align-self: start），否则短卡会在简介与轨道之间留出一条空带；
+   气泡需要的空间由 .rd-progress 自己的 margin 精确给出，行间距为 0，避免叠加。 */
 .reading-cards .reading-card {
+    align-self: start;
     align-content: start;
     grid-template-rows: minmax(0, 1fr) auto;
-    /* 行间距收紧：信息块与贴底的进度条之间不留大空档（列间距仍由 .neodb-card 给） */
-    row-gap: 0.35rem;
+    row-gap: 0;
+}
+
+/* 单列时卡片内边距从 12px 收到 9.6px，气泡（18.53px）会比「8.8 + 9.6」差 0.13px；
+   底部补到 10px，气泡底边刚好落在卡片内，不靠撑高卡片。 */
+@media (max-width: 64rem) {
+    .reading-card {
+        padding-block-end: 0.625rem;
+    }
+}
+
+/* 窄屏（≤30rem）书名会被压到 95px 左右（≈6 个字，不可读）：书名独行、作者另起一行小字。 */
+@media (max-width: 30rem) {
+    .reading-card .reading-titleline {
+        display: block;
+    }
+
+    .reading-card .reading-titleline .entry-title {
+        display: block;
+    }
+
+    .reading-card .reading-titleline .reading-author {
+        display: block;
+        max-inline-size: none;
+        margin-block-start: 0.1rem;
+        font-size: 0.625rem;
+    }
 }
 
 .reading-more {
