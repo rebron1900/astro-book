@@ -782,15 +782,14 @@
     white-space: nowrap;
 }
 
-/* 下段：简介独立整行（跨两列），宽度 = 卡片内宽 − 左右内边距（12px × 2） */
+/* 简介：留在文字栏内（卡片右侧），2 行截断；/douban/ 与时间线共用这套卡片，
+   曾改成跨两列的整行，导致 /douban/ 看起来简介掉出卡片，已回退。 */
 .neodb-card .excerpt {
     display: -webkit-box;
-    grid-column: 1 / -1;
-    max-inline-size: none;
-    margin: 0.4rem 0 0;
+    margin: 0.35rem 0 0;
     overflow: hidden;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
 }
 
 .kicker {

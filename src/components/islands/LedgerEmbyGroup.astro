@@ -64,10 +64,8 @@ const stateLabel = `${latest.title}，${entries.length} 集，最后一条 ${lat
     <div class="media-info">
         <div class="reading-head">
             <p class="reading-stats">
-                <span class="rd-stat rd-stat-duration">
-                    <span class="rd-stat-prefix">看了</span>
-                    <strong>{entries.length}</strong>
-                    <span class="rd-unit">集</span>
+                <span class="rd-stat">
+                    看了 {entries.length} 集 / <span class="emby-episode-range" data-episode-range title={subtitle}>{subtitle}</span>
                 </span>
             </p>
             {ratingText !== null ? (
@@ -80,7 +78,6 @@ const stateLabel = `${latest.title}，${entries.length} 集，最后一条 ${lat
         </div>
         <h2 class="reading-titleline">
             <span class="entry-title" title={latest.title}>{latest.title}</span>
-            <span class="reading-author emby-sub emby-episode-range" data-episode-range>{subtitle}</span>
         </h2>
         {overview && <p class="reading-desc">{overview}</p>}
     </div>

@@ -52,14 +52,6 @@
     outline-offset: 2px;
 }
 
-/* 进度口径说明：真实进度只有最后一次同步的点，其余按阅读时长推算 */
-.reading-progress-note {
-    margin: 0.3rem 0 0;
-    color: var(--gray-500);
-    font-size: 0.6875rem;
-    line-height: 1.55;
-}
-
 /* 卡片主信息第一行：分钟数居左、划线入口居右 */
 .reading-card .reading-head {
     display: flex;
@@ -84,7 +76,7 @@
     white-space: nowrap;
 }
 
-/* 卡片主信息：分钟数 / 新增划线数 / 本书进度 */
+/* 卡片主信息：一分钟数 / 集数 / 划线数，统一小字、同一字号 */
 .reading-card .reading-stats {
     display: flex;
     flex-wrap: wrap;
@@ -96,22 +88,10 @@
 
 .reading-card .rd-stat {
     color: var(--gray-600);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
+    font-weight: 400;
     font-variant-numeric: tabular-nums;
     line-height: 1.4;
-}
-
-/* 分钟数最显眼 */
-.reading-card .rd-stat-duration {
-    color: var(--body-font-color);
-    font-weight: 650;
-}
-
-.reading-card .rd-stat-duration .rd-unit {
-    margin-inline-start: 0.18rem;
-    color: var(--gray-600);
-    font-weight: 500;
-    letter-spacing: 0;
 }
 
 /* 阅读进度条：卡片最底一行，横跨内容区整宽。
@@ -122,12 +102,14 @@
 .reading-card .rd-progress {
     --rd-bar: var(--hint-color-info);
     --rd-bar-ink: #fff;
-    --rd-bar-space: 0.55rem;
-    position: relative;
-    grid-column: 1 / -1;
+    /* 绝对定位在卡片底部内缘：不参与布局，有进度条和没进度条的卡片同高。
+       横向从卡片最左边画到最右边（不是内容区），底部两个角跟随卡片圆角。 */
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
     block-size: 4px;
-    margin-block: var(--rd-bar-space) 0;
-    border-radius: 999px;
+    margin: 0;
+    border-radius: 0 0 0.5rem 0.5rem;
     background: var(--gray-200);
     font-variant-numeric: tabular-nums;
 }
@@ -166,10 +148,11 @@
 
 .reading-card .rd-progress-badge {
     position: absolute;
-    inset-block-start: calc(100% + 4px);
+    /* 气泡垂直居中压在进度条上：只占轨道那 4px 的高度感，不额外撑高卡片 */
+    inset-block-start: 50%;
     inset-block-end: auto;
     inset-inline-start: var(--p, 0%);
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     z-index: 2;
     padding: 0.08rem 0.3rem;
     border-radius: 0.25rem;
@@ -185,16 +168,6 @@
     white-space: nowrap;
 }
 
-.reading-card .rd-progress-badge::after {
-    content: '';
-    position: absolute;
-    inset-block-end: 100%;
-    inset-inline-start: 50%;
-    transform: translateX(-50%);
-    border: 3px solid transparent;
-    border-block-end-color: var(--rd-bar);
-    border-block-start-width: 0;
-}
 
 /* 书籍简介：没有简介时整行不渲染，卡片自动收回到书名 + 作者 */
 .reading-card .reading-desc {
@@ -311,14 +284,7 @@
 
 /* ---------- 剧集聚合卡：卡片堆叠 + 集数清单 tooltip ---------- */
 
-/* 聚合卡的集数前缀：看了 3 集 */
-.reading-card .rd-stat-prefix {
-    margin-inline-end: 0.12rem;
-    color: var(--gray-600);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0;
-}
+/* 聚合卡下已无单独前缀元素：集数与区间同处一个 rd-stat 里 */
 
 /* 集数区间：聚合卡唯一的面板触发点，用虚线下划线提示可悬停。 */
 .reading-card .emby-episode-range {

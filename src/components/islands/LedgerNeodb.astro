@@ -29,6 +29,6 @@ const href = `/golink?target=${btoa(encodeURIComponent(mark.item.id ?? `https://
         <h2 class="entry-title">
             <a href={href}>{title}<span class="ext">↗</span></a>
         </h2>
+        {mark.comment_text && <p class="excerpt">“{mark.comment_text}”</p>}
     </div>
-    {mark.comment_text && <p class="excerpt">“{mark.comment_text}”</p>}
 </div>

@@ -21,10 +21,8 @@ const watch = embyCardState(entry);
 const tier = progressTier(watch.barPercent);
 const watchedMinutes =
     entry.minutes === null ? null : Math.max(0, Math.round(entry.minutes * (watch.barPercent / 100)));
-const subtitle =
-    entry.type === 'episode'
-        ? [entry.episodeCode, entry.episodeTitle].filter(Boolean).join(' · ')
-        : entry.meta ?? '';
+// 电影不再展示「年份 · 类型」副标题；剧集保留季集号（如 S01E05 · 集名）
+const subtitle = entry.type === 'episode' ? [entry.episodeCode, entry.episodeTitle].filter(Boolean).join(' · ') : '';
 const stateLabel = `${entry.title}，${watch.label}${watch.bubble ? `（${watch.bubble}）` : ''}`;
 const overview = entry.overview ?? entry.seriesOverview;
 const ratingValue = entry.seriesRating ?? entry.rating;
@@ -39,12 +37,12 @@ const ratingText =
     <div class="media-info">
         <div class="reading-head">
             <p class="reading-stats">
-                {watchedMinutes !== null && (
-                    <span class="rd-stat rd-stat-duration" title={entry.minutes !== null ? `共 ${entry.minutes} 分钟` : undefined}>
-                        <span class="rd-stat-prefix">已看</span>
-                        <strong>{watchedMinutes}</strong>
-                        <span class="rd-unit">分钟</span>
-                    </span>
+                {watch.state === 'watched' ? (
+                    <span class="rd-stat" title={entry.minutes !== null ? `共 ${entry.minutes} 分钟` : undefined}>已看完</span>
+                ) : (
+                    watchedMinutes !== null && (
+                        <span class="rd-stat" title={entry.minutes !== null ? `共 ${entry.minutes} 分钟` : undefined}>已看 {watchedMinutes} 分钟</span>
+                    )
                 )}
             </p>
             {ratingText !== null ? (
@@ -61,8 +59,10 @@ const ratingText =
         </h2>
         {overview && <p class="reading-desc">{overview}</p>}
     </div>
-    <div class="rd-progress" role="img" aria-label={stateLabel} title={stateLabel} data-tier={tier} style={`--p: ${watch.barPercent}%`}>
-        <span class="rd-progress-fill" style={`inline-size: ${watch.barPercent}%`}></span>
-        {watch.bubble && <span class="rd-progress-badge" aria-hidden="true">{watch.bubble}</span>}
-    </div>
+    {watch.state !== 'watched' && (
+        <div class="rd-progress" role="img" aria-label={stateLabel} title={stateLabel} data-tier={tier} style={`--p: ${watch.barPercent}%`}>
+            <span class="rd-progress-fill" style={`inline-size: ${watch.barPercent}%`}></span>
+            {watch.bubble && <span class="rd-progress-badge" aria-hidden="true">{watch.bubble}</span>}
+        </div>
+    )}
 </div>
