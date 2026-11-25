@@ -5,7 +5,7 @@ import type { ReadingDayBook } from '../../lib/reading';
 import type { Post } from '@ts-ghost/content-api';
 import { normalizeSlug } from '../../lib/utils/help';
 import { timeline } from '../../api/store';
-import { BookOpenText, Footprints, LibraryBig, MessageCircle } from '@lucide/astro';
+import { BookHeart, BookOpenText, Footprints, LibraryBig, MessageCircle } from '@lucide/astro';
 import PostMeta from '../ui/PostMeta.astro';
 import LedgerMemo from './LedgerMemo.astro';
 import LedgerNeodb from './LedgerNeodb.astro';
@@ -225,7 +225,8 @@ function excerptText(value: string | null | undefined, max = 150) {
                             {entry.kind === 'memo' && <MessageCircle />}
                             {entry.kind === 'neodb' && (neodbGroup ? <LibraryBig /> : <NeodbCategoryIcon category={entry.data.item.category} />)}
                             {entry.kind === 'strava' && <Footprints />}
-                            {entry.kind === 'reading' && <BookOpenText />}
+                            {/* 阅读用书+心形，和文章的 BookOpenText 区分开 */}
+                            {entry.kind === 'reading' && <BookHeart />}
                         </span>
                     </div>
 

@@ -81,10 +81,14 @@ describe('renderHighlights 结构', () => {
         expect(html).toContain('datetime="2026-09-23"');
     });
 
-    it('缺日期时不输出空日期标签，内容照常渲染', () => {
-        const html = renderHighlights([{ chapter: '', content: '无日期的划线', readerNote: '', date: '' }]);
-        expect(html).not.toContain('rd-tip-date');
-        expect(html).toContain('无日期的划线');
+    it('划线没带日期时用卡片日期兜底；连兜底都没有才不输出日期标签', () => {
+        const withFallback = renderHighlights([{ chapter: '', content: '无日期的划线', readerNote: '', date: '' }], '2026-11-02');
+        expect(withFallback).toContain('2026 年 11 月 2 日');
+        expect(withFallback).toContain('无日期的划线');
+
+        const bare = renderHighlights([{ chapter: '', content: '无日期的划线', readerNote: '', date: '' }]);
+        expect(bare).not.toContain('rd-tip-date');
+        expect(bare).toContain('无日期的划线');
     });
 });
 

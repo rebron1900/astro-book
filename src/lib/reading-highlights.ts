@@ -55,8 +55,10 @@ function groupByChapter(highlights: ReadingHighlight[]): ChapterGroup[] {
  * 卡片本身是一天一张，所以大多数情况只有一组；日期不同说明划线是别的日子留下的
  * （note 的 create_time 与阅读日不一致），此时日期标签才真正起到区分作用。
  * @param highlights 该书全部划线，已按时间升序（未截断）
+ * @param fallbackDate 划线自身没带日期时用它（卡片日期）。旧数据升级前没有逐条日期，
+ *   这时显示的日期就是这张卡片的阅读日，不会出现空白标签。
  */
-export function renderHighlights(highlights: ReadingHighlight[]): string {
+export function renderHighlights(highlights: ReadingHighlight[], fallbackDate = ''): string {
     if (!highlights || highlights.length === 0) {
         return '<p class="rd-tip-empty">当天没有划线</p>';
     }
@@ -66,7 +68,7 @@ export function renderHighlights(highlights: ReadingHighlight[]): string {
     // 按日期分组，日期新的在前（和卡片「最近的先看」一致），组内仍按时间升序
     const byDate = new Map<string, ReadingHighlight[]>();
     for (const item of shown) {
-        const key = item.date || '';
+        const key = item.date || fallbackDate;
         const list = byDate.get(key) ?? [];
         list.push(item);
         byDate.set(key, list);

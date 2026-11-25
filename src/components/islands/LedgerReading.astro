@@ -21,7 +21,7 @@ interface Props {
 
 const { book, date, index, coverUrl = null } = Astro.props;
 const highlights = book.highlights ?? [];
-const highlightsHtml = renderHighlights(highlights);
+const highlightsHtml = renderHighlights(highlights, date);
 const excerpt = excerptOf(highlights);
 const hasHighlights = highlights.length > 0;
 const kickerParts = ['读过', shortDuration(book.seconds)];

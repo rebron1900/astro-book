@@ -5,8 +5,8 @@
  * - 面板挂在 body 上，不再被卡片自身的层叠/裁剪压住（卡片在网格里，往下展开会被后面的卡片盖住）；
  * - 外观和站内其它 tooltip（书籍作者、评论摘录、花园预览）一致，统一在全局 .tippy-box 里定义。
  *
- * 「已绑定」记录放在 globalThis 上、每次 init 换一份新的：调试时发现这个模块可能被重复求值，
- * 用 dataset 或模块变量做标记，会出现「新节点被当成已绑过」，面板再也不建。
+ * 「已绑定」记录放在 globalThis 上（而不是模块变量）：这个模块可能被重复求值，
+ * 用模块变量做标记时换页后新节点会被当成已绑过，面板再也不建。
  *
  * 两个实测坑（都在浏览器里复现过）：
  * 1. 懒绑定（第一次 hover 才建实例）时，tippy 首次定位量出 0×0，面板不出现；
@@ -14,6 +14,7 @@
  * 2. 预建实例的第一次 show 也可能定位失败；而同一实例 hide 再 show 就正常。
  *    因此悬停时先把面板在屏外（-9999px）摆好、量出真实尺寸，再按图标位置把它放好，
  *    之后交给 tippy 正常管理（trigger 用 tippy 默认的 mouseenter/focus 链）。
+ * 预建是逐个 try/catch 的，哪一张卡片建失败都不影响其余；悬停/聚焦时还会再补一次。
  *
  * 由 List.astro 通过 onPageLoad(initReadingTips) 挂载；无限滚动新插入的卡片靠 MutationObserver 补挂。
  */
@@ -66,7 +67,8 @@ function placeBeside(instance: Instance): void {
     box.style.visibility = '';
 }
 
-function attach(btn: HTMLElement): void {
+function attach(btn: TippyHost): void {
+    if (btn._tippy) return;
     const html = btn.dataset.tipHtml ?? '';
     if (!html) return;
     createTippy(btn, {
@@ -87,30 +89,65 @@ function attach(btn: HTMLElement): void {
     state().ids.add(btn);
 }
 
+/** 逐个建实例：单个失败（某一张卡片的 DOM 异常）不能拖住后面全部卡片。 */
 function bind(root: ParentNode = document): void {
-    const { ids } = state();
     root.querySelectorAll<TippyHost>(TRIGGER_SELECTOR).forEach((btn) => {
-        if (ids.has(btn)) return;
-        attach(btn);
+        if (btn._tippy) return;
+        try {
+            attach(btn);
+        } catch (error) {
+            // 单张卡片建实例失败不该拖住其余卡片：只告警，悬停时还会再试一次
+            console.warn('[reading-tips] 划线面板建实例失败', error);
+        }
     });
 }
 
+/** 悬停/聚焦时如果还没有实例（上面的预建失败，或懒加载进来的新卡片），就地补一个。 */
+function ensure(hovered: TippyHost): void {
+    if (hovered._tippy) return;
+    try {
+        attach(hovered);
+    } catch {
+        return;
+    }
+}
+
 export function initReadingTips(): (() => void) | void {
-    // 新的一次页面挂载：旧 DOM 已随页面换掉，记录按当前窗口序号重开
+    // 新的一次页面挂载：旧 DOM 已随页面换掉，记录重开
     const s = state();
     s.seq += 1;
     s.ids = new WeakSet<HTMLElement>();
 
+    // 过渡动画跑完再统一建：此时布局与字体已稳，首次量尺寸不会算成 0×0
     const boot = afterTransition(() => bind());
     bind();
 
+    const onOver = (event: Event) => {
+        const btn = (event.target as Element | null)?.closest?.(TRIGGER_SELECTOR) as TippyHost | null;
+        if (btn) ensure(btn);
+    };
+    const onFocus = (event: Event) => {
+        const btn = (event.target as Element | null)?.closest?.(TRIGGER_SELECTOR) as TippyHost | null;
+        if (btn) ensure(btn);
+    };
+    document.addEventListener('pointerover', onOver);
+    document.addEventListener('focusin', onFocus);
+
     // 无限滚动新插入的卡片也要绑上
     const list = document.querySelector('[data-timeline-list]');
-    if (!list || typeof MutationObserver === 'undefined') return boot;
+    if (!list || typeof MutationObserver === 'undefined') {
+        return () => {
+            boot();
+            document.removeEventListener('pointerover', onOver);
+            document.removeEventListener('focusin', onFocus);
+        };
+    }
     const observer = new MutationObserver(() => bind(list));
     observer.observe(list, { childList: true, subtree: true });
     return () => {
         observer.disconnect();
         boot();
+        document.removeEventListener('pointerover', onOver);
+        document.removeEventListener('focusin', onFocus);
     };
 }
