@@ -118,6 +118,37 @@ export const MAX_HIGHLIGHTS = 30;
  */
 export const MIN_DAY_SECONDS = 120;
 
+/**
+ * 阅读进度分档：卡片进度条 / 气泡按进度取语义色，颜色本身复用系统 --hint-color-* 变量
+ * （只在这里决定「哪个百分比用哪档」，模板只把它映射成 data-tier，不写死颜色）。
+ * 区间：<34% danger（红）、34%–66% warning（黄）、≥67% info（蓝，含 100% 已读完）。
+ */
+export const PROGRESS_TIERS = [
+    { tier: 'danger', below: 34 },
+    { tier: 'warning', below: 67 },
+    { tier: 'info', below: 101 }
+] as const;
+
+export type ProgressTier = (typeof PROGRESS_TIERS)[number]['tier'];
+
+/** 0–100 的整数进度 → 分档名；越界值按最近的一端处理。 */
+export function progressTier(percent: number): ProgressTier {
+    const p = Math.max(0, Math.min(100, percent));
+    for (const { tier, below } of PROGRESS_TIERS) {
+        if (p < below) return tier;
+    }
+    return 'info';
+}
+
+/**
+ * 进度气泡要不要渲染：读完的书（真实快照与展示值都是 100，即最后一次同步那天）留满条但不出气泡、
+ * 也不显示 100%——条本身照画（蓝），只是没有文字。
+ */
+export function showsProgressBadge(shown: number | null, real: number | null): boolean {
+    if (shown === null) return false;
+    return !(shown === 100 && real === 100);
+}
+
 const KIND_TIME = 'time';
 const KIND_BOOK = 'book';
 const KIND_NOTE = 'note';

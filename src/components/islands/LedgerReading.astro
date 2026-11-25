@@ -2,18 +2,20 @@
 /**
  * 时间线「阅读」卡片：一本书一天一张，沿用书影音卡片的几何（.reading-card 复用 neodb 那套样式）。
  *
- * 主信息是这一天的阅读量：分钟数最显眼；书／作者／两行简介在其下。
- * 进度条在卡片最底部、横跨内容区整宽，百分比数字直接放在条内右端（不再单独占一行）。
+ * 主信息是这一天的阅读量：第一行是分钟数（左）+ 划线图标与条数（右），书名／作者／两行简介在其下。
+ * 进度条在卡片最底部、横跨内容区整宽，只有 4px 细条；百分比做成小气泡浮在填充右端上方
+ * （absolute、不进文档流，不占卡片高度，也不为它留一整行）。条和气泡按进度取语义色（见 PROGRESS_TIERS）：
+ * <34% 红、34–66% 黄、≥67% 蓝。真实进度已到 100%（即最后一天）的卡照样留满条（蓝），但不出气泡、不显示 100%。
  * 进度口径：position 只有「最后一次同步」那个点是真的，其余日期按累计阅读时长推算，
  * 推算值前加 `≈`，aria-label / title 里写明「按阅读时长推算」。
- * 划线入口是卡片右上角的 SVG 图标 + 条数（不再写「新增…条划线」），悬停或键盘聚焦弹出面板，
+ * 划线入口是 SVG 引号图标 + 条数，和分钟数同一行、靠右；悬停或键盘聚焦弹出面板，
  * 走全站同一套 tippy（createTippy + theme 'auto'，appendTo body）——面板挂到 body 上，
  * 不会被卡片裁掉，样式也和站内其它 tooltip 一致。交互见 reading-tips.ts。
  * 划线 HTML 构建期生成（先转义、无 HTML 透传），这里以字符串交给 tippy 的 content。
  */
 import { renderHighlights, shortDuration } from '../../lib/reading-highlights';
 import { TextQuote } from '@lucide/astro';
-import type { ReadingDayBook } from '../../lib/reading';
+import { progressTier, showsProgressBadge, type ReadingDayBook } from '../../lib/reading';
 
 interface Props {
     book: ReadingDayBook;
@@ -33,10 +35,19 @@ const realProgress = typeof book.progress === 'number' ? book.progress : null;
 const shownProgress = typeof book.progressEst === 'number' ? book.progressEst : realProgress;
 const isEstimated = shownProgress !== null && shownProgress !== realProgress;
 const progressText = shownProgress === null ? '' : `${isEstimated ? '≈' : ''}${shownProgress}%`;
+// 已读完：真实快照和推算值都到 100（即最后一次同步那天）才认，避免把推算满当成读完。
+// 已读完：真实快照和推算值都到 100（即最后一次同步那天）才认，避免把推算满当成读完；
+// 读完的卡照样留满条（蓝），只是不出气泡、不显示 100%（判据集中在 showsProgressBadge）。
+const showBadge = showsProgressBadge(shownProgress, realProgress);
+const isCompleted = shownProgress !== null && !showBadge;
+// 颜色分档只算出一个名字（danger/warning/info），具体颜色由 CSS 映射到 --hint-color-*。
+const tier = shownProgress === null ? null : progressTier(shownProgress);
 const progressLabel =
     shownProgress === null
         ? ''
-        : `《${book.title}》阅读进度 ${progressText}${isEstimated ? '，按阅读时长推算' : '，取自最后一次同步'}`;
+        : isCompleted
+          ? `《${book.title}》阅读进度 100%，已读完`
+          : `《${book.title}》阅读进度 ${progressText}${isEstimated ? '，按阅读时长推算' : '，取自最后一次同步'}`;
 // 划线入口的可访问名写全，视觉上只留图标 + 数字
 const highlightsLabel = `${highlights.length} 条划线`;
 ---
@@ -46,34 +57,36 @@ const highlightsLabel = `${highlights.length} 条划线`;
         {coverUrl ? <img src={coverUrl} alt={`${book.title}封面`} loading="lazy" decoding="async" /> : <span aria-hidden="true">{book.title.slice(0, 1)}</span>}
     </div>
     <div class="media-info">
-        <p class="reading-stats">
-            <span class="rd-stat rd-stat-duration" title={shortDuration(book.seconds)}>
-                <strong>{minutes}</strong>
-                <span class="rd-unit">分钟</span>
-            </span>
-        </p>
+        <div class="reading-head">
+            <p class="reading-stats">
+                <span class="rd-stat rd-stat-duration" title={shortDuration(book.seconds)}>
+                    <strong>{minutes}</strong>
+                    <span class="rd-unit">分钟</span>
+                </span>
+            </p>
+            {hasHighlights && (
+                <button
+                    type="button"
+                    class="rd-tip-trigger"
+                    aria-label={highlightsLabel}
+                    data-rd-trigger
+                    data-rd-date={date}
+                    data-rd-kind="reading"
+                    data-tip-html={highlightsHtml}
+                >
+                    <TextQuote size={13} stroke-width={2} aria-hidden="true" />
+                    <span class="rd-tip-count" aria-hidden="true">{highlights.length}</span>
+                </button>
+            )}
+        </div>
         <h2 class="entry-title" title={book.title}>{book.title}</h2>
         {book.author && <p class="reading-author">{book.author}</p>}
         {book.description && <p class="reading-desc">{book.description}</p>}
-        {hasHighlights && (
-            <button
-                type="button"
-                class="rd-tip-trigger"
-                aria-label={highlightsLabel}
-                data-rd-trigger
-                data-rd-date={date}
-                data-rd-kind="reading"
-                data-tip-html={highlightsHtml}
-            >
-                <TextQuote size={13} stroke-width={2} aria-hidden="true" />
-                <span class="rd-tip-count" aria-hidden="true">{highlights.length}</span>
-            </button>
-        )}
     </div>
     {shownProgress !== null && (
-        <div class="rd-progress" role="img" aria-label={progressLabel} title={progressLabel}>
+        <div class="rd-progress" role="img" aria-label={progressLabel} title={progressLabel} data-tier={tier} style={`--p: ${shownProgress}%`}>
             <span class="rd-progress-fill" style={`inline-size: ${shownProgress}%`}></span>
-            <span class="rd-progress-value">{progressText}</span>
+            {showBadge && <span class="rd-progress-badge" aria-hidden="true">{progressText}</span>}
         </div>
     )}
 </div>

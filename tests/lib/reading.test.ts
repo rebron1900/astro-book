@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildReadingData, compareVersion, emptyReadingData, formatDuration, isPlausibleDate, mergeSyncRows, readingStreak, MAX_HIGHLIGHTS, MIN_DAY_SECONDS, type ModuSyncRecord } from '../../src/lib/reading';
+import { buildReadingData, compareVersion, emptyReadingData, formatDuration, isPlausibleDate, mergeSyncRows, progressTier, readingStreak, showsProgressBadge, MAX_HIGHLIGHTS, MIN_DAY_SECONDS, type ModuSyncRecord } from '../../src/lib/reading';
 
 const NOW = new Date('2026-11-24T06:00:00Z');
 const BOOK_A = 'md5:aaaa1111bbbb2222';
@@ -479,5 +479,40 @@ describe('同名书归并（同一本书被多次导入 → file_md5 不同 → 
         const data = buildReadingData(rows, { now: NOW });
         expect(data.books).toHaveLength(1);
         expect(data.books[0]).toMatchObject({ title: DIRTY, seconds: 296, days: 2 });
+    });
+});
+
+
+// 卡片进度条的分档与「读完不渲染」判据（模板只问这两个函数，颜色与显隐不会各写一份）。
+describe('progressTier', () => {
+    it('按 <34 / 34–66 / ≥67 三档取色名', () => {
+        expect(progressTier(0)).toBe('danger');
+        expect(progressTier(33)).toBe('danger');
+        expect(progressTier(34)).toBe('warning');
+        expect(progressTier(66)).toBe('warning');
+        expect(progressTier(67)).toBe('info');
+        expect(progressTier(100)).toBe('info');
+    });
+
+    it('越界值按最近的一端处理，不抛错', () => {
+        expect(progressTier(-5)).toBe('danger');
+        expect(progressTier(160)).toBe('info');
+    });
+});
+
+describe('showsProgressBadge', () => {
+    it('真实进度 100%（最后一天，推算值也是 100）不渲染任何文字节点', () => {
+        expect(showsProgressBadge(100, 100)).toBe(false);
+    });
+
+    it('没读完的卡渲染气泡（含推算到 100 但真实值不足）', () => {
+        expect(showsProgressBadge(93, 93)).toBe(true);
+        expect(showsProgressBadge(12, 12)).toBe(true);
+        expect(showsProgressBadge(100, 97)).toBe(true);
+    });
+
+    it('没有进度数据时不出气泡', () => {
+        expect(showsProgressBadge(null, null)).toBe(false);
+        expect(showsProgressBadge(null, 42)).toBe(false);
     });
 });

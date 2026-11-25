@@ -6,18 +6,16 @@
    被 timeline.scss @import（只在时间线页面加载）。
    ========================================================================== */
 
-/* 划线入口：卡片右上角的图标 + 条数，和 .neodb-card .rating 同一个角位 */
+/* 划线入口：第一行右侧，跟分钟数同一行；不再是右上角绝对定位（避免预留窄条挤书名） */
 .reading-card .rd-tip-trigger {
-    position: absolute;
-    inset-block-start: 0.6rem;
-    inset-inline-end: 0.6rem;
-    z-index: 2;
+    flex: none;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.18rem;
-    min-inline-size: 1.6rem;
-    block-size: 1.6rem;
-    padding: 0 0.35rem;
+    min-inline-size: 1.4rem;
+    block-size: 1.4rem;
+    padding: 0 0.3rem;
     border: 0;
     border-radius: 999px;
     background: color-mix(in srgb, var(--gray-100) 82%, transparent);
@@ -79,6 +77,14 @@
     line-height: 1.55;
 }
 
+/* 卡片主信息第一行：分钟数居左、划线入口居右 */
+.reading-card .reading-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+}
+
 /* 卡片主信息：分钟数 / 新增划线数 / 本书进度 */
 .reading-card .reading-stats {
     display: flex;
@@ -86,6 +92,7 @@
     align-items: baseline;
     gap: 0.18rem 0.55rem;
     margin: 0;
+    min-inline-size: 0;
 }
 
 .reading-card .rd-stat {
@@ -111,37 +118,70 @@
     letter-spacing: 0;
 }
 
-/* 阅读进度条：卡片最底一行，横跨内容区整宽；百分比数字直接放在条内右端。
-   推算值以 ≈ 前缀区分（见 LedgerReading.astro），真实值不加。 */
+/* 阅读进度条：卡片最底一行，横跨内容区整宽。
+   轨道只有 4px（.rd-progress 本体就是轨道，容器高度就是 4px）；
+   百分比气泡绝对定位浮在轨道上方，不进文档流，不占卡片高度。
+   颜色按进度分三档，只把档名挂在 [data-tier] 上，真实颜色复用系统 --hint-color-* 变量
+   （阈值见 src/lib/reading.ts 的 PROGRESS_TIERS）。 */
 .reading-card .rd-progress {
+    --rd-bar: var(--hint-color-info);
+    --rd-bar-ink: #fff;
     position: relative;
     grid-column: 1 / -1;
-    block-size: 1.1rem;
+    block-size: 4px;
     margin-block-start: 0.2rem;
-    overflow: hidden;
     border-radius: 999px;
     background: var(--gray-200);
     font-variant-numeric: tabular-nums;
 }
 
-.reading-card .rd-progress-fill {
-    position: absolute;
-    inset-block: 0;
-    inset-inline-start: 0;
-    border-radius: inherit;
-    /* 半透明填充：数字压在条上，在浅轨道和填充上都读得清 */
-    background: color-mix(in srgb, var(--color-link) 34%, transparent);
+/* 分档 → 语义色；黄色底用深色字（白字对比度不够 4.5:1） */
+.reading-card .rd-progress[data-tier='danger'] {
+    --rd-bar: var(--hint-color-danger);
 }
 
-.reading-card .rd-progress-value {
+.reading-card .rd-progress[data-tier='warning'] {
+    --rd-bar: var(--hint-color-warning);
+    --rd-bar-ink: #1b1b1b;
+}
+
+.reading-card .rd-progress[data-tier='info'] {
+    --rd-bar: var(--hint-color-info);
+}
+
+/* 填充：纯色，和气泡底色同一个变量（截图里可直接读 hex 核对） */
+.reading-card .rd-progress-fill {
+    display: block;
+    block-size: 100%;
+    border-radius: inherit;
+    background: var(--rd-bar);
+}
+
+/* 百分比气泡：浮在填充右端上方，三角指向轨道；clamp 保证 0% / 100% 都不出卡片 */
+.reading-card .rd-progress-badge {
     position: absolute;
-    inset-block-start: 50%;
-    inset-inline-end: 0.45rem;
-    transform: translateY(-50%);
-    color: var(--gray-700);
+    inset-block-end: calc(100% + 5px);
+    inset-inline-start: clamp(0.9rem, var(--p, 0%), calc(100% - 0.9rem));
+    transform: translateX(-50%);
+    padding: 0.08rem 0.3rem;
+    border-radius: 0.25rem;
+    background: var(--rd-bar);
+    color: var(--rd-bar-ink);
     font-size: 0.625rem;
     font-weight: 650;
-    line-height: 1;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.reading-card .rd-progress-badge::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    border: 3px solid transparent;
+    border-block-start-color: var(--rd-bar);
+    border-block-end-width: 0;
 }
 
 /* 书籍简介：没有简介时整行不渲染，卡片自动收回到书名 + 作者 */

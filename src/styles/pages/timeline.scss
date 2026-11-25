@@ -948,14 +948,20 @@
 }
 
 /* 阅读卡片：几何沿用 .neodb-card（类名双双挂上），这里只补它独有的部分 */
-/* 阅读卡片没有 .rating，不需要为它预留右侧 3.4rem */
+/* 划线入口已移到第一行，右内边距不再为角上图标预留，书名可用满列宽；
+   底部 1.1rem 是空白呼吸区，给浮在轨道上方的百分比气泡留位置（气泡本身不占布局）。 */
 .reading-card .media-info {
-    /* 右侧留出角上图标的宽度（1.6rem + 间距），否则长书名会钻到图标下面 */
-    padding-inline-end: 2rem;
+    padding-inline-end: 0;
+    padding-block-end: 1.1rem;
+}
+
+/* 封面按原样展示：3.8rem 宽、2:3，不拉伸不裁切；卡片高度由右侧文字决定 */
+.reading-card .cover {
+    align-self: start;
 }
 
 .reading-card .reading-author {
-    margin: 0.15rem 0 0;
+    margin: 0.1rem 0 0;
     color: var(--gray-500);
     font-size: 0.6875rem;
     overflow: hidden;
@@ -964,6 +970,7 @@
 }
 
 .reading-card .entry-title {
+    margin-block-start: 0.2rem;
     white-space: normal;
     display: -webkit-box;
     -webkit-box-orient: vertical;
@@ -975,6 +982,8 @@
 .reading-cards .reading-card {
     align-content: start;
     grid-template-rows: minmax(0, 1fr) auto;
+    /* 行间距收紧：信息块与贴底的进度条之间不留大空档（列间距仍由 .neodb-card 给） */
+    row-gap: 0.35rem;
 }
 
 .reading-more {
