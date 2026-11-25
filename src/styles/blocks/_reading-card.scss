@@ -104,15 +104,12 @@
 /* 分钟数最显眼 */
 .reading-card .rd-stat-duration {
     color: var(--body-font-color);
-    font-size: 1.1rem;
     font-weight: 650;
-    letter-spacing: -0.02em;
 }
 
 .reading-card .rd-stat-duration .rd-unit {
     margin-inline-start: 0.18rem;
     color: var(--gray-600);
-    font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0;
 }
@@ -342,12 +339,8 @@
     border-radius: 0.15rem;
 }
 
-/* 聚合卡悬停时不要全局的蓝边框、阴影和上移；面板仍由 tippy 负责。 */
-.timeline-list .reading-card.emby-group:hover,
-.timeline-month-list .reading-card.emby-group:hover {
-    transform: none;
-    box-shadow: inset 0 0 0 1px var(--gray-200);
-}
+/* 聚合卡保留全站统一的 hover：蓝边框 + 阴影 + 上移 1px（与单集卡、阅读卡一致）；
+   集数面板仍由 tippy 负责，只在集数区间上触发。 */
 
 /* ---------- 集数清单 tooltip（每集第二行一条进度条） ---------- */
 .tippy-box[data-theme~='emby-episodes'] {
