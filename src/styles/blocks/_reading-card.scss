@@ -68,6 +68,22 @@
     gap: 0.4rem;
 }
 
+/* 影视卡：第一行右侧的状态角标（看过 · 电影 / 看完 · S02E05 / 看到 42% / 刚开始），
+   位置与阅读卡的划线入口同一行，字号沿用 kicker 的 11px。 */
+.reading-card .emby-status {
+    flex: none;
+    max-inline-size: 58%;
+    margin-inline-start: auto;
+    overflow: hidden;
+    color: var(--gray-500);
+    font-size: 0.6875rem;
+    line-height: 1.35;
+    letter-spacing: 0.035em;
+    text-align: end;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 /* 卡片主信息：分钟数 / 新增划线数 / 本书进度 */
 .reading-card .reading-stats {
     display: flex;

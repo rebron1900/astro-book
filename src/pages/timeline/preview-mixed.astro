@@ -1,0 +1,154 @@
+---
+/**
+ * 原型预览：时间线「阅读 + Emby 影视」聚合 + neodb 卡片上下两段改版。
+ * - 不进导航、不进 sitemap（astro.config 里 filter 掉 /timeline/preview-），页面带 noindex；
+ * - 数据：4 张真实 reading 卡（reading.json）+ 8 张 Emby 假数据卡（fixtures/emby-sample.json，
+ *   不联网、不调 API、不发外链图片）；
+ * - 页底是 neodb 真实样本（评论最长的一条）的改前 / 改后对照。
+ */
+import { reading, settings } from '../../api/store';
+import type { TimelineEntry } from '../../api/store';
+import fixture from '../../../fixtures/emby-sample.json';
+import { mapEmbyItem, mergeEmbyItems } from '../../lib/emby';
+import neodbJson from '../../data/neodb.json';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Head from '../../components/islands/Head.astro';
+import Header from '../../components/layout/Header.astro';
+import Menu from '../../components/layout/Menu.astro';
+import List from '../../components/islands/List.astro';
+import LedgerNeodb from '../../components/islands/LedgerNeodb.astro';
+
+// 4 张真实阅读卡：11-24 两本、11-23 一本、11-03 一本（跨 3 天，和影视条目混排）
+const readingDates = new Set(['2026-11-24', '2026-11-23', '2026-11-03']);
+const readingEntries: TimelineEntry[] = reading.days
+    .filter((day) => readingDates.has(day.date))
+    .map((day) => ({ kind: 'reading' as const, time: new Date(`${day.date}T00:00:00+08:00`).getTime(), data: day }));
+
+// 8 张 Emby 卡：Items + Resume 按 Id 去重（沙丘2 的 93% 来自 Resume）
+const embyEntries = mergeEmbyItems(fixture.Items as any, fixture.Resume as any).map(mapEmbyItem);
+const mediaEntries: TimelineEntry[] = embyEntries.map((entry) => ({
+    kind: 'media' as const,
+    time: entry.lastPlayedAt ?? 0,
+    data: entry
+}));
+
+const mixed = [...readingEntries, ...mediaEntries].sort((a, b) => b.time - a.time);
+
+// neodb 改版样本：现有数据里评论最长的一条
+const longest = [...(neodbJson as any).data]
+    .filter((mark: any) => mark.comment_text)
+    .sort((a: any, b: any) => b.comment_text.length - a.comment_text.length)[0];
+const sampleTitle = longest.item.title_cn || longest.item.title || '';
+const sampleHref = `/golink?target=${btoa(encodeURIComponent(longest.item.id ?? `https://neodb.social${longest.item.url}`))}`;
+---
+
+<BaseLayout hideToc>
+    <Head slot="head" site={settings} title={`原型预览 · 阅读与影视 | ${settings?.title}`} og_url={import.meta.env.SITE + '/timeline/preview-mixed/'} />
+    <meta slot="head" name="robots" content="noindex, nofollow" />
+
+    <Header slot="header" title={settings?.title} />
+    <Menu slot="menu" title="原型预览" />
+
+    <Fragment slot="content">
+        <p class="preview-note">原型预览 · 假数据</p>
+
+        <List
+            page={{ data: mixed, url: { current: '/timeline/preview-mixed/' } }}
+            filterKind="reading"
+            showIntro={false}
+            showToolbar={false}
+            autoLoad={false}
+        />
+
+        <section class="preview-neodb" aria-labelledby="preview-neodb-title">
+            <h2 id="preview-neodb-title" class="preview-section-title">neodb 卡片改版 · 真实样本（评论最长的一条）</h2>
+            <p class="preview-section-copy">
+                《{sampleTitle}》· 评论 {longest.comment_text.length} 字。同一份数据、同一容器宽度，上面是改前（简介挤在右列、两行），
+                下面是改后（简介独占整行、三行）。
+            </p>
+
+            <div class="preview-compare">
+                <div class="preview-compare-side">
+                    <p class="preview-compare-label">改前</p>
+                    <div class="neodb-card is-legacy">
+                        <div class="cover">
+                            <img src={longest.item.cover_image_url} alt={`${sampleTitle}封面`} loading="lazy" referrerpolicy="no-referrer" />
+                        </div>
+                        <div class="media-info">
+                            <p class="kicker">看过 · 电影</p>
+                            <h2 class="entry-title"><a href={sampleHref}>{sampleTitle}<span class="ext">↗</span></a></h2>
+                            <p class="rating"><span aria-hidden="true">★</span> {Number(longest.rating_grade)}<small>/10</small></p>
+                            <p class="excerpt">“{longest.comment_text}”</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-compare-side">
+                    <p class="preview-compare-label">改后</p>
+                    <LedgerNeodb mark={longest} />
+                </div>
+            </div>
+        </section>
+    </Fragment>
+</BaseLayout>
+
+<style lang="scss">
+    .preview-note {
+        margin: 0 0 0.9rem;
+        color: var(--gray-500);
+        font-size: 0.6875rem;
+        letter-spacing: 0.04em;
+    }
+
+    .preview-neodb {
+        margin-block-start: 2.4rem;
+        padding-block-start: 1.2rem;
+        border-block-start: 1px dashed var(--gray-200);
+    }
+
+    .preview-section-title {
+        margin: 0 0 0.35rem;
+        font-size: 1rem;
+    }
+
+    .preview-section-copy {
+        margin: 0 0 1rem;
+        color: var(--gray-500);
+        font-size: 0.75rem;
+        line-height: 1.6;
+    }
+
+    .preview-compare {
+        display: grid;
+        gap: 1.1rem;
+    }
+
+    .preview-compare-label {
+        margin: 0 0 0.35rem;
+        color: var(--gray-500);
+        font-size: 0.6875rem;
+        font-weight: 600;
+    }
+
+    /* 改前几何：简介在右列，右列给评分让位 3.4rem，简介两行 */
+    .neodb-card.is-legacy .media-info {
+        padding-inline-end: 3.4rem;
+    }
+
+    .neodb-card.is-legacy .rating {
+        position: absolute;
+        top: 0.7rem;
+        right: 0.8rem;
+        z-index: 2;
+        margin: 0;
+        border-radius: 999px;
+        padding: 0.1rem 0.25rem;
+        background: color-mix(in srgb, var(--gray-100) 82%, transparent);
+    }
+
+    .neodb-card.is-legacy .excerpt {
+        grid-column: auto;
+        max-inline-size: 40rem;
+        -webkit-line-clamp: 2;
+    }
+</style>

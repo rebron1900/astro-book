@@ -728,7 +728,24 @@
 
 .neodb-card .media-info {
     min-inline-size: 0;
+}
+
+/* 阅读卡沿用旧几何（它的文字区一直留了 3.4rem 让位，为不动上一轮验收好的视觉，保留） */
+.neodb-card.reading-card .media-info {
     padding-inline-end: 3.4rem;
+}
+
+/* 上段：kicker（含分类图标）与评分同一行，评分同行右对齐，不再绝对定位压标题 */
+.neodb-card .neodb-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-inline-size: 0;
+}
+
+.neodb-card .neodb-head .kicker {
+    min-inline-size: 0;
 }
 .neodb-card .kicker {
     display: flex;
@@ -756,21 +773,24 @@
     text-overflow: ellipsis;
 }
 .neodb-card .rating {
-    position: absolute;
-    top: 0.7rem;
-    right: 0.8rem;
-    z-index: 2;
+    flex: none;
     margin: 0;
-    background: color-mix(in srgb, var(--gray-100) 82%, transparent);
     border-radius: 999px;
     padding: 0.1rem 0.25rem;
+    background: color-mix(in srgb, var(--gray-100) 82%, transparent);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
+
+/* 下段：简介独立整行（跨两列），宽度 = 卡片内宽 − 左右内边距（12px × 2） */
 .neodb-card .excerpt {
     display: -webkit-box;
-    margin: 0.35rem 0 0;
+    grid-column: 1 / -1;
+    max-inline-size: none;
+    margin: 0.4rem 0 0;
     overflow: hidden;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
 }
 
 .kicker {
@@ -910,7 +930,8 @@
     .neodb-card {
         grid-template-columns: 3.8rem minmax(0, 1fr);
         gap: 0.65rem;
-        padding: 0.6rem 0.65rem;
+        /* 窄屏也保留左右各 12px：简介整行宽度 = 卡片宽 − 24px，三档宽度口径一致 */
+        padding: 0.6rem 0.75rem;
     }
     .neodb-card .cover {
         inline-size: 3.8rem;

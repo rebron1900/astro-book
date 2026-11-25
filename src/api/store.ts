@@ -3,6 +3,7 @@ import type { Memo, FluxEntry, FluxLostFeed, NeoDBMark, NeoDBResponse } from './
 import type { Settings } from './ghost';
 import type { Activity } from '../lib/activity-types';
 import type { ReadingData, ReadingDay } from '../lib/reading';
+import type { EmbyEntry } from '../lib/emby';
 
 // 从本地同步的 JSON 读取数据（方案 B：GitHub Action 定时同步，构建零网络依赖）。
 // JSON 由 scripts/sync-data.mjs 生成，提交进仓库。
@@ -61,6 +62,11 @@ const readingData = readingJson as unknown as ReadingData;
 /** 阅读汇总（已按 MIN_DAY_SECONDS 过滤后的口径）：页头总览用。 */
 export const reading = readingData;
 
+// 时间线是否收录 NeoDB 书影音条目。老板 2026-11-25 要求时间线暂不展示书影音，
+// 数据与 /douban/ 页面全部保留；改回 true 即可恢复「全部」时间线里的 neodb、
+// 筛选条的「书影音」按钮，以及 /timeline/neodb/ 路由（三处都读这个常量）。
+export const TIMELINE_INCLUDE_NEODB = false;
+
 // 首页信息流：聚合文章 / 微博客 / NeoDB 书影标记 / 运动记录，各取「发生时间」统一降序。
 // ponytail: 每条用 discriminated union 区分类型，渲染端按 kind 分支；后续新增源只需加一个分支。
 export type TimelineEntry =
@@ -70,7 +76,10 @@ export type TimelineEntry =
     // 运动条目沿用 'strava' 这个 kind：/timeline/strava 路由和 strava-cards 样式是既有 UI 概念
     | { kind: 'strava'; time: number; data: Activity }
     // 阅读：一本书一天一条，data 是当天的书目明细（见 src/lib/reading.ts 的白名单输出）
-    | { kind: 'reading'; time: number; data: ReadingDay };
+    | { kind: 'reading'; time: number; data: ReadingDay }
+    // 影视：Emby 观看记录（一部电影 / 一集剧），与阅读合并成「阅读与影视」。
+    // 目前只有原型页使用（fixtures/emby-sample.json），真实时间线等 API key 到位后再接入。
+    | { kind: 'media'; time: number; data: EmbyEntry };
 
 // neodb.visibility: 0=public 1=unlisted 2=private；只展示公开标记（值在 JSON 中是数字）
 const neodbMarks = (neodbJson as unknown as NeoDBResponse).data.filter((m) => Number(m.visibility ?? 0) === 0);
@@ -87,3 +96,11 @@ export const timeline: TimelineEntry[] = [
         data: day
     }))
 ].sort((a, b) => b.time - a.time);
+
+/**
+ * 时间线展示用数据源：按 TIMELINE_INCLUDE_NEODB 决定是否剔除 neodb。
+ * `timeline` 保持完整（/douban/ 直接依赖它，条数与改前一致）。
+ */
+export const timelineVisible: TimelineEntry[] = TIMELINE_INCLUDE_NEODB
+    ? timeline
+    : timeline.filter((entry) => entry.kind !== 'neodb');
