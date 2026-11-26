@@ -312,3 +312,111 @@ HTTP 实测（18:31）：
 | map 依赖 `python3` 与临时文件 | 同步期能力，不在构建链；失败按硬失败但可用 `--dry-run` 隔离验证 |
 | 真实上游全部未验证（凭据/授权不在本轮） | 分三层写清：冻结输入等价（已验）/ 真实同步（未验）/ 凭据来源 |
 | 八个源一次性提交难以归因 | 每源一个提交 + 每源一次全量测试；回归可单源 `git revert` |
+
+## 15. 八源迁移终稿验收（2026-11-26 21:50，本节为最终状态，§6/§7/§12 的时点值已被本节取代）
+
+### 15.1 状态
+
+| 项 | 值 |
+| --- | --- |
+| 分支 / HEAD | `feat/data-modular-pilot` / **`8a570a8`**（本节文档提交另计，代码提交到此为止） |
+| `origin/main..HEAD` | **29** 个提交（本轮新增 13 个，见 15.2） |
+| `origin/main` | `1e210d3`（`git ls-remote` 实时核） |
+| 工作区 | 仅 `?? node_modules`（符号链接，非本轮引入） |
+| `src/` 与 `src/data/` 自 `630519c` | **0 行改动**（`git diff --stat` 为空） |
+| push / merge / rebase / 上线 | **一件没做** |
+
+### 15.2 本轮提交（每源一个，可单源 revert）
+
+| 提交 | 内容 |
+| --- | --- |
+| `3a24124` | 框架四处：`shape:'object'`+`fields`+`countField`、`orderDir`、数组 `key` 可省、`ctx.fileStat` |
+| `4cd0f79` | memos（GTS 优先 / 旧 API 兜底） |
+| `c120b00` | ghost（object 形状，五段全声明） |
+| `0b3487a` | neodb（增量合并 + 中文名沿用 + 跨源剥 Authorization） |
+| `63c9654` | flux（一源两产物） |
+| `f5c31a7` | intervals（升序 + 轨迹缓存） |
+| `db38075` | map（`ctx.fileStat` 条件请求 + 临时目录隔离） |
+| `0146e5b` | reading（可选源，保留 `syncReading` 导出） |
+| `c2a2848` | rank（可选源） |
+| `55f7c48` | 返工：ghost 请求断言改完整 URL + 排序后的 query 键值对（A 批复核「需改」闭环） |
+| `86bb735` | 返工：rank 契约声明字段，上游错误载荷判不合格（B 批复核「需改」闭环） |
+| `8a33c98` | 返工：B 批 3 个测试文件补显式类型，`astro check` 9 → 0 |
+| `8a570a8` | 返工：`myRank` 允许 `null`（「本次无排名」是成功载荷） |
+
+### 15.3 八类逐项状态
+
+| 源 | 入口 | 契约 × 真实文件 | 冻结输入等价 | 独立复核 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| memos | `syncMemos` 兼容导出 | `memos.list` 2668 / 0 错误 | 深等（GTS 增量+去重+隐私、旧 API 兜底） | A 批 + 反证重跑 | 完成 |
+| ghost | `syncGhost` 兼容导出 | `ghost.content` 863 / 0 错误 | 深等（五段 + 请求参数集） | A 批 + 返工复验 | 完成 |
+| neodb | `syncNeodb` 兼容导出 | `neodb.marks` 1035 / 0 错误 | 深等（增量 102→100→101） | A 批 + 反证重跑 | 完成 |
+| flux | `syncFlux` 兼容导出 | `flux.feed` 141 / `flux.lost` 9 / 0 错误 | 双产物各自深等（六分支） | B 批 + 反证重跑 | 完成 |
+| intervals | `syncIntervals` 兼容导出 | `intervals.activities` 178 / 0 错误 | 深等（分年去重 + 缓存复用 + 升序） | B 批 | 完成 |
+| map | `syncMap` 兼容导出 | `map.geojson` 127 / 0 错误 | 深等（编排层，假 python 验下载/304/临时目录/清理） | B 批 | 完成（真实 KMZ 转换未验） |
+| reading | `syncReading`（`scripts/sync-reading.mjs` 仍导出） | `reading.digest` 54（books 18）/ 0 错误 | 除 `generatedAt` 外深等 | B 批 | 完成（可选源） |
+| rank | `syncRank` 兼容导出 | `rank.status` 对现有文件**如实判不合格**（见 15.5） | 深等（上游 JSON 原样落地） | B 批 + 终轮 | 完成（可选源） |
+
+框架：`SOURCES` 残余清空，10 个源（8 新 + emby + imagemeta）全部由 `registry.mjs` 驱动；`sync-data.mjs` 从 700+ 行降到约 250 行，旧 `sync*` 实现 0 个。
+
+### 15.4 本轮我自己跑的命令与结果（不引用他人报告）
+
+```
+npx vitest run                      → 37 files / 580 passed           exit 0
+npx astro check                      → 246 files, 0 errors, 0 warnings exit 0
+node scripts/ci-local.mjs --offline  → 5/5 PASS                      exit 0
+   类型检查 8.6s / 单元测试 6.4s / 构建 20.4s（2171 页）/ 隐私闸门 0.1s / 泄露闸门 0.1s
+node scripts/check-public-data.mjs   → 非公开记录 0 条（memos PUBLIC 2668/2668）exit 0
+11 个契约 × 真实文件                 → 10 ok / 0 错误；rank.status 如实判不合格
+```
+
+逐源 `--dry-run` 退出码（本轮实跑，未写盘：`src/data/*.json` mtime 仍是 15:27/17:39）：
+
+| 源 | exit | 失败原因 |
+| --- | --- | --- |
+| memos | 1 | `The operation was aborted due to timeout`（公开兜底无需凭据，本机出站被拦；与迁移前同为 1） |
+| ghost / neodb / flux / intervals / map | 1 | 缺少凭据（检查先于网络，文案比迁移前干净） |
+| reading | 0 | 可选源告警，保留现有数据 |
+| rank | 0 | 可选源：上游错误载荷 → 契约判不合格 → 告警 + 保留旧文件 |
+
+### 15.5 rank 的两个真实问题（本轮由复核发现并修好，未改数据文件）
+
+1. 库里 `src/data/rank.json` 内容是上游错误载荷 `{"success":false,"error":"Unexpected end of JSON input"}`（66B，`ce29a90` 旧管线写入，**非本轮引入**），原契约 `fields:{}` 放行一切 → 页面经 `Now.astro:14-17` 静默显示 0 小时。修法：`fields:{ myRank:'object|null?', error:'null?' }`，错误载荷判不合格、不覆盖旧文件。**坏文件一字未动**，等上游恢复后由同步覆盖，届时验收即可见。
+2. `'object?'` 的 `?` 只豁免字段缺失、不豁免 `null`，故必须写 `'object|null?'`，否则 `{success:true,myRank:null}`（本次无排名，合理成功载荷）会被判不合格、rank 永久冻结。四条载荷我直接跑过：`myRank:null` ok、错误载荷 fail、正常载荷 ok、`{}` ok。
+
+### 15.6 预览与产物版本对应
+
+| 项 | 值 |
+| --- | --- |
+| 构建 | `dist/index.html` 425085B，mtime **21:49:42**（本轮 `ci-local` 重建） |
+| 预览进程 | pid 58153，cwd = 本 worktree，`astro preview :4321`（常读磁盘） |
+| `/` | 200 425085B resp=file=`1f0a7963` **SAME** |
+| `/timeline/memo/` | 200 434553B resp=file=`9a0c11fb` **SAME** |
+| `/timeline/reading/` | 200 428063B resp=file=`9040a106` **SAME** |
+| `/now/` | 200 430884B resp=file=`e95c6ab4` **SAME** |
+
+`/now/` 哈希与 18:30 那次不同，原因是页面内嵌构建时间戳；`src/` 零改动，故其余三页字节级不变。
+
+### 15.7 已知行为变化（均已登记，非回归）
+
+1. memos 旧 API 返回 0 条：原「静默保留旧文件 exit 0」→「显式失败 exit 1」。数据不丢，失败变可见。
+2. memos 旧 API 兜底不走 `ctx.fetchJson`（要读 `X-Total-Count` 并保留旧翻页语义）：无凭据、有 20s 超时，无跨源泄头面；代价是注入的 `fetchImpl` 对它无效。
+3. ghost 传输由 `@ts-ghost` 换成 `ctx.fetchJson`（为把 401/403 归 `auth`）：路径/query 参数集逐字保留、产物深等已证。
+4. rank「无旧文件 + 上游失败」：产物从「写 null」变「不写」。当前文件已入库，仅在仓库缺该文件时触发；`Now.astro` 直接 import，缺文件会让构建报缺模块，故不删该文件。
+5. rank 契约收紧后，现有 `src/data/rank.json` 会被判不合格 → rank 停止更新（仅该源，退出码不受影响）。这是期望行为，不是故障。
+
+### 15.8 实际未验证项（不粉饰）
+
+1. **真实上游同步全部未跑**（除 rank/reading 的只读 dry-run 本身）：Ghost / GTS / NeoDB / Intervals / Map 无凭据且本轮禁止真实同步。等价性是「冻结输入 + 真实文件重算」，不等于线上已验。
+2. **map 的 KMZ→GeoJSON 转换本机跑不了**（无 python3）：golden 用假 python 验编排；真实 KMZ 与真实转换未验。
+3. **reading 封面**仍在 `src/assets/reading-cover`（前端 `import.meta.glob` 消费），不在执行器原子写路径：失败时可能留孤儿封面（图有、JSON 未更新），页面按 key 取，无害且是既有行为。改它要动前端，不在授权内。
+4. **翻页与增量提前停止**：ghost/neodb 仅单页 fixture；intervals 真实多窗口翻页未验；flux 真实 141 条全量重算未做（纯函数 `src/lib/flux-snapshot.ts` 一行未改）。
+5. **CI 未运行**（仅本地等价）；Actions 未跑；480/1024 断点与触摸手势未测；局域网 4321 未映射（需主机侧加端口）。
+6. `sensitive-headers.mjs:26` 注释称 `tokenization` 放行、实测判敏感（实现偏安全侧，注释多三个字）；`§4` 一处错别字「不中请」。零语义影响，登记不改，避免为注释再造一个未被复核的提交。
+
+### 15.9 提交、回滚与报告路径
+
+- 回滚：按源 `git revert <commit>` 即可，各提交只碰自己的模块 + `registry.mjs` + 自己那段 `sync-data.mjs`；框架 `3a24124` 需最后回滚。整轮回滚 `git reset --hard 630519c`（会丢本轮全部迁移，不推荐）。
+- 合入前必须做：`git rebase origin/main`（唯一冲突面 `src/data/memos.json`）→ 再跑一次 `ci-local`（不带 `--offline`）+ 隐私闸门 → push。以上均待授权。
+- 独立复核报告：`/data/workspace/bots/明鉴/reviews/2026-11-26-A-batch-0b3487a.md`、`...-B-batch-c2a2848.md`、`...-final-86bb735-rank-contract.md`。
+- 主检出 `astro-book` 仍是 `128e6a9`，其 TMDB 相关 `ci.yml`/`sync-emby.mjs` 改动未触碰。
