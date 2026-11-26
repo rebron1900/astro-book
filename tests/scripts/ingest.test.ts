@@ -451,6 +451,99 @@ describe('新增来源演示：只加模块 + registry 一行 + 契约，不改 
     });
 });
 
+describe('框架扩展：object 形状 / 数组字段 key 可省 / orderDir / ctx.fileStat', () => {
+    const objectContract = {
+        version: 1,
+        file: 'obj.json',
+        writeMode: 'replace',
+        allowEmpty: false,
+        shape: 'object',
+        countField: 'data',
+        fields: {
+            meta: 'object|null',
+            data: {
+                type: 'array',
+                allowEmpty: false,
+                key: 'id',
+                item: { id: 'string', n: 'number' }
+            },
+            loose: {
+                type: 'array'
+            }
+        }
+    };
+
+    it('object 形状：合法对象通过、count 取 countField 数组长度、未声明字段放行', () => {
+        const result = validateDataset('x.object', { meta: null, data: [{ id: 'a', n: 1 }, { id: 'b', n: 2 }], loose: [1, 2, 3], extra: 'ok' }, objectContract);
+        expect(result).toMatchObject({ ok: true, count: 2, ids: ['a', 'b'] });
+    });
+
+    it('object 形状：非对象 / 字段缺失 / 类型错 / 空数组 / 重复主键 / item 字段错都要报', () => {
+        expect(validateDataset('x.object', [], objectContract).errors.join()).toMatch(/object 型 dataset 必须是对象/);
+        expect(validateDataset('x.object', { data: [] }, objectContract).errors.join()).toMatch(/字段 data 为空数组/);
+        expect(validateDataset('x.object', { data: [{ id: 'a', n: 1 }], meta: 'x' }, objectContract).errors.join()).toMatch(/字段 meta 类型是 string/);
+        const dup = validateDataset('x.object', { data: [{ id: 'a', n: 1 }, { id: 'a', n: 2 }] }, objectContract);
+        expect(dup.errors.join()).toMatch(/字段 data\[1\]: 重复的主键 id=a/);
+        const badItem = validateDataset('x.object', { data: [{ id: 'a', n: 'x' }] }, objectContract);
+        expect(badItem.errors.join()).toMatch(/字段 data\[0\]: 字段 n 类型是 string/);
+        const missingKey = validateDataset('x.object', { data: [{ n: 1 }] }, objectContract);
+        expect(missingKey.errors.join()).toMatch(/字段 data\[0\]: 缺少主键 id/);
+    });
+
+    it('数组字段省略 key = 不做主键唯一性校验', () => {
+        const contract = { ...objectContract, fields: { loose: { type: 'array', item: { n: 'number' } } } };
+        const result = validateDataset('x.object', { loose: [{ n: 1 }, { n: 1 }, { n: 2 }] }, contract);
+        expect(result.ok).toBe(true);
+        expect(result.errors.join()).not.toMatch(/主键/);
+    });
+
+    it('orderDir：默认降序、显式升序；升序数据配默认降序要报错', () => {
+        const rows = [{ id: 'a', n: 1 }, { id: 'b', n: 2 }, { id: 'c', n: 3 }];
+        const asc = { version: 1, file: 'x.json', writeMode: 'replace', key: 'id', allowEmpty: false, orderBy: 'n', orderDir: 'asc', item: { id: 'string', n: 'number' } };
+        expect(validateDataset('x.asc', rows, asc).ok).toBe(true);
+        expect(validateDataset('x.asc', [...rows].reverse(), asc).errors.join()).toMatch(/要求升序/);
+        const desc = { ...asc, orderDir: undefined };
+        expect(validateDataset('x.desc', [...rows].reverse(), desc).ok).toBe(true);
+        expect(validateDataset('x.desc', rows, desc).errors.join()).toMatch(/要求降序/);
+    });
+
+    it('object 形状 + 数组字段 orderBy/orderDir 同样生效（neodb/activities 这类）', () => {
+        const contract = {
+            version: 1,
+            file: 'x.json',
+            writeMode: 'replace',
+            shape: 'object',
+            countField: 'data',
+            fields: { data: { type: 'array', key: 'id', orderBy: 't', orderDir: 'asc', item: { id: 'string', t: 'number' } } }
+        };
+        expect(validateDataset('x.o', { data: [{ id: 'a', t: 1 }, { id: 'b', t: 2 }] }, contract).ok).toBe(true);
+        expect(validateDataset('x.o', { data: [{ id: 'a', t: 2 }, { id: 'b', t: 1 }] }, contract).errors.join()).toMatch(/要求升序/);
+    });
+
+    it('ctx.fileStat：缺失返回 null，存在返回 mtime/size，模块不用碰 fs', async () => {
+        const root = makeProject();
+        const seed = path.join(root, 'src/data/seed.json');
+        writeFileSync(seed, JSON.stringify({ a: 1 }) + '\n', 'utf8');
+        const file = writeModule(
+            root,
+            'stat',
+            { id: 'stat', optional: false, credentials: [], datasets: ['stat.data'] },
+            "const missing = ctx.fileStat('nope.json');\nconst present = ctx.fileStat('seed.json');\n" +
+                "if (missing !== null) throw new Error('缺失文件应为 null');\n" +
+                "if (!present || typeof present.size !== 'number' || !present.mtime || Number.isNaN(Date.parse(present.mtime))) throw new Error('fileStat 形状不对');\n" +
+                "return { outputs: [{ dataset: 'stat.data', data: [{ id: 'a', name: String(present.size) }], complete: true }] };"
+        );
+        const result = await runIngestSource('stat', {
+            projectRoot: root,
+            registry: { stat: { module: file, optional: false } },
+            contracts: { 'stat.data': { version: 1, file: 'stat.json', writeMode: 'replace', key: 'id', allowEmpty: false, item: { id: 'string', name: 'string' } } },
+            log: quiet
+        });
+        expect(result.outputs[0].count).toBe(1);
+        expect(readJson(root, 'src/data/stat.json')[0].name).toBe(String(readFileSync(seed).length));
+    });
+});
+
 describe('CLI 行为不变（dry-run，零网络）', () => {
     const repoRoot = path.join(__dirname, '..', '..');
 

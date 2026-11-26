@@ -13,7 +13,7 @@
  *
  * 执行器不认识任何具体来源；新增来源只加模块 + registry 一行 + 契约。
  */
-import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { contracts as defaultContracts, getContract } from './contracts.mjs';
 import { sources as defaultRegistry } from './registry.mjs';
@@ -121,7 +121,8 @@ function withoutAuthHeaders(pairs, declared = []) {
 
 function isEmptyData(data, contract) {
     if (data === null || data === undefined) return true;
-    if (contract.shape === 'map') return typeof data !== 'object' || Object.keys(data).length === 0;
+    // map / object 型都是对象：无键才是空（object 型字段全缺也当空）
+    if (contract.shape === 'map' || contract.shape === 'object') return typeof data !== 'object' || Object.keys(data).length === 0;
     return Array.isArray(data) && data.length === 0;
 }
 
@@ -236,6 +237,17 @@ function buildContext({ name, meta, env, log, projectRoot, dataDir, dryRun, time
                 return readDatasetFile(projectRoot, contract.file);
             },
             readData: (file) => readDatasetFile(projectRoot, file),
+            /**
+             * 产物的只读文件信息：{ mtime, mtimeMs, size }，文件不存在返回 null。
+             * 给「上游支持条件请求」的源用（map 的 If-Modified-Since），模块因此不许 import fs。
+             * mtime 是 ISO 字符串（new Date(mtime).toUTCString() 可直接当请求头）。
+             */
+            fileStat: (file) => {
+                const full = path.join(dataDir, String(file));
+                if (!existsSync(full)) return null;
+                const stat = statSync(full);
+                return { mtime: stat.mtime.toISOString(), mtimeMs: stat.mtimeMs, size: stat.size };
+            },
             writeArtifact,
             dryRun,
             now: () => Date.now(),
