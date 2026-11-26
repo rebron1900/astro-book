@@ -8,7 +8,7 @@ import { buildZip, kmzOf } from '../helpers/kmz';
 /**
  * KMZ → GeoJSON 纯函数转换器。
  *
- * 验收基准是 scripts/map/convert_kmz_to_geojson.py 的现行语义（含 shapely 的 mapping 行为），
+ * 验收基准是原 Python 实现（convert_kmz_to_geojson.py + shapely 的 mapping 行为，文件已删除、见 git 历史）的语义，
  * 逐条在下面用构造样本钉住。**注意：本机没有 python3、仓库里也从没有过真实 KMZ，
  * 所以这些用例是「照 Python 源码逐条对齐的构造样本」，不等于与 Python 实际对跑。**
  */

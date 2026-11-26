@@ -1,7 +1,8 @@
 /**
  * KMZ → GeoJSON（纯函数，零依赖：node:zlib 解压 + 自带的最小 XML 解析器）。
  *
- * 逐条对齐 scripts/map/convert_kmz_to_geojson.py + coordTransform_utils.gcj02_to_wgs84 的现行语义，
+ * 逐条对齐原 Python 实现（scripts/map/convert_kmz_to_geojson.py + coordTransform_utils.gcj02_to_wgs84，
+ * 已在本轮随 JS 版一起删除，可在 git 历史里查看）的语义，
  * 不「改进」：
  *  - 只认 ZIP 里精确名为 doc.kml 的条目（store / deflate 两种压缩，其它方法报错）；
  *  - 只认 http://www.opengis.net/kml/2.2 命名空间下的元素，其它前缀/命名空间忽略；
@@ -24,7 +25,7 @@ const SIG_CENTRAL = 0x02014b50;
 const SIG_LOCAL = 0x04034b50;
 
 // ---------------------------------------------------------------------------
-// GCJ-02 → WGS-84（公式取自 scripts/map/coordTransform_utils.py，常数逐字相同）
+// GCJ-02 → WGS-84（公式取自原 coordTransform_utils.py，常数逐字相同）
 // ---------------------------------------------------------------------------
 const PI = 3.1415926535897932384626;
 const A = 6378245.0; // 长半轴
@@ -66,7 +67,7 @@ export function gcj02ToWgs84(lon, lat) {
     return [lon * 2 - mgLng, lat * 2 - mgLat];
 }
 
-/** WGS-84 → GCJ-02（coordTransform_utils.wgs84_to_gcj02 的等价实现；只用于测试里反向构造样本）。 */
+/** WGS-84 → GCJ-02（原 coordTransform_utils.wgs84_to_gcj02 的等价实现；只用于测试里反向构造样本）。 */
 export function wgs84ToGcj02(lon, lat) {
     if (outOfChina(lon, lat)) return [lon, lat];
     let dLat = transformLat(lon - 105.0, lat - 35.0);
