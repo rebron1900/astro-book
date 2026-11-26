@@ -127,22 +127,12 @@ async function writeJson(filename, data, options = {}) {
 // 只在 JSON 中保留这些字段，控制体积；上游全量拉取后裁剪。
 // 启用新字段：往对应白名单加字段名，重跑同步即可（可逆）。
 
-async function syncRank() {
-    try {
-        return await fetchJson('https://divine-cell-831a.me-d1b.workers.dev/', {}, 10000);
-    } catch (e) {
-        console.warn('[rank] 获取失败:', e.message);
-        return null;
-    }
-}
-
 // 兼容导出：memos 已迁到模块层（scripts/lib/sources/memos.mjs），
 // 这两个函数仍被 tests/scripts/privacy.test.ts 直接引用，所以保持同名转发。
 export { gtsStatusToMemo, trimMemos } from './lib/sources/memos.mjs';
 
 // ---------- 主流程 ----------
 const SOURCES = {
-    rank: { run: () => syncRank(), file: 'rank.json' },
     // emby / imagemeta 已迁到模块层（scripts/lib/sources/ + registry.mjs），由执行器统一校验与写盘。
 };
 

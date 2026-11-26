@@ -14,6 +14,7 @@ export const sources = {
     intervals: { module: '../sources/intervals.mjs', optional: false },
     map: { module: '../sources/map.mjs', optional: false },
     reading: { module: '../sources/reading.mjs', optional: true },
+    rank: { module: '../sources/rank.mjs', optional: true },
     imagemeta: { module: '../sources/imagemeta.mjs', optional: false }
 };
 

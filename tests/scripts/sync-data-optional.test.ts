@@ -14,9 +14,11 @@ const READING = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../s
 describe('可选源（reading）失败不影响整轮', () => {
     it('classifyFailure：reading 是可选项，其它源仍是硬失败', () => {
         expect(classifyFailure('reading')).toBe('warn');
-        for (const name of ['ghost', 'neodb', 'flux', 'memos', 'intervals', 'map', 'rank', 'imagemeta']) {
+        for (const name of ['ghost', 'neodb', 'flux', 'memos', 'intervals', 'map', 'imagemeta']) {
             expect(classifyFailure(name)).toBe('fail');
         }
+        // rank 与 reading 一样是可选源：远端 worker 打盹只告警，不能变成整轮硬失败
+        expect(classifyFailure('rank')).toBe('warn');
         expect(classifyFailure('不存在的源')).toBe('fail');
     });
 });

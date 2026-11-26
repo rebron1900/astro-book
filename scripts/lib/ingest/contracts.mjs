@@ -188,6 +188,16 @@ export const contracts = {
             }
         }
     },
+    // 远端排名/状态 → src/data/rank.json：结构由上游决定，不声明任何字段（全部放行）、无主键
+    'rank.status': {
+        version: 1,
+        file: 'rank.json',
+        writeMode: 'replace',
+        allowEmpty: false,
+        description: '远端排名/状态 JSON（未声明字段放行）',
+        shape: 'object',
+        fields: {}
+    },
     // modureader 阅读汇总 → src/data/reading.json（阅读页 / 阅读卡片）；books/days 都没有稳定 id
     'reading.digest': {
         version: 1,
