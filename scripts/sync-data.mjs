@@ -238,127 +238,6 @@ async function writeJson(filename, data, options = {}) {
 // 只在 JSON 中保留这些字段，控制体积；上游全量拉取后裁剪。
 // 启用新字段：往对应白名单加字段名，重跑同步即可（可逆）。
 
-// NeoDB 条目消费字段（douban 页）
-const NEODB_ITEM_FIELDS = ['id', 'title', 'category', 'cover_image_url', 'url', 'uuid', 'localized_title', 'type'];
-const NEODB_MARK_FIELDS = ['post_id', 'shelf', 'type', 'title', 'comment_text', 'rating_grade', 'item', 'created_time', 'visibility'];
-
-// 提取中文标题：优先简体中文 localized_title，找不到时回退到其他中文标题和 title。
-// TVSeason 常把“第 1 季”放在 zh-cn 中，不能把它当作品名；应继续找其他中文译名。
-const CHINESE_TITLE_LANGS = ['zh-cn', 'zh-hans', 'zh', 'zh-sg', 'zh-hk', 'zh-tw', 'zh-hant'];
-const SEASON_ONLY_TITLE = /^第\s*(?:\d+|[一二三四五六七八九十百千万]+)\s*季$/;
-
-function pickChineseTitle(item, previousTitle) {
-    if (!item) return undefined;
-
-    const localized = Array.isArray(item.localized_title) ? item.localized_title : [];
-    const chineseTitles = CHINESE_TITLE_LANGS.flatMap((lang) =>
-        localized
-            .filter((title) => title?.lang === lang && typeof title.text === 'string' && /[\u4e00-\u9fff]/.test(title.text))
-            .map((title) => title.text.trim())
-            .filter(Boolean)
-    );
-
-    // 先排除 TVSeason 常见的纯季名；若上游没有完整中文译名，保留上一次同步的中文名，避免数据回退。
-    return (
-        chineseTitles.find((title) => !SEASON_ONLY_TITLE.test(title)) ||
-        ([item.title, previousTitle].find(
-            (title) => typeof title === 'string' && /[\u4e00-\u9fff]/.test(title) && !SEASON_ONLY_TITLE.test(title.trim())
-        ) ?? item.title)
-    );
-}
-
-function trimNeodb(data, previousItems = new Map()) {
-    if (!Array.isArray(data)) return data;
-    return data.map((m) => {
-        const out = pick(m, NEODB_MARK_FIELDS);
-        if (out.item) {
-            out.item = pick(out.item, NEODB_ITEM_FIELDS);
-            const previousItem = previousItems.get(out.item.uuid);
-            // 生成中文标题字段（douban 页展示用）
-            out.item.title_cn = pickChineseTitle(out.item, previousItem?.title_cn || previousItem?.title);
-        }
-        return out;
-    });
-}
-
-// ---------- 数据源 ----------
-function neodbKey(mark) {
-    return String(mark?.post_id ?? `${mark?.item?.uuid || ''}|${mark?.created_time || ''}`);
-}
-
-async function syncNeodb(env) {
-    const token = env.NEODB_TOKEN;
-    if (!token) throw new Error('缺少 NEODB_TOKEN，无法直连 NeoDB API');
-
-    const apiBase = (env.NEODB_API_URL || 'https://neodb.social/api').replace(/\/$/, '');
-    const shelves = (env.NEODB_SHELVES || 'complete').split(',').map((item) => item.trim()).filter(Boolean);
-    const fullSync = env.SYNC_FULL === '1';
-    const previousPath = path.join(DATA_DIR, 'neodb.json');
-    let previous = { data: [] };
-    if (existsSync(previousPath)) {
-        try {
-            previous = JSON.parse(readFileSync(previousPath, 'utf8'));
-        } catch (e) {
-            console.warn(`[neodb] 读取已有缓存失败，将执行全量同步: ${e.message}`);
-        }
-    }
-    const previousMarks = Array.isArray(previous.data) ? previous.data : [];
-    const previousItems = new Map(previousMarks.filter((m) => m.item?.uuid).map((m) => [m.item.uuid, m.item]));
-    const known = new Set(previousMarks.map(neodbKey));
-    const fetched = [];
-    let stoppedEarly = false;
-
-    for (const shelf of shelves) {
-        let page = 1;
-        let pages = 1;
-        do {
-            let data;
-            let lastError;
-            for (let attempt = 1; attempt <= 3; attempt += 1) {
-                try {
-                    data = await fetchJson(
-                        `${apiBase}/me/shelf/${encodeURIComponent(shelf)}?page=${page}`,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                                Accept: 'application/json',
-                                'User-Agent': 'astro-book-sync'
-                            }
-                        },
-                        30000
-                    );
-                    break;
-                } catch (error) {
-                    lastError = error;
-                    if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
-                }
-            }
-            if (!data) throw new Error(`[neodb] ${shelf} 第 ${page} 页获取失败: ${lastError?.message || '未知错误'}`);
-            if (!Array.isArray(data.data)) throw new Error(`[neodb] ${shelf} 第 ${page} 页响应缺少 data 数组`);
-
-            const pageMarks = data.data.map((mark) => ({ ...mark, shelf: mark.shelf ?? mark.shelf_type }));
-            const pageNew = pageMarks.filter((mark) => !known.has(neodbKey(mark)));
-            if (!fullSync && previousMarks.length > 0 && pageNew.length === 0) {
-                stoppedEarly = true;
-                break;
-            }
-            fetched.push(...(fullSync ? pageMarks : pageNew));
-            pageNew.forEach((mark) => known.add(neodbKey(mark)));
-            pages = Math.max(1, Number(data.pages) || 1);
-            page += 1;
-            if (page <= pages) await new Promise((resolve) => setTimeout(resolve, 150));
-        } while (page <= pages);
-    }
-
-    const merged = fullSync ? fetched : [...previousMarks, ...fetched];
-    if (merged.length === 0) throw new Error('[neodb] API 返回 0 条记录，拒绝覆盖已有数据');
-    const deduped = [...new Map(merged.map((mark) => [neodbKey(mark), mark])).values()];
-    deduped.sort((a, b) => new Date(b.created_time).getTime() - new Date(a.created_time).getTime());
-    console.log(`[neodb] ${fullSync ? '全量' : '增量'}同步：拉取 ${fetched.length} 条，合并后 ${deduped.length} 条`);
-
-    return { data: trimNeodb(deduped, previousItems) };
-}
-
 async function syncFlux(env) {
     const readerProxy = env.FLUX_READER_PROXY === '0' || env.FLUX_READER_PROXY === 'false' ? '' : env.FLUX_READER_PROXY || DEFAULT_FEED_READER_PROXY;
 
@@ -600,7 +479,6 @@ export { gtsStatusToMemo, trimMemos } from './lib/sources/memos.mjs';
 
 // ---------- 主流程 ----------
 const SOURCES = {
-    neodb: { run: (env) => syncNeodb(env), file: 'neodb.json' },
     flux: {
         run: (env) => syncFlux(env),
         // 同一个源的两次 Miniflux 拉取结果拆成两份数据：

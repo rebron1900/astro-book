@@ -1,0 +1,70 @@
+{
+  "data": [
+    {
+      "post_id": 102,
+      "shelf": "complete",
+      "comment_text": "新标记",
+      "rating_grade": 9,
+      "item": {
+        "id": "item-102",
+        "title": "Item 102",
+        "category": "movie",
+        "cover_image_url": null,
+        "url": "https://neodb.test/item/item-102",
+        "uuid": "u-102",
+        "localized_title": [
+          {
+            "lang": "zh-cn",
+            "text": "第一百零二号"
+          },
+          {
+            "lang": "en",
+            "text": "Item 102"
+          }
+        ],
+        "type": "Edition",
+        "title_cn": "第一百零二号"
+      },
+      "created_time": "2026-11-20T00:00:00+00:00",
+      "visibility": 0
+    },
+    {
+      "post_id": 100,
+      "shelf": "complete",
+      "comment_text": "旧标记",
+      "rating_grade": 8,
+      "item": {
+        "id": "item-100",
+        "title": "Item 100",
+        "category": "book",
+        "cover_image_url": null,
+        "url": "https://neodb.test/item/item-100",
+        "uuid": "u-100",
+        "localized_title": [],
+        "type": "Edition",
+        "title_cn": "一百号旧译名"
+      },
+      "created_time": "2026-10-01T00:00:00+00:00",
+      "visibility": 0
+    },
+    {
+      "post_id": 101,
+      "shelf": "complete",
+      "comment_text": null,
+      "rating_grade": null,
+      "item": {
+        "id": "item-101",
+        "title": "Item 101",
+        "category": "movie",
+        "cover_image_url": null,
+        "url": "https://neodb.test/item/item-101",
+        "uuid": "u-101",
+        "localized_title": [],
+        "type": "Edition",
+        "title_cn": "一百零一号"
+      },
+      "created_time": "2026-09-01T00:00:00+00:00",
+      "visibility": 0
+    }
+  ]
+}

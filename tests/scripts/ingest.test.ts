@@ -558,6 +558,23 @@ describe('CLI 行为不变（dry-run，零网络）', () => {
         expect(output).toMatch(/缺少凭据|可选源/);
         expect(readFileSync(path.join(repoRoot, 'src/data/emby.json'), 'utf8')).toBe(before);
     }, 120_000);
+
+    it('迁到模块层的 ghost / neodb：缺凭据时 dry-run 给出分类错误、退出码 1、不写盘', () => {
+        for (const [source, file, credKeys] of [
+            ['ghost', 'ghost.json', ['GHOST_API_URL', 'GHOST_API_KEY']],
+            ['neodb', 'neodb.json', ['NEODB_TOKEN']]
+        ] as Array<[string, string, string[]]>) {
+            const before = readFileSync(path.join(repoRoot, 'src/data', file), 'utf8');
+            const env = { ...process.env };
+            for (const key of credKeys) delete env[key];
+            const run = spawnSync('node', ['scripts/sync-data.mjs', source, '--dry-run'], { cwd: repoRoot, encoding: 'utf8', env, timeout: 60_000 });
+            const output = `${run.stdout}\n${run.stderr}`;
+            expect(run.status).toBe(1);
+            expect(output).toContain(`[${source}] 同步失败`);
+            expect(output).toMatch(/缺少凭据/);
+            expect(readFileSync(path.join(repoRoot, 'src/data', file), 'utf8')).toBe(before);
+        }
+    }, 120_000);
 });
 
 /**
