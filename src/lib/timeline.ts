@@ -35,8 +35,44 @@ export const KIND_SOURCE: Record<TimelineEntry['kind'], string> = {
     media: 'emby.viewing'
 };
 
-/** 稳定的条目 id：缺 id 时退到该来源天然唯一的字段，绝不用下标/时间戳。 */
+/** 稳定的条目 id：缺 id 时退到该来源天然唯一的字段，绝不用下标/时间戳。
+ *
+ * 整条都为空的（如缺 id 的 memo）不再退化成空串：空串会让所有无 id 记录共用一个
+ * 键 `memos:`，两条不同记录被 `dedupeTimeline` 合成一条（隐性数据丢失）。
+ * 这里用「内容 + 时间」的确定性指纹兜底，并加 `~` 前缀与真实 id 区分。
+ */
 export function timelineEntryId(entry: TimelineEntry): string {
+    const id = rawEntryId(entry);
+    return id === '' ? timelineFingerprint(entry) : id;
+}
+
+/** 指纹前缀：真实 id 不可能以 `~` 开头（Memos/Ghost/Emby 的 id 都是数字或 slug）。 */
+export const FINGERPRINT_PREFIX = '~';
+
+/** 该条目是否用指纹当 id（即上游没给 id）。 */
+export function isFingerprintId(entry: TimelineEntry): boolean {
+    return rawEntryId(entry) === '';
+}
+
+/** FNV-1a 32 位：纯 TS 实现，不把 node:crypto 带进页面包；同一输入必得同一输出。 */
+function fnv1a(text: string): string {
+    let hash = 0x811c9dc5;
+    for (let index = 0; index < text.length; index += 1) {
+        hash ^= text.charCodeAt(index);
+        hash = Math.imul(hash, 0x01000193) >>> 0;
+    }
+    return hash.toString(16).padStart(8, '0');
+}
+
+/** 缺 id 时的确定性指纹：memo 用「正文 + 时间」，其它类型用「整条数据 + 时间」。 */
+export function timelineFingerprint(entry: TimelineEntry): string {
+    const data = (entry.data ?? {}) as Record<string, unknown>;
+    const payload = entry.kind === 'memo' ? String(data.content ?? '') : `${entry.kind}|${JSON.stringify(data)}`;
+    return `${FINGERPRINT_PREFIX}${fnv1a(`${payload}|${entry.time}`)}`;
+}
+
+/** 各来源的原始 id（可能为空串）。 */
+function rawEntryId(entry: TimelineEntry): string {
     switch (entry.kind) {
         case 'post':
             return String(entry.data.id ?? entry.data.slug ?? '');
@@ -96,7 +132,16 @@ export function dedupeTimeline(entries: TimelineEntry[]): TimelineEntry[] {
     for (const entry of entries) {
         const key = timelineKey(entry);
         const existing = byKey.get(key);
-        byKey.set(key, existing ? mergeDuplicateEntry(existing, entry) : entry);
+        if (!existing) {
+            byKey.set(key, entry);
+            continue;
+        }
+        // 指纹键碰撞 = 「正文 + 时间」完全一致：无法区分是真重复还是指纹不够宽。
+        // 一律只保留一条，但必须告警（不静默丢数据），且不打印正文。
+        if (isFingerprintId(entry)) {
+            console.warn(`[timeline] ${entry.kind} 记录缺少 id 且指纹相同（内容与时间一致），只保留一条：${key}`);
+        }
+        byKey.set(key, mergeDuplicateEntry(existing, entry));
     }
     return [...byKey.values()];
 }

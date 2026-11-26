@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
     buildTimeline,
     compareTimelineEntries,
@@ -7,6 +7,7 @@ import {
     paginateTimeline,
     readingDayTime,
     timelineEntryId,
+    isFingerprintId,
     timelineKey,
     timelineForKind
 } from '../../src/lib/timeline';
@@ -128,5 +129,64 @@ describe('栏目映射与计数口径', () => {
         expect(counts).toMatchObject({ all: 4, post: 1, memo: 1, reading: 1, media: 1, readingAndMedia: 2 });
         // 与分页 total 同源：总条数就是事件数组长度
         expect(paginateTimeline(entries, 10)[0]).toHaveLength(counts.all);
+    });
+});
+
+/**
+ * 缺 id 的键退化：旧实现 timelineEntryId 返回空串，键固定成 `memos:`，
+ * 两条不同记录会被合成一条（明鉴实测 2→1）。改为「内容 + 时间」确定性指纹。
+ */
+describe('缺 id 的记录不共用同一个键', () => {
+    const bareMemo = (content: string, time: number): TimelineEntry =>
+        ({ kind: 'memo', time, data: { type: 'memo', content, createdTs: time / 1000, updatedTs: time / 1000, creatorName: 't', resourceList: [] } }) as unknown as TimelineEntry;
+
+    it('两条无 id、内容不同的记录进时间线后仍是 2 条，且键互不相同', () => {
+        const entries = [bareMemo('<p>第一条无 id 的记录</p>', 1_700_000_000_000), bareMemo('<p>第二条无 id 的记录</p>', 1_700_000_100_000)];
+        const built = buildTimeline(entries, { now: 1_700_000_200_000 });
+        expect(built).toHaveLength(2);
+        const keys = built.map(timelineKey);
+        expect(new Set(keys).size).toBe(2);
+        // 键带 `~` 指纹前缀，不再退化成 `memos:`
+        expect(keys.every((key) => key.startsWith('memos:~'))).toBe(true);
+        expect(keys).not.toContain('memos:');
+    });
+
+    it('指纹与输入顺序无关、重跑稳定', () => {
+        const a = bareMemo('<p>甲</p>', 1_700_000_000_000);
+        const b = bareMemo('<p>乙</p>', 1_700_000_000_000); // 时间相同，只有内容不同
+        const first = buildTimeline([a, b], { now: 1_700_000_100_000 });
+        const second = buildTimeline([b, a], { now: 1_700_000_100_000 });
+        expect(first.map(timelineKey)).toEqual(second.map(timelineKey));
+        expect(first).toHaveLength(2);
+        // 同一份内容重建一条记录，指纹必须一致
+        expect(timelineEntryId(bareMemo('<p>甲</p>', 1_700_000_000_000))).toBe(timelineEntryId(a));
+    });
+
+    it('内容与时间都相同（真重复）只留一条，并 warn 一次（不打印正文）', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        try {
+            const entries = [bareMemo('<p>同一条</p>', 1_700_000_000_000), bareMemo('<p>同一条</p>', 1_700_000_000_000)];
+            expect(dedupeTimeline(entries)).toHaveLength(1);
+            expect(warn).toHaveBeenCalledTimes(1);
+            const message = String(warn.mock.calls[0][0]);
+            expect(message).toContain('指纹相同');
+            expect(message).not.toContain('同一条'); // 不泄露正文
+        } finally {
+            warn.mockRestore();
+        }
+    });
+
+    it('有 id 的 memo 行为不变：id 原样当键，不套指纹', () => {
+        expect(timelineEntryId(memo('a', 100))).toBe('a');
+        expect(timelineKey(memo('a', 100))).toBe('memos:a');
+        expect(isFingerprintId(memo('a', 100))).toBe(false);
+        expect(isFingerprintId(bareMemo('<p>x</p>', 100))).toBe(true);
+    });
+
+    it('其它类型缺 id 同样不会共用空键（post 无 id 无 slug）', () => {
+        const barePost = { kind: 'post' as const, time: 1_700_000_000_000, data: { type: 'post', title: '甲' } } as unknown as TimelineEntry;
+        const barePost2 = { kind: 'post' as const, time: 1_700_000_000_000, data: { type: 'post', title: '乙' } } as unknown as TimelineEntry;
+        expect(timelineKey(barePost)).not.toBe(timelineKey(barePost2));
+        expect(dedupeTimeline([barePost, barePost2])).toHaveLength(2);
     });
 });

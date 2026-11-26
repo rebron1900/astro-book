@@ -601,3 +601,21 @@ describe('跨域重定向不带走认证头（executor fetchWithTimeout）', () 
         expect(readJson(root, 'src/data/out.json')[0].name).toBe('4');
     });
 });
+
+describe('超时文案（不足 1s 显示毫秒）', () => {
+    it('400ms → 「超时（400ms）」；1200ms → 「超时（1s）」，行为不变仍是 upstream', async () => {
+        const root = makeProject();
+        const file = writeModule(root, 'slow', { id: 'slow', optional: false, credentials: [], datasets: ['slow.data'] }, 'await new Promise(() => {});');
+        const registry = { slow: { module: file, optional: false } };
+        const contracts = contractFor('slow.data');
+        await expect(runIngestSource('slow', { projectRoot: root, registry, contracts, log: quiet, timeoutMs: 400 })).rejects.toMatchObject({
+            code: 'upstream',
+            message: expect.stringContaining('collect 超时（400ms）')
+        });
+        await expect(runIngestSource('slow', { projectRoot: root, registry, contracts, log: quiet, timeoutMs: 1200 })).rejects.toMatchObject({
+            code: 'upstream',
+            message: expect.stringContaining('collect 超时（1s）')
+        });
+        expect(existsSync(path.join(root, 'src/data/out.json'))).toBe(false);
+    });
+});

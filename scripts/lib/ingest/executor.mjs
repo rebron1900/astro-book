@@ -41,6 +41,11 @@ function makeError(message, code) {
     return error;
 }
 
+/** 超时文案：≥ 1s 显示秒，不足 1s 显示毫秒（400ms 不再打印成「0s」）。行为不变，只改文案。 */
+function formatTimeout(timeoutMs) {
+    return timeoutMs >= 1000 ? `${Math.round(timeoutMs / 1000)}s` : `${Math.round(timeoutMs)}ms`;
+}
+
 /** 日志脱敏：已知密钥值、常见敏感 query 参数一律替换为 ***。 */
 export function sanitize(message, secrets = []) {
     let text = String(message ?? '');
@@ -274,7 +279,7 @@ export async function runIngestSource(name, options = {}) {
         let timeoutTimer;
         try {
             const timeoutPromise = new Promise((_, reject) => {
-                timeoutTimer = setTimeout(() => reject(makeError(`collect 超时（${Math.round(timeoutMs / 1000)}s）`, 'upstream')), timeoutMs);
+                timeoutTimer = setTimeout(() => reject(makeError(`collect 超时（${formatTimeout(timeoutMs)}）`, 'upstream')), timeoutMs);
             });
             result = await Promise.race([collect(ctx), timeoutPromise]);
         } catch (error) {
