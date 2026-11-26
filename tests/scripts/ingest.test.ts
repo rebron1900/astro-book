@@ -9,6 +9,7 @@ import { assertContractVersion, getContract } from '../../scripts/lib/ingest/con
 import { validateDataset, validateFields, parseFieldType } from '../../scripts/lib/ingest/validate.mjs';
 import { runIngestSource, sanitize, loadSource, headerPairs, AUTH_HEADERS } from '../../scripts/lib/ingest/executor.mjs';
 import { readState } from '../../scripts/lib/ingest/state.mjs';
+import { isSensitiveHeader, stripSensitiveHeaders } from '../../scripts/lib/ingest/sensitive-headers.mjs';
 import * as embySource from '../../scripts/lib/sources/emby.mjs';
 
 /**
@@ -718,5 +719,58 @@ describe('敏感头通用规则（接第三源前的泄密缺口）', () => {
         expect(seen[1].headers['x-author']).toBe('alice');
         expect(seen[1].headers['x-tokenizer']).toBe('v2');
         expect(seen[1].headers['x-session-cache']).toBeUndefined(); // session 后接 -，是真边界，照旧剔
+    });
+});
+
+describe('敏感头判定表：拼接式命名 fail-open 修复（右侧不再要求边界）', () => {
+    // 验收表来源：跨源跳转时被带出去的实测清单。STRIP 必须 true，KEEP 必须 false。
+    const STRIP_NAMES = [
+        'x-sessionid',
+        'x-authtoken',
+        'x-secretkey',
+        'x-credentialid',
+        'x-tokenid',
+        'x-apikeys',
+        'x-api-keys',
+        'x-csrftoken',
+        'x-emby-token',
+        'x-emby-authorization',
+        'x-session-cache',
+        'x-auth-mode',
+        'x-auth0-token',
+        'x-arr-apikey',
+        'X-Session-Id',
+        'X-Api-Key',
+        'X-Client-Secret',
+        'authorization',
+        'proxy-authorization',
+        'cookie'
+    ];
+
+    const KEEP_NAMES = [
+        'x-author',
+        'x-tokenizer',
+        'if-none-match',
+        'accept-language',
+        'x-request-id',
+        'x-api-version',
+        'x-trace',
+        'x-correlation-id',
+        'x-client-id'
+    ];
+
+    it.each(STRIP_NAMES)('STRIP：%s 视为敏感头', (name) => {
+        expect(isSensitiveHeader(name)).toBe(true);
+    });
+
+    it.each(KEEP_NAMES)('KEEP：%s 不算敏感头', (name) => {
+        expect(isSensitiveHeader(name)).toBe(false);
+    });
+
+    it('整条剥离链路：STRIP 全部被剥、KEEP 全部保留、value 不动', () => {
+        const pairs: Array<[string, string]> = [...STRIP_NAMES, ...KEEP_NAMES].map((name) => [name, `v-${name}`]);
+        const kept = stripSensitiveHeaders(pairs);
+        expect(kept.map(([name]) => name.toLowerCase()).sort()).toEqual(KEEP_NAMES.map((name) => name.toLowerCase()).sort());
+        for (const [name, value] of kept) expect(value).toBe(`v-${name}`);
     });
 });

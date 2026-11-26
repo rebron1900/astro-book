@@ -8,7 +8,9 @@
  *
  * 规则（两层，取并集）：
  *  1. 通用模式：头名里出现 auth / cookie / token / secret / session / api-key /
- *     credential / signature / password 之一，一律视为敏感。新来源无需登记即受保护。
+ *     credential / signature / password 之一（位于开头或 `-`/`_` 之后，或恰好收尾），
+ *     一律视为敏感。右侧不要求边界，`x-sessionid` 这类拼接式命名也受保护；
+ *     `author`、`tokenizer` 作为已知误报单独放行。新来源无需登记即受保护。
  *  2. 显式声明：来源在 `meta.sensitiveHeaders` 里列出的名字（哪怕不含上面任何词，
  *     比如 `x-acme`），也一律视为敏感。用于兜住命名不规整的私有头。
  *
@@ -18,9 +20,25 @@
 /** 内置基线：任何情况下都算敏感。保留导出名 AUTH_HEADERS 的语义兼容。 */
 export const BASE_SENSITIVE_HEADERS = ['authorization', 'proxy-authorization', 'cookie', 'cookie2', 'set-cookie'];
 
-/** 通用模式：命中即敏感。刻意不收窄到 `^x-`，第 N 方来源的头名不可预知。 */
-const SENSITIVE_PATTERN =
-    /(?:^|[-_])(auth|authorization|cookie|token|secret|session|api[-_]?key|apikey|password|passwd|credential|signature)(?=$|[-_])/i;
+/**
+ * 敏感词本体（不含左右边界）。两处豁免是已知误报：
+ *  - `author` / `authors` 含 `auth`，但不是认证头（`authorization` 仍命中）；
+ *  - `tokenizer` / `tokenize` / `tokenization` 含 `token`，但指的是分词器。
+ */
+const SENSITIVE_KEYWORD = 'auth(?!ors?\\b)|authorization|cookie2?|token(?!i[sz]e)|secret|session|api[-_]?key|apikey|password|passwd|credential|signature';
+
+/**
+ * 通用模式：命中即敏感。刻意不收窄到 `^x-`，第 N 方来源的头名不可预知。
+ *
+ * 边界只有两种命中位置，右侧一律不要求边界：
+ *  1. 左边界命中：`^` 或 `-` / `_` 之后，如 `authorization`、`x-session-id`；
+ *  2. 后缀命中：关键词正好收尾，如 `x-csrftoken`、`x-emby-token`。
+ *
+ * 右侧故意不要求边界：`x-sessionid`、`x-authtoken`、`x-apikeys`、`x-api-keys`
+ * 这类拼接式命名在跨源跳转时必须同样剥掉。上一版要求右边界，正是它导致这类头名
+ * fail-open（认证头被原样带去第三方域）。
+ */
+const SENSITIVE_PATTERN = new RegExp(`(?:^|[-_])(?:${SENSITIVE_KEYWORD})|(?:${SENSITIVE_KEYWORD})$`, 'i');
 
 /** 头名归一：去空格、转小写。 */
 export function normalizeHeaderName(name) {
