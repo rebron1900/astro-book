@@ -24,6 +24,17 @@ const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000;
 const CREDENTIAL_HINT = /(KEY|TOKEN|PASS|SECRET|COOKIE)/i;
 const SENSITIVE_PARAM = /\b(api_key|apikey|token|access_token|X-Emby-Token|Authorization|password|passwd|secret)=([^&\s"']+)/gi;
 
+/** 最多跟随 5 跳；第 6 跳按 upstream 失败（不无限重定向、不静默停在中转地址）。 */
+const MAX_REDIRECTS = 5;
+const REDIRECT_STATUS = new Set([301, 302, 303, 307, 308]);
+/**
+ * 跨源跳转必须剥掉的认证类头（小写比较）。
+ * undici 默认只在跨域时丢 Authorization/Cookie，自定义认证头（本项目用 X-Emby-Token）
+ * 会原样带到新源 —— 所以这里自己跟随跳转并显式判断。
+ */
+export const AUTH_HEADERS = ['authorization', 'cookie', 'proxy-authorization', 'x-emby-token'];
+const AUTH_HEADER_SET = new Set(AUTH_HEADERS);
+
 function makeError(message, code) {
     const error = new Error(message);
     error.code = code;
@@ -48,11 +59,57 @@ function collectSecrets(env) {
 async function fetchWithTimeout(fetchImpl, url, options, timeoutMs) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
+    let currentUrl = String(url);
+    let headers = headerPairs(options.headers);
+    let method = String(options.method || 'GET').toUpperCase();
+    let body = options.body;
     try {
-        return await fetchImpl(url, { ...options, signal: controller.signal });
+        for (let hop = 0; ; hop += 1) {
+            // redirect: 'manual' —— 自己跟随，才能逐跳判断是否跨源
+            const response = await fetchImpl(currentUrl, { ...options, method, body, headers, redirect: 'manual', signal: controller.signal });
+            if (!REDIRECT_STATUS.has(response.status)) return response;
+            const location = response.headers?.get?.('location');
+            if (!location) return response;
+            if (hop >= MAX_REDIRECTS) {
+                throw makeError(`重定向超过 ${MAX_REDIRECTS} 跳（${String(currentUrl).split('?')[0]}）`, 'upstream');
+            }
+            const nextUrl = new URL(location, currentUrl).href;
+            // 跨源：剥掉认证类头，其它头（Accept 等）保留 —— 跨域 CDN 跳转取图仍需可用
+            if (originOf(nextUrl) !== originOf(currentUrl)) headers = withoutAuthHeaders(headers);
+            // 303（以及 301/302 下的非 GET/HEAD）改成 GET 并丢弃请求体
+            if (response.status === 303 || ((response.status === 301 || response.status === 302) && method !== 'GET' && method !== 'HEAD')) {
+                method = 'GET';
+                body = undefined;
+                headers = headers.filter(([name]) => !/^content-(type|length)$/i.test(name));
+            }
+            currentUrl = nextUrl;
+        }
     } finally {
         clearTimeout(timer);
     }
+}
+
+/**
+ * 头入参归一成 `[name, value]` 二维数组：同时支持 `Headers` 实例、二维数组、普通对象。
+ * 注意先判 Array：数组自带 `entries()`，但返回的是 `[下标, 元素]`，不能当头名用。
+ */
+export function headerPairs(headers) {
+    if (!headers) return [];
+    if (Array.isArray(headers)) return headers.map((pair) => [String(pair?.[0]), String(pair?.[1])]);
+    if (typeof headers.entries === 'function') return [...headers.entries()].map(([name, value]) => [String(name), String(value)]);
+    return Object.entries(headers).map(([name, value]) => [String(name), String(value)]);
+}
+
+function originOf(url) {
+    try {
+        return new URL(String(url)).origin;
+    } catch {
+        return '';
+    }
+}
+
+function withoutAuthHeaders(pairs) {
+    return pairs.filter(([name]) => !AUTH_HEADER_SET.has(String(name).toLowerCase()));
 }
 
 function isEmptyData(data, contract) {

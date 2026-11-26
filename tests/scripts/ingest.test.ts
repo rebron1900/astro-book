@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 
 import { assertContractVersion, getContract } from '../../scripts/lib/ingest/contracts.mjs';
 import { validateDataset, validateFields, parseFieldType } from '../../scripts/lib/ingest/validate.mjs';
-import { runIngestSource, sanitize, loadSource } from '../../scripts/lib/ingest/executor.mjs';
+import { runIngestSource, sanitize, loadSource, headerPairs, AUTH_HEADERS } from '../../scripts/lib/ingest/executor.mjs';
 import { readState } from '../../scripts/lib/ingest/state.mjs';
 import * as embySource from '../../scripts/lib/sources/emby.mjs';
 
@@ -464,4 +464,140 @@ describe('CLI 行为不变（dry-run，零网络）', () => {
         expect(output).toMatch(/缺少凭据|可选源/);
         expect(readFileSync(path.join(repoRoot, 'src/data/emby.json'), 'utf8')).toBe(before);
     }, 120_000);
+});
+
+/**
+ * 跨域重定向：认证头只发给允许的目标。
+ * undici 默认 follow 只剥 Authorization/Cookie，自定义头（X-Emby-Token）会带过域，
+ * 所以执行器自己跟随跳转（redirect: 'manual'）并逐跳判断 origin。
+ */
+describe('跨域重定向不带走认证头（executor fetchWithTimeout）', () => {
+    const TOKEN = 'test-emby-token-value';
+    const ACCEPT = 'application/json';
+
+    function headerMap(raw: unknown): Record<string, string> {
+        const map: Record<string, string> = {};
+        for (const [name, value] of headerPairs(raw)) map[String(name).toLowerCase()] = String(value);
+        return map;
+    }
+
+    /** 路由表驱动 + 记录每跳收到的 URL 与头。 */
+    function stub(routes: Record<string, () => Response>) {
+        const seen: Array<{ url: string; headers: Record<string, string> }> = [];
+        const fetchImpl = async (url: string, init: { headers?: unknown } = {}) => {
+            seen.push({ url: String(url), headers: headerMap(init.headers) });
+            const route = routes[String(url)];
+            return route ? route() : new Response('not found', { status: 404 });
+        };
+        return { seen, fetchImpl };
+    }
+
+    const redirect = (location: string, status = 302) => () => new Response(null, { status, headers: { location } });
+    const ok = () => new Response(JSON.stringify({ ok: true }), { status: 200 });
+
+    /** 三种头形态：普通对象 / Headers 实例 / 二维数组。 */
+    const HEADER_FORMS: Array<{ name: string; literal: string }> = [
+        { name: '普通对象', literal: `{ 'X-Emby-Token': ${JSON.stringify(TOKEN)}, Accept: ${JSON.stringify(ACCEPT)} }` },
+        { name: 'Headers 实例', literal: `new Headers({ 'X-Emby-Token': ${JSON.stringify(TOKEN)}, Accept: ${JSON.stringify(ACCEPT)} })` },
+        { name: '二维数组', literal: `[['X-Emby-Token', ${JSON.stringify(TOKEN)}], ['Accept', ${JSON.stringify(ACCEPT)}]]` }
+    ];
+
+    const FULL_LITERAL = `{ 'X-Emby-Token': ${JSON.stringify(TOKEN)}, Accept: ${JSON.stringify(ACCEPT)}, authorization: 'Bearer abc', cookie: 'sid=1', 'proxy-authorization': 'Basic xyz', 'x-other': 'keep-me' }`;
+
+    async function fetchOnce(headersLiteral: string, fetchImpl: (url: string, init?: { headers?: unknown }) => Promise<Response>, url = 'https://emby.test/Items') {
+        const root = makeProject();
+        const file = writeModule(
+            root,
+            'redirects',
+            { id: 'fake', optional: false, credentials: [], datasets: ['fake.data'] },
+            `await ctx.fetchJson(${JSON.stringify(url)}, { headers: ${headersLiteral} });\nreturn { outputs: [{ dataset: 'fake.data', data: [{ id: '1', name: 'a' }], complete: true }] };`
+        );
+        return runIngestSource('fake', {
+            projectRoot: root,
+            registry: { fake: { module: file, optional: false } },
+            contracts: contractFor('fake.data'),
+            log: quiet,
+            fetchImpl
+        });
+    }
+
+    it('①同域跳转后 x-emby-token 还在（三种头形态都成立）', async () => {
+        for (const form of HEADER_FORMS) {
+            const { seen, fetchImpl } = stub({ 'https://emby.test/Items': redirect('/Items2'), 'https://emby.test/Items2': ok });
+            await fetchOnce(form.literal, fetchImpl);
+            expect(seen.map((call) => call.url)).toEqual(['https://emby.test/Items', 'https://emby.test/Items2']);
+            expect(seen[1].headers['x-emby-token']).toBe(TOKEN);
+            expect(seen[1].headers.accept).toBe(ACCEPT);
+        }
+    });
+
+    it('②跨域跳转后认证头全没了、非认证头还在', async () => {
+        const { seen, fetchImpl } = stub({ 'https://emby.test/Items': redirect('https://cdn.other.test/blob'), 'https://cdn.other.test/blob': ok });
+        await fetchOnce(FULL_LITERAL, fetchImpl);
+        expect(seen).toHaveLength(2);
+        // 跳转前：认证头都在（证明是「跳转时剥掉」，不是一开始就没发）
+        for (const name of AUTH_HEADERS) expect(seen[0].headers[name]).toBeTruthy();
+        // 跳转后：一个都不剩
+        for (const name of AUTH_HEADERS) expect(seen[1].headers[name]).toBeUndefined();
+        // 非认证头保留
+        expect(seen[1].headers.accept).toBe(ACCEPT);
+        expect(seen[1].headers['x-other']).toBe('keep-me');
+    });
+
+    it('③相对 Location 按当前 URL 解析（相对路径与 ../ 都支持）', async () => {
+        const routes = {
+            'https://emby.test/api/Items': redirect('../sub/Items2?x=1'),
+            'https://emby.test/sub/Items2?x=1': redirect('/v2/Items3'),
+            'https://emby.test/v2/Items3': ok
+        };
+        const { seen, fetchImpl } = stub(routes);
+        await fetchOnce(FULL_LITERAL, fetchImpl, 'https://emby.test/api/Items');
+        expect(seen.map((call) => call.url)).toEqual([
+            'https://emby.test/api/Items',
+            'https://emby.test/sub/Items2?x=1',
+            'https://emby.test/v2/Items3'
+        ]);
+        // 同域跳转两次，认证头一直保留
+        expect(seen[2].headers['x-emby-token']).toBe(TOKEN);
+    });
+
+    it('④第 6 跳报 upstream 错，不继续跟', async () => {
+        const routes: Record<string, () => Response> = {};
+        for (let hop = 0; hop <= 6; hop += 1) routes[`https://emby.test/Items?hop=${hop}`] = redirect(`https://emby.test/Items?hop=${hop + 1}`);
+        const { seen, fetchImpl } = stub(routes);
+        await expect(fetchOnce(FULL_LITERAL, fetchImpl, 'https://emby.test/Items?hop=0')).rejects.toMatchObject({
+            code: 'upstream',
+            message: expect.stringContaining('重定向超过 5 跳')
+        });
+        // 5 跳跟完、第 6 个 3xx 直接放弃：共发出 6 个请求
+        expect(seen).toHaveLength(6);
+    });
+
+    it('⑤跨域取图（fetchBinary）仍能正常返回字节，认证头同样不带过去', async () => {
+        const root = makeProject();
+        const file = writeModule(
+            root,
+            'redirects-binary',
+            { id: 'fake', optional: false, credentials: [], datasets: ['fake.data'] },
+            "const res = await ctx.fetchBinary('https://emby.test/Images/Primary', { headers: { 'X-Emby-Token': 't', Accept: 'image/*' } });\nreturn { outputs: [{ dataset: 'fake.data', data: [{ id: '1', name: String(res.bytes.length) }], complete: true }] };"
+        );
+        const seen: Array<{ url: string; headers: Record<string, string> }> = [];
+        const fetchImpl = async (url: string, init: { headers?: unknown } = {}) => {
+            seen.push({ url: String(url), headers: headerMap(init.headers) });
+            if (String(url) === 'https://emby.test/Images/Primary') return new Response(null, { status: 302, headers: { location: 'https://cdn.other.test/img.jpg' } });
+            return new Response(new Uint8Array([1, 2, 3, 4]), { status: 200 });
+        };
+        await runIngestSource('fake', {
+            projectRoot: root,
+            registry: { fake: { module: file, optional: false } },
+            contracts: contractFor('fake.data'),
+            log: quiet,
+            fetchImpl
+        });
+        expect(seen).toHaveLength(2);
+        expect(seen[1].url).toBe('https://cdn.other.test/img.jpg');
+        expect(seen[1].headers['x-emby-token']).toBeUndefined();
+        expect(seen[1].headers.accept).toBe('image/*');
+        expect(readJson(root, 'src/data/out.json')[0].name).toBe('4');
+    });
 });
