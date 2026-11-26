@@ -7,6 +7,7 @@
 /** @type {Record<string, { module: string, optional: boolean }>} */
 export const sources = {
     emby: { module: '../sources/emby.mjs', optional: true },
+    memos: { module: '../sources/memos.mjs', optional: false },
     imagemeta: { module: '../sources/imagemeta.mjs', optional: false }
 };
 

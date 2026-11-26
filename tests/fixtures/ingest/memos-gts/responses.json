@@ -1,0 +1,58 @@
+{
+  "requests": [
+    "GET https://gts.test/api/v1/accounts/verify_credentials",
+    "GET https://gts.test/api/v1/accounts/acct-1/statuses?limit=40"
+  ],
+  "routes": {
+    "GET https://gts.test/api/v1/accounts/verify_credentials": {
+      "status": 200,
+      "body": {
+        "id": "acct-1",
+        "display_name": "1900",
+        "username": "1900",
+        "url": "https://gts.test/@1900"
+      }
+    },
+    "GET https://gts.test/api/v1/accounts/acct-1/statuses?limit=40": {
+      "status": 200,
+      "body": [
+        {
+          "id": "s2",
+          "content": "<p>新动态</p>",
+          "created_at": "2026-11-20T10:00:00Z",
+          "visibility": "public",
+          "pinned": true,
+          "account": {
+            "display_name": "1900",
+            "username": "1900",
+            "url": "https://gts.test/@1900"
+          },
+          "media_attachments": []
+        },
+        {
+          "id": "s1",
+          "content": "<p>s1 新版本</p>",
+          "created_at": "2026-11-19T10:00:00Z",
+          "visibility": "public",
+          "account": {
+            "display_name": "1900",
+            "username": "1900",
+            "url": "https://gts.test/@1900"
+          },
+          "media_attachments": []
+        },
+        {
+          "id": "s3",
+          "content": "私密动态",
+          "created_at": "2026-11-21T10:00:00Z",
+          "visibility": "private",
+          "account": {
+            "display_name": "1900",
+            "username": "1900"
+          },
+          "media_attachments": []
+        }
+      ]
+    }
+  }
+}

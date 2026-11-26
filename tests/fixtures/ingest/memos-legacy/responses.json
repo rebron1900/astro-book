@@ -1,0 +1,61 @@
+{
+  "requests": [
+    "GET https://m2m.996288.xyz/api/v1/memo?limit=50&offset=0"
+  ],
+  "base": "https://m2m.996288.xyz/api/v1/memo",
+  "routes": {
+    "GET https://m2m.996288.xyz/api/v1/memo?limit=50&offset=0": {
+      "status": 200,
+      "headers": {
+        "x-total-count": "3"
+      },
+      "body": [
+        {
+          "id": "L2",
+          "content": "legacy 新",
+          "createdTs": 3000,
+          "updatedTs": 3000,
+          "creatorName": "1900",
+          "resourceList": [
+            {
+              "type": "image",
+              "filename": "a.png",
+              "externalLink": "https://cdn.test/a.png",
+              "link": "https://cdn.test/a.png"
+            }
+          ],
+          "visibility": "PUBLIC",
+          "pinned": false
+        },
+        {
+          "id": "L3",
+          "content": "legacy 私密",
+          "createdTs": 2500,
+          "updatedTs": 2500,
+          "creatorName": "1900",
+          "resourceList": [],
+          "visibility": "PRIVATE",
+          "pinned": false
+        }
+      ]
+    },
+    "GET https://m2m.996288.xyz/api/v1/memo?limit=50&offset=50": {
+      "status": 200,
+      "headers": {
+        "x-total-count": "3"
+      },
+      "body": [
+        {
+          "id": "L1",
+          "content": "legacy 更旧",
+          "createdTs": 1000,
+          "updatedTs": 1000,
+          "creatorName": "1900",
+          "resourceList": [],
+          "visibility": "PUBLIC",
+          "pinned": false
+        }
+      ]
+    }
+  }
+}

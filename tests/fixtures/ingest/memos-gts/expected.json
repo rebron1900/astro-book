@@ -1,0 +1,35 @@
+[
+  {
+    "id": "s2",
+    "content": "<p>新动态</p>",
+    "createdTs": 1795168800,
+    "updatedTs": 1795168800,
+    "creatorName": "1900",
+    "resourceList": [],
+    "visibility": "PUBLIC",
+    "pinned": true,
+    "type": "memo"
+  },
+  {
+    "id": "s1",
+    "content": "s1 旧版本",
+    "createdTs": 2000,
+    "updatedTs": 2000,
+    "creatorName": "1900",
+    "resourceList": [],
+    "visibility": "PUBLIC",
+    "pinned": false,
+    "type": "memo"
+  },
+  {
+    "id": "m-old",
+    "content": "旧动态",
+    "createdTs": 1000,
+    "updatedTs": 1000,
+    "creatorName": "1900",
+    "resourceList": [],
+    "visibility": "PUBLIC",
+    "pinned": false,
+    "type": "memo"
+  }
+]

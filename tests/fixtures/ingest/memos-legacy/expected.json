@@ -1,0 +1,20 @@
+[
+  {
+    "id": "L2",
+    "content": "legacy 新",
+    "createdTs": 3000,
+    "updatedTs": 3000,
+    "creatorName": "1900",
+    "resourceList": [
+      {
+        "type": "image",
+        "filename": "a.png",
+        "link": "https://cdn.test/a.png",
+        "externalLink": "https://cdn.test/a.png"
+      }
+    ],
+    "visibility": "PUBLIC",
+    "pinned": false,
+    "type": "memo"
+  }
+]

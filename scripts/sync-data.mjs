@@ -29,7 +29,6 @@ import { fileURLToPath } from 'node:url';
 import { buildFluxSnapshot, PARSING_ERROR_LIMIT } from '../src/lib/flux-snapshot.ts';
 import { discoverFeedUrl, parseFeedXml } from '../src/lib/feed-xml.ts';
 import { applyRouteCache, pendingRouteIds, polylineFromMap, sortActivities, toActivity, yearWindows } from '../src/lib/intervals.ts';
-import { DEFAULT_MEMO_VISIBILITIES, filterPublishableMemos, normalizeMemoVisibility, parseMemoVisibilities } from '../src/lib/privacy.ts';
 import { isIngestSource, listIngestSources, sources as ingestRegistry } from './lib/ingest/registry.mjs';
 import { runIngestSource } from './lib/ingest/executor.mjs';
 
@@ -328,27 +327,6 @@ function trimNeodb(data, previousItems = new Map()) {
     });
 }
 
-// Memo 消费字段（now 页）
-const MEMO_FIELDS = ['id', 'content', 'createdTs', 'updatedTs', 'creatorName', 'resourceList', 'visibility', 'pinned'];
-const RESOURCE_FIELDS = ['type', 'filename', 'link', 'externalLink'];
-
-// 隐私边界：非公开 Memos 绝不落地。规则在 src/lib/privacy.ts（store 读取时复用同一套函数）。
-// 默认只保留 visibility === 'PUBLIC'；放开必须显式给 MEMOS_PUBLISH_VISIBILITIES。
-export function trimMemos(memos, allowedVisibilities) {
-    const allowed = Array.isArray(allowedVisibilities) && allowedVisibilities.length ? allowedVisibilities : undefined;
-    const publishable = filterPublishableMemos(memos, allowed ?? DEFAULT_MEMO_VISIBILITIES);
-    const dropped = memos.length - publishable.length;
-    console.log(`[memos] 可见性过滤：保留 ${publishable.length} 条（允许 ${(allowed ?? DEFAULT_MEMO_VISIBILITIES).join('/')}），丢弃 ${dropped} 条非公开`);
-    if (publishable.length === 0 && memos.length > 0) {
-        throw new Error(`[memos] ${memos.length} 条记录全部不在发布白名单内（${(allowed ?? DEFAULT_MEMO_VISIBILITIES).join('/')}），拒绝用空数据覆盖已有文件`);
-    }
-    return publishable.map((m) => {
-        const out = pick(m, MEMO_FIELDS);
-        if (Array.isArray(out.resourceList)) out.resourceList = out.resourceList.map((r) => pick(r, RESOURCE_FIELDS));
-        return { ...out, type: 'memo' };
-    });
-}
-
 // ---------- 数据源 ----------
 async function syncGhost(env) {
     const { TSGhostContentAPI } = await import('@ts-ghost/content-api');
@@ -570,125 +548,6 @@ async function syncFlux(env) {
     });
 }
 
-function gtsTimestamp(value) {
-    const time = new Date(value || 0).getTime();
-    return Number.isFinite(time) ? Math.floor(time / 1000) : 0;
-}
-
-function gtsResourceList(status) {
-    const attachments = Array.isArray(status.media_attachments) ? status.media_attachments : [];
-    return attachments
-        .filter((attachment) => attachment && (attachment.type === 'image' || attachment.type === 'video' || attachment.type === 'gifv' || attachment.type === 'audio'))
-        .map((attachment) => ({
-            type: attachment.type === 'gifv' ? 'video' : attachment.type,
-            filename: attachment.url || attachment.remote_url || '',
-            externalLink: attachment.remote_url || attachment.url || '',
-            link: attachment.text_url || attachment.url || ''
-        }));
-}
-
-export function gtsStatusToMemo(status, owner) {
-    const source = status.reblog || status;
-    const author = status.account || owner || {};
-    const sourceAuthor = source.account || author;
-    const boostContent = status.reblog
-        ? `${author.display_name || author.username || '我'} 转嘟 <a href="${sourceAuthor.url || '#'}" target="_blank" rel="noopener noreferrer">@${sourceAuthor.acct || sourceAuthor.username || '未知'}</a>:\n${source.content || ''}`
-        : status.content || '';
-
-    return {
-        id: status.id,
-        content: boostContent,
-        createdTs: gtsTimestamp(status.created_at),
-        updatedTs: gtsTimestamp(status.edited_at || status.created_at),
-        creatorName: author.display_name || author.username || '1900',
-        resourceList: gtsResourceList(source),
-        // 归一化复用 src/lib/privacy.ts 的同一套规则：缺字段、非字符串、空串一律落成 ''（= 非公开），
-        // 绝不把上游缺失兜底成 public —— 兜底公开等于默认泄露，与规范相反。
-        visibility: normalizeMemoVisibility(status.visibility),
-        pinned: Boolean(status.pinned),
-        type: 'memo'
-    };
-}
-
-async function syncGtsMemos(env) {
-    const base = env.GOTOSOCIAL_URL.replace(/\/$/, '');
-    const headers = {
-        Authorization: `Bearer ${env.GOTOSOCIAL_TOKEN}`,
-        Accept: 'application/json',
-        'User-Agent': 'astro-book-sync'
-    };
-    let accountId = env.GOTOSOCIAL_ACCOUNT_ID;
-    let owner = null;
-    if (!accountId) {
-        owner = await fetchJson(`${base}/api/v1/accounts/verify_credentials`, { headers }, 20000);
-        accountId = owner?.id;
-        if (!accountId) throw new Error('[memos] GoToSocial 未能返回当前账号 ID');
-    }
-
-    const fullSync = env.SYNC_FULL === '1';
-    const previous = readJson('memos.json', []);
-    const known = new Set(previous.map((memo) => String(memo.id)));
-    const fetched = [];
-    let maxId = '';
-    let stoppedEarly = false;
-
-    for (let page = 0; page < 200; page += 1) {
-        const url = `${base}/api/v1/accounts/${encodeURIComponent(accountId)}/statuses?limit=40${maxId ? `&max_id=${encodeURIComponent(maxId)}` : ''}`;
-        const statuses = await fetchJson(url, { headers }, 30000);
-        if (!Array.isArray(statuses) || statuses.length === 0) break;
-
-        const newStatuses = statuses.filter((status) => status.id && !known.has(String(status.id)));
-        if (!fullSync && previous.length > 0 && newStatuses.length === 0) {
-            stoppedEarly = true;
-            break;
-        }
-        fetched.push(...(fullSync ? statuses : newStatuses).map((status) => gtsStatusToMemo(status, owner)));
-        statuses.forEach((status) => status.id && known.add(String(status.id)));
-        const lastId = statuses[statuses.length - 1]?.id;
-        if (!lastId || lastId === maxId) break;
-        maxId = lastId;
-        if (statuses.length < 40) break;
-        await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-
-    const merged = fullSync ? fetched : [...previous, ...fetched];
-    if (merged.length === 0) throw new Error('[memos] GoToSocial 返回 0 条动态，拒绝覆盖已有数据');
-    const deduped = [...new Map(merged.map((memo) => [String(memo.id), memo])).values()];
-    deduped.sort((a, b) => Number(b.createdTs) - Number(a.createdTs));
-    console.log(`[memos] ${fullSync ? '全量' : '增量'}同步：拉取 ${fetched.length} 条，合并后 ${deduped.length} 条`);
-    return trimMemos(deduped, parseMemoVisibilities(env.MEMOS_PUBLISH_VISIBILITIES));
-}
-
-async function syncMemos(env, siteConfig) {
-    if (env.GOTOSOCIAL_URL && env.GOTOSOCIAL_TOKEN) {
-        return syncGtsMemos(env);
-    }
-
-    // 兼容旧的 Memos API；新配置应优先使用 GOTOSOCIAL_URL + GOTOSOCIAL_TOKEN。
-    // visibility 原样透传（不做任何默认值），缺失/非法值交给 trimMemos 按同一套规则拦下。
-    const all = [];
-    let offset = 0;
-    const PAGE = 50;
-    for (;;) {
-        const url = `${siteConfig.memos.url}?limit=${PAGE}&offset=${offset}`;
-        const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
-        if (!res.ok) {
-            console.warn(`[memos] HTTP ${res.status}，停止拉取`);
-            break;
-        }
-        const total = parseInt(res.headers.get('X-Total-Count') || '0', 10);
-        const page = await res.json();
-        all.push(...(Array.isArray(page) ? page : []));
-        offset += PAGE;
-        if (!total || offset >= total) break;
-        if (page.length < PAGE) break;
-    }
-    return trimMemos(
-        all.map((m) => ({ ...m, type: 'memo' })),
-        parseMemoVisibilities(env.MEMOS_PUBLISH_VISIBILITIES)
-    );
-}
-
 // ---------- intervals.icu（运动记录） ----------
 const INTERVALS_BASE = 'https://intervals.icu/api/v1';
 // 从这一年开始拉取活动；更早的活动即使账号里有也不会出现在页面上。
@@ -835,6 +694,10 @@ async function syncRank() {
     }
 }
 
+// 兼容导出：memos 已迁到模块层（scripts/lib/sources/memos.mjs），
+// 这两个函数仍被 tests/scripts/privacy.test.ts 直接引用，所以保持同名转发。
+export { gtsStatusToMemo, trimMemos } from './lib/sources/memos.mjs';
+
 // ---------- 主流程 ----------
 const SOURCES = {
     ghost: { run: (env, site) => syncGhost(env), file: 'ghost.json' },
@@ -848,7 +711,6 @@ const SOURCES = {
             { file: 'flux-lost.json', data: data.lost, allowEmpty: true }
         ]
     },
-    memos: { run: (env, site) => syncMemos(env, site), file: 'memos.json' },
     intervals: { run: (env) => syncIntervals(env), file: 'activities.json' },
     map: { run: (env) => syncMap(env), file: 'geojson.json' },
     rank: { run: () => syncRank(), file: 'rank.json' },
