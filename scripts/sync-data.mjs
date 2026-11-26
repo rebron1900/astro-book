@@ -26,7 +26,6 @@ import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { applyRouteCache, pendingRouteIds, polylineFromMap, sortActivities, toActivity, yearWindows } from '../src/lib/intervals.ts';
 import { isIngestSource, listIngestSources, sources as ingestRegistry } from './lib/ingest/registry.mjs';
 import { runIngestSource } from './lib/ingest/executor.mjs';
 
@@ -128,102 +127,6 @@ async function writeJson(filename, data, options = {}) {
 // 只在 JSON 中保留这些字段，控制体积；上游全量拉取后裁剪。
 // 启用新字段：往对应白名单加字段名，重跑同步即可（可逆）。
 
-// ---------- intervals.icu（运动记录） ----------
-const INTERVALS_BASE = 'https://intervals.icu/api/v1';
-// 从这一年开始拉取活动；更早的活动即使账号里有也不会出现在页面上。
-const INTERVALS_FIRST_YEAR = 2015;
-const INTERVALS_ACTIVITY_FIELDS =
-    'id,name,type,sub_type,start_date,start_date_local,distance,moving_time,elapsed_time,average_heartrate,average_speed,total_elevation_gain,source,external_id';
-// 地图请求用小并发，避免被上游限流；单个失败只 warn，不中断整次同步。
-const ROUTE_CONCURRENCY = 5;
-
-/** 拉取单个活动的轨迹；返回 { polyline } 或 { error }，两者都没有表示上游确实没有 GPS 数据。 */
-async function fetchIntervalsMap(id, authorization) {
-    try {
-        const data = await fetchJson(`${INTERVALS_BASE}/activity/${encodeURIComponent(id)}/map`, { headers: { Authorization: authorization } }, 20000);
-        return { polyline: polylineFromMap(data) };
-    } catch (error) {
-        console.warn(`[intervals] 活动 ${id} 地图获取失败: ${error.message}`);
-        return { error: error.message };
-    }
-}
-
-/**
- * 运动记录同步：数据源只有 intervals.icu。
- * 1) 按自然年窗口全量拉取活动（每窗口 limit=500，按 id 去重）；
- * 2) 用上一版 activities.json 的轨迹做增量缓存，只有缺失轨迹（且距离 > 0）的活动才请求 /map；
- * 3) 按 start_date_local 升序输出 Activities 契约数组。
- */
-async function syncIntervals(env) {
-    const apiKey = env.INTERVALS_ICU_API_KEY;
-    if (!apiKey) throw new Error('缺少 INTERVALS_ICU_API_KEY');
-    const athleteId = env.INTERVALS_ICU_ATHLETE_ID || '0';
-    const fullSync = env.SYNC_FULL === '1';
-    const authorization = `Basic ${Buffer.from(`API_KEY:${apiKey}`).toString('base64')}`;
-
-    const rawById = new Map();
-    const windowSummary = [];
-    let rawTotal = 0;
-    const thisYear = new Date().getUTCFullYear();
-    for (const { oldest, newest } of yearWindows(INTERVALS_FIRST_YEAR, thisYear)) {
-        const params = new URLSearchParams({ oldest, newest, limit: '500', fields: INTERVALS_ACTIVITY_FIELDS });
-        const url = `${INTERVALS_BASE}/athlete/${encodeURIComponent(athleteId)}/activities?${params}`;
-        const data = await fetchJson(url, { headers: { Authorization: authorization } }, 30000);
-        if (!Array.isArray(data)) throw new Error(`[intervals] ${oldest} ~ ${newest} 返回了非数组活动数据`);
-        if (data.length >= 500) console.warn(`[intervals] ${oldest} ~ ${newest} 达到单次 500 条上限，可能有活动被截断`);
-        for (const activity of data) {
-            if (activity?.id) rawById.set(String(activity.id), activity);
-        }
-        rawTotal += data.length;
-        windowSummary.push(`${oldest.slice(0, 4)}:${data.length}`);
-    }
-    // 空结果多半是认证/上游异常：拒绝写入，避免用空数组覆盖线上数据。
-    if (rawById.size === 0) throw new Error('[intervals] intervals.icu 返回 0 条活动，拒绝覆盖已有数据');
-    console.log(`[intervals] 分年拉取 ${windowSummary.join(' ')} → 合计 ${rawTotal} 条，按 id 去重后 ${rawById.size} 条`);
-    if (rawTotal !== rawById.size) console.warn(`[intervals] 分年窗口有 ${rawTotal - rawById.size} 条重复活动（已按 id 去重）`);
-
-    const cachedRoutes = new Map(
-        readJson('activities.json', [])
-            .filter((item) => item?.id && typeof item.polyline === 'string' && item.polyline.length > 0)
-            .map((item) => [String(item.id), item.polyline])
-    );
-    const activities = applyRouteCache(
-        [...rawById.values()].map((activity) => toActivity(activity)),
-        cachedRoutes,
-        fullSync
-    );
-    const total = activities.length;
-    const reused = activities.filter((activity) => activity.polyline).length;
-
-    const pending = pendingRouteIds(activities);
-    const byId = new Map(activities.map((activity) => [activity.id, activity]));
-    let fetched = 0;
-    let empty = 0;
-    let failed = 0;
-    for (let index = 0; index < pending.length; index += ROUTE_CONCURRENCY) {
-        const batch = pending.slice(index, index + ROUTE_CONCURRENCY);
-        const results = await Promise.all(batch.map(async (id) => ({ id, ...(await fetchIntervalsMap(id, authorization)) })));
-        for (const result of results) {
-            if (result.polyline) {
-                byId.get(result.id).polyline = result.polyline;
-                fetched += 1;
-            } else if (result.error) {
-                failed += 1;
-            } else {
-                // 上游这条活动本身没有 GPS（室内跑步/器械等），不算失败，下次同步也拉不到。
-                empty += 1;
-            }
-        }
-        if (pending.length > ROUTE_CONCURRENCY) console.log(`[intervals] 轨迹进度 ${Math.min(index + batch.length, pending.length)}/${pending.length}`);
-    }
-
-    const withRoute = activities.filter((activity) => activity.polyline).length;
-    console.log(
-        `[intervals] 活动 ${total} 条（${fullSync ? '全量' : '全量活动 + 增量轨迹'}），复用轨迹 ${reused} 条，新拉轨迹 ${fetched} 条，上游无轨迹 ${empty} 条，失败 ${failed} 条，有轨迹 ${withRoute} 条`
-    );
-    return sortActivities(activities);
-}
-
 async function syncMap(env) {
     if (!env.MAP_KMZ_URL) throw new Error('缺少 MAP_KMZ_URL，无法同步地图数据');
 
@@ -280,7 +183,6 @@ export { gtsStatusToMemo, trimMemos } from './lib/sources/memos.mjs';
 
 // ---------- 主流程 ----------
 const SOURCES = {
-    intervals: { run: (env) => syncIntervals(env), file: 'activities.json' },
     map: { run: (env) => syncMap(env), file: 'geojson.json' },
     rank: { run: () => syncRank(), file: 'rank.json' },
     // reading：modureader 的 WebDAV 分片库，聚合/清洗在 src/lib/reading.ts 与 scripts/lib/book-title.mjs

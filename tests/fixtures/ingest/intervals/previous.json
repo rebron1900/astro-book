@@ -1,0 +1,16 @@
+[
+  {
+    "id": "i3",
+    "name": "晨跑二",
+    "distance": 3000,
+    "moving_time": 1800,
+    "type": "Run",
+    "start_date": "2026-09-01T06:00:00Z",
+    "start_date_local": "2026-09-01 06:00:00",
+    "average_heartrate": 140,
+    "average_speed": 2.8,
+    "elevation_gain": 20,
+    "polyline": "_cached_poly_i3",
+    "url": "https://intervals.icu/activities/i3"
+  }
+]

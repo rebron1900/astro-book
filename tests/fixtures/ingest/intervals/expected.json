@@ -1,0 +1,46 @@
+[
+  {
+    "id": "i1",
+    "name": "晨跑一",
+    "distance": 5000,
+    "moving_time": 1800,
+    "type": "Run",
+    "start_date": "2026-03-01T06:30:00Z",
+    "start_date_local": "2026-03-01 06:30:00",
+    "average_heartrate": 140,
+    "average_speed": 2.8,
+    "elevation_gain": 20,
+    "url": "https://intervals.icu/activities/i1",
+    "source": "ZEPP",
+    "polyline": "_|uvD_``|U_pR_pR_pR_pR"
+  },
+  {
+    "id": "i2",
+    "name": "室内跑",
+    "distance": 0,
+    "moving_time": 1800,
+    "type": "Run",
+    "start_date": "2026-06-01T07:00:00Z",
+    "start_date_local": "2026-06-01 07:00:00",
+    "average_heartrate": 140,
+    "average_speed": 2.8,
+    "elevation_gain": 20,
+    "url": "https://intervals.icu/activities/i2",
+    "source": "ZEPP"
+  },
+  {
+    "id": "i3",
+    "name": "晨跑二",
+    "distance": 3000,
+    "moving_time": 1800,
+    "type": "Run",
+    "start_date": "2026-09-01T06:00:00Z",
+    "start_date_local": "2026-09-01 06:00:00",
+    "average_heartrate": 140,
+    "average_speed": 2.8,
+    "elevation_gain": 20,
+    "url": "https://intervals.icu/activities/i3",
+    "source": "ZEPP",
+    "polyline": "_cached_poly_i3"
+  }
+]

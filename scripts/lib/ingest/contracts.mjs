@@ -188,6 +188,32 @@ export const contracts = {
             }
         }
     },
+    // intervals.icu 运动记录 → src/data/activities.json：升序（页面时间线按 start_date_local 从早到晚）
+    'intervals.activities': {
+        version: 1,
+        file: 'activities.json',
+        writeMode: 'replace',
+        key: 'id',
+        allowEmpty: false,
+        description: 'intervals.icu 全量活动，按 start_date_local 升序；polyline 为可选轨迹',
+        orderBy: 'start_date_local',
+        orderDir: 'asc',
+        item: {
+            id: 'string',
+            name: 'string',
+            distance: 'number',
+            moving_time: 'number',
+            type: 'string',
+            start_date: 'string',
+            start_date_local: 'string',
+            average_heartrate: 'number|null',
+            average_speed: 'number|null',
+            elevation_gain: 'number',
+            polyline: 'string?',
+            url: 'string?',
+            source: 'string?'
+        }
+    },
     // RSS 订阅最新文章 → src/data/flux.json（友链页），按 update_timestamp 降序（由 flux-snapshot 保证）
     'flux.feed': {
         version: 1,
