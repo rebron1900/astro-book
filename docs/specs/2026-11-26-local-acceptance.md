@@ -259,3 +259,56 @@ HTTP 实测（18:31）：
 **已知余项（不粉饰，留给下一次代码提交）**：`sensitive-headers.mjs:26` 注释多写了 `tokenization`。实现是对的（它被判敏感），注释是错的。最小改法 = 删掉注释里那三个字，零行为变化。**不影响任何测试或构建结论**；本轮遵守“只改文档”的范围约束，未动它。
 
 **仍未验证**：本轮复核未重跑 `ci-local --offline` 构建段（为保住 §12 的 dist 指纹）；构建段证据是 §12 的 18:30 实跑（同一工作树，之后只多文档提交）。
+
+## 14. 八源迁移：盘点、设计与分批（2026-11-26 20:45 起）
+
+范围：`memos → ghost → neodb → flux → intervals → map → reading → rank` 全部接进统一模块层。不动前端、不造插件系统、不 push/合并/上线。
+
+### 14.1 实际入口与产物（逐项核对源码与 `src/data/*.json`）
+
+| 源 | 现有入口（`scripts/sync-data.mjs`） | 产物 / 形状 | 主键 | 必须保留的语义坑 | 凭据 |
+| --- | --- | --- | --- | --- | --- |
+| memos | `syncMemos` → `syncGtsMemos`（GoToSocial 优先）/ 旧 Memos API 兜底 | `memos.json` 数组 2668，按 `createdTs` 降序 | `id` | `privacy.ts` 白名单必须在模块内执行；非公开 242 条**不得回流**；空结果拒绝覆盖；缺 visibility 落 `''` 不算公开 | `GOTOSOCIAL_URL`、`GOTOSOCIAL_TOKEN`、`GOTOSOCIAL_ACCOUNT_ID`（可选） |
+| ghost | `syncGhost` | `ghost.json` 对象 `{settings,posts(863),pages(16),authors(1),tags(100)}`，tags 内嵌裁剪后的 posts | `posts/pages/authors/tags` 各自 `id` | 五段全部校验；0 篇拒写；内嵌 tags/authors 裁剪；`GHOST_API_POST_LIMIT` | `GHOST_API_URL`、`GHOST_API_KEY` |
+| neodb | `syncNeodb` | `neodb.json` 对象 `{data:[1035]}` | `post_id` | 增量合并 + `SYNC_FULL`；中文标题沿用上一版；空结果拒写；visibility 只发 0 在 store 侧（不动） | `NEODB_TOKEN`（`NEODB_API_URL`/`NEODB_SHELVES` 可选） |
+| flux | `syncFlux` + `buildFluxSnapshot` | `flux.json` 数组 141（`url` 唯一）+ `flux-lost.json` 数组 9（`id` 唯一，空是合法结果） | `url` / `id` | **一个源两个产物**，任一失败不写；>50% feed 失败放弃本次；失败订阅沿用上一版文章与失联时间 | `FLUX_URL`、`FLUX_KEY`（`FLUX_READER_PROXY` 可选） |
+| intervals | `syncIntervals` | `activities.json` 数组 178，按 `start_date_local` **升序** | `id` | 活动全量按自然年窗口、轨迹走上一版缓存、`SYNC_FULL` 全重拉；空结果拒写；单条地图失败只计数 | `INTERVALS_ICU_API_KEY`、`INTERVALS_ICU_ATHLETE_ID` |
+| map | `syncMap` | `geojson.json` 对象 `{type,features(127)}` | 无（features 无稳定 id） | KMZ 下载 → `python3 scripts/map/convert_kmz_to_geojson.py`；`If-Modified-Since` 基于产物 mtime、304 复用本地；空 KMZ 报错 | `MAP_KMZ_URL` |
+| reading | `scripts/sync-reading.mjs` 的 `syncReading` | `reading.json` 对象 `{generatedAt,source,totals,books(18),days(54),warnings}` | `books`/`days` 无稳定 id | WebDAV 分片 + 封面附属产物 + override 合并；**optional**（NAS 打盹不拖垮整轮） | `READING_*`（WebDAV 地址/账号） |
+| rank | `syncRank` | `rank.json` 任意对象（当前是 `{success:false,error}`） | 无 | 远端 worker；失败只告警、保留旧数据 → 迁移后必须 `optional: true` 才不改变退出码语义 | 无 |
+
+### 14.2 框架需要补的四处（都是通用能力，不加插件机制）
+
+1. `contracts`/`validate` 增加 `shape: 'object'`：声明顶层字段，数组字段可带 `item`/`key`/`allowEmpty`，`countField` 指定日志与状态用的数组；未声明字段放行（rank 这类上游可变的）。
+2. `orderDir: 'asc' | 'desc'`（默认 `desc`）：intervals 是升序，沿用现有 `orderBy` 校验但允许方向。
+3. 数组字段的 `key` **可省略**：省略即不做主键唯一性校验（`reading.books`、`geojson.features` 没有稳定 id），普通数组仍要求 `id`。
+4. `ctx.fileStat(file)`：只读返回产物 `mtime/size`（map 的 `If-Modified-Since` 需要，模块不碰 `fs`）。
+
+模块可以 import `src/lib/*.ts` 里的纯函数（`privacy`、`flux-snapshot`、`feed-xml`、`intervals`）——这与现状一致，不新增依赖方向。旧分支删除后，`sync-data.mjs` 保留 `trimMemos`/`gtsStatusToMemo`/`classifyFailure`/`runSources` 的**兼容导出**，既有测试不必改写。
+
+### 14.3 分批与单一写入者
+
+| 批次 | 内容 | 写入者 |
+| --- | --- | --- |
+| A | 框架四处 + `memos` + `ghost` + `neodb`（三种产物形状各一例） | 筑成 |
+| B | `flux`（双产物）+ `intervals`（缓存/全量）+ `map`（子进程+mtime）+ `reading`（WebDAV/附属产物）+ `rank` | 筑成 |
+
+同一 worktree 同一时刻只有筑成写代码；我只写本文件，不与它并发改同一路径。
+
+### 14.4 每源的验收口径（同一套）
+
+- **冻结输入等价**：用旧实现在固定响应下的产物作 golden（`tests/fixtures/ingest/<source>/`），新模块对同一输入必须**深比较相等**（值与结构，不看字段顺序），并用真实 `src/data/*.json` 跑一遍 `validateDataset` 必须 0 错误——契约过严会误伤真实数据，这是首要回归风险。
+- **失败语义**：空结果不覆盖、401/403 归 `auth`、429/5xx 归 `upstream`、多产物任一失败整源不写、可选源失败只告警。
+- **敏感头**：带 `Authorization`/`X-Auth-Token` 的源各补一条跨源跳转剥头用例。
+- **入口兼容**：`node scripts/sync-data.mjs <source> --dry-run` 仍可用（无凭据时给出分类错误，不崩）；`scripts/sync-reading.mjs` 仍导出 `syncReading`。
+- **退出码**：整轮 `node scripts/sync-data.mjs --dry-run` 与迁移前一致。
+
+### 14.5 风险
+
+| 风险 | 处置 |
+| --- | --- |
+| 契约比真实数据严 → 同步被误判失败 | 类型从真实文件取样推导（联合类型容纳 null）；CI 加一条「真实文件过校验」用例 |
+| memos 隐私回归（挪动 `trimMemos` 时漏掉空结果保护） | `privacy.test.ts` 原样跑 + `check-public-data.mjs` 双闸；非公开条数前后必须都是 0 |
+| map 依赖 `python3` 与临时文件 | 同步期能力，不在构建链；失败按硬失败但可用 `--dry-run` 隔离验证 |
+| 真实上游全部未验证（凭据/授权不在本轮） | 分三层写清：冻结输入等价（已验）/ 真实同步（未验）/ 凭据来源 |
+| 八个源一次性提交难以归因 | 每源一个提交 + 每源一次全量测试；回归可单源 `git revert` |
