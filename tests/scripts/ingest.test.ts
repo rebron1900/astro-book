@@ -619,3 +619,93 @@ describe('超时文案（不足 1s 显示毫秒）', () => {
         expect(existsSync(path.join(root, 'src/data/out.json'))).toBe(false);
     });
 });
+
+describe('敏感头通用规则（接第三源前的泄密缺口）', () => {
+    const TOKEN2 = 'third-party-secret-value';
+    const quietLog = quiet;
+
+    function stub3(routes: Record<string, () => Response>) {
+        const seen: Array<{ url: string; headers: Record<string, string> }> = [];
+        const fetchImpl = async (url: string, init: { headers?: unknown } = {}) => {
+            const map: Record<string, string> = {};
+            for (const [name, value] of headerPairs(init.headers)) map[String(name).toLowerCase()] = String(value);
+            seen.push({ url: String(url), headers: map });
+            const route = routes[String(url)];
+            return route ? route() : new Response('not found', { status: 404 });
+        };
+        return { seen, fetchImpl };
+    }
+    const redirect = (location: string) => () => new Response(null, { status: 302, headers: { location } });
+    const ok = () => new Response(JSON.stringify({ ok: true }), { status: 200 });
+
+    async function runWithMeta(headersLiteral: string, meta: Record<string, unknown>, routes: Record<string, () => Response>) {
+        const root = makeProject();
+        const file = writeModule(
+            root,
+            'third',
+            { id: 'third', optional: false, credentials: [], datasets: ['third.data'], ...meta },
+            `await ctx.fetchJson('https://third.test/a', { headers: ${headersLiteral} });\nreturn { outputs: [{ dataset: 'third.data', data: [{ id: '1', name: 'a' }], complete: true }] };`
+        );
+        const { seen, fetchImpl } = stub3(routes);
+        await runIngestSource('third', {
+            projectRoot: root,
+            registry: { third: { module: file, optional: false } },
+            contracts: contractFor('third.data'),
+            log: quietLog,
+            fetchImpl
+        });
+        return seen;
+    }
+
+    it('反向用例：未登记的新头（x-thirdparty-token）跨域跳转后也不带走', async () => {
+        const seen = await runWithMeta(
+            `{ 'X-Thirdparty-Token': ${JSON.stringify(TOKEN2)}, Accept: 'application/json' }`,
+            {},
+            { 'https://third.test/a': redirect('https://cdn.other.test/x'), 'https://cdn.other.test/x': ok }
+        );
+        expect(seen[0].headers['x-thirdparty-token']).toBe(TOKEN2); // 跳转前确实发了
+        expect(seen[1].headers['x-thirdparty-token']).toBeUndefined(); // 跨域后剥掉
+        expect(seen[1].headers.accept).toBe('application/json');
+    });
+
+    it('反向用例：x-api-key / x-session-id / x-client-secret 同样被剥', async () => {
+        for (const name of ['X-Api-Key', 'X-Session-Id', 'X-Client-Secret']) {
+            const seen = await runWithMeta(
+                `{ '${name}': 'v-${name}' }`,
+                {},
+                { 'https://third.test/a': redirect('https://cdn.other.test/x'), 'https://cdn.other.test/x': ok }
+            );
+            expect(seen[1].headers[name.toLowerCase()]).toBeUndefined();
+        }
+    });
+
+    it('显式声明生效：不含敏感词的头名（x-acme）只要写进 meta.sensitiveHeaders 也剥', async () => {
+        const seen = await runWithMeta(
+            `{ 'X-Acme': 'declared-secret' }`,
+            { sensitiveHeaders: ['x-acme'] },
+            { 'https://third.test/a': redirect('https://cdn.other.test/x'), 'https://cdn.other.test/x': ok }
+        );
+        expect(seen[0].headers['x-acme']).toBe('declared-secret');
+        expect(seen[1].headers['x-acme']).toBeUndefined();
+    });
+
+    it('同源跳转保留一切（含未声明的自定义头）', async () => {
+        const seen = await runWithMeta(
+            `{ 'X-Thirdparty-Token': ${JSON.stringify(TOKEN2)} }`,
+            {},
+            { 'https://third.test/a': redirect('https://third.test/b'), 'https://third.test/b': ok }
+        );
+        expect(seen[1].headers['x-thirdparty-token']).toBe(TOKEN2);
+    });
+
+    it('普通头不被误剥（accept / accept-language / x-request-id）', async () => {
+        const seen = await runWithMeta(
+            `{ Accept: 'application/json', 'Accept-Language': 'zh-CN', 'X-Request-Id': 'r-1' }`,
+            {},
+            { 'https://third.test/a': redirect('https://cdn.other.test/x'), 'https://cdn.other.test/x': ok }
+        );
+        expect(seen[1].headers.accept).toBe('application/json');
+        expect(seen[1].headers['accept-language']).toBe('zh-CN');
+        expect(seen[1].headers['x-request-id']).toBe('r-1');
+    });
+});

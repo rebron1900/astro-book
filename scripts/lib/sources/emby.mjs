@@ -22,6 +22,8 @@ export const meta = {
     id: 'emby',
     optional: true, // 自建服务打盹时只告警，保留已有 emby.json
     credentials: ['EMBY_BASE_URL', 'EMBY_USER_ID', 'EMBY_API_KEY'],
+    // 显式声明：即使将来改头名，跨源跳转时也会被剥掉（通用模式已覆盖，这里是双保险）
+    sensitiveHeaders: ['x-emby-token'],
     optionalCredentials: [],
     datasets: ['emby.viewing'],
     datasetVersions: { 'emby.viewing': 1 },

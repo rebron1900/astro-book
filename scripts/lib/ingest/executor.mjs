@@ -18,6 +18,7 @@ import path from 'node:path';
 import { contracts as defaultContracts, getContract } from './contracts.mjs';
 import { sources as defaultRegistry } from './registry.mjs';
 import { acquireLock, readDatasetFile, readState, recordSuccess } from './state.mjs';
+import { BASE_SENSITIVE_HEADERS, declaredSensitiveHeaders, stripSensitiveHeaders } from './sensitive-headers.mjs';
 import { validateDataset } from './validate.mjs';
 
 const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000;
@@ -28,12 +29,13 @@ const SENSITIVE_PARAM = /\b(api_key|apikey|token|access_token|X-Emby-Token|Autho
 const MAX_REDIRECTS = 5;
 const REDIRECT_STATUS = new Set([301, 302, 303, 307, 308]);
 /**
- * 跨源跳转必须剥掉的认证类头（小写比较）。
- * undici 默认只在跨域时丢 Authorization/Cookie，自定义认证头（本项目用 X-Emby-Token）
- * 会原样带到新源 —— 所以这里自己跟随跳转并显式判断。
+ * 跨源跳转必须剥掉的认证类头。
+ * undici 默认只在跨域时丢 Authorization/Cookie，自定义认证头会原样带到新源 ——
+ * 所以这里自己跟随跳转并显式判断。判定规则在 sensitive-headers.mjs：
+ * 通用模式（含 token/secret/session/api-key 等）> 内置基线 > 来源声明的 meta.sensitiveHeaders。
  */
+// 兼容旧导出：历史上执行器只认这几个名字。实际判定走 sensitive-headers 的通用规则。
 export const AUTH_HEADERS = ['authorization', 'cookie', 'proxy-authorization', 'x-emby-token'];
-const AUTH_HEADER_SET = new Set(AUTH_HEADERS);
 
 function makeError(message, code) {
     const error = new Error(message);
@@ -61,7 +63,7 @@ function collectSecrets(env) {
         .map(([, value]) => value);
 }
 
-async function fetchWithTimeout(fetchImpl, url, options, timeoutMs) {
+async function fetchWithTimeout(fetchImpl, url, options, timeoutMs, declaredSensitive = []) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     let currentUrl = String(url);
@@ -80,7 +82,7 @@ async function fetchWithTimeout(fetchImpl, url, options, timeoutMs) {
             }
             const nextUrl = new URL(location, currentUrl).href;
             // 跨源：剥掉认证类头，其它头（Accept 等）保留 —— 跨域 CDN 跳转取图仍需可用
-            if (originOf(nextUrl) !== originOf(currentUrl)) headers = withoutAuthHeaders(headers);
+            if (originOf(nextUrl) !== originOf(currentUrl)) headers = withoutAuthHeaders(headers, declaredSensitive);
             // 303（以及 301/302 下的非 GET/HEAD）改成 GET 并丢弃请求体
             if (response.status === 303 || ((response.status === 301 || response.status === 302) && method !== 'GET' && method !== 'HEAD')) {
                 method = 'GET';
@@ -113,8 +115,8 @@ function originOf(url) {
     }
 }
 
-function withoutAuthHeaders(pairs) {
-    return pairs.filter(([name]) => !AUTH_HEADER_SET.has(String(name).toLowerCase()));
+function withoutAuthHeaders(pairs, declared = []) {
+    return stripSensitiveHeaders(pairs, declared);
 }
 
 function isEmptyData(data, contract) {
@@ -171,13 +173,14 @@ function buildContext({ name, meta, env, log, projectRoot, dataDir, dryRun, time
         if (env[key] !== undefined && env[key] !== '') injected[key] = env[key];
     }
     const secrets = collectSecrets(injected);
+    const declaredSensitive = declaredSensitiveHeaders(meta);
     const safeLog = (level) => (message) => log[level](sanitize(message, secrets));
     const artifactDirs = (meta.artifacts || []).map((artifact) => String(artifact.dir || '').replace(/^public\//, '').replace(/\/+$/, ''));
 
     const fetchJson = async (url, options = {}, timeout = 20000) => {
         let response;
         try {
-            response = await fetchWithTimeout(fetchImpl, url, options, timeout);
+            response = await fetchWithTimeout(fetchImpl, url, options, timeout, declaredSensitive);
         } catch (error) {
             const wrapped = makeError(sanitize(`请求失败：${url.split('?')[0]}（${error.message}）`, secrets), 'upstream');
             throw wrapped;
@@ -193,7 +196,7 @@ function buildContext({ name, meta, env, log, projectRoot, dataDir, dryRun, time
     };
 
     const fetchBinary = async (url, options = {}, timeout = 20000) => {
-        const response = await fetchWithTimeout(fetchImpl, url, options, timeout);
+        const response = await fetchWithTimeout(fetchImpl, url, options, timeout, declaredSensitive);
         if (!response.ok) return { ok: false, status: response.status, bytes: null };
         const bytes = Buffer.from(await response.arrayBuffer());
         return { ok: bytes.length > 0, status: response.status, bytes };
