@@ -389,14 +389,14 @@ node scripts/check-public-data.mjs   → 非公开记录 0 条（memos PUBLIC 26
 
 | 项 | 值 |
 | --- | --- |
-| 构建 | `dist/index.html` 425085B，mtime **21:49:42**（本轮 `ci-local` 重建） |
+| 构建 | `dist/index.html` 425085B，mtime **21:56**（在最终 HEAD 上重跑 `ci-local --offline` 重建，5/5 PASS exit 0） |
 | 预览进程 | pid 58153，cwd = 本 worktree，`astro preview :4321`（常读磁盘） |
 | `/` | 200 425085B resp=file=`1f0a7963` **SAME** |
 | `/timeline/memo/` | 200 434553B resp=file=`9a0c11fb` **SAME** |
 | `/timeline/reading/` | 200 428063B resp=file=`9040a106` **SAME** |
 | `/now/` | 200 430884B resp=file=`e95c6ab4` **SAME** |
 
-`/now/` 哈希与 18:30 那次不同，原因是页面内嵌构建时间戳；`src/` 零改动，故其余三页字节级不变。
+`/now/` 哈希与 18:30 那次不同，原因是页面内嵌构建时间戳；本轮两次构建（21:49、21:56）四页哈希完全一致，`src/` 零改动。
 
 ### 15.7 已知行为变化（均已登记，非回归）
 
