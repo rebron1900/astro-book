@@ -39,6 +39,8 @@ interface ImportMetaEnv {
     readonly CDN_URL: string;
     readonly PUBLIC_MAP_KEY: string;
     readonly SITE: string;
+    /** 可发布的 Memos 可见性白名单（逗号分隔），默认 PUBLIC；见 src/lib/privacy.ts */
+    readonly MEMOS_PUBLISH_VISIBILITIES?: string;
 }
 
 interface ImportMeta {

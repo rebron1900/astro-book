@@ -12,6 +12,7 @@
  * 需要环境变量(或 .env 文件): GHOST_API_URL, GHOST_API_KEY,
  *   NEODB_TOKEN, FLUX_URL, FLUX_KEY, MAP_KMZ_URL,
  *   GOTOSOCIAL_URL, GOTOSOCIAL_TOKEN,
+ *   MEMOS_PUBLISH_VISIBILITIES（可选，默认 PUBLIC；显式写 PUBLIC,UNLISTED 才会放开未列出）
  *   INTERVALS_ICU_API_KEY, INTERVALS_ICU_ATHLETE_ID
  * 非密钥配置从 src/config/site.ts 读取。
  *
@@ -28,6 +29,7 @@ import { fileURLToPath } from 'node:url';
 import { buildFluxSnapshot, PARSING_ERROR_LIMIT } from '../src/lib/flux-snapshot.ts';
 import { discoverFeedUrl, parseFeedXml } from '../src/lib/feed-xml.ts';
 import { applyRouteCache, pendingRouteIds, polylineFromMap, sortActivities, toActivity, yearWindows } from '../src/lib/intervals.ts';
+import { DEFAULT_MEMO_VISIBILITIES, filterPublishableMemos, parseMemoVisibilities } from '../src/lib/privacy.ts';
 
 // ---------- 路径 ----------
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -47,7 +49,7 @@ function loadEnv() {
     }
     // 进程环境变量优先
     for (const [k, v] of Object.entries(process.env)) {
-        if ((k.startsWith('GHOST_') || k.startsWith('NEODB_') || k.startsWith('FLUX_') || k.startsWith('MAP_') || k.startsWith('CDN_') || k.startsWith('INTERVALS_') || k.startsWith('GOTOSOCIAL_') || k.startsWith('MODU_') || k.startsWith('EMBY_')) && v !== undefined && v !== '') {
+        if ((k.startsWith('GHOST_') || k.startsWith('NEODB_') || k.startsWith('FLUX_') || k.startsWith('MAP_') || k.startsWith('CDN_') || k.startsWith('INTERVALS_') || k.startsWith('GOTOSOCIAL_') || k.startsWith('MEMOS_') || k.startsWith('MODU_') || k.startsWith('EMBY_')) && v !== undefined && v !== '') {
             env[k] = v;
         }
     }
@@ -328,8 +330,17 @@ function trimNeodb(data, previousItems = new Map()) {
 const MEMO_FIELDS = ['id', 'content', 'createdTs', 'updatedTs', 'creatorName', 'resourceList', 'visibility', 'pinned'];
 const RESOURCE_FIELDS = ['type', 'filename', 'link', 'externalLink'];
 
-function trimMemos(memos) {
-    return memos.map((m) => {
+// 隐私边界：非公开 Memos 绝不落地。规则在 src/lib/privacy.ts（store 读取时复用同一套函数）。
+// 默认只保留 visibility === 'PUBLIC'；放开必须显式给 MEMOS_PUBLISH_VISIBILITIES。
+function trimMemos(memos, allowedVisibilities) {
+    const allowed = Array.isArray(allowedVisibilities) && allowedVisibilities.length ? allowedVisibilities : undefined;
+    const publishable = filterPublishableMemos(memos, allowed ?? DEFAULT_MEMO_VISIBILITIES);
+    const dropped = memos.length - publishable.length;
+    console.log(`[memos] 可见性过滤：保留 ${publishable.length} 条（允许 ${(allowed ?? DEFAULT_MEMO_VISIBILITIES).join('/')}），丢弃 ${dropped} 条非公开`);
+    if (publishable.length === 0 && memos.length > 0) {
+        throw new Error(`[memos] ${memos.length} 条记录全部不在发布白名单内（${(allowed ?? DEFAULT_MEMO_VISIBILITIES).join('/')}），拒绝用空数据覆盖已有文件`);
+    }
+    return publishable.map((m) => {
         const out = pick(m, MEMO_FIELDS);
         if (Array.isArray(out.resourceList)) out.resourceList = out.resourceList.map((r) => pick(r, RESOURCE_FIELDS));
         return { ...out, type: 'memo' };
@@ -641,7 +652,7 @@ async function syncGtsMemos(env) {
     const deduped = [...new Map(merged.map((memo) => [String(memo.id), memo])).values()];
     deduped.sort((a, b) => Number(b.createdTs) - Number(a.createdTs));
     console.log(`[memos] ${fullSync ? '全量' : '增量'}同步：拉取 ${fetched.length} 条，合并后 ${deduped.length} 条`);
-    return trimMemos(deduped);
+    return trimMemos(deduped, parseMemoVisibilities(env.MEMOS_PUBLISH_VISIBILITIES));
 }
 
 async function syncMemos(env, siteConfig) {
@@ -667,7 +678,10 @@ async function syncMemos(env, siteConfig) {
         if (!total || offset >= total) break;
         if (page.length < PAGE) break;
     }
-    return trimMemos(all.map((m) => ({ ...m, type: 'memo' })));
+    return trimMemos(
+        all.map((m) => ({ ...m, type: 'memo' })),
+        parseMemoVisibilities(env.MEMOS_PUBLISH_VISIBILITIES)
+    );
 }
 
 // ---------- intervals.icu（运动记录） ----------

@@ -6,6 +6,9 @@ export interface Memo {
     createdTs: number;
     updatedTs: number;
     creatorName: string;
+    /** 可见性（PUBLIC / UNLISTED / PRIVATE / DIRECT）；缺失按非公开处理，见 src/lib/privacy.ts */
+    visibility?: string;
+    pinned?: boolean;
     resourceList: Array<{
         type: string;
         filename: string;

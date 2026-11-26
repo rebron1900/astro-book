@@ -4,6 +4,7 @@ import type { Settings } from './ghost';
 import type { Activity } from '../lib/activity-types';
 import type { ReadingData, ReadingDay } from '../lib/reading';
 import type { EmbyEntry } from '../lib/emby';
+import { filterPublishableMemos, parseMemoVisibilities } from '../lib/privacy';
 
 // 从本地同步的 JSON 读取数据（方案 B：GitHub Action 定时同步，构建零网络依赖）。
 // JSON 由 scripts/sync-data.mjs 生成，提交进仓库。
@@ -48,8 +49,14 @@ export const flux = fluxJson as unknown as FluxEntry[];
 export const fluxLost = fluxLostJson as unknown as FluxLostFeed[];
 export const stravaActivities = activitiesJson as unknown as Activity[];
 
+// 隐私边界（M1）：来源侧（scripts/sync-data.mjs）落地前已过滤，这里再滤一次做双保险。
+// 即使有人手工把非公开条目塞回 memos.json，时间线 / 搜索 / RSS / /now 也拿不到。
+// 放开范围只能通过 MEMOS_PUBLISH_VISIBILITIES 显式配置，默认仅 PUBLIC。
+const memoVisibilities = parseMemoVisibilities(import.meta.env.MEMOS_PUBLISH_VISIBILITIES);
+export const publicMemos: Memo[] = filterPublishableMemos(memosJson as Memo[], memoVisibilities);
+
 // 首页 Now 组件需要最新一条 memo
-const memosAll = memosJson as Memo[];
+const memosAll = publicMemos;
 export const memos = memosAll.slice(0, 1);
 
 // 整合内容源（文章 + 微博客），供时间线页使用
