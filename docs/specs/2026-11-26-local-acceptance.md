@@ -115,7 +115,7 @@ PASS  泄露闸门 check-no-modu-db  (0.1s)
 | Emby 新旧对照 | **部分完成**：冻结输入逐字节一致；线上真实同步**阻塞**（无凭据） |
 | CI 本地等价 | **完成**（脚本 + 实跑）；Actions 本身未运行 |
 | 剩余源迁移 | **未开始**（清单已给） |
-| 推送 / 合并 / 上线 | **待授权**（本轮按指示不做） |
+| 推送 / 合并 / 上线 | **待授权**（本轮按指示不做；远端 main 已由他人推进到 `1e210d3`，见 §10） |
 
 ## 8. 安全回滚
 
@@ -141,3 +141,10 @@ PASS  泄露闸门 check-no-modu-db  (0.1s)
 仍会漏（设计如此，非缺陷）：不含任何关键词又不申报的私有头（如 `x-overseerr-key`）、身份类 `x-ms-client-principal` / `x-forwarded-user` 不在剥离范围；接新源时用这类命名必须写进 `meta.sensitiveHeaders`。
 
 环境副作用：worktree 的 `node_modules` 是指向主检出 `node_modules` 的符号链接（`.gitignore` 写的是 `node_modules/`，带斜杠不匹配符号链接），因此 `git status` 永远有一条 `?? node_modules`；`astro build` 会写共享的 `.astro` 增量缓存（在 ignore 内），源码不受影响。主检出未提交的 TMDB 改动（`ci.yml`、`sync-emby.mjs`）本轮一个字节未动。
+
+## 10. 远端状态（核对时间 2026-11-26 18:12，`git ls-remote origin`）
+
+- `refs/heads/main` = **`1e210d3`**，已不是本轮开工时核对的 `ce29a90`：main 上多了 38 个提交（这正是昨天的阅读/影视时间线工作 + 两次 `chore(data): 定时同步外部数据源 [skip ci]`）。**不是我推的** —— 本轮从未 push。
+- 本分支 `feat/data-modular-pilot` **不在远端**（`ls-remote` 无此 ref），只在本地 worktree。远端还挂着 `feat/reading-timeline` = `c29ab06`，即之前几轮报的 tip。
+- 分支基点：`128e6a9`（`feat(covers)`）—— 相对现在的 `origin/main`：本分支独有 11 个提交（M1–M3 + 本次），`origin/main` 独有 2 个提交（两次定时数据同步）。
+- 将来合入 main 时会撞的唯一文件：`src/data/memos.json`（main 上的定时同步改过它；本分支改的是结构/过滤，不是内容）。合入前先 `git rebase origin/main` 并重跑 `ci-local.mjs` 与隐私闸门，不要把远端新数据覆盖掉。
