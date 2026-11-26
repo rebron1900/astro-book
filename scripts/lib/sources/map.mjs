@@ -3,20 +3,12 @@
  *
  * 迁移自 scripts/sync-data.mjs 的 syncMap，行为逐行保留：
  * - If-Modified-Since 基于产物 mtime（这里用 ctx.fileStat，不自己 stat）、304 直接复用本地不写盘；
- * - KMZ 空文件报错；下载失败报错；
- * - 转换仍调 python3 scripts/map/convert_kmz_to_geojson.py。
+ * - KMZ 空文件报错；下载失败报错；features 不是数组报错。
  *
- * 与旧实现的唯一差别：转换输出先写系统临时目录，再由执行器统一原子写入 src/data，
- * 这样「执行器是唯一写盘者」成立；临时 KMZ 与临时输出成功失败都会删。
- * 这是本轮唯一允许模块直接用子进程的地方（转换脚本本身是既有能力，不改）。
+ * 转换不再调 python3/C 进程：scripts/map/kmz-to-geojson.mjs 是纯函数版（零依赖），
+ * 响应字节直接交给它，因此也不再需要临时目录与清理，写盘仍只由执行器负责。
  */
-import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const CONVERT_SCRIPT = fileURLToPath(new URL('../../../scripts/map/convert_kmz_to_geojson.py', import.meta.url));
+import { convertKmzToGeojson } from '../../map/kmz-to-geojson.mjs';
 
 export const meta = {
     id: 'map',
@@ -50,18 +42,7 @@ export async function collect(ctx) {
     }
     if (!response.bytes || response.bytes.length === 0) throw new Error('[map] KMZ 文件为空');
 
-    const workDir = mkdtempSync(path.join(tmpdir(), 'astro-book-map-'));
-    const tempKmz = path.join(workDir, 'input.kmz');
-    const tempOut = path.join(workDir, 'output.json');
-    try {
-        writeFileSync(tempKmz, response.bytes);
-        execFileSync(process.env.PYTHON || 'python3', [CONVERT_SCRIPT, tempKmz, tempOut], { stdio: 'inherit' });
-        if (!existsSync(tempOut)) throw new Error('[map] 转换脚本没有产出 GeoJSON');
-        const geojson = JSON.parse(readFileSync(tempOut, 'utf8'));
-        if (!Array.isArray(geojson.features)) throw new Error('[map] 转换结果缺少 features');
-        return { outputs: [{ dataset: 'map.geojson', data: geojson, complete: true }] };
-    } finally {
-        // 临时文件成功失败都要清；清理失败不掩盖原始错误
-        rmSync(workDir, { recursive: true, force: true });
-    }
+    const geojson = convertKmzToGeojson(response.bytes);
+    if (!Array.isArray(geojson.features)) throw new Error('[map] 转换结果缺少 features');
+    return { outputs: [{ dataset: 'map.geojson', data: geojson, complete: true }] };
 }
