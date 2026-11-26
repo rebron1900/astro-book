@@ -244,7 +244,7 @@ src/pages/map.astro、src/lib/footprint-data.ts（构建期读 JSON）
 
 ### 7.2 转换器做了什么（`scripts/map/kmz-to-geojson.mjs`）
 
-1. 读 ZIP 中央目录 → 本地头 → 解压；**只认精确名为 `doc.kml` 的条目**；压缩方法只支持 store(0) / deflate(8)，其它方法报错；ZIP64 不支持（报错，见 §7.5）。
+1. 扫 ZIP 中央目录只收集条目元数据，**只解压精确名为 `doc.kml` 的那一条**；其它条目一律忽略（不解压、不校验压缩方法，嵌入图片也原样跳过）。`doc.kml` 本身的压缩方法只支持 store(0) / deflate(8)，其它方法报错；ZIP64 不支持（报错，见 §7.5）。
 2. 解析 XML（标签/属性/文本/CDATA/实体/注释/PI/自闭合，命名空间感知）；**只认 `http://www.opengis.net/kml/2.2` 命名空间**下的元素，前缀随意、按 URI 判定，其它命名空间忽略。
 3. 按文档顺序遍历所有 `Placemark`（任意深度）；`properties.name` 先写、`description` 后写，同名多份后者覆盖；元素存在但无文本 → `null`，元素不存在 → 该键不出现；`text` 只取第一个子元素之前的文本（与 `ElementTree` 一致）。几何按后代搜索，`MultiGeometry` 内的几何同样会被取到。
 4. 几何按 `Point` → `LineString` → `Polygon` 三段依次赋给同一个 `feature.geometry`，**最后命中的生效**；`Polygon` 没有 `outerBoundaryIs` 时跳过、不覆盖已有几何。
@@ -270,7 +270,7 @@ src/pages/map.astro、src/lib/footprint-data.ts（构建期读 JSON）
 | 谁写仓库文件 | 最早 python 直写仓库；模块化后写临时 JSON 再读回 | 纯函数返回对象，执行器原子写 | 失败时 `src/data` 零字节变化 |
 | 临时目录 | `mkdtemp` + `input.kmz` / `output.json`，整目录删 | 无 | 少一次磁盘往返与清理 |
 | 产物格式 | python `indent=4` → JS 重写成 2 空格 + 换行 | 直接 `JSON.stringify(…, null, 2) + '\n'` | **最终字节完全一致**：现有 `geojson.json`（39642 字符）反序列化后按执行器方式重写，逐字节相等 |
-| ZIP 能力 | `zipfile`：store / deflate / bzip2 / lzma、ZIP64 都支持 | store / deflate；其它方法与 ZIP64 报错 | 能力收窄；真实 KMZ 极小，预计不触发（未验） |
+| ZIP 能力 | `zipfile`：store / deflate / bzip2 / lzma、ZIP64 都支持 | `doc.kml` 只支持 store / deflate（其它方法报错），其它条目完全不看；ZIP64 报错 | 能力收窄仅限 `doc.kml` 本身；其它条目（含 bzip2 图片）与旧实现同为忽略，真实 KMZ 极小，ZIP64 预计不触发（未验） |
 | XML 能力 | `ElementTree`：完整 XML 1.0，含 DTD 命名实体、编码声明 | 5 个命名实体 + 数字实体、CDATA/注释/PI；不处理 DTD 内部子集 | 上述以外的特性报错而非静默忽略 |
 | 文本编码 | 按 XML 声明 / BOM 自动判编码 | 固定 UTF-8 | 非 UTF-8 声明的 KML 会乱码或报错（上游未验） |
 | 只转换 `Point` | 是 | 是（原样保留） | 同一已知不一致，见 §7.5 |
@@ -279,8 +279,8 @@ src/pages/map.astro、src/lib/footprint-data.ts（构建期读 JSON）
 
 ### 7.5 这条链的已知风险（未验证项）
 
-1. **没有与 Python 对跑过**：本机无 python3、仓库历史里也没有真实 KMZ。所谓「等价」是照 Python 源码逐条构造样本对齐（`tests/scripts/map-kmz.test.ts` 16 条 + `tests/scripts/ingest-map.test.ts` 9 条），不是新旧差分。
-2. **真实 Google My Maps 导出未验**：`doc.kml` 精确取名、KML 2.2 命名空间、`MultiGeometry`、`Data`/`ExtendedData`、ZIP64 这些分支只按源码推断。127 条真实数据的回归是「把现有 WGS 坐标反解成 GCJ 再正向转换」的闭环（逐条全等、坐标偏差 < 1e-9），证明的是坐标公式与属性映射，不证明真实 KMZ 结构能过。
+1. **没有与 Python 对跑过**：本机无 python3、仓库历史里也没有真实 KMZ。所谓「等价」是照 Python 源码逐条构造样本对齐（`tests/scripts/map-kmz.test.ts` 18 条 + `tests/scripts/ingest-map.test.ts` 9 条），不是新旧差分。
+2. **真实 Google My Maps 导出未验**：`doc.kml` 精确取名、KML 2.2 命名空间、`MultiGeometry`、`Data`/`ExtendedData`、ZIP64 这些分支只按源码推断。127 条真实数据的回归是**反向构造样本**：把现有 WGS 坐标用迭代反解（≤20 次，收敛到 1e-12）得到 GCJ 坐标，打包成 KMZ 再正向转换，与 `src/data/geojson.json` 深比较——属性与结构逐条全等，坐标 127 条中 118 条完全相等、最大偏差 1.42e-14（文档之前写的「逐条全等」不准确）。注意若改用模块内那个**近似** `wgs84ToGcj02` 反解，往返偏差可达 1.86e-5（约 2 米）。这证明的是坐标公式与属性映射，不证明真实 KMZ 结构能过。
 3. **只转换 `Point`**：`LineString` / `Polygon` 的坐标**不做 GCJ-02 偏移**（与旧实现一致，是已知不一致，按验收要求原样保留，代码注释已注明）。真实数据当前 127 个要素**全是 `Point`**（`name` 全有、`description` 53 条），所以现在没有实际影响；将来导入轨迹或面状区域会与标点错开几百米。
 4. **上游地址只在 Secret 里**：`MAP_KMZ_URL` 的值不在仓库（本地也没有 `.env`）。KMZ 由 Google My Maps 的 `/maps/d/kml` 导出链接打包而来（作者在旧文里记录过来源与「重庆来福士漂到长江里」的排查经过），但实际值与导出参数未在代码里确认。
 5. 页面消费的是 `properties.name` 与 `geometry`；`description` 里是原始 HTML，**不要**当游记正文来源（游记靠 Ghost 的 `#地点-<标点名>` 标签匹配）。
@@ -454,8 +454,8 @@ describe('example 源', () => {
 ## 12. 测试与调试清单
 
 ```bash
-npx vitest run                                    # 全部（2026-11-27 实测 38 files / 597 passed）
-npx vitest run tests/scripts/map-kmz.test.ts      # KMZ→GeoJSON 转换器（实测 16 passed）
+npx vitest run                                    # 全部（2026-11-27 实测 38 files / 599 passed）
+npx vitest run tests/scripts/map-kmz.test.ts      # KMZ→GeoJSON 转换器（实测 18 passed）
 npx vitest run tests/scripts/ingest-map.test.ts   # 单源编排（实测 9 passed）
 npx astro check                                   # 类型（249 files / 0 errors / 0 warnings）
 node scripts/ci-local.mjs --offline               # 五步闸门（实测 5/5 PASS）
