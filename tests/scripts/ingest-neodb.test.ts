@@ -68,14 +68,15 @@ describe('neodb：冻结输入等价（旧实现产出的 golden）', () => {
     it('语义点：旧标记保留、新标记并入、中文名沿用上一版、严格降序', () => {
         const rows = expected.data;
         expect(rows.map((m: { post_id: number }) => m.post_id)).toEqual([102, 100, 101]);
-        const byId = new Map(rows.map((m: { post_id: number }) => [m.post_id, m]));
+        type Mark = { post_id: number; created_time?: string; item?: { title_cn?: string } };
+        const byId = new Map<number, Mark>(rows.map((m: Mark) => [m.post_id, m] as [number, Mark]));
         // 100 这次上游没进 fetched（已知），时间戳保持上一版
         expect(byId.get(100)).toMatchObject({ created_time: '2026-10-01T00:00:00+00:00' });
         // localized_title 里 zh-cn 有全译名就用它；没有就沿用上一版 title_cn
         expect(byId.get(102)?.item?.title_cn).toBe('第一百零二号');
         expect(byId.get(100)?.item?.title_cn).toBe('一百号旧译名');
         // 裁剪只留白名单字段
-        expect(Object.keys(byId.get(102)).sort()).toEqual(['comment_text', 'created_time', 'item', 'post_id', 'rating_grade', 'shelf', 'visibility']);
+        expect(Object.keys(byId.get(102)!).sort()).toEqual(['comment_text', 'created_time', 'item', 'post_id', 'rating_grade', 'shelf', 'visibility']);
     });
 
     it('真实 src/data/neodb.json 过契约校验：0 错误，count 取 data 长度（数字主键）', () => {

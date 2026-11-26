@@ -61,7 +61,7 @@ describe('flux：冻结输入等价（旧实现产出的 golden，两个产物�
         const { seen, fetchImpl } = stubFetch();
         const result = await runIngestSource('flux', { projectRoot: root, env: ENV, fetchImpl, log: quiet });
 
-        const byDataset = new Map(result.outputs.map((output: { dataset: string; data: unknown }) => [output.dataset, output.data]));
+        const byDataset = new Map<string, unknown>(result.outputs.map((output: { dataset: string; data: unknown }) => [output.dataset, output.data]));
         expect(byDataset.get('flux.feed')).toEqual(expected.entries);
         expect(byDataset.get('flux.lost')).toEqual(expected.lost);
         expect(seen).toEqual(expectedRequests);
@@ -99,7 +99,7 @@ describe('flux：失败语义', () => {
     it('>50% 订阅最新文章失败 → 放弃本轮，两个旧文件一字节不变', async () => {
         const root = makeProject();
         const before = [readFileSync(path.join(root, 'src/data/flux.json'), 'utf8'), readFileSync(path.join(root, 'src/data/flux-lost.json'), 'utf8')];
-        const overrides = {};
+        const overrides: Record<string, { status: number; body?: unknown }> = {};
         for (const id of [1, 2, 3]) overrides[`GET ${fixture.base}/feeds/${id}/entries?limit=1&order=published_at&direction=desc`] = { status: 500, body: { error: 'boom' } };
         const { fetchImpl } = stubFetch(overrides);
         await expect(runIngestSource('flux', { projectRoot: root, env: ENV, fetchImpl, log: quiet })).rejects.toThrow(/个订阅最新文章请求失败/);

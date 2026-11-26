@@ -75,11 +75,12 @@ describe('intervals：冻结输入等价（旧实现产出的 golden）', () => 
     });
 
     it('语义点：i3 复用缓存轨迹（不请求 /map）、i1 新拉、i2 室内不请求、升序', () => {
-        const byId = new Map(expected.map((a: { id: string }) => [a.id, a]));
-        expect(byId.get('i3').polyline).toBe('_cached_poly_i3');
-        expect(typeof byId.get('i1').polyline).toBe('string');
-        expect(byId.get('i1').polyline).not.toBe('_cached_poly_i3');
-        expect(byId.get('i2').polyline).toBeUndefined();
+        type Activity = { id: string; polyline?: string };
+        const byId = new Map<string, Activity>(expected.map((a: Activity) => [a.id, a] as [string, Activity]));
+        expect(byId.get('i3')!.polyline).toBe('_cached_poly_i3');
+        expect(typeof byId.get('i1')!.polyline).toBe('string');
+        expect(byId.get('i1')!.polyline).not.toBe('_cached_poly_i3');
+        expect(byId.get('i2')!.polyline).toBeUndefined();
         expect(expected.map((a: { id: string }) => a.id)).toEqual(['i1', 'i2', 'i3']);
         expect(expectedRequests.filter((line: string) => line.includes('/map')).sort()).toEqual([
             'GET https://intervals.icu/api/v1/activity/i1/map'
@@ -101,8 +102,9 @@ describe('intervals：SYNC_FULL 全重拉轨迹', () => {
         const root = makeProject();
         const { seen, fetchImpl } = stubFetch();
         const result = await runIngestSource('intervals', { projectRoot: root, env: { ...ENV, SYNC_FULL: '1' }, fetchImpl, log: quiet });
-        const byId = new Map(result.outputs[0].data.map((a: { id: string }) => [a.id, a]));
-        expect(byId.get('i3').polyline).not.toBe('_cached_poly_i3');
+        type Activity = { id: string; polyline?: string };
+        const byId = new Map<string, Activity>(result.outputs[0].data.map((a: Activity) => [a.id, a] as [string, Activity]));
+        expect(byId.get('i3')!.polyline).not.toBe('_cached_poly_i3');
         expect(seen).toContain('GET https://intervals.icu/api/v1/activity/i3/map');
     });
 });
