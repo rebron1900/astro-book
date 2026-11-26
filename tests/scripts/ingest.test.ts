@@ -708,4 +708,15 @@ describe('敏感头通用规则（接第三源前的泄密缺口）', () => {
         expect(seen[1].headers['accept-language']).toBe('zh-CN');
         expect(seen[1].headers['x-request-id']).toBe('r-1');
     });
+
+    it('词边界回归：x-author / x-tokenizer 只是含子串，不算认证头，跨源保留', async () => {
+        const seen = await runWithMeta(
+            `{ 'X-Author': 'alice', 'X-Tokenizer': 'v2', 'X-Session-Cache': 'miss' }`,
+            {},
+            { 'https://third.test/a': redirect('https://cdn.other.test/x'), 'https://cdn.other.test/x': ok }
+        );
+        expect(seen[1].headers['x-author']).toBe('alice');
+        expect(seen[1].headers['x-tokenizer']).toBe('v2');
+        expect(seen[1].headers['x-session-cache']).toBeUndefined(); // session 后接 -，是真边界，照旧剔
+    });
 });

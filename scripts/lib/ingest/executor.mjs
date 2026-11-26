@@ -18,7 +18,7 @@ import path from 'node:path';
 import { contracts as defaultContracts, getContract } from './contracts.mjs';
 import { sources as defaultRegistry } from './registry.mjs';
 import { acquireLock, readDatasetFile, readState, recordSuccess } from './state.mjs';
-import { BASE_SENSITIVE_HEADERS, declaredSensitiveHeaders, stripSensitiveHeaders } from './sensitive-headers.mjs';
+import { declaredSensitiveHeaders, stripSensitiveHeaders } from './sensitive-headers.mjs';
 import { validateDataset } from './validate.mjs';
 
 const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000;

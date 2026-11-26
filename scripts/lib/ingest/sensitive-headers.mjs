@@ -19,7 +19,8 @@
 export const BASE_SENSITIVE_HEADERS = ['authorization', 'proxy-authorization', 'cookie', 'cookie2', 'set-cookie'];
 
 /** 通用模式：命中即敏感。刻意不收窄到 `^x-`，第 N 方来源的头名不可预知。 */
-const SENSITIVE_PATTERN = /(?:^|[-_])(auth|authorization|cookie|token|secret|session|api[-_]?key|apikey|password|passwd|credential|signature)/i;
+const SENSITIVE_PATTERN =
+    /(?:^|[-_])(auth|authorization|cookie|token|secret|session|api[-_]?key|apikey|password|passwd|credential|signature)(?=$|[-_])/i;
 
 /** 头名归一：去空格、转小写。 */
 export function normalizeHeaderName(name) {

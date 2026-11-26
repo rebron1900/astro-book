@@ -14,7 +14,6 @@
  * 退出码：任一步失败即 1，并打印是哪一步；全部通过打印 PASS 汇总。
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -60,7 +59,10 @@ step('类型检查 astro check', 'npx', ['astro', 'check']);
 step('单元测试 vitest', 'npx', ['vitest', 'run']);
 if (!fast) {
     const env = { ASTRO_TELEMETRY_DISABLED: '1' };
-    if (offline) env.NODE_OPTIONS = `--import=data:text/javascript,${encodeURIComponent(NO_NET_PRELOAD)}`;
+    if (offline) {
+        const preload = `--import=data:text/javascript,${encodeURIComponent(NO_NET_PRELOAD)}`;
+        env.NODE_OPTIONS = process.env.NODE_OPTIONS ? `${process.env.NODE_OPTIONS} ${preload}` : preload;
+    }
     step(offline ? '构建 astro build（断网等价）' : '构建 astro build', 'npx', ['astro', 'build'], env);
 }
 step('隐私闸门 check-public-data', 'node', ['scripts/check-public-data.mjs']);
@@ -69,7 +71,6 @@ step('泄露闸门 check-no-modu-db', 'node', ['scripts/check-no-modu-db.mjs']);
 const results = [];
 let failed = 0;
 for (const s of steps) {
-    if (s.name.includes('构建') && !existsSync(path.join(ROOT, 'dist')) && fast) continue;
     process.stdout.write(`\n=== ${s.name}\n`);
     const started = Date.now();
     const r = spawnSync(s.command, s.argv, { cwd: ROOT, stdio: 'inherit', env: { ...process.env, ...s.env }, shell: false });
