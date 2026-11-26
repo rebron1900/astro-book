@@ -1,0 +1,16 @@
+[
+  {
+    "id": 3,
+    "title": "站 C",
+    "site_url": "https://c.test",
+    "reason": "error",
+    "first_seen_at": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": 4,
+    "title": "站 D",
+    "site_url": "https://d.test",
+    "reason": "empty",
+    "first_seen_at": "2026-02-02T00:00:00.000Z"
+  }
+]

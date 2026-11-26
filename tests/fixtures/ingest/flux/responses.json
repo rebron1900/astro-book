@@ -1,0 +1,81 @@
+{
+  "base": "https://flux.test",
+  "routes": {
+    "GET https://flux.test/categories/4/feeds": {
+      "status": 200,
+      "body": [
+        {
+          "id": 1,
+          "title": "站 A",
+          "site_url": "https://a.test/",
+          "feed_url": "https://a.test/feed.xml"
+        },
+        {
+          "id": 2,
+          "title": "站 B",
+          "site_url": "https://b.test/",
+          "feed_url": "https://b.test/feed.xml"
+        },
+        {
+          "id": 3,
+          "title": "站 C",
+          "site_url": "https://c.test/",
+          "feed_url": "https://c.test/feed.xml",
+          "parsing_error_count": 3
+        },
+        {
+          "id": 4,
+          "title": "站 D",
+          "site_url": "https://d.test/",
+          "feed_url": "https://d.test/feed.xml"
+        },
+        {
+          "id": 5,
+          "title": "站 E",
+          "site_url": "https://e.test/",
+          "feed_url": "https://e.test/feed.xml"
+        }
+      ]
+    },
+    "GET https://flux.test/feeds/1/entries?limit=1&order=published_at&direction=desc": {
+      "status": 200,
+      "body": [
+        {
+          "id": 11,
+          "title": "A 的最新",
+          "url": "https://a.test/1",
+          "published_at": "2026-11-20T10:00:00Z",
+          "created_at": "2026-11-20T10:00:00Z"
+        }
+      ]
+    },
+    "GET https://flux.test/feeds/2/entries?limit=1&order=published_at&direction=desc": {
+      "status": 200,
+      "body": []
+    },
+    "GET https://b.test/feed.xml": {
+      "status": 200,
+      "text": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"><channel><title>t</title><item><title>B 的最新</title><link>https://b.test/2</link><pubDate>Thu, 19 Nov 2026 08:00:00 GMT</pubDate></item></channel></rss>"
+    },
+    "GET https://flux.test/feeds/3/entries?limit=1&order=published_at&direction=desc": {
+      "status": 200,
+      "body": []
+    },
+    "GET https://flux.test/feeds/4/entries?limit=1&order=published_at&direction=desc": {
+      "status": 200,
+      "body": []
+    },
+    "GET https://d.test/feed.xml": {
+      "status": 500,
+      "body": {
+        "error": "boom"
+      }
+    },
+    "GET https://flux.test/feeds/5/entries?limit=1&order=published_at&direction=desc": {
+      "status": 500,
+      "body": {
+        "error": "boom"
+      }
+    }
+  }
+}

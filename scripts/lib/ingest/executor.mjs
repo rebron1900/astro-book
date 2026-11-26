@@ -198,9 +198,10 @@ function buildContext({ name, meta, env, log, projectRoot, dataDir, dryRun, time
 
     const fetchBinary = async (url, options = {}, timeout = 20000) => {
         const response = await fetchWithTimeout(fetchImpl, url, options, timeout, declaredSensitive);
-        if (!response.ok) return { ok: false, status: response.status, bytes: null };
+        // statusText 一并返回：调用方要按旧的错误文案拼「HTTP 404 Not Found」，少了它测试与线上日志都会变
+        if (!response.ok) return { ok: false, status: response.status, statusText: response.statusText || '', bytes: null };
         const bytes = Buffer.from(await response.arrayBuffer());
-        return { ok: bytes.length > 0, status: response.status, bytes };
+        return { ok: bytes.length > 0, status: response.status, statusText: response.statusText || '', bytes };
     };
 
     const writeArtifact = (relativePath, bytes) => {

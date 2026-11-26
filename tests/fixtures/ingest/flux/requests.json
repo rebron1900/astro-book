@@ -1,0 +1,11 @@
+[
+  "GET https://flux.test/categories/4/feeds",
+  "GET https://flux.test/feeds/1/entries?limit=1&order=published_at&direction=desc",
+  "GET https://flux.test/feeds/2/entries?limit=1&order=published_at&direction=desc",
+  "GET https://flux.test/feeds/3/entries?limit=1&order=published_at&direction=desc",
+  "GET https://flux.test/feeds/4/entries?limit=1&order=published_at&direction=desc",
+  "GET https://flux.test/feeds/5/entries?limit=1&order=published_at&direction=desc",
+  "GET https://b.test/feed.xml",
+  "GET https://d.test/feed.xml",
+  "GET https://d.test/"
+]

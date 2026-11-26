@@ -1,0 +1,15 @@
+[
+  {
+    "title": "E 的旧文章",
+    "url": "https://e.test/old",
+    "published_at": "2026-01-05T00:00:00.000Z",
+    "created_at": "2026-01-05T00:00:00.000Z",
+    "feed": {
+      "id": 5,
+      "site_url": "https://e.test",
+      "title": "站 E"
+    },
+    "feed_id": 5,
+    "update_timestamp": 1767571200000
+  }
+]

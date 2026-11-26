@@ -180,13 +180,15 @@ export function validateDataset(datasetId, data, contractOrAll) {
         for (const error of fieldErrors) errors.push(`#${index}: ${error}`);
         if (!keyField) return;
         const key = record && typeof record === 'object' ? record[keyField] : undefined;
-        if (typeof key !== 'string' || key === '') {
+        // 主键可以是字符串或数字（flux-lost 的 feed id / neodb 的 post_id 都是数字），统一按字符串去重
+        const usable = (typeof key === 'string' && key !== '') || typeof key === 'number';
+        if (!usable) {
             if (!fieldErrors.some((error) => error.includes(keyField))) errors.push(`#${index}: 缺少主键 ${keyField}`);
-        } else if (seen.has(key)) {
+        } else if (seen.has(String(key))) {
             errors.push(`重复的主键 ${keyField}=${key}`);
         } else {
-            seen.add(key);
-            ids.push(key);
+            seen.add(String(key));
+            ids.push(String(key));
         }
     });
 

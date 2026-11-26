@@ -1,0 +1,61 @@
+{
+  "entries": [
+    {
+      "title": "A 的最新",
+      "url": "https://a.test/1",
+      "published_at": "2026-11-20T10:00:00Z",
+      "created_at": "2026-11-20T10:00:00Z",
+      "feed": {
+        "id": 1,
+        "site_url": "https://a.test",
+        "title": "站 A"
+      },
+      "feed_id": 1,
+      "update_timestamp": 1795168800000
+    },
+    {
+      "title": "B 的最新",
+      "url": "https://b.test/2",
+      "published_at": "Thu, 19 Nov 2026 08:00:00 GMT",
+      "feed": {
+        "id": 2,
+        "site_url": "https://b.test",
+        "title": "站 B"
+      },
+      "feed_id": 2,
+      "update_timestamp": 1795075200000
+    },
+    {
+      "title": "E 的旧文章",
+      "url": "https://e.test/old",
+      "published_at": "2026-01-05T00:00:00.000Z",
+      "created_at": "2026-01-05T00:00:00.000Z",
+      "feed": {
+        "id": 5,
+        "site_url": "https://e.test",
+        "title": "站 E"
+      },
+      "feed_id": 5,
+      "update_timestamp": 1767571200000
+    }
+  ],
+  "lost": [
+    {
+      "id": 3,
+      "title": "站 C",
+      "site_url": "https://c.test",
+      "reason": "error",
+      "first_seen_at": "2026-01-01T00:00:00.000Z",
+      "feed_url": "https://c.test/feed.xml"
+    },
+    {
+      "id": 4,
+      "title": "站 D",
+      "site_url": "https://d.test",
+      "reason": "error",
+      "first_seen_at": "2026-02-02T00:00:00.000Z",
+      "feed_url": "https://d.test/feed.xml",
+      "error": "直连订阅源失败: HTTP 404 "
+    }
+  ]
+}

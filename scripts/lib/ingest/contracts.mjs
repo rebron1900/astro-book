@@ -188,6 +188,43 @@ export const contracts = {
             }
         }
     },
+    // RSS 订阅最新文章 → src/data/flux.json（友链页），按 update_timestamp 降序（由 flux-snapshot 保证）
+    'flux.feed': {
+        version: 1,
+        file: 'flux.json',
+        writeMode: 'replace',
+        key: 'url',
+        allowEmpty: false,
+        description: '各订阅的最新一篇文章 + 所属订阅信息',
+        item: {
+            title: 'string?',
+            url: 'string',
+            published_at: 'string?',
+            created_at: 'string?',
+            feed: 'object',
+            feed_id: 'number|string',
+            update_timestamp: 'number'
+        }
+    },
+    // 失联订阅 → src/data/flux-lost.json：空是合法结果（全部恢复时文件就是 []）
+    'flux.lost': {
+        version: 1,
+        file: 'flux-lost.json',
+        writeMode: 'replace',
+        key: 'id',
+        allowEmpty: true,
+        description: '没有最新文章 / 抓取异常 / 被停用的订阅（按标题排序）',
+        item: {
+            id: 'number|string',
+            title: 'string',
+            site_url: 'string',
+            reason: 'string',
+            first_seen_at: 'string',
+            feed_url: 'string?',
+            error: 'string?',
+            last_entry_at: 'string?'
+        }
+    },
     // NeoDB 标记 → src/data/neodb.json（douban 页），按 created_time 降序
     'neodb.marks': {
         version: 1,

@@ -26,8 +26,6 @@ import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildFluxSnapshot, PARSING_ERROR_LIMIT } from '../src/lib/flux-snapshot.ts';
-import { discoverFeedUrl, parseFeedXml } from '../src/lib/feed-xml.ts';
 import { applyRouteCache, pendingRouteIds, polylineFromMap, sortActivities, toActivity, yearWindows } from '../src/lib/intervals.ts';
 import { isIngestSource, listIngestSources, sources as ingestRegistry } from './lib/ingest/registry.mjs';
 import { runIngestSource } from './lib/ingest/executor.mjs';
@@ -84,114 +82,6 @@ async function fetchJson(url, options = {}, timeoutMs = 20000) {
 }
 
 // 直连订阅源时使用的 UA（部分站点会拦截默认的 Node UA）。
-const FEED_FETCH_USER_AGENT = ['Mozilla', '5.0', '(Windows NT 10.0; Win64; x64)', 'AppleWebKit/537.36', '(KHTML, like Gecko)', 'Chrome/131.0.0.0', 'Safari/537.36', 'AstroBookFeedFetcher/1.0'].join(
-    ' '
-);
-
-async function fetchFeedXml(url, timeoutMs = 15000) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-        const res = await fetch(url, {
-            signal: controller.signal,
-            redirect: 'follow',
-            headers: {
-                'User-Agent': FEED_FETCH_USER_AGENT,
-                Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*'
-            }
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-        const text = await res.text();
-        if (!text) throw new Error('订阅源返回空响应');
-        return { text, finalUrl: res.url || url };
-    } finally {
-        clearTimeout(timer);
-    }
-}
-
-// 直连被 Cloudflare 等拦截时的最后兜底：通过 Jina Reader 以 XML 原文形式取回订阅源。
-// 可用 FLUX_READER_PROXY 覆盖（设为空字符串或 0 可关闭）。
-const DEFAULT_FEED_READER_PROXY = 'https://r.jina.ai/';
-
-async function fetchViaReader(url, readerProxy, timeoutMs = 30000) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-        const res = await fetch(`${readerProxy}${url}`, {
-            signal: controller.signal,
-            headers: {
-                'X-Return-Format': 'html',
-                Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml, text/plain, */*'
-            }
-        });
-        if (!res.ok) throw new Error(`Reader HTTP ${res.status} ${res.statusText}`);
-        return { text: await res.text(), finalUrl: url };
-    } finally {
-        clearTimeout(timer);
-    }
-}
-
-async function fetchHtml(url, timeoutMs = 15000) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-        const res = await fetch(url, {
-            signal: controller.signal,
-            redirect: 'follow',
-            headers: {
-                'User-Agent': FEED_FETCH_USER_AGENT,
-                Accept: 'text/html,application/xhtml+xml'
-            }
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-        return { text: await res.text(), finalUrl: res.url || url };
-    } finally {
-        clearTimeout(timer);
-    }
-}
-
-// 直连订阅源读取最新文章；订阅地址失效时，再尝试从站点 HTML 发现新的 RSS/Atom 地址。
-async function fetchLatestEntryDirect(feed, readerProxy = DEFAULT_FEED_READER_PROXY) {
-    let lastError;
-    if (feed.feed_url) {
-        try {
-            const { text, finalUrl } = await fetchFeedXml(feed.feed_url);
-            const entry = parseFeedXml(text, finalUrl);
-            if (entry) return entry;
-            lastError = new Error('订阅源中没有可识别的文章');
-        } catch (e) {
-            lastError = e;
-        }
-    }
-
-    if (feed.site_url) {
-        try {
-            const { text, finalUrl } = await fetchHtml(feed.site_url);
-            const discovered = discoverFeedUrl(text, finalUrl);
-            if (discovered) {
-                const feedData = await fetchFeedXml(discovered);
-                const entry = parseFeedXml(feedData.text, feedData.finalUrl);
-                if (entry) return entry;
-            }
-        } catch (e) {
-            lastError = e;
-        }
-    }
-
-    // 有些站点会对服务器 IP 返回 Cloudflare 挑战页，但 Reader 仍能取到订阅源 XML。
-    if (feed.feed_url && readerProxy) {
-        try {
-            const { text, finalUrl } = await fetchViaReader(feed.feed_url, readerProxy);
-            const entry = parseFeedXml(text, finalUrl);
-            if (entry) return entry;
-        } catch (e) {
-            lastError = e;
-        }
-    }
-
-    throw lastError || new Error('缺少订阅源地址');
-}
-
 // 读取已有 JSON 作为本次同步的状态/缓存；缺失或损坏时返回 fallback。
 function readJson(filename, fallback) {
     const filepath = path.join(DATA_DIR, filename);
@@ -237,95 +127,6 @@ async function writeJson(filename, data, options = {}) {
 // ---------- 字段白名单 ----------
 // 只在 JSON 中保留这些字段，控制体积；上游全量拉取后裁剪。
 // 启用新字段：往对应白名单加字段名，重跑同步即可（可逆）。
-
-async function syncFlux(env) {
-    const readerProxy = env.FLUX_READER_PROXY === '0' || env.FLUX_READER_PROXY === 'false' ? '' : env.FLUX_READER_PROXY || DEFAULT_FEED_READER_PROXY;
-
-    // 获取 feeds。这里是「订阅目录」的唯一来源，失败或为空时必须保留已有数据。
-    const feedsData = await fetchJson(`${env.FLUX_URL}/categories/4/feeds`, {
-        headers: { 'X-Auth-Token': env.FLUX_KEY }
-    });
-    const feeds = Array.isArray(feedsData) ? feedsData : feedsData.feeds;
-    if (!Array.isArray(feeds) || feeds.length === 0) {
-        throw new Error('[flux] 分类 4 没有返回任何订阅（疑似 Miniflux API 异常），保留已有数据');
-    }
-
-    // 并发获取每个 feed 的最新文章（限制并发避免过载）。
-    // 单条失败不抛全局错误，交给 buildFluxSnapshot 用上一份缓存兜底。
-    const CONCURRENCY = 10;
-    const latestResults = [];
-    let failed = 0;
-    for (let i = 0; i < feeds.length; i += CONCURRENCY) {
-        const batch = feeds.slice(i, i + CONCURRENCY);
-        const batchResults = await Promise.all(
-            batch.map(async (feed) => {
-                try {
-                    const ed = await fetchJson(
-                        `${env.FLUX_URL}/feeds/${feed.id}/entries?limit=1&order=published_at&direction=desc`,
-                        { headers: { 'X-Auth-Token': env.FLUX_KEY } },
-                        15000
-                    );
-                    const list = Array.isArray(ed) ? ed : Array.isArray(ed.entries) ? ed.entries : [];
-                    return { feedId: feed.id, entry: list.length > 0 ? list[0] : null };
-                } catch (e) {
-                    console.warn(`[flux] feed ${feed.id} 最新文章获取失败: ${e.message}`);
-                    return { feedId: feed.id, entry: null, error: e.message };
-                }
-            })
-        );
-        latestResults.push(...batchResults);
-        failed += batchResults.filter((r) => r.error).length;
-    }
-
-    // 大面积失败通常是 Miniflux 自身异常，而不是这些订阅同时失效；直接放弃本次写入。
-    if (failed > feeds.length / 2) {
-        throw new Error(`[flux] ${failed}/${feeds.length} 个订阅最新文章请求失败（疑似 Miniflux API 异常），保留已有数据`);
-    }
-
-    // Miniflux 可能因为条件请求缓存或历史清理拿不到某些订阅的最新文章。
-    // 对这类订阅直接读取一次订阅源，避免把仍有文章的站点误判成「失联」。
-    const feedById = new Map(feeds.map((feed) => [String(feed.id), feed]));
-    const resultIndexByFeed = new Map(latestResults.map((result, index) => [String(result.feedId), index]));
-    const fallbackFeeds = latestResults
-        .filter((result) => !result.entry && !result.error)
-        .map((result) => feedById.get(String(result.feedId)))
-        .filter((feed) => feed && !feed.disabled && Number(feed.parsing_error_count || 0) < PARSING_ERROR_LIMIT);
-
-    if (fallbackFeeds.length > 0) {
-        console.log(`[flux] ${fallbackFeeds.length} 个订阅在 Miniflux 中没有文章，尝试直连订阅源`);
-    }
-
-    let directFailed = 0;
-    for (let i = 0; i < fallbackFeeds.length; i += CONCURRENCY) {
-        const batch = fallbackFeeds.slice(i, i + CONCURRENCY);
-        const batchResults = await Promise.all(
-            batch.map(async (feed) => {
-                try {
-                    return { feedId: feed.id, entry: await fetchLatestEntryDirect(feed, readerProxy) };
-                } catch (e) {
-                    directFailed++;
-                    console.warn(`[flux] feed ${feed.id} 直连订阅源失败: ${e.message}`);
-                    return { feedId: feed.id, entry: null, error: `直连订阅源失败: ${e.message}` };
-                }
-            })
-        );
-        for (const result of batchResults) {
-            const index = resultIndexByFeed.get(String(result.feedId));
-            if (index !== undefined) latestResults[index] = result;
-        }
-    }
-    if (directFailed > 0) {
-        console.warn(`[flux] ${directFailed}/${fallbackFeeds.length} 个订阅直连抓取失败`);
-    }
-
-    // 用上一份数据作为缓存：失败时沿用旧文章，失联时间也保持稳定。
-    return buildFluxSnapshot({
-        feeds,
-        latestResults,
-        previousEntries: readJson('flux.json', []),
-        previousLost: readJson('flux-lost.json', [])
-    });
-}
 
 // ---------- intervals.icu（运动记录） ----------
 const INTERVALS_BASE = 'https://intervals.icu/api/v1';
@@ -479,15 +280,6 @@ export { gtsStatusToMemo, trimMemos } from './lib/sources/memos.mjs';
 
 // ---------- 主流程 ----------
 const SOURCES = {
-    flux: {
-        run: (env) => syncFlux(env),
-        // 同一个源的两次 Miniflux 拉取结果拆成两份数据：
-        // flux.json 仍保持原来的「最新文章数组」结构，flux-lost.json 是派生出的失联订阅。
-        files: (data) => [
-            { file: 'flux.json', data: data.entries },
-            { file: 'flux-lost.json', data: data.lost, allowEmpty: true }
-        ]
-    },
     intervals: { run: (env) => syncIntervals(env), file: 'activities.json' },
     map: { run: (env) => syncMap(env), file: 'geojson.json' },
     rank: { run: () => syncRank(), file: 'rank.json' },

@@ -10,6 +10,7 @@ export const sources = {
     memos: { module: '../sources/memos.mjs', optional: false },
     ghost: { module: '../sources/ghost.mjs', optional: false },
     neodb: { module: '../sources/neodb.mjs', optional: false },
+    flux: { module: '../sources/flux.mjs', optional: false },
     imagemeta: { module: '../sources/imagemeta.mjs', optional: false }
 };
 
