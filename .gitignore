@@ -53,3 +53,7 @@ __pycache__/
 modu/
 record-log-v1/
 .cache/modu/
+
+# 数据同步状态与并发锁（来源模块执行器写，不入库）
+.cache/sync-state.json
+.cache/sync.lock

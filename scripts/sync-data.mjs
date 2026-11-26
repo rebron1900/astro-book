@@ -30,6 +30,8 @@ import { buildFluxSnapshot, PARSING_ERROR_LIMIT } from '../src/lib/flux-snapshot
 import { discoverFeedUrl, parseFeedXml } from '../src/lib/feed-xml.ts';
 import { applyRouteCache, pendingRouteIds, polylineFromMap, sortActivities, toActivity, yearWindows } from '../src/lib/intervals.ts';
 import { DEFAULT_MEMO_VISIBILITIES, filterPublishableMemos, parseMemoVisibilities } from '../src/lib/privacy.ts';
+import { isIngestSource, listIngestSources, sources as ingestRegistry } from './lib/ingest/registry.mjs';
+import { runIngestSource } from './lib/ingest/executor.mjs';
 
 // ---------- 路径 ----------
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -830,58 +832,6 @@ async function syncRank() {
     }
 }
 
-// ---------- 图片 meta 预取（方案 B：构建零网络） ----------
-// 从 ghost.json 提取所有图片 URL，预取尺寸写入 src/data/image-meta.json
-// 构建时 RemotePicture 直接读本地 JSON，不再 fetch cdn.1900.live!exif
-async function syncImageMeta() {
-    const ghostPath = path.join(DATA_DIR, 'ghost.json');
-    if (!existsSync(ghostPath)) return {};
-    const ghost = JSON.parse(readFileSync(ghostPath, 'utf8'));
-
-    // 收集所有图片 URL（posts + pages 的 html 和 feature_image）
-    const urls = new Set();
-    const entries = [...(ghost.posts || []), ...(ghost.pages || [])];
-    entries.forEach((p) => {
-        if (p.feature_image) urls.add(p.feature_image);
-        if (p.html) {
-            const re = /<img[^>]+src=["']([^"']+)["']/g;
-            let m;
-            while ((m = re.exec(p.html)) !== null) urls.add(m[1]);
-        }
-    });
-
-    // 读取已有缓存（避免重复请求）
-    const metaPath = path.join(DATA_DIR, 'image-meta.json');
-    const existing = existsSync(metaPath) ? JSON.parse(readFileSync(metaPath, 'utf8')) : {};
-
-    // 只处理 cdn.1900.live 的图片（RemotePicture 只对这些 fetch）
-    const cdnUrls = [...urls].filter((u) => u.startsWith('https://cdn.1900.live/'));
-    const toFetch = cdnUrls.filter((u) => !existing[`size_${u}`] && !existing[`error_${u}`]);
-
-    console.log(`[imagemeta] 共 ${cdnUrls.length} 张 cdn 图片，需新获取 ${toFetch.length} 张`);
-
-    // 并发获取（限制并发避免过载）
-    const CONCURRENCY = 10;
-    let fetched = 0;
-    for (let i = 0; i < toFetch.length; i += CONCURRENCY) {
-        const batch = toFetch.slice(i, i + CONCURRENCY);
-        await Promise.all(
-            batch.map(async (url) => {
-                try {
-                    const meta = await fetchJson(`${encodeURI(url)}!exif`, {}, 10000);
-                    existing[`size_${url}`] = { width: meta.width, height: meta.height };
-                } catch (e) {
-                    existing[`error_${url}`] = { timestamp: Date.now(), error: e.message };
-                }
-                fetched++;
-            })
-        );
-        console.log(`[imagemeta] 进度 ${fetched}/${toFetch.length}`);
-    }
-
-    return existing;
-}
-
 // ---------- 主流程 ----------
 const SOURCES = {
     ghost: { run: (env, site) => syncGhost(env), file: 'ghost.json' },
@@ -902,10 +852,8 @@ const SOURCES = {
     // reading：modureader 的 WebDAV 分片库，聚合/清洗在 src/lib/reading.ts 与 scripts/lib/book-title.mjs
     // optional：外部自建服务（NAS 上的 WebDAV）。它打吨时不应该把整轮定时任务 / 发布拖下水，
     // 失败只告警并保留已有 reading.json。
-    reading: { run: (env) => import('./sync-reading.mjs').then((m) => m.syncReading(env)), file: 'reading.json', optional: true },
-    // emby：自建 Emby 的观看记录；可选源，服务打吨/密钥没配时保留已有 emby.json。
-    emby: { run: (env) => import('./sync-emby.mjs').then((m) => m.syncEmby(env)), file: 'emby.json', optional: true },
-    imagemeta: { run: () => syncImageMeta(), file: 'image-meta.json' }
+    reading: { run: (env) => import('./sync-reading.mjs').then((m) => m.syncReading(env)), file: 'reading.json', optional: true }
+    // emby / imagemeta 已迁到模块层（scripts/lib/sources/ + registry.mjs），由执行器统一校验与写盘。
 };
 
 /**
@@ -913,7 +861,9 @@ const SOURCES = {
  * 供 main() 使用，也方便单测直接验。
  */
 export function classifyFailure(name, sources = SOURCES) {
-    return sources[name]?.optional ? 'warn' : 'fail';
+    if (sources[name]?.optional) return 'warn';
+    if (isIngestSource(name) && ingestRegistry[name]?.optional) return 'warn';
+    return 'fail';
 }
 
 /**
@@ -925,8 +875,26 @@ export async function runSources(sources, ctx = {}) {
     const { env = {}, site = null, dryRun = false, write = null, log = console } = ctx;
     let changed = 0;
     let failed = 0;
+    let exitCode = 0;
     const warnings = [];
     for (const name of sources) {
+        // 模块化来源：执行器负责校验、原子写与状态；这里只汇总结果。
+        if (isIngestSource(name)) {
+            try {
+                const result = await runIngestSource(name, { env, log, projectRoot: ROOT, dryRun });
+                changed += result.changed;
+            } catch (e) {
+                if (e?.code === 'lock') exitCode = 2;
+                if (classifyFailure(name) === 'warn') {
+                    warnings.push(`${name}: ${e.message}`);
+                    log.warn(`[${name}] 可选源同步失败，已跳过（保留现有数据）: ${e.message}`);
+                } else {
+                    failed++;
+                    log.error(`[${name}] 同步失败: ${e.message}`);
+                }
+            }
+            continue;
+        }
         const src = SOURCES[name];
         try {
             const data = await src.run(env, site);
@@ -951,7 +919,7 @@ export async function runSources(sources, ctx = {}) {
             }
         }
     }
-    return { changed, failed, warnings };
+    return { changed, failed, warnings, exitCode };
 }
 
 function sourceFiles(src, data) {
@@ -971,24 +939,26 @@ async function main() {
     env.SYNC_FULL = fullSync ? '1' : '0';
     const site = await loadSiteConfig();
 
-    const sources = only.length ? only.filter((s) => SOURCES[s]) : Object.keys(SOURCES);
+    const known = [...Object.keys(SOURCES), ...listIngestSources()];
+    const sources = only.length ? only.filter((s) => known.includes(s)) : known;
     if (only.length && sources.length !== only.length) {
-        console.warn('未知源:', only.filter((s) => !SOURCES[s]).join(', '), '（可用:', Object.keys(SOURCES).join(','), '）');
+        console.warn('未知源:', only.filter((s) => !known.includes(s)).join(', '), '（可用:', known.join(','), '）');
     }
 
     console.log(`开始同步 [${sources.join(', ')}]${dryRun ? ' (dry-run)' : ''}${fullSync ? ' (full)' : ' (incremental)'}`);
 
-    let changed = 0;
-    let failed = 0;
     const run = await runSources(sources, { env, site, dryRun, write: writeJson });
-    ({ changed, failed } = run);
     for (const w of run.warnings) console.warn(`[warn] 可选源 ${w}`);
 
-    console.log(dryRun ? 'dry-run 完成（未写盘）' : `同步完成，${changed} 个文件有变化`);
-    return failed;
+    console.log(dryRun ? 'dry-run 完成（未写盘）' : `同步完成，${run.changed} 个文件有变化`);
+    return { failed: run.failed, exitCode: run.exitCode };
 }
 
-if (isMain) main().then((failed) => {
+if (isMain) main().then(({ failed, exitCode }) => {
+    if (exitCode) {
+        console.error(`同步被并发锁拦截，退出码 ${exitCode}`);
+        process.exit(exitCode);
+    }
     if (failed > 0) {
         console.error(`同步完成，${failed} 个源失败`);
         process.exit(1);

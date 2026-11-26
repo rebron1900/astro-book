@@ -22,6 +22,7 @@
 | `yarn astro check`          | TypeScript / Astro 类型检查            |
 | `yarn test`                 | Vitest 单测（`tests/`）                |
 | `yarn sync:data`            | 拉取外部数据到 `src/data/*.json`       |
+| `node scripts/check-public-data.mjs` | 检查 `src/data` 与 `dist` 是否混入非公开 Memos（命中即非零退出） |
 | `node scripts/sync-book-descriptions.mjs` | 按书名去 NeoDB 取书籍简介 → `src/data/book-descriptions.json`（`--force` 全部重取） |
 | `yarn import:strava-export` | 导入 Strava 导出文件（历史数据迁移用） |
 
@@ -47,9 +48,14 @@
 
 ## 2. 数据层规则
 
+0. **公开性默认关闭**：Memos 只有 `visibility === 'PUBLIC'` 能落地/被页面读取（规则在 `src/lib/privacy.ts`，来源侧 + `store.ts` 双侧过滤）。要放开必须显式设 `MEMOS_PUBLISH_VISIBILITIES=public,unlisted`，默认不给 UNLISTED。非公开正文不得出现在 `src/data`、`public`、`dist`、日志与测试快照里。
+
 1. **不要手改 `src/data/*.json`**：它们由 `yarn sync:data` 生成（ghost、memos、neodb、flux、activities、geojson、rank、image-meta、reading）。需要改数据 → 改同步脚本或数据源。
    - 例外：`src/data/book-meta.json` 是**人工维护**的书籍信息（目前只有 `description`），优先级高于自动取回的 `book-descriptions.json`；想改某一本的简介写这里，不要动 `reading.json`。
-2. 数据源在 `scripts/sync-data.mjs` 的 `SOURCES` 表里：`ghost / neodb / flux / memos / intervals / map / rank / imagemeta`；可按源同步：`node scripts/sync-data.mjs ghost,intervals`，`--full` 忽略增量缓存，`--dry-run` 只预览。
+2. 数据源分两层：
+   - 模块化来源（新代码走这里）：`scripts/lib/sources/<id>.mjs` 导出 `meta` + `collect(ctx)`，在 `scripts/lib/ingest/registry.mjs` 登记一行、在 `scripts/lib/ingest/contracts.mjs` 加契约；执行器 `scripts/lib/ingest/executor.mjs` 负责凭据注入、契约校验、原子写盘、`.cache/sync-state.json` 与并发锁。**新增来源不要改 executor**。目前 `emby`、`imagemeta` 已迁移。
+   - 存量来源：仍在 `scripts/sync-data.mjs` 的 `SOURCES` 表（`ghost / neodb / flux / memos / intervals / map / rank / reading`）。
+   统一入口：`node scripts/sync-data.mjs ghost,intervals`，`--full` 忽略增量缓存，`--dry-run` 只预览。
 3. 定时任务会同步数据并自动提交 `chore(data): … [skip ci]`（防止循环触发 CI）。不要手动提交数据文件除非确实需要。
 4. **运动数据契约是 `src/lib/activity-types.ts`**（intervals.icu 的 `Activity`，扁平字段）。改字段时同步更新：`src/lib/exercise.ts`（`buildRecords` 等）、`src/lib/intervals.ts`、`src/lib/strava-preview.ts`、`src/api/store.ts`、`exercise.astro`/`exercise-routes.json.ts` 以及测试。旧的 `StravaActivity` 只在历史迁移/测试里保留，不要在新代码里使用。
 5. 运动轨迹不进页面 HTML：`/exercise-routes.json` 只输出 `{ id: polyline }`，地图按需拉取。不要在服务端把 `polyline` 塞进列表数据。
