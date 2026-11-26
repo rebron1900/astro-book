@@ -81,6 +81,22 @@ describe('rank：契约拦截上游错误载荷', () => {
         expect(JSON.parse(readFileSync(path.join(root, 'src/data/rank.json'), 'utf8'))).toEqual({ success: true, myRank: { totalDuration: 12345 } });
     });
 
+    it('{success:true,myRank:null} 通过校验：null 表示本次无排名，仍属成功载荷', () => {
+        const result = validateDataset('rank.status', { success: true, myRank: null });
+        expect(result.ok).toBe(true);
+        expect(result.errors).toEqual([]);
+    });
+
+    it('{success:true,myRank:null} 能真的落地（读回新文件），不会冻结在旧文件', async () => {
+        const seed = { success: true, myRank: { totalDuration: 999 } };
+        const root = makeProject(seed);
+        const { fetchImpl } = stubFetch(200, { success: true, myRank: null });
+        const result = await runIngestSource('rank', { projectRoot: root, env: {}, fetchImpl, log: quiet });
+        expect(result.changed).toBe(1);
+        // 读回确认真的写进去了（不是被当空数据跳过）
+        expect(JSON.parse(readFileSync(path.join(root, 'src/data/rank.json'), 'utf8'))).toEqual({ success: true, myRank: null });
+    });
+
     it('远端返回错误载荷 → 整源不写盘：旧文件字节不变、无 .tmp 残留、按可选源只告警', async () => {
         const seed = { success: true, myRank: { totalDuration: 1 } };
         const root = makeProject(seed);

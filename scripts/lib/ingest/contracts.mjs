@@ -191,6 +191,8 @@ export const contracts = {
     // 远端排名/状态 → src/data/rank.json：无主键，未声明字段一律放行。
     // 只声明页面真正消费的 myRank（Now.astro 读 myRank.totalDuration）；上游成功载荷目前是
     // {success, myRank}，myRank 可选，空对象也能过。
+    // myRank 允许 null = 上游「本次无排名数据」，仍属成功载荷（Now.astro 自己写了 myRank ? … : 0），
+    // 判成不合格会让 rank 永久冻结在旧文件、页面显示陈旧数字，所以 null 必须放行。
     // 上游失败时返回 {success:false,error:'…'}：页面读不到 myRank 会静默显示 0 小时，
     // 所以把 error 声明成「只能缺席或为 null」——带错误信息的载荷判为不合格，不覆盖旧文件。
     'rank.status': {
@@ -200,7 +202,7 @@ export const contracts = {
         allowEmpty: false,
         description: '远端排名/状态 JSON（声明页面消费的 myRank 与错误载荷的 error，其余字段放行）',
         shape: 'object',
-        fields: { myRank: 'object?', error: 'null?' }
+        fields: { myRank: 'object|null?', error: 'null?' }
     },
     // modureader 阅读汇总 → src/data/reading.json（阅读页 / 阅读卡片）；books/days 都没有稳定 id
     'reading.digest': {
