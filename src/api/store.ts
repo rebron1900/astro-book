@@ -5,6 +5,7 @@ import type { Activity } from '../lib/activity-types';
 import type { ReadingData, ReadingDay } from '../lib/reading';
 import type { EmbyEntry } from '../lib/emby';
 import { filterPublishableMemos, parseMemoVisibilities } from '../lib/privacy';
+import { buildTimeline, readingDayTime } from '../lib/timeline';
 
 // 从本地同步的 JSON 读取数据（方案 B：GitHub Action 定时同步，构建零网络依赖）。
 // JSON 由 scripts/sync-data.mjs 生成，提交进仓库。
@@ -92,22 +93,22 @@ export type TimelineEntry =
 // neodb.visibility: 0=public 1=unlisted 2=private；只展示公开标记（值在 JSON 中是数字）
 const neodbMarks = (neodbJson as unknown as NeoDBResponse).data.filter((m) => Number(m.visibility ?? 0) === 0);
 
-export const timeline: TimelineEntry[] = [
+export const timeline: TimelineEntry[] = buildTimeline([
     ...postsAll.map((p) => ({ kind: 'post' as const, time: new Date(p.published_at ?? p.created_at).getTime(), data: p })),
     ...memosAll.map((m) => ({ kind: 'memo' as const, time: m.createdTs * 1000, data: m })),
     ...neodbMarks.map((m) => ({ kind: 'neodb' as const, time: new Date(m.created_time).getTime(), data: m })),
     ...stravaActivities.map((a) => ({ kind: 'strava' as const, time: new Date(a.start_date_local.replace(' ', 'T')).getTime(), data: a })),
-    // 阅读按「当天 00:00 本地时间」入时间线，一天一条
+    // 阅读按「北京时间当天 00:00」入时间线（只用于排序/分页，不反推成时刻），一天一条
     ...(readingData.days ?? []).map((day) => ({
         kind: 'reading' as const,
-        time: new Date(`${day.date}T00:00:00`).getTime(),
+        time: readingDayTime(day.date),
         data: day
     })),
     // 影视：同步脚本只写入有观看时间的条目；按最后观看时间入时间线。
     ...embyEntries
         .filter((entry) => typeof entry.lastPlayedAt === 'number')
         .map((entry) => ({ kind: 'media' as const, time: entry.lastPlayedAt as number, data: entry }))
-].sort((a, b) => b.time - a.time);
+]);
 
 /**
  * 时间线展示用数据源：按 TIMELINE_INCLUDE_NEODB 决定是否剔除 neodb。

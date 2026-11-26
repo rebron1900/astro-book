@@ -5,6 +5,7 @@ import type { ReadingDayBook } from '../../lib/reading';
 import type { Post } from '@ts-ghost/content-api';
 import { normalizeSlug, cnDateKey, cnDayLabel, cnDateParts } from '../../lib/utils/help';
 import { timelineVisible, TIMELINE_INCLUDE_NEODB } from '../../api/store';
+import { countTimeline } from '../../lib/timeline';
 import { BookHeart, BookOpenText, Clapperboard, Footprints, LibraryBig, MessageCircle } from '@lucide/astro';
 import PostMeta from '../ui/PostMeta.astro';
 import LedgerMemo from './LedgerMemo.astro';
@@ -78,12 +79,8 @@ const activeKind = ['post', 'memo', ...(TIMELINE_INCLUDE_NEODB ? ['neodb'] : [])
 const filterHref = (kind: string) => (kind === 'all' ? '/' : `/timeline/${kind}/`);
 // 计数只算时间线可见数据（TIMELINE_INCLUDE_NEODB=false 时 neodb 已剔除）；
 // 「阅读与影视」= reading + media。
-const timelineTotals = timelineVisible.reduce((totals, entry) => {
-    totals.all += 1;
-    if (totals[entry.kind] !== undefined) totals[entry.kind] += 1;
-    return totals;
-}, { all: 0, post: 0, memo: 0, neodb: 0, strava: 0, reading: 0, media: 0 });
-const readingMediaTotal = timelineTotals.reading + timelineTotals.media;
+const timelineTotals = countTimeline(timelineVisible);
+const readingMediaTotal = timelineTotals.readingAndMedia;
 
 const timelineIntros = {
     all: {

@@ -1,6 +1,7 @@
 ---
-import { timelineVisible, TIMELINE_INCLUDE_NEODB, settings, type TimelineEntry } from '../../../api/store';
-import { cnDateKey } from '../../../lib/utils/help';
+import { timelineVisible, TIMELINE_INCLUDE_NEODB, settings } from '../../../api/store';
+import type { TimelineEntry } from '../../../api/store';
+import { paginateTimeline, timelineForKind } from '../../../lib/timeline';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Head from '../../../components/islands/Head.astro';
 import List from '../../../components/islands/List.astro';
@@ -16,11 +17,8 @@ export async function getStaticPaths() {
     // 书影音是否恢复由 store.ts 的 TIMELINE_INCLUDE_NEODB 控制（true 时重新生成 /timeline/neodb/）。
     const kinds = ['post', 'memo', ...(TIMELINE_INCLUDE_NEODB ? ['neodb'] : []), 'strava', 'reading'];
     const PAGE_SIZE = 10;
-    // 同一天不跨页：跨页会让「当天多集合成一张卡」和日期标签都被切开，
-    // 线下会出现同一天两张卡、日期重复（2026-11-25 实测：末路兼职 11.12 出现两次）。
-    // 所以按「天」切页：每页累计到 PAGE_SIZE 条且下一条换了天，才开新页。
-    // 按北京时间算「天」：CI 跑在 UTC，用本地时间会把凌晨的记录算到前一天
-    const dayKey = (time: number) => cnDateKey(time);
+    // 按「天」切页（同一天不跨页）与栏目的 kind 映射都放在 src/lib/timeline.ts，
+    // 页面只做路径生成；计数口径与页头共用同一套函数，避免各算一套。
 
     type TimelinePage = {
         data: TimelineEntry[];
@@ -36,24 +34,10 @@ export async function getStaticPaths() {
     const paths: { params: { kind: string; page?: string }; props: { page: TimelinePage } }[] = [];
 
     for (const kind of kinds) {
-        const items = timelineVisible.filter((entry) =>
-            kind === 'reading' ? entry.kind === 'reading' || entry.kind === 'media' : entry.kind === kind
-        );
+        const items = timelineForKind(timelineVisible, kind);
         if (!items.length) continue;
 
-        const pages: TimelineEntry[][] = [];
-        let current: TimelineEntry[] = [];
-        let lastDay: string | null = null;
-        for (const entry of items) {
-            const day = dayKey(entry.time);
-            if (current.length >= PAGE_SIZE && day !== lastDay) {
-                pages.push(current);
-                current = [];
-            }
-            current.push(entry);
-            lastDay = day;
-        }
-        if (current.length) pages.push(current);
+        const pages = paginateTimeline(items, PAGE_SIZE);
 
         const base = `/timeline/${kind}`;
         pages.forEach((data, index) => {
