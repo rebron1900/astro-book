@@ -97,7 +97,7 @@ export const contracts = {
 | 部分条目字段缺失 | 可选字段允许缺；必填字段缺失 → 整源失败并报出首个错误条目 id |
 | 旧数据过期 / 上游已删除 | `replace` 自然淘汰；`merge` 需要来源显式给出删除信号，否则保留并在报告里计数 |
 
-**游标只在写盘成功后推进**：`state` 里的 `cursor/lastSuccessAt/etag` 必须在文件原子替换成功后写入；失败时不得推进，否则下一轮会漏数据。
+**游标只在写盘成功后推进**：`state` 现只记 `lastSuccessAt` 与每个 dataset 的条数（`lastRun`），**没有** `cursor`/`etag` 字段——本轮两个试点源都是全量拉取，不需要游标。将来接增量源时在此加游标字段，并守同一约束：只在数据文件原子替换**成功后**写入，失败不得推进，否则下一轮会漏数据。
 
 ## 5. 凭据
 
@@ -106,7 +106,8 @@ export const contracts = {
 - 多实例 / 多账号：用命名空间键（如 `EMBY_2_BASE_URL`）在来源内部解析，**不把账号选择做成自动路由**；一个 registry 条目对应一个账号实例。
 - 缺凭据 → 无人值守**不弹卡、不询问**，按 `optional` 决定告警或失败。
 - 凭据不得出现在：JSON 数据、HTML、快照、日志、报告、带 token 的图片/链接 URL。日志统一脱敏：任何 `Authorization` / `api_key=` / `token=` 值替换为 `***`；错误信息里的 URL 也要过一遍。
-- 认证请求只发往声明的目标源；`redirect: 'follow'` 时若跨域跳转，**必须**剥掉 `Authorization` 头（默认 `fetch` 跨域会丢，但仍要显式判断，防未来换实现）。
+- 认证请求只发往声明的目标源。跳转由执行器自己跟随（`redirect: 'manual'`，最多 5 跳，第 6 跳按 `upstream` 失败）：跨源跳转剥掉 `authorization` / `cookie` / `proxy-authorization` / `x-emby-token`，同源保留、其它头不动；303（以及 301/302 下的非 GET）转 GET 并丢 body。
+- **已知局限（接新源前必须看）**：① 认证头是**固定名单**（`scripts/lib/ingest/executor.mjs` 的 `AUTH_HEADERS`），新源若用别的头名（`X-Api-Key`、`X-Auth-Token` 等）跨源跳转时**不会被剥**——接入时必须把新头名加进名单，或改成「来源声明 + 正则兜底」；② 跨源后再跳回原源**不恢复**认证头（fail-closed，跨域 SSO 往返会 401）。
 - 诚实边界：Node 模块**不是沙箱**。本规范只约束「模块应当做什么」，不提供隔离；第三方来源代码要按信任代码对待，进仓库前需评审。
 
 ## 6. 私有原始数据边界
