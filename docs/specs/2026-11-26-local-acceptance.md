@@ -28,15 +28,32 @@
 3. 只在**跨源**跳转时剥离；同源跳转保留（取图、分页仍可用）。
 执行器改为 `stripSensitiveHeaders(pairs, meta.sensitiveHeaders)`，`X-Emby-Token` 也在 `emby.mjs` 的 meta 里显式声明（双保险）。
 
-**反向用例（证明这个洞是真实存在的）**：把通用模式改成永不命中后重跑，4 条用例失败（含旧的 `x-emby-token` 跨域用例与两条新用例）；恢复后 39 条全过。
+**反向用例（证明这个洞是真实存在的）**：把通用模式改成永不命中后重跑，失败条数随基线变化（口径按当时用例数写清，不混用）：
 
-**词边界收紧（独立复核后加的一条）**：初版把关键词当子串匹配，`x-author`、`x-tokenizer` 这类「只是含 auth/token」的头也被剥。现改为要求关键词两侧是头名边界（`(?:^|[-_])(…)(?=$|[-_])`），`x-author` / `x-tokenizer` 保留，`x-api-key` / `x-auth-mode` / `x-session-cache` / `x-emby-token` 照旧剥。新增 1 条回归用例，把边界退回旧正则时该用例**正好失败 1 条**（非空转）。
+| 基线 | 用例数 | 通用模式改 `NEVER_MATCH_xyz` 后 | 谁实测 |
+| --- | --- | --- | --- |
+| `2b2e2f5`（38 条时代） | 38 | **4 failed** / 34 passed | 明鉴（round2）、我 |
+| `17d5d77`（加词边界回归用例后） | 39 | **5 failed** / 34 passed | 明鉴（最终增量复核）、我（本轮复核时自己复跑确认） |
+| `51be4c7`（本轮返工后） | 69 | **23 failed** / 46 passed | 筑成（自测）、我（本轮自跑确认） |
+
+即：早前文档把 `17d5d77` 这一列写成「4 条」是错的——那时的基线已从 38 涨到 39，新增的「词边界回归」用例本身也依赖该正则，故为 5 条。已按实跑更正。
+
+**词边界收紧（独立复核后加的一条）**：初版把关键词当子串匹配，`x-author`、`x-tokenizer` 这类「只是含 auth/token」的头也被剥。`17d5d77` 先收紧为「关键词两侧都必须是头名边界」，`x-author` / `x-tokenizer` 保留，`x-api-key` / `x-auth-mode` / `x-session-cache` / `x-emby-token` 照旧剥。
+
+**这次收紧引入的 fail-open（`51be4c7` 已修）**：要求右边界后，拼接式命名反过来被放行——`x-sessionid`、`x-authtoken`、`x-secretkey`、`x-credentialid`、`x-tokenid`、`x-apikeys`、`x-api-keys` 由「跨源剥离」退成「跨源保留」，属安全方向的回退；且 `x-csrftoken`（Django/axios 常见头）新旧两版都不命中。明鉴在最终增量复核里点出这一条（无阻塞，因为三个已知源都用标准头名、且 `meta.sensitiveHeaders` 声明层仍然生效），本轮按最小改法修掉：
+
+- 命中位置改为「左边界（`^` 或 `-`/`_` 之后）**或** 关键词恰好收尾」，右侧不再要求边界 → 拼接式命名与 `x-csrftoken` 一并覆盖；
+- 两处已知误报在同一处豁免：`auth(?!ors?\b)` 放行 `author`/`authors`，`token(?!i[sz]e)` 放行 `tokenizer`/`tokenize`；
+- 判定仍在一个正则里，不是逐名硬编码；导出名与同源保留、显式声明两条语义未动。
+
+实测（我本轮自跑，直接 import 模块）：STRIP 表 **20/20** 全中（含上述 7 个拼接式 + `x-csrftoken` + 旧 `x-emby-*`），KEEP 表 **13/13** 全保留（`x-author`、`x-authors`、`x-tokenizer`、`x-tokenize`、`if-none-match`、`accept-language`、`x-request-id`、`x-api-version`、`x-trace`、`x-correlation-id`、`x-client-id`、`x-oauth2-scope`、`x-ratelimit-remaining`），`x-acme` 声明后 true、未声明 false。用例 39 → **69**；反向把正则改 `NEVER_MATCH` 挂 **23** 条，恢复后 69/69。
 
 ```
-npx vitest run tests/scripts/ingest.test.ts     Tests 39 passed (39)
-  新增 6 条：x-thirdparty-token / x-api-key / x-session-id / x-client-secret 跨域被剥；
-             x-acme 靠声明被剥；同源保留；accept / accept-language / x-request-id 不误剥；
-             x-author / x-tokenizer 不被误剥
+npx vitest run tests/scripts/ingest.test.ts     Tests 69 passed (69)   （本轮 51be4c7）
+npx vitest run                                  Test Files 29 passed (29) / Tests 501 passed (501)
+  51be4c7 新增 30 条（20 STRIP + 9 KEEP + 1 整链断言）；原有 39 条断言一行未改；
+  早前 39 条时代新增的 6 条仍在：x-thirdparty-token / x-api-key / x-session-id /
+  x-client-secret 跨域被剥；x-acme 靠声明被剥；同源保留；x-author / x-tokenizer 不被误剥
 ```
 
 ## 3. 构建外链与离线构建
@@ -52,9 +69,15 @@ npx vitest run tests/scripts/ingest.test.ts     Tests 39 passed (39)
 
 **页面运行期**仍引用外部主机（按出现次数）：`1900.live`、`cdn.1900.live`（图片/CDN）、`og.190102.xyz`、`chart.1900.live`（统计脚本，来自 Ghost code injection）、`s3.996288.xyz`、`social.1900.live`、`artalk.1900.live`（评论）、`memos.1900.live`。这些是浏览器侧请求，不是构建依赖；要让站点在断网环境完全可用需把图片/统计/评论本地化，属较大改造，本轮不做，只登记。
 
-## 4. Emby 冻结输入新旧对照（无线上凭据）
+## 4. Emby 冻结输入新旧对照（线上真实同步本轮未验证）
 
-**凭据现状（如实）**：本机无 `.env`，环境变量里没有 `EMBY_BASE_URL` / `EMBY_USER_ID` / `EMBY_API_KEY`，因此**无法做线上真实同步对照**。凭证只在 GitHub Actions Secrets（未 push，无法触发）。
+**凭据现状（如实，不推断）**：
+
+- 本机（NAS 容器 worktree）**无 `.env`**，环境变量里也没有 `EMBY_BASE_URL` / `EMBY_USER_ID` / `EMBY_API_KEY`；
+- 团队保险库**确有 Emby 相关密钥**；本轮**未取用、未读取其内容**，也未将它写入任何文件或环境变量；
+- 因此正确说法是「本轮**未做**线上真实同步对照」，而不是「没有凭据」或「凭据只在 Actions Secrets」。之前的写法属臆断，已删。
+
+未做的原因：本轮任务范围是本地收尾返工（敏感头修复 + 文档 + 预览），发包方明确要求不中请新凭据、不实跑上游。要补这一步，需单独授权并给出取用方式；真要跑，也要先在排演环境确认不污染 `src/data/emby.json`。
 
 **替代证据：冻结输入对照**（不联网、不打印密钥）：
 - 用 `fixtures/emby-sample.json` 起本地假 Emby（Items / Resume / 详情 / 图片），
@@ -68,20 +91,23 @@ sameCovers true (1 / 1)
 oldRequests 5 / newRequests 5   ← 请求序列条数一致
 ```
 
-结论：同等输入下新实现与旧实现行为一致；**线上真实数据未验证**，缺凭据，属外部阻塞。
+结论：同等输入下新实现与旧实现行为一致；**线上真实数据仍未验证**（本轮未取用保险库密钥，不中请新凭据），属**待授权的未验证项**，不是外部阻塞也无法归因于「缺凭据」。
 
 ## 5. CI 本地等价
 
 新增 `scripts/ci-local.mjs`，按 `ci.yml` 构建侧闸门顺序执行：类型检查 → 单元测试 → 构建（可选断网等价）→ 隐私闸门 → 泄露闸门，逐项 PASS/FAIL 汇总，任一失败即退出 1。
 
 ```
-node scripts/ci-local.mjs --offline
-PASS  类型检查 astro check  (8.4s)
-PASS  单元测试 vitest  (4.7s)   471 passed (471) / 29 files
-PASS  构建 astro build（断网等价）  (19.8s)   2171 page(s)
-PASS  隐私闸门 check-public-data  (0.1s)   memos 2668 条 PUBLIC=2668，非公开 0 条
-PASS  泄露闸门 check-no-modu-db  (0.1s)
+node scripts/ci-local.mjs --offline        （2026-11-26 18:30，HEAD 51be4c7，ASTRO_TELEMETRY_DISABLED=1）
+PASS  类型检查 astro check  (8.5s, exit 0)
+PASS  单元测试 vitest  (4.9s, exit 0)   501 passed (501) / 29 files
+PASS  构建 astro build（断网等价）  (27.3s, exit 0)   2171 page(s)
+PASS  隐私闸门 check-public-data  (0.1s, exit 0)   memos 2668 条 PUBLIC=2668，非公开 0 条
+PASS  泄露闸门 check-no-modu-db  (0.0s, exit 0)
+EXIT=0；/tmp/ci-offline-net.log 未生成 → 构建期 0 次出站
 ```
+
+（早前 `17d5d77` 同类跑法为 471 passed / 2171 页 / 出站 0 次，差异只在测试条数。）
 
 **Node 版本坑**：Astro 要求 `>=22.23.4`。Node 22.20.0 下 `astro check` / `astro build` 会失败并提示升级版本，容易被误读成代码问题；CI 的 `node-version: '22'` 取当时最新 22.x，不受影响。
 
@@ -109,10 +135,10 @@ PASS  泄露闸门 check-no-modu-db  (0.1s)
 | 项 | 状态 |
 | --- | --- |
 | 320/768 视口验证 | **完成**（真实 Chrome，无横向溢出） |
-| 敏感头通用化 + 反向用例 | **完成**（39 条通过；去掉通用规则会挂 4 条；词边界回归用例可反向复现） |
-| 独立复核（明鉴） | **完成**：A–E 全部实跑，0 阻塞；1 条正则收紧已采纳并补测，3 条整理已修（§9） |
+| 敏感头通用化 + 反向用例 | **完成**（69 条通过；去掉通用规则挂 23 条；词边界回归与拼接式命名双向可反向复现） |
+| 独立复核（明鉴） | **完成**：round2（A–E 全实跑）与最终增量复核（`2b2e2f5..17d5d77`）均 0 阻塞；它点出的 3 条应改（含拼接式 fail-open）已在本轮 `51be4c7` 修掉（§11），修完再交它仅复核最终增量 |
 | 离线构建验证 | **完成**（关闭遥测后出站 0 次） |
-| Emby 新旧对照 | **部分完成**：冻结输入逐字节一致；线上真实同步**阻塞**（无凭据） |
+| Emby 新旧对照 | **部分完成**：冻结输入逐字节一致；线上真实同步**未验证**（保险库有密钥，本轮未取用、未申请新凭据，见 §4） |
 | CI 本地等价 | **完成**（脚本 + 实跑）；Actions 本身未运行 |
 | 剩余源迁移 | **未开始**（清单已给） |
 | 推送 / 合并 / 上线 | **待授权**（本轮按指示不做；远端 main 已由他人推进到 `1e210d3`，见 §10） |
@@ -125,7 +151,7 @@ PASS  泄露闸门 check-no-modu-db  (0.1s)
 
 ## 9. 独立复核结论与复核后改动
 
-明鉴（独立质量角色）按 A–E 五项实跑复核：**通过，0 阻塞**。它自带用例验证了三件我没钉住的事：跨源 302 后 `x-trace` / `x-correlation-id` / `if-none-match` 保留、`x-acme` 靠声明被剥、同源全部保留；并实测「把通用规则关掉 → 4 条失败」。全文见 `docs/reviews/2026-11-26-independent-review-round2.md`。
+明鉴（独立质量角色）按 A–E 五项实跑复核：**通过，0 阻塞**。它自带用例验证了三件我没钉住的事：跨源 302 后 `x-trace` / `x-correlation-id` / `if-none-match` 保留、`x-acme` 靠声明被剥、同源全部保留；并实测「把通用规则关掉 → 失败」（它那一轮是 38 条基线的 **4 条**；到 `17d5d77` 的 39 条基线变成 5 条，见 §2 表）。全文见 `docs/reviews/2026-11-26-independent-review-round2.md`。
 
 复核后只做了 4 处小改（复核时提的可选项，不涉及结论）：
 
@@ -136,7 +162,7 @@ PASS  泄露闸门 check-no-modu-db  (0.1s)
 | 3 | 删掉不可达的 `--fast` 构建跳过分支与随之无用的 `existsSync` 导入 | `ci-local.mjs` |
 | 4 | 删掉 `executor.mjs` 里未使用的 `BASE_SENSITIVE_HEADERS` 导入 | `executor.mjs` |
 
-改后重跑：`vitest` 29 files / **471 passed**，`ci-local --offline` 5/5 PASS，构建 2171 页、出站 0 次。**这 4 处改动未经第二位复核人重看**，但它们都在明鉴给出的最小改法范围内，且各有测试或实跑兜住。
+改后重跑：`vitest` 29 files / **471 passed**，`ci-local --offline` 5/5 PASS，构建 2171 页、出站 0 次。这 4 处改动当时未经第二位复核人重看，已由下一轮「最终增量复核」覆盖（结论 0 阻塞 + 1 条应改：拼接式命名 fail-open，已在本轮 §11 修掉）。
 
 仍会漏（设计如此，非缺陷）：不含任何关键词又不申报的私有头（如 `x-overseerr-key`）、身份类 `x-ms-client-principal` / `x-forwarded-user` 不在剥离范围；接新源时用这类命名必须写进 `meta.sensitiveHeaders`。
 
@@ -146,5 +172,65 @@ PASS  泄露闸门 check-no-modu-db  (0.1s)
 
 - `refs/heads/main` = **`1e210d3`**，已不是本轮开工时核对的 `ce29a90`：main 上多了 38 个提交（这正是昨天的阅读/影视时间线工作 + 两次 `chore(data): 定时同步外部数据源 [skip ci]`）。**不是我推的** —— 本轮从未 push。
 - 本分支 `feat/data-modular-pilot` **不在远端**（`ls-remote` 无此 ref），只在本地 worktree。远端还挂着 `feat/reading-timeline` = `c29ab06`，即之前几轮报的 tip。
-- 分支基点：`128e6a9`（`feat(covers)`）—— 相对现在的 `origin/main`：本分支独有 11 个提交（M1–M3 + 本次），`origin/main` 独有 2 个提交（两次定时数据同步）。
+- 分支基点：`128e6a9`（`feat(covers)`）。提交数按口径分开算（`51be4c7` 后重新核）：
+  - **`origin/main`(`1e210d3`)..HEAD = 13**（即“本分支独有”）；`git log --oneline` 逐条可数，最早 `ea97dfe`（M1）。
+  - `128e6a9..HEAD` 口径也等于 13（本分支从 `128e6a9` 起，无分叉穿插）。
+  - 对话里曾说“11”是 `17d5d77` 之前的口径，已过期；明鉴看到 **12** 是 `17d5d77` 时点、尚未含 `51be4c7`。三者差异就是两个文档/代码提交，不是矛盾。
+- `origin/main` 独有 2 个提交（两次定时数据同步）。
 - 将来合入 main 时会撞的唯一文件：`src/data/memos.json`（main 上的定时同步改过它；本分支改的是结构/过滤，不是内容）。合入前先 `git rebase origin/main` 并重跑 `ci-local.mjs` 与隐私闸门，不要把远端新数据覆盖掉。
+
+## 11. 最终增量复核后的返工（`51be4c7`）
+
+明鉴对 `2b2e2f5..17d5d77` 的最终增量复核（`/data/workspace/bots/明鉴/reviews/2026-11-26-final-delta-17d5d77.md`）结论是「通过，0 阻塞，3 条应改」。**0 阻塞不等于没问题**，本轮把 3 条应改逐条落地。
+
+| # | 明鉴的问题 | 处置 |
+| --- | --- | --- |
+| 1 | 词边界收紧带来 fail-open：7 个拼接式头名（`x-sessionid`、`x-authtoken`、`x-secretkey`、`x-credentialid`、`x-tokenid`、`x-apikeys`、`x-api-keys`）由剥变留，且无用例钉住 | **已修**（代码，`51be4c7`）：右侧不再要求边界，改「左边界或收尾」；补 30 条用例 |
+| 2 | `x-csrftoken` 新旧正则都不命中（既有缺口） | **已修**（同一敏感头边界内）：收尾命中覆盖 `x-csrftoken`，并加用例 |
+| 3 | 文档「永不命中挂 4 条」与 HEAD 实跑的 5 条不一致 | **已更正**（本文件 §2 表，含 38 / 39 / 69 三种基线的口径） |
+| 4 | Emby 凭据表述与团队事实不符（保险库有密钥） | **已更正**（§4，见下） |
+| 5 | 「本分支独有 11 个提交」 | **已按实际重算**（§10，当前 13） |
+
+**Emby 口径更正**：之前写「凭据只在 GitHub Actions Secrets」是臆断。事实是——本机无 `.env`、无 `EMBY_*` 环境变量；团队保险库**有** Emby 密钥；本轮**未取用、未申请新凭据、未实跑上游同步**。所以「线上真实同步」的状态是**本轮未验证（待授权）**，既不能写成「外部阻塞」，也不能写成「不存在凭据」。冻结输入对照（§4）仍是唯一可用的等价证据。
+
+**提交**：`51be4c7`（父 `17d5d77`，tree `68e3558`），只含 2 个文件：`scripts/lib/ingest/sensitive-headers.mjs`（+22/−4）、`tests/scripts/ingest.test.ts`（+54/−0）。源码面未动，故 `dist` 内容与 `17d5d77` 构建一致。
+
+**我方自跑复核（不采信执行方口述）**：
+
+```
+npx vitest run tests/scripts/ingest.test.ts        69 passed (69)
+npx vitest run                                     29 files / 501 passed (501)
+node -e 直连模块：STRIP 20/20、KEEP 13/13（含 x-author/x-authors/x-tokenizer/x-oauth2-scope 等）、
+                   x-acme 声明 true / 未声明 false、failures=0
+反向 1：当前正则改 /NEVER_MATCH_xyz/ → 23 failed / 46 passed（69 条基线）
+反向 2：git checkout 17d5d77 的两个文件 + 改 /NEVER_MATCH/ → 5 failed / 34 passed（39 条基线，证实旧文档的「4」是错的）
+恢复：cp 回原文件 / git checkout HEAD -- → git status 仅 ?? node_modules，再跑 69/69
+node scripts/ci-local.mjs --offline → 5/5 PASS，2171 页，出站 0 次（见 §5）
+```
+
+**仍未做**：push / 合并 / 上线 / 申请新凭据 / 实跑上游 / 扩大迁移范围；480、1024 断点与触摸手势未测；Actions 未运行；保险库密钥未读取，故「用它跑一遍真实同步」这件事仍未验证。
+
+## 12. 预览刷新（对应最终构建）
+
+旧预览进程（pid 52215）服务的 `dist` 早于本轮返工，不算最终版。已按 `51be4c7` 工作树**重新构建并重启预览**：
+
+| 项 | 值 |
+| --- | --- |
+| 构建 | `ASTRO_TELEMETRY_DISABLED=1 node scripts/ci-local.mjs --offline`，`dist/index.html` mtime **18:30:07**，2171 页（`dist` 内 html 2174 个，含 404 两版） |
+| 旧进程 | pid 52215 已停 |
+| 新进程 | pid **58153**（`astro preview --host 0.0.0.0 --port 4321`），日志 `/tmp/preview-51be4c7.log` |
+| 版本证据 | 服务端 `/` 响应 md5 `1f0a7963…a294066a` **等于** `dist/index.html`；`/timeline/reading/` 响应 md5 `9040a106…c71be3d2` **等于** `dist/timeline/reading/index.html` → 预览服务的就是本次构建产物，不是缓存旧版 |
+| dist 整体指纹 | 全量文件 md5 汇总 `9f460398…b3013d1f` |
+
+HTTP 实测（18:31）：
+
+| 路径 | 状态 | 大小 | 标题 |
+| --- | --- | --- | --- |
+| `/` | 200 | 425,085 B | 只是玩玩 \\| 今天该把哪颗灯泡扭进脑袋… |
+| `/timeline/memo/` | 200 | 434,553 B | 随记 \\| 只是玩玩 |
+| `/timeline/reading/` | 200 | 428,063 B | 阅读与影视 \\| 只是玩玩 |
+| `/now/` | 200 | 430,884 B | Now 🚩 \\| 只是玩玩 |
+
+说明：`51be4c7` 只改 `scripts/lib/ingest/*` 与 `tests/*`，`src/` 与 `astro.config.*` 里没有任何文件引用它（`grep` 为空），所以本次构建的页面字节与 `17d5d77` 的构建应当一致；「预览对应最终版」指的是**进程与 dist 都来自 `51be4c7` 工作树重建**，不是页面内容发生了变化。
+
+局域网仍不可达（容器只映射了 4433，未映射 4321），需主机侧加端口映射，不在本轮权限内、未改。
