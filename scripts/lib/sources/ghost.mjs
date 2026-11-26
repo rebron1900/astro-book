@@ -7,8 +7,9 @@
  * 传输从 @ts-ghost/content-api 换成执行器的 ctx.fetchJson，原因有两条：
  *  1. 客户端把 HTTP 状态吞成 {success:false}，401/403 无法按 auth 分类（验收要求）；
  *  2. 走 ctx 才能统一拿到超时、跨源跳头与日志脱敏。
- * 请求的路径与 query（page / include=authors,tags / limit=all / order=count.posts+desc）
- * 与原客户端逐字一致，响应体也是 Ghost Content API 原样 JSON，因此产物不变。
+ * 请求的参数集合与原客户端一致（page / include=authors,tags / limit=all / order=count.posts+desc），
+ * 路径与 query 值逐字保留（参数顺序不敏感：Ghost 不区分键序，新旧实现的键序虽不同但集合相同），
+ * 响应体也是 Ghost Content API 原样 JSON，因此产物不变。
  */
 export const meta = {
     id: 'ghost',

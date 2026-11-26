@@ -12,7 +12,10 @@ import { validateDataset } from '../../scripts/lib/ingest/validate.mjs';
  * golden 来源：迁移前实现（630519c 的 sync-data.mjs，走 @ts-ghost 客户端）在同一份冻结
  * Ghost Content API 响应上的产物 → tests/fixtures/ingest/ghost/expected.json。
  * 新模块换成 ctx.fetchJson（同样的路径与 query），产物必须与 golden 深比较相等。
- * 请求按「资源名」匹配（query 顺序不影响语义），并断言资源顺序一致：settings→posts→pages→authors→tags。
+ * 请求按**完整 URL**断言：method、路径、以及 URLSearchParams 逐键比较 query 参数集合；
+ * 参数顺序不作断言（Ghost 不区分 query 参数顺序，旧客户端与新实现的键序也确实不同：
+ * 旧 posts/?page=1&include=authors,tags&key=…，新 posts/?include=authors,tags&page=1&key=…）。
+ * 同时断言资源顺序一致：settings→posts→pages→authors→tags。
  */
 
 const FIXTURES = path.join(__dirname, '..', 'fixtures', 'ingest', 'ghost');
@@ -36,13 +39,24 @@ function resourceOf(url: string): string | undefined {
     return RESOURCES.find((name) => url.includes(`/content/${name}/`));
 }
 
+/**
+ * 一次请求 → 可比较的形状：method、资源名、路径、以及排序后的 query 键值对。
+ * 只排序不断言顺序：Ghost 对 query 参数顺序不敏感，参数字典才是要守的契约。
+ */
+function parseRequest(line: string) {
+    const [method, resource, ...rest] = line.split(' ');
+    const url = new URL(rest.join(' '));
+    const params = [...url.searchParams.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    return { method, resource, path: url.pathname, params };
+}
+
 /** 冻结资源响应 → fetch stub；可单独覆盖某个资源的响应（用来构造失败）。 */
 function stubFetch(overrides: Record<string, { status: number; body?: unknown }> = {}) {
     const seen: string[] = [];
     const fetchImpl = async (url: string) => {
         const raw = String(url);
         const resource = resourceOf(raw);
-        seen.push(resource ? `GET ${resource}` : `GET unknown ${raw}`);
+        seen.push(resource ? `GET ${resource} ${raw}` : `GET unknown ${raw}`);
         if (!resource) return new Response(JSON.stringify({ error: raw }), { status: 404, headers: { 'content-type': 'application/json' } });
         const override = overrides[resource];
         if (override) {
@@ -68,7 +82,7 @@ describe('ghost：冻结输入等价（旧实现走 ts-ghost 客户端产出的 
         expect(result.changed).toBe(1);
         expect(result.outputs[0]).toMatchObject({ dataset: 'ghost.content', file: 'ghost.json', count: expected.posts.length });
         expect(result.outputs[0].data).toEqual(expected);
-        expect(seen).toEqual(expectedRequests.map((line: string) => line.split(' ').slice(0, 2).join(' ')));
+        expect(seen.map(parseRequest)).toEqual(expectedRequests.map(parseRequest));
         expect(JSON.parse(readFileSync(path.join(root, 'src/data/ghost.json'), 'utf8'))).toEqual(expected);
     });
 

@@ -1,7 +1,7 @@
 [
-  "GET settings https://ghost.test/ghost/api/content/settings/?key=<key>",
-  "GET posts https://ghost.test/ghost/api/content/posts/?page=1&include=authors%2Ctags&key=<key>",
-  "GET pages https://ghost.test/ghost/api/content/pages/?page=1&include=authors%2Ctags&key=<key>",
-  "GET authors https://ghost.test/ghost/api/content/authors/?include=count.posts&key=<key>",
-  "GET tags https://ghost.test/ghost/api/content/tags/?order=count.posts+desc&limit=all&include=count.posts&key=<key>"
+  "GET settings https://ghost.test/ghost/api/content/settings/?key=3a18f6d4b2907e5c3a18f6d4b2",
+  "GET posts https://ghost.test/ghost/api/content/posts/?page=1&include=authors%2Ctags&key=3a18f6d4b2907e5c3a18f6d4b2",
+  "GET pages https://ghost.test/ghost/api/content/pages/?page=1&include=authors%2Ctags&key=3a18f6d4b2907e5c3a18f6d4b2",
+  "GET authors https://ghost.test/ghost/api/content/authors/?include=count.posts&key=3a18f6d4b2907e5c3a18f6d4b2",
+  "GET tags https://ghost.test/ghost/api/content/tags/?order=count.posts+desc&limit=all&include=count.posts&key=3a18f6d4b2907e5c3a18f6d4b2"
 ]
