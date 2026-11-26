@@ -179,6 +179,10 @@ jobs:
             - name: Build Astro project
               run: yarn build
 
+            # 隐私闸门：dist 与 src/data 里出现任何非公开 Memos 内容即失败（阻断部署）
+            - name: Check public data (privacy gate)
+              run: node scripts/check-public-data.mjs
+
             # 公开仓库闸门：原始 .db / record-log / modu_sync 绝不进仓库或 dist
             - name: Guard against leaked modureader database
               run: node scripts/check-no-modu-db.mjs
