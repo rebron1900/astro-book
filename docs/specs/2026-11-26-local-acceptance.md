@@ -366,7 +366,7 @@ HTTP 实测（18:31）：
 npx vitest run                      → 37 files / 580 passed           exit 0
 npx astro check                      → 246 files, 0 errors, 0 warnings exit 0
 node scripts/ci-local.mjs --offline  → 5/5 PASS                      exit 0
-   类型检查 8.6s / 单元测试 6.4s / 构建 20.4s（2171 页）/ 隐私闸门 0.1s / 泄露闸门 0.1s
+   类型检查 8.3s / 单元测试 5.7s / 构建 19.6s（2171 页）/ 隐私闸门 0.1s / 泄露闸门 0.1s（末次在最终 HEAD 上重跑 21:56，仍 5/5 PASS）
 node scripts/check-public-data.mjs   → 非公开记录 0 条（memos PUBLIC 2668/2668）exit 0
 11 个契约 × 真实文件                 → 10 ok / 0 错误；rank.status 如实判不合格
 ```
