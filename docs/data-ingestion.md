@@ -2,7 +2,7 @@
 
 本文件面向后续维护者：说明站点数据是怎么从外部服务进到仓库里的 JSON、怎么加一个新来源、怎么排查失败，以及地图那条特殊处理链。
 
-> **本文的命令与退出码都在 2026-11-26 的本地分支上实跑过**（见 §11 记录）。当时的状态是：模块化迁移**只完成了本地实现与本地验收**，真实上游联调、GitHub Actions、发布均**未验证**。文中的 URL、令牌、示例条目都是占位或虚构的。
+> **本文的命令与退出码都在本地分支上实跑过**（2026-11-26 首轮、2026-11-27 地图转换器换成 JS 后复跑；见 §11、§12）。当时的状态是：模块化迁移**只完成了本地实现与本地验收**，真实上游联调、GitHub Actions、发布均**未验证**。文中的 URL、令牌、示例条目都是占位或虚构的。
 
 - 设计与验收细节：`docs/specs/2026-11-26-data-ingest-spec.md`、`docs/specs/2026-11-26-local-acceptance.md`
 - 站点构建期的读取方：`src/lib/store.ts`、`src/pages/*.astro`
@@ -61,7 +61,7 @@ src/data/*.json  ──►  astro build（只读文件，不发请求）
 | `scripts/lib/ingest/state.mjs` | `.cache/sync-state.json`（成功记录）与 `.cache/sync.lock`（并发锁） |
 | `scripts/lib/ingest/sensitive-headers.mjs` | 敏感头判定与跨源剥离（通用模式 + 来源显式声明） |
 | `scripts/lib/sources/<源>.mjs` | 各来源采集模块：只 `collect(ctx)`，返回 `{ outputs: [...] }` |
-| `scripts/map/*.py` | **地图专用**：KMZ → GeoJSON 转换与 GCJ-02→WGS-84 坐标转换（见 §7） |
+| `scripts/map/kmz-to-geojson.mjs` | **地图专用**：KMZ → GeoJSON 转换与 GCJ-02→WGS-84 坐标转换，零依赖纯函数（见 §7） |
 | `scripts/sync-reading.mjs` | 阅读数据实现本体（`reading.mjs` 转调它，含封面写盘） |
 | `scripts/check-public-data.mjs` | 隐私闸门：`src/data` 与 `dist` 里不得出现非公开记录（见 §10） |
 | `scripts/check-no-modu-db.mjs` | 泄露闸门：git 索引与 `dist/` 不得有本地数据库/日记痕迹 |
@@ -122,7 +122,7 @@ npm run sync:data                          # = node scripts/sync-data.mjs
 | `1` | 至少一个**必需**源失败，或脚本异常 | `ghost --dry-run`（缺凭据）、`map --dry-run`（缺凭据） |
 | `2` | 拿不到并发锁（另一个同步进程正在跑） | 需并发触发，未在本轮实跑 |
 
-逐条实测（2026-11-26，本机无凭据、无 python3）：
+逐条实测（2026-11-26 与 2026-11-27 JS 转换器落地后各跑一次，本机无凭据，结果一致）：
 
 ```
 node scripts/sync-data.mjs ghost --dry-run   → 1  "[ghost] 同步失败: 缺少凭据 GHOST_API_URL, GHOST_API_KEY，保留已有数据"
@@ -219,7 +219,7 @@ export const sources = {
 
 ## 7. 地图：`.kmz` 不是直接能用的数据（特殊处理链）
 
-足迹地图吃的不是 KML/KMZ，而是 `src/data/geojson.json`（GeoJSON FeatureCollection）。从 KMZ 到它是**一段必须的 Python 转换**，这也是整套数据接入里唯一使用子进程的地方。
+足迹地图吃的不是 KML/KMZ，而是 `src/data/geojson.json`（GeoJSON FeatureCollection）。KMZ → GeoJSON 这一步由**零依赖纯函数**完成：`scripts/map/kmz-to-geojson.mjs`（2026-11-26 由原 Python 版等价重写，原脚本已删除、可在 git 历史查看）。它不读写文件、不开子进程，所以整条链跑在 Node 里，读取用 `node:zlib` 解 ZIP、自写最小 XML 解析器，`package.json` 未新增任何依赖。
 
 ### 7.1 链路
 
@@ -229,57 +229,60 @@ MAP_KMZ_URL（打包好的 .kmz，走 Secret）
    ▼
 scripts/lib/sources/map.mjs :: collect(ctx)
    1. 有旧 geojson.json 且非 SYNC_FULL → 带 If-Modified-Since: <产物 mtime, GMT>
-   2. ctx.fetchBinary(url, 30000)  → 304 复用本地、≥400 报错、空响应体报「KMZ 文件为空」
-   3. mkdtemp('astro-book-map-') → 写入 input.kmz
-   4. execFileSync(process.env.PYTHON || 'python3',
-        ['scripts/map/convert_kmz_to_geojson.py', input.kmz, output.json], { stdio:'inherit' })
-   5. 读回 output.json → 校验 features 是数组 → 返回 dataset
-   6. finally：整目录 rm -rf（成功失败都清）
+   2. ctx.fetchBinary(url, { headers }, 30000) → 304 复用本地、≥400 报错、空响应体报「KMZ 文件为空」
+   3. convertKmzToGeojson(response.bytes)      → 纯函数，返回 GeoJSON 对象（不落盘）
+   4. 校验 features 是数组 → 返回 dataset
    ▼
 执行器：契约 map.geojson（顶层对象、features 非空数组、每项有 geometry）
-        → 原子写入 src/data/geojson.json
+        → JSON.stringify(data, null, 2) + '\n' → 临时文件原子替换 src/data/geojson.json
    ▼
 src/pages/map.astro、src/lib/footprint-data.ts（构建期读 JSON）
    前端底图另需 PUBLIC_MAP_KEY（Mapbox 令牌，与 KMZ 无关）
 ```
 
-### 7.2 转换脚本做了什么（`scripts/map/convert_kmz_to_geojson.py`）
+没有临时目录、没有子进程、没有 `PYTHON` 环境变量——写盘只由执行器负责，转换失败时 `src/data` 一个字节都不动。
 
-1. 按 ZIP 打开 KMZ，**硬编码读取 `doc.kml`**；
-2. 用 `xml.etree.ElementTree` 解析，命名空间硬编码为 `http://www.opengis.net/kml/2.2`；
-3. 遍历每个 `Placemark`，取 `name` / `description` 文本，并按 `Point` / `LineString` / `Polygon` 生成几何；
-4. **只有 `Point` 做坐标转换**：`gcj02_to_wgs84(lon, lat)`（`coordTransform_utils.py`，纯标准库实现）；
-5. 用 `shapely` 的 `shape/mapping` 生成标准 GeoJSON 结构，`json.dump(..., indent=4)` 写文件；
-6. 没有几何的 Placemark 直接丢弃。
+### 7.2 转换器做了什么（`scripts/map/kmz-to-geojson.mjs`）
+
+1. 读 ZIP 中央目录 → 本地头 → 解压；**只认精确名为 `doc.kml` 的条目**；压缩方法只支持 store(0) / deflate(8)，其它方法报错；ZIP64 不支持（报错，见 §7.5）。
+2. 解析 XML（标签/属性/文本/CDATA/实体/注释/PI/自闭合，命名空间感知）；**只认 `http://www.opengis.net/kml/2.2` 命名空间**下的元素，前缀随意、按 URI 判定，其它命名空间忽略。
+3. 按文档顺序遍历所有 `Placemark`（任意深度）；`properties.name` 先写、`description` 后写，同名多份后者覆盖；元素存在但无文本 → `null`，元素不存在 → 该键不出现；`text` 只取第一个子元素之前的文本（与 `ElementTree` 一致）。几何按后代搜索，`MultiGeometry` 内的几何同样会被取到。
+4. 几何按 `Point` → `LineString` → `Polygon` 三段依次赋给同一个 `feature.geometry`，**最后命中的生效**；`Polygon` 没有 `outerBoundaryIs` 时跳过、不覆盖已有几何。
+5. `Point` 坐标必须正好三段 `经度,纬度,高度`（否则报错），取前两段做 GCJ-02 → WGS-84；公式常数与旧 `coordTransform_utils.py` 逐字一致，境外坐标原样返回。
+6. `LineString` / `Polygon` 按空白分点、每点取前两段，**不做**坐标转换（与旧实现一致，见 §7.5）；`Polygon` 只取外环，并按 GEOS 行为自动闭合（首末点不同则补首点）；少于 2 点（线）/ 3 点（面）报错。
+7. 没有几何的 Placemark 丢弃；一个都没有时返回空 FeatureCollection（不是错误）。
+8. 任何异常输入抛可读中文 `Error`，不返回半个对象、不读写文件。
 
 ### 7.3 依赖
 
 | 依赖 | 位置 | 说明 |
 | --- | --- | --- |
-| `python3` | 运行环境 | 本机（NAS 容器）**没有** python3，所以转换在本机跑不了；可用 `PYTHON` 环境变量换解释器路径（测试就是靠它注入「假 python3」） |
-| `shapely>=2` | `scripts/map/requirements.txt` | 只有 `mapping()` 用到；无 shapely 时脚本在 import 阶段就 `ModuleNotFoundError` |
-| CI 安装 | `.github/workflows/ci.yml` 的 Install dependencies 步骤 | `python3 -m pip install --upgrade pip -r scripts/map/requirements.txt`；ubuntu-latest 自带 python3 |
-| 无其他依赖 | — | `coordTransform_utils.py` 只用 `math`/`json`/`urllib`（其中 `urllib.urlencode` 那一段是没被调用的遗留代码） |
+| Node 内置 | `node:zlib` 的 `inflateRawSync`、全局 `TextDecoder` | 零第三方包；`package.json` 未新增依赖 |
+| 不再需要 python3 | — | 原 `python3` + `shapely>=2` 运行依赖已删除；本机（NAS 容器）现在能直接跑转换 |
+| CI 不再装 pip 包 | `.github/workflows/ci.yml` | 原 Install dependencies 里的 `python3 -m pip install --upgrade pip -r scripts/map/requirements.txt` 一行已删 |
+| 测试辅助 | `tests/helpers/kmz.ts` | 现场打包 store / deflate 两种 KMZ，不需要外部样本文件 |
 
-### 7.4 迁移前后差异（逐条）
+### 7.4 迁移前后差异（Python → JS）
 
-| 项 | 迁移前（`scripts/sync-data.mjs` 的 `syncMap`） | 现在（`scripts/lib/sources/map.mjs`） | 影响 |
+| 项 | 旧（`convert_kmz_to_geojson.py` + 模块化后的 `map.mjs`） | 现在（`kmz-to-geojson.mjs`） | 影响 |
 | --- | --- | --- | --- |
-| 转换输出写到哪 | **直接写 `src/data/geojson.json`**（python 自己写） | 先写临时目录，由执行器原子替换 | 旧实现转换中途失败会在仓库文件里留下半截/缩进不同的内容；新实现失败时 `src/data` 一个字节不动 |
-| 临时文件 | `tmpdir()/astro-book-map-<时间戳>.kmz`，只删 kmz | `mkdtemp` 目录（`input.kmz` + `output.json`），整目录删 | 都无残留；新实现连中间 GeoJSON 也一起清 |
-| 产物格式 | python 先写 4 空格缩进，再由 JS 重写成 2 空格 + 换行 | 只有 JS 写一次（2 空格 + 换行） | **最终字节完全一致**：实测把现有 `geojson.json` 反序列化后按执行器的序列化方式重写，字符数 39642 与文件相同、逐字节相等 |
-| 转换脚本本身 | — | — | **零改动**：`git diff 630519c..HEAD -- scripts/map` 为空 |
-| `If-Modified-Since` | `statSync` 产物 mtime | `ctx.fileStat`（同一文件、同一格式） | 等价，模块因此不 import `fs` |
-| 304 但本地无产物 | 抛 `HTTP 304` | 抛 `HTTP 304` | 一致 |
-| 3xx 非 304（无 `location`） | `!response.ok` → 报错 | 只判 `>=400`，会把重定向响应体当 KMZ → 后续「KMZ 文件为空」或转换失败 | 边角差异：两条路都失败，只是错误文案不同；执行器实际会自行跟随 301/302/303/307/308（最多 5 跳） |
-| `SYNC_FULL=1` | 不带条件请求头 | 不带条件请求头 | 一致 |
+| 运行环境 | python3 + shapely（CI 用 pip 装） | Node 内置模块，零依赖 | 本机可跑；CI 少一步 |
+| 谁写仓库文件 | 最早 python 直写仓库；模块化后写临时 JSON 再读回 | 纯函数返回对象，执行器原子写 | 失败时 `src/data` 零字节变化 |
+| 临时目录 | `mkdtemp` + `input.kmz` / `output.json`，整目录删 | 无 | 少一次磁盘往返与清理 |
+| 产物格式 | python `indent=4` → JS 重写成 2 空格 + 换行 | 直接 `JSON.stringify(…, null, 2) + '\n'` | **最终字节完全一致**：现有 `geojson.json`（39642 字符）反序列化后按执行器方式重写，逐字节相等 |
+| ZIP 能力 | `zipfile`：store / deflate / bzip2 / lzma、ZIP64 都支持 | store / deflate；其它方法与 ZIP64 报错 | 能力收窄；真实 KMZ 极小，预计不触发（未验） |
+| XML 能力 | `ElementTree`：完整 XML 1.0，含 DTD 命名实体、编码声明 | 5 个命名实体 + 数字实体、CDATA/注释/PI；不处理 DTD 内部子集 | 上述以外的特性报错而非静默忽略 |
+| 文本编码 | 按 XML 声明 / BOM 自动判编码 | 固定 UTF-8 | 非 UTF-8 声明的 KML 会乱码或报错（上游未验） |
+| 只转换 `Point` | 是 | 是（原样保留） | 同一已知不一致，见 §7.5 |
+| 几何覆盖顺序 | Point → LineString → Polygon，后者覆盖 | 同 | 一致 |
+| 转换脚本本身 | — | — | 三个文件（`convert_kmz_to_geojson.py`、`coordTransform_utils.py`、`requirements.txt`）已删除；单 revert 删除提交即回到 Python 路径 |
 
 ### 7.5 这条链的已知风险（未验证项）
 
-1. **真实 KMZ 未跑过**：本机无 python3，仓库里也没有 KMZ 样本；黄金用例是用「假 python3」（`PYTHON` 指向一个把 fixture 复制到输出路径的 shell 脚本）验证**编排**（下载 / 304 / 临时目录 / 回读 / 清理），**转换逻辑本身未执行**。
-2. **`doc.kml` 硬编码**：若上游导出的 KMZ 内部文件名不同（例如 `doc.kml` 之外的命名），脚本会 `KeyError`；上游实际文件名未验证。
-3. **只转换 `Point`**：`LineString` / `Polygon` 的坐标**不做 GCJ-02 偏移**。真实数据当前 127 个要素**全是 `Point`**（127/127，属性 `name` 全有、`description` 53 条），所以这条现在没有实际影响；将来若导入轨迹或面状区域，会与标点错开几百米。
-4. **上游地址只在 Secret 里**：`MAP_KMZ_URL` 的值不在仓库（本地也没有 `.env`），所以「KMZ 由哪个仓库生成」无法从代码确认；仓库内与地图有关的代码只有 `scripts/map/*.py`、`scripts/lib/sources/map.mjs`、`src/lib/footprint*.ts`、`src/pages/map.astro`。
+1. **没有与 Python 对跑过**：本机无 python3、仓库历史里也没有真实 KMZ。所谓「等价」是照 Python 源码逐条构造样本对齐（`tests/scripts/map-kmz.test.ts` 16 条 + `tests/scripts/ingest-map.test.ts` 9 条），不是新旧差分。
+2. **真实 Google My Maps 导出未验**：`doc.kml` 精确取名、KML 2.2 命名空间、`MultiGeometry`、`Data`/`ExtendedData`、ZIP64 这些分支只按源码推断。127 条真实数据的回归是「把现有 WGS 坐标反解成 GCJ 再正向转换」的闭环（逐条全等、坐标偏差 < 1e-9），证明的是坐标公式与属性映射，不证明真实 KMZ 结构能过。
+3. **只转换 `Point`**：`LineString` / `Polygon` 的坐标**不做 GCJ-02 偏移**（与旧实现一致，是已知不一致，按验收要求原样保留，代码注释已注明）。真实数据当前 127 个要素**全是 `Point`**（`name` 全有、`description` 53 条），所以现在没有实际影响；将来导入轨迹或面状区域会与标点错开几百米。
+4. **上游地址只在 Secret 里**：`MAP_KMZ_URL` 的值不在仓库（本地也没有 `.env`）。KMZ 由 Google My Maps 的 `/maps/d/kml` 导出链接打包而来（作者在旧文里记录过来源与「重庆来福士漂到长江里」的排查经过），但实际值与导出参数未在代码里确认。
 5. 页面消费的是 `properties.name` 与 `geometry`；`description` 里是原始 HTML，**不要**当游记正文来源（游记靠 Ghost 的 `#地点-<标点名>` 标签匹配）。
 
 ---
@@ -451,9 +454,10 @@ describe('example 源', () => {
 ## 12. 测试与调试清单
 
 ```bash
-npx vitest run                                    # 全部（2026-11-26 实测 37 files / 580 passed）
-npx vitest run tests/scripts/ingest-map.test.ts   # 单源（实测 8 passed）
-npx astro check                                   # 类型（246 files / 0 errors）
+npx vitest run                                    # 全部（2026-11-27 实测 38 files / 597 passed）
+npx vitest run tests/scripts/map-kmz.test.ts      # KMZ→GeoJSON 转换器（实测 16 passed）
+npx vitest run tests/scripts/ingest-map.test.ts   # 单源编排（实测 9 passed）
+npx astro check                                   # 类型（249 files / 0 errors / 0 warnings）
 node scripts/ci-local.mjs --offline               # 五步闸门（实测 5/5 PASS）
 node scripts/check-public-data.mjs                # 隐私闸门
 ```
@@ -476,12 +480,12 @@ node scripts/check-public-data.mjs                # 隐私闸门
 
 ## 13. 当前状态与未验证项（务必与结论一起读）
 
-**已完成（本地）**：10 个来源全部由 registry 驱动，`sync-data.mjs` 内的旧实现已清空；11 份契约对真实文件校验通过（`rank.status` 按设计如实判不合格，见下）；隐私闸门、泄露闸门、类型、单元测试、断网构建在本地全绿。
+**已完成（本地）**：10 个来源全部由 registry 驱动，`sync-data.mjs` 内的旧实现已清空；11 份契约对真实文件校验通过（`rank.status` 按设计如实判不合格，见下）；地图 KMZ→GeoJSON 已重写为零依赖 JS，`python3`/`shapely` 运行与 CI 安装步骤均已移除，本地测试与实际数据跑通；隐私闸门、泄露闸门、类型、单元测试、断网构建在本地全绿。
 
 **未验证（不要当成已联调）**：
 
 1. 真实上游同步：Ghost / GTS / NeoDB / Flux / intervals / map / reading 均未跑真实同步（无凭据或按约束不跑）；等价性靠「冻结输入 + 真实文件重算」。
 2. GitHub Actions 从未在本轮运行（`ci.yml` 有改动未提交至远端）。
-3. 地图转换本身（本机无 python3，见 §7.5）。
+3. 地图转换：JS 版已在本机实跑（测试与真实 127 条数据闭环），但**未与旧 Python 版对跑**（本机无 python3），也无真实 KMZ 样本，见 §7.5。
 4. 翻页与增量：`ghost` / `neodb` 仅单页 fixture；`intervals` 真实多窗口未验。
 5. `rank.status`：仓库里现存 `src/data/rank.json` 是上游错误载荷（`{"success":false,"error":"…"}`），契约会拒绝它并保留旧文件——即页面短期内仍显示 0 小时，直到上游恢复正常。
