@@ -1,5 +1,5 @@
 import { describe, expect, it, afterEach } from 'vitest';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -52,11 +52,50 @@ describe('rank：冻结输入等价（旧实现产出的 golden）', () => {
         expect(JSON.parse(readFileSync(path.join(root, 'src/data/rank.json'), 'utf8'))).toEqual(SAMPLE);
     });
 
-    it('真实 src/data/rank.json 过契约校验：0 错误（当前是 {success:false,error}）', () => {
+    it('真实 src/data/rank.json（当前是上游失败载荷）如实判为不合格，报出 error 字段', () => {
         const real = JSON.parse(readFileSync(path.join(__dirname, '..', '..', 'src', 'data', 'rank.json'), 'utf8'));
         const result = validateDataset('rank.status', real);
-        expect(result.errors).toEqual([]);
-        expect(result.ok).toBe(true);
+        expect(result.ok).toBe(false);
+        expect(result.errors.join('\n')).toMatch(/字段 error 类型是 string，要求 null\?/);
+    });
+});
+
+describe('rank：契约拦截上游错误载荷', () => {
+    const ERROR_PAYLOAD = { success: false, error: 'Unexpected end of JSON input' };
+
+    it('错误载荷 {success:false,error} 被契约拒绝（myRank 缺失时页面会静默显示 0 小时）', () => {
+        const result = validateDataset('rank.status', ERROR_PAYLOAD);
+        expect(result.ok).toBe(false);
+        expect(result.errors.join('\n')).toMatch(/字段 error 类型是 string，要求 null\?/);
+    });
+
+    it('正常载荷 {myRank:{totalDuration}} 通过校验且能落地；空对象也能过（myRank 可选）', async () => {
+        expect(validateDataset('rank.status', { myRank: { totalDuration: 12345 } }).ok).toBe(true);
+        expect(validateDataset('rank.status', { success: true, myRank: { totalDuration: 12345 } }).ok).toBe(true);
+        expect(validateDataset('rank.status', {}).ok).toBe(true);
+
+        const root = makeProject();
+        const { fetchImpl } = stubFetch(200, { success: true, myRank: { totalDuration: 12345 } });
+        const result = await runIngestSource('rank', { projectRoot: root, env: {}, fetchImpl, log: quiet });
+        expect(result.outputs[0].data).toEqual({ success: true, myRank: { totalDuration: 12345 } });
+        expect(JSON.parse(readFileSync(path.join(root, 'src/data/rank.json'), 'utf8'))).toEqual({ success: true, myRank: { totalDuration: 12345 } });
+    });
+
+    it('远端返回错误载荷 → 整源不写盘：旧文件字节不变、无 .tmp 残留、按可选源只告警', async () => {
+        const seed = { success: true, myRank: { totalDuration: 1 } };
+        const root = makeProject(seed);
+        const file = path.join(root, 'src/data/rank.json');
+        const before = readFileSync(file, 'utf8');
+        const warns: string[] = [];
+        const { fetchImpl } = stubFetch(200, ERROR_PAYLOAD);
+        await expect(
+            runIngestSource('rank', { projectRoot: root, env: {}, fetchImpl, log: { ...quiet, warn: (line: string) => warns.push(line) } })
+        ).rejects.toMatchObject({ code: 'contract' });
+        expect(readFileSync(file, 'utf8')).toBe(before);
+        // 写入是原子的（临时文件 + rename），失败后目录里只剩原来那一个文件
+        expect(readdirSync(path.join(root, 'src/data'))).toEqual(['rank.json']);
+        // 退出码：可选源失败只记 warn，runSources 不会把它算成硬失败
+        expect(classifyFailure('rank')).toBe('warn');
     });
 });
 
@@ -66,7 +105,7 @@ describe('rank：可选源失败语义', () => {
     });
 
     it('上游 500 → 告警 + 保留旧文件，不抛错', async () => {
-        const seed = { success: false, error: '旧数据' };
+        const seed = { success: true, myRank: { totalDuration: 999 } }; // 旧数据本身必须是合格载荷
         const root = makeProject(seed);
         const file = path.join(root, 'src/data/rank.json');
         const before = readFileSync(file, 'utf8');
