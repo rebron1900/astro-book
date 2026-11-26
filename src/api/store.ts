@@ -90,8 +90,19 @@ export type TimelineEntry =
     // 影视：Emby 观看记录（一部电影 / 一集剧），与阅读合并成「阅读与影视」。
     | { kind: 'media'; time: number; data: EmbyEntry };
 
-// neodb.visibility: 0=public 1=unlisted 2=private；只展示公开标记（值在 JSON 中是数字）
-const neodbMarks = (neodbJson as unknown as NeoDBResponse).data.filter((m) => Number(m.visibility ?? 0) === 0);
+// neodb.visibility: 0=public 1=unlisted 2=private；只展示明确标为公开（0）的标记。
+// 与 Memos 同一原则：缺字段/非法值一律当非公开，不兜底成 public（兜底公开等于默认泄露）。
+export function isPublishableNeodbMark(mark: { visibility?: unknown } | null | undefined): boolean {
+    if (!mark) return false;
+    const raw = mark.visibility;
+    // 只认数字 0 或纯数字字符串 '0'；null/布尔/数组/对象/空白串一律不发布
+    if (typeof raw === 'number') return raw === 0;
+    if (typeof raw !== 'string') return false;
+    const trimmed = raw.trim();
+    return trimmed !== '' && Number(trimmed) === 0;
+}
+
+const neodbMarks = (neodbJson as unknown as NeoDBResponse).data.filter((m) => isPublishableNeodbMark(m));
 
 export const timeline: TimelineEntry[] = buildTimeline([
     ...postsAll.map((p) => ({ kind: 'post' as const, time: new Date(p.published_at ?? p.created_at).getTime(), data: p })),

@@ -29,7 +29,7 @@ import { fileURLToPath } from 'node:url';
 import { buildFluxSnapshot, PARSING_ERROR_LIMIT } from '../src/lib/flux-snapshot.ts';
 import { discoverFeedUrl, parseFeedXml } from '../src/lib/feed-xml.ts';
 import { applyRouteCache, pendingRouteIds, polylineFromMap, sortActivities, toActivity, yearWindows } from '../src/lib/intervals.ts';
-import { DEFAULT_MEMO_VISIBILITIES, filterPublishableMemos, parseMemoVisibilities } from '../src/lib/privacy.ts';
+import { DEFAULT_MEMO_VISIBILITIES, filterPublishableMemos, normalizeMemoVisibility, parseMemoVisibilities } from '../src/lib/privacy.ts';
 import { isIngestSource, listIngestSources, sources as ingestRegistry } from './lib/ingest/registry.mjs';
 import { runIngestSource } from './lib/ingest/executor.mjs';
 
@@ -334,7 +334,7 @@ const RESOURCE_FIELDS = ['type', 'filename', 'link', 'externalLink'];
 
 // 隐私边界：非公开 Memos 绝不落地。规则在 src/lib/privacy.ts（store 读取时复用同一套函数）。
 // 默认只保留 visibility === 'PUBLIC'；放开必须显式给 MEMOS_PUBLISH_VISIBILITIES。
-function trimMemos(memos, allowedVisibilities) {
+export function trimMemos(memos, allowedVisibilities) {
     const allowed = Array.isArray(allowedVisibilities) && allowedVisibilities.length ? allowedVisibilities : undefined;
     const publishable = filterPublishableMemos(memos, allowed ?? DEFAULT_MEMO_VISIBILITIES);
     const dropped = memos.length - publishable.length;
@@ -587,7 +587,7 @@ function gtsResourceList(status) {
         }));
 }
 
-function gtsStatusToMemo(status, owner) {
+export function gtsStatusToMemo(status, owner) {
     const source = status.reblog || status;
     const author = status.account || owner || {};
     const sourceAuthor = source.account || author;
@@ -602,7 +602,9 @@ function gtsStatusToMemo(status, owner) {
         updatedTs: gtsTimestamp(status.edited_at || status.created_at),
         creatorName: author.display_name || author.username || '1900',
         resourceList: gtsResourceList(source),
-        visibility: String(status.visibility || 'public').toUpperCase(),
+        // 归一化复用 src/lib/privacy.ts 的同一套规则：缺字段、非字符串、空串一律落成 ''（= 非公开），
+        // 绝不把上游缺失兜底成 public —— 兜底公开等于默认泄露，与规范相反。
+        visibility: normalizeMemoVisibility(status.visibility),
         pinned: Boolean(status.pinned),
         type: 'memo'
     };
@@ -663,6 +665,7 @@ async function syncMemos(env, siteConfig) {
     }
 
     // 兼容旧的 Memos API；新配置应优先使用 GOTOSOCIAL_URL + GOTOSOCIAL_TOKEN。
+    // visibility 原样透传（不做任何默认值），缺失/非法值交给 trimMemos 按同一套规则拦下。
     const all = [];
     let offset = 0;
     const PAGE = 50;

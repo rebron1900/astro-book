@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { allContent, publicMemos, timeline, timelineVisible } from '../../src/api/store';
+import { allContent, isPublishableNeodbMark, publicMemos, timeline, timelineVisible } from '../../src/api/store';
 import { isPublishableMemo } from '../../src/lib/privacy';
 import memosJson from '../../src/data/memos.json';
+import neodbJson from '../../src/data/neodb.json';
 
 /**
  * M1 消费者侧双保险：store 只暴露可发布的 memos。
@@ -35,6 +36,41 @@ describe('store 只暴露公开 Memos', () => {
         expect(memos.length).toBeGreaterThan(0);
         for (const memo of memos) {
             expect(isPublishableMemo(memo as { visibility?: string })).toBe(true);
+        }
+    });
+});
+
+/**
+ * NeoDB 标记是同一类「默认放行」隐患：原实现 `Number(m.visibility ?? 0) === 0`
+ * 把缺字段当成 0（=public）。这里固定住「缺字段/非法值一律不发布」。
+ */
+describe('store 只展示明确公开的 NeoDB 标记', () => {
+    it('缺字段、null、空串、非数字一律不发布', () => {
+        for (const mark of [{}, { visibility: undefined }, { visibility: null }, { visibility: '' }, { visibility: '   ' }, { visibility: 'PUBLIC' }, { visibility: {} }, { visibility: [] }]) {
+            expect(isPublishableNeodbMark(mark)).toBe(false);
+        }
+        expect(isPublishableNeodbMark(null)).toBe(false);
+        expect(isPublishableNeodbMark(undefined)).toBe(false);
+    });
+
+    it('只有明确 0（public）发布；1=unlisted、2=private 均不发布', () => {
+        expect(isPublishableNeodbMark({ visibility: 0 })).toBe(true);
+        expect(isPublishableNeodbMark({ visibility: '0' })).toBe(true);
+        expect(isPublishableNeodbMark({ visibility: 1 })).toBe(false);
+        expect(isPublishableNeodbMark({ visibility: 2 })).toBe(false);
+        expect(isPublishableNeodbMark({ visibility: '2' })).toBe(false);
+    });
+
+    it('时间线与 /douban 消费的 neodb 条目全部显式公开，且与数据文件的显式 0 条数一致', () => {
+        const marks = timeline.filter((entry) => entry.kind === 'neodb');
+        const expected = (neodbJson as unknown as { data: Array<{ visibility?: unknown }> }).data.filter(
+            (mark) => mark.visibility === 0 || mark.visibility === '0'
+        ).length;
+        expect(marks.length).toBeGreaterThan(0);
+        expect(marks).toHaveLength(expected);
+        for (const entry of marks) {
+            expect(isPublishableNeodbMark(entry.data)).toBe(true);
+            expect(String((entry.data as { visibility?: unknown }).visibility)).toBe('0');
         }
     });
 });

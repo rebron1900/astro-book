@@ -14,6 +14,7 @@ import {
     parseMemoVisibilities
 } from '../../src/lib/privacy';
 import { countFeatureHits, countVisibilities, featuresOf, listTextFiles, referenceFeatures } from '../../scripts/check-public-data.mjs';
+import { gtsStatusToMemo, trimMemos } from '../../scripts/sync-data.mjs';
 
 /**
  * M1 隐私过滤：来源侧与消费者侧共用 src/lib/privacy.ts。
@@ -80,6 +81,49 @@ describe('Memos 可见性规则（src/lib/privacy.ts）', () => {
     it('去标签：脚本/样式内容不参与特征提取', () => {
         const html = '<p>正文<b>加粗</b></p><script>alert(1)</script><style>.a{}</style>';
         expect(memoPlainText(html)).toBe('正文 加粗');
+    });
+});
+
+describe('来源映射不兜底公开（scripts/sync-data.mjs）', () => {
+    const baseStatus = {
+        id: 'gts-missing-visibility',
+        content: '<p>这条上游没有给 visibility</p>',
+        created_at: '2026-11-26T08:00:00.000Z',
+        account: { display_name: '1900', username: 'owner', url: 'https://gts.test/@owner' }
+    };
+
+    it('GoToSocial status 缺 visibility 时映射为空值，不兜底成 PUBLIC', () => {
+        const memo = gtsStatusToMemo(baseStatus);
+        expect(memo.visibility).toBe('');
+        expect(isPublishableMemo(memo)).toBe(false);
+    });
+
+    it('缺 visibility 的 memo 落地时被丢弃（trimMemos 输出里没有它），store 侧也拿不到', () => {
+        const dropped = gtsStatusToMemo(baseStatus);
+        const kept = gtsStatusToMemo({ ...baseStatus, id: 'gts-public', visibility: 'PUBLIC' });
+        const landed = trimMemos([dropped, kept], undefined);
+        expect(landed.map((memo) => memo.id)).toEqual(['gts-public']);
+
+        // 即使绕过落地把原始映射直接写进数据文件，store 侧同一套规则仍会拦下
+        expect(filterPublishableMemos([dropped]).map((memo) => memo.id)).toEqual([]);
+    });
+
+    it('非法 visibility（null / 数字 / 对象 / 数组）同样落成空值且不可发布', () => {
+        for (const visibility of [null, undefined, 1, 0, {}, ['PUBLIC'], '   ']) {
+            const memo = gtsStatusToMemo({ ...baseStatus, visibility });
+            expect(normalizeMemoVisibility(memo.visibility)).toBe('');
+            expect(isPublishableMemo(memo)).toBe(false);
+        }
+    });
+
+    it('显式给的 public 仍归一化成 PUBLIC 并放行（不是把过滤改成一律拦）', () => {
+        const memo = gtsStatusToMemo({ ...baseStatus, visibility: ' public ' });
+        expect(memo.visibility).toBe('PUBLIC');
+        expect(trimMemos([memo], undefined).map((m) => m.id)).toEqual(['gts-missing-visibility']);
+    });
+
+    it('整批都不可发布时仍然硬失败（不拿空数组覆盖已有文件）', () => {
+        expect(() => trimMemos([gtsStatusToMemo(baseStatus)], undefined)).toThrow(/拒绝用空数据覆盖已有文件/);
     });
 });
 
