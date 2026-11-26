@@ -115,8 +115,8 @@ export const contracts = {
                     feature_image_alt: 'string|null|object',
                     feature_image_caption: 'string|null',
                     published_at: 'string|null',
-                    updated_at: 'string?',
-                    created_at: 'string?',
+                    updated_at: 'string|null',
+                    created_at: 'string|null',
                     reading_time: 'number?',
                     tags: 'array',
                     authors: 'array',
@@ -136,8 +136,8 @@ export const contracts = {
                     feature_image_alt: 'string|null|object',
                     feature_image_caption: 'string|null',
                     published_at: 'string|null',
-                    updated_at: 'string?',
-                    created_at: 'string?',
+                    updated_at: 'string|null',
+                    created_at: 'string|null',
                     reading_time: 'number?',
                     tags: 'array',
                     authors: 'array',
@@ -149,11 +149,11 @@ export const contracts = {
                 key: 'id',
                 item: {
                     id: 'string',
-                    slug: 'string?',
-                    name: 'string?',
-                    profile_image: 'string?',
-                    cover_image: 'string?',
-                    bio: 'string?'
+                    slug: 'string|null',
+                    name: 'string|null',
+                    profile_image: 'string|null',
+                    cover_image: 'string|null',
+                    bio: 'string|null'
                 }
             },
             tags: {
@@ -177,8 +177,8 @@ export const contracts = {
                             feature_image_alt: 'string|null|object',
                             feature_image_caption: 'string|null',
                             published_at: 'string|null',
-                            updated_at: 'string?',
-                            created_at: 'string?',
+                            updated_at: 'string|null',
+                            created_at: 'string|null',
                             reading_time: 'number?',
                             tags: 'array',
                             type: 'string'

@@ -8,6 +8,7 @@
 export const sources = {
     emby: { module: '../sources/emby.mjs', optional: true },
     memos: { module: '../sources/memos.mjs', optional: false },
+    ghost: { module: '../sources/ghost.mjs', optional: false },
     imagemeta: { module: '../sources/imagemeta.mjs', optional: false }
 };
 

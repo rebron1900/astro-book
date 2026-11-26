@@ -33,21 +33,14 @@ function actualType(value) {
     return typeof value;
 }
 
-/** 单条记录字段校验；返回错误描述数组（不含值）。 */
+/** 单条记录字段校验；返回错误描述数组（不含值）。字段描述可以是类型串，也可以是数组描述（嵌套 item）。 */
 export function validateFields(record, fields) {
-    const errors = [];
     if (!record || typeof record !== 'object' || Array.isArray(record)) {
         return ['记录不是对象'];
     }
+    const errors = [];
     for (const [field, spec] of Object.entries(fields || {})) {
-        const { union, optional, raw } = parseFieldType(spec);
-        const value = record[field];
-        if (value === undefined) {
-            if (!optional) errors.push(`字段 ${field} 缺失（要求 ${raw}）`);
-            continue;
-        }
-        const type = actualType(value);
-        if (!union.includes(type)) errors.push(`字段 ${field} 类型是 ${type}，要求 ${raw}`);
+        for (const error of validateFieldValue(record[field], spec, `字段 ${field}`)) errors.push(error);
     }
     return errors;
 }

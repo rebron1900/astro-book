@@ -238,52 +238,6 @@ async function writeJson(filename, data, options = {}) {
 // 只在 JSON 中保留这些字段，控制体积；上游全量拉取后裁剪。
 // 启用新字段：往对应白名单加字段名，重跑同步即可（可逆）。
 
-// tag 详情页的 posts 列表字段（不含 html，避免 60 个 tag 重复全文）
-const TAG_POST_FIELDS = [
-    'id', 'slug', 'title', 'excerpt', 'feature_image', 'feature_image_alt', 'feature_image_caption',
-    'published_at', 'updated_at', 'created_at', 'reading_time', 'tags', 'type'
-];
-
-function trimTagPost(p) {
-    const e = pick(p, TAG_POST_FIELDS);
-    if (Array.isArray(e.tags)) e.tags = e.tags.map((t) => pick(t, TAG_FIELDS));
-    e.type = 'post';
-    return e;
-}
-
-// Ghost Post/Page 消费字段（页面渲染 + albums/rss/search/toc 等）
-const GHOST_ENTRY_FIELDS = [
-    'id', 'slug', 'title', 'html', 'excerpt',
-    'feature_image', 'feature_image_alt', 'feature_image_caption',
-    'published_at', 'updated_at', 'created_at', 'reading_time',
-    'tags', 'authors', 'type'
-];
-
-// 内嵌 tag 对象消费字段（post.tags / tag 页）
-const TAG_FIELDS = ['id', 'slug', 'name', 'visibility'];
-
-// 内嵌 author 对象消费字段
-const AUTHOR_FIELDS = ['id', 'slug', 'name', 'profile_image', 'cover_image', 'bio'];
-
-function pick(obj, fields) {
-    if (!obj || typeof obj !== 'object') return obj;
-    const out = {};
-    for (const f of fields) {
-        if (f in obj) out[f] = obj[f];
-    }
-    return out;
-}
-
-// 递归裁剪 post/page：保留条目字段 + 裁剪内嵌 tags/authors
-function trimEntry(entry, type) {
-    const e = pick(entry, GHOST_ENTRY_FIELDS);
-    if (Array.isArray(e.tags)) e.tags = e.tags.map((t) => pick(t, TAG_FIELDS));
-    if (Array.isArray(e.authors)) e.authors = e.authors.map((a) => pick(a, AUTHOR_FIELDS));
-    if (e.primary_author) e.primary_author = pick(e.primary_author, AUTHOR_FIELDS);
-    e.type = type;
-    return e;
-}
-
 // NeoDB 条目消费字段（douban 页）
 const NEODB_ITEM_FIELDS = ['id', 'title', 'category', 'cover_image_url', 'url', 'uuid', 'localized_title', 'type'];
 const NEODB_MARK_FIELDS = ['post_id', 'shelf', 'type', 'title', 'comment_text', 'rating_grade', 'item', 'created_time', 'visibility'];
@@ -328,60 +282,6 @@ function trimNeodb(data, previousItems = new Map()) {
 }
 
 // ---------- 数据源 ----------
-async function syncGhost(env) {
-    const { TSGhostContentAPI } = await import('@ts-ghost/content-api');
-    const api = new TSGhostContentAPI(env.GHOST_API_URL, env.GHOST_API_KEY, 'v5.0');
-    const postLimit = parseInt(env.GHOST_API_POST_LIMIT || '9999', 10);
-
-    const settings = await api.settings.fetch();
-
-    // posts
-    const posts = [];
-    let cursor = await api.posts.browse().include({ authors: true, tags: true }).paginate();
-    if (cursor.current.success) posts.push(...cursor.current.data);
-    while (cursor.next && posts.length < postLimit) {
-        cursor = await cursor.next.paginate();
-        if (cursor.current.success) posts.push(...cursor.current.data);
-    }
-
-    // pages
-    const pages = [];
-    let pc = await api.pages.browse().include({ authors: true, tags: true }).paginate();
-    if (pc.current.success) pages.push(...pc.current.data);
-    while (pc.next) {
-        pc = await pc.next.paginate();
-        if (pc.current.success) pages.push(...pc.current.data);
-    }
-
-    // authors
-    const authorsRes = await api.authors.browse().include({ 'count.posts': true }).fetch();
-    const authors = authorsRes.success ? authorsRes.data : [];
-
-    // tags（复用已拉取 posts 避免重复请求）
-    const trimmedPosts = posts.map((p) => trimEntry(p, 'post'));
-
-    // P0 数据安全：ghost 是核心数据。若拉取结果为空（网络/认证失败被静默吞掉），拒绝写入，避免用空数据覆盖线上。
-    if (!posts.length) {
-        throw new Error('Ghost 拉取到 0 篇文章（疑似认证/网络失败），拒绝写入，保留已有数据');
-    }
-
-    const tagsRes = await api.tags.browse({ limit: 'all', order: 'count.posts desc' }).include({ 'count.posts': true }).fetch();
-    const tags = tagsRes.success
-        ? tagsRes.data.map((tag) => ({
-              ...pick(tag, [...TAG_FIELDS, 'count']),
-              posts: trimmedPosts.filter((p) => p.tags && p.tags.some((t) => t.slug === tag.slug)).map(trimTagPost)
-          }))
-        : [];
-
-    return {
-        settings: settings.success ? settings.data : null,
-        posts: trimmedPosts,
-        pages: pages.map((p) => trimEntry(p, 'page')),
-        authors: authors.map((a) => pick(a, AUTHOR_FIELDS)),
-        tags
-    };
-}
-
 function neodbKey(mark) {
     return String(mark?.post_id ?? `${mark?.item?.uuid || ''}|${mark?.created_time || ''}`);
 }
@@ -700,7 +600,6 @@ export { gtsStatusToMemo, trimMemos } from './lib/sources/memos.mjs';
 
 // ---------- 主流程 ----------
 const SOURCES = {
-    ghost: { run: (env, site) => syncGhost(env), file: 'ghost.json' },
     neodb: { run: (env) => syncNeodb(env), file: 'neodb.json' },
     flux: {
         run: (env) => syncFlux(env),

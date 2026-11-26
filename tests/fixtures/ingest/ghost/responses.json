@@ -1,0 +1,421 @@
+{
+  "apiKey": "3a18f6d4b2907e5c3a18f6d4b2",
+  "baseUrl": "https://ghost.test",
+  "bodies": {
+    "settings": {
+      "settings": {
+        "title": "只是玩玩",
+        "description": "描述",
+        "logo": null,
+        "icon": "https://cdn.test/i.png",
+        "accent_color": null,
+        "cover_image": "https://cdn.test/c.jpg",
+        "facebook": null,
+        "twitter": null,
+        "lang": "zh",
+        "timezone": "Asia/Shanghai",
+        "codeinjection_head": null,
+        "codeinjection_foot": null,
+        "navigation": [
+          {
+            "label": "首页",
+            "url": "/"
+          }
+        ],
+        "secondary_navigation": [],
+        "meta_title": null,
+        "meta_description": null,
+        "og_image": null,
+        "og_title": null,
+        "og_description": null,
+        "twitter_image": null,
+        "twitter_title": null,
+        "twitter_description": null,
+        "members_support_address": "noreply@1900.live",
+        "url": "https://1900.live/"
+      }
+    },
+    "posts": {
+      "posts": [
+        {
+          "comment_id": null,
+          "feature_image": null,
+          "feature_image_alt": null,
+          "feature_image_caption": null,
+          "featured": false,
+          "custom_excerpt": null,
+          "codeinjection_head": null,
+          "codeinjection_foot": null,
+          "og_image": null,
+          "og_title": null,
+          "og_description": null,
+          "twitter_image": null,
+          "twitter_title": null,
+          "twitter_description": null,
+          "visibility": "public",
+          "custom_template": null,
+          "canonical_url": null,
+          "access": true,
+          "comments": false,
+          "email_subject": null,
+          "meta_title": null,
+          "meta_description": null,
+          "id": "p1",
+          "slug": "post-one",
+          "title": "第一篇",
+          "html": "<p>正文一</p>",
+          "excerpt": "摘要一",
+          "plaintext": "正文一",
+          "reading_time": 2,
+          "created_at": "2026-11-01T10:00:00.000+08:00",
+          "updated_at": "2026-11-02T10:00:00.000+08:00",
+          "published_at": "2026-11-01T10:05:00.000+08:00",
+          "authors": [
+            {
+              "id": "a1",
+              "slug": "1900",
+              "name": "1900",
+              "profile_image": "https://cdn.test/p.png",
+              "cover_image": null,
+              "bio": "写字的人",
+              "website": null,
+              "location": null,
+              "facebook": null,
+              "twitter": null,
+              "url": "https://1900.live/author/1900/",
+              "meta_title": null,
+              "meta_description": null,
+              "count": {
+                "posts": 2
+              }
+            }
+          ],
+          "tags": [
+            {
+              "id": "t1",
+              "slug": "life",
+              "name": "生活",
+              "visibility": "public",
+              "description": null,
+              "feature_image": null,
+              "canonical_url": null,
+              "accent_color": null,
+              "url": "https://1900.live/tag/life/",
+              "codeinjection_head": null,
+              "codeinjection_foot": null,
+              "og_image": null,
+              "og_title": null,
+              "og_description": null,
+              "twitter_image": null,
+              "twitter_title": null,
+              "twitter_description": null,
+              "count": {
+                "posts": 2
+              },
+              "meta_title": null,
+              "meta_description": null
+            }
+          ],
+          "primary_author": {
+            "id": "a1",
+            "slug": "1900",
+            "name": "1900",
+            "profile_image": "https://cdn.test/p.png",
+            "cover_image": null,
+            "bio": "写字的人",
+            "website": null,
+            "location": null,
+            "facebook": null,
+            "twitter": null,
+            "url": "https://1900.live/author/1900/",
+            "meta_title": null,
+            "meta_description": null,
+            "count": {
+              "posts": 2
+            }
+          },
+          "primary_tag": {
+            "id": "t1",
+            "slug": "life",
+            "name": "生活",
+            "visibility": "public",
+            "description": null,
+            "feature_image": null,
+            "canonical_url": null,
+            "accent_color": null,
+            "url": "https://1900.live/tag/life/",
+            "codeinjection_head": null,
+            "codeinjection_foot": null,
+            "og_image": null,
+            "og_title": null,
+            "og_description": null,
+            "twitter_image": null,
+            "twitter_title": null,
+            "twitter_description": null,
+            "count": {
+              "posts": 2
+            },
+            "meta_title": null,
+            "meta_description": null
+          },
+          "url": "https://1900.live/post-one/"
+        },
+        {
+          "comment_id": null,
+          "feature_image": null,
+          "feature_image_alt": null,
+          "feature_image_caption": null,
+          "featured": false,
+          "custom_excerpt": null,
+          "codeinjection_head": null,
+          "codeinjection_foot": null,
+          "og_image": null,
+          "og_title": null,
+          "og_description": null,
+          "twitter_image": null,
+          "twitter_title": null,
+          "twitter_description": null,
+          "visibility": "public",
+          "custom_template": null,
+          "canonical_url": null,
+          "access": true,
+          "comments": false,
+          "email_subject": null,
+          "meta_title": null,
+          "meta_description": null,
+          "id": "p2",
+          "slug": "post-two",
+          "title": "第二篇",
+          "html": "<p>正文二</p>",
+          "excerpt": "摘要二",
+          "plaintext": "正文二",
+          "reading_time": 1,
+          "created_at": "2026-11-03T10:00:00.000+08:00",
+          "updated_at": null,
+          "published_at": null,
+          "authors": [
+            {
+              "id": "a1",
+              "slug": "1900",
+              "name": "1900",
+              "profile_image": "https://cdn.test/p.png",
+              "cover_image": null,
+              "bio": "写字的人",
+              "website": null,
+              "location": null,
+              "facebook": null,
+              "twitter": null,
+              "url": "https://1900.live/author/1900/",
+              "meta_title": null,
+              "meta_description": null,
+              "count": {
+                "posts": 2
+              }
+            }
+          ],
+          "tags": [
+            {
+              "id": "t2",
+              "slug": "tech",
+              "name": "技术",
+              "visibility": "public",
+              "description": null,
+              "feature_image": null,
+              "canonical_url": null,
+              "accent_color": null,
+              "url": "https://1900.live/tag/tech/",
+              "codeinjection_head": null,
+              "codeinjection_foot": null,
+              "og_image": null,
+              "og_title": null,
+              "og_description": null,
+              "twitter_image": null,
+              "twitter_title": null,
+              "twitter_description": null,
+              "count": {
+                "posts": 1
+              },
+              "meta_title": null,
+              "meta_description": null
+            }
+          ],
+          "url": "https://1900.live/post-two/"
+        }
+      ],
+      "meta": {
+        "pagination": {
+          "page": 1,
+          "pages": 1,
+          "limit": 15,
+          "total": 2,
+          "prev": null,
+          "next": null
+        }
+      }
+    },
+    "pages": {
+      "pages": [
+        {
+          "comment_id": null,
+          "feature_image": null,
+          "feature_image_alt": null,
+          "feature_image_caption": null,
+          "featured": false,
+          "custom_excerpt": null,
+          "codeinjection_head": null,
+          "codeinjection_foot": null,
+          "og_image": null,
+          "og_title": null,
+          "og_description": null,
+          "twitter_image": null,
+          "twitter_title": null,
+          "twitter_description": null,
+          "visibility": "public",
+          "custom_template": null,
+          "canonical_url": null,
+          "access": true,
+          "comments": false,
+          "email_subject": null,
+          "meta_title": null,
+          "meta_description": null,
+          "id": "g1",
+          "slug": "about",
+          "title": "关于",
+          "html": "<p>关于本站</p>",
+          "excerpt": "关于本站",
+          "plaintext": "关于本站",
+          "reading_time": 1,
+          "created_at": "2026-10-01T10:00:00.000+08:00",
+          "updated_at": "2026-10-02T10:00:00.000+08:00",
+          "published_at": "2026-10-01T10:05:00.000+08:00",
+          "authors": [
+            {
+              "id": "a1",
+              "slug": "1900",
+              "name": "1900",
+              "profile_image": "https://cdn.test/p.png",
+              "cover_image": null,
+              "bio": "写字的人",
+              "website": null,
+              "location": null,
+              "facebook": null,
+              "twitter": null,
+              "url": "https://1900.live/author/1900/",
+              "meta_title": null,
+              "meta_description": null,
+              "count": {
+                "posts": 2
+              }
+            }
+          ],
+          "tags": [],
+          "url": "https://1900.live/about/"
+        }
+      ],
+      "meta": {
+        "pagination": {
+          "page": 1,
+          "pages": 1,
+          "limit": 15,
+          "total": 1,
+          "prev": null,
+          "next": null
+        }
+      }
+    },
+    "authors": {
+      "authors": [
+        {
+          "id": "a1",
+          "slug": "1900",
+          "name": "1900",
+          "profile_image": "https://cdn.test/p.png",
+          "cover_image": null,
+          "bio": "写字的人",
+          "website": null,
+          "location": null,
+          "facebook": null,
+          "twitter": null,
+          "url": "https://1900.live/author/1900/",
+          "meta_title": null,
+          "meta_description": null,
+          "count": {
+            "posts": 2
+          }
+        }
+      ],
+      "meta": {
+        "pagination": {
+          "page": 1,
+          "pages": 1,
+          "limit": 15,
+          "total": 1,
+          "prev": null,
+          "next": null
+        }
+      }
+    },
+    "tags": {
+      "tags": [
+        {
+          "id": "t1",
+          "slug": "life",
+          "name": "生活",
+          "visibility": "public",
+          "description": null,
+          "feature_image": null,
+          "canonical_url": null,
+          "accent_color": null,
+          "url": "https://1900.live/tag/life/",
+          "codeinjection_head": null,
+          "codeinjection_foot": null,
+          "og_image": null,
+          "og_title": null,
+          "og_description": null,
+          "twitter_image": null,
+          "twitter_title": null,
+          "twitter_description": null,
+          "count": {
+            "posts": 2
+          },
+          "meta_title": null,
+          "meta_description": null
+        },
+        {
+          "id": "t2",
+          "slug": "tech",
+          "name": "技术",
+          "visibility": "public",
+          "description": null,
+          "feature_image": null,
+          "canonical_url": null,
+          "accent_color": null,
+          "url": "https://1900.live/tag/tech/",
+          "codeinjection_head": null,
+          "codeinjection_foot": null,
+          "og_image": null,
+          "og_title": null,
+          "og_description": null,
+          "twitter_image": null,
+          "twitter_title": null,
+          "twitter_description": null,
+          "count": {
+            "posts": 1
+          },
+          "meta_title": null,
+          "meta_description": null
+        }
+      ],
+      "meta": {
+        "pagination": {
+          "page": 1,
+          "pages": 1,
+          "limit": 15,
+          "total": 2,
+          "prev": null,
+          "next": null
+        }
+      }
+    }
+  }
+}
