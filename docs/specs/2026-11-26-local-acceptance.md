@@ -325,6 +325,8 @@ HTTP 实测（18:31）：
 | 工作区 | 仅 `?? node_modules`（符号链接，非本轮引入） |
 | `src/` 与 `src/data/` 自 `630519c` | **0 行改动**（`git diff --stat` 为空） |
 | push / merge / rebase / 上线 | **一件没做** |
+| 提交总数（含本节文档提交 `58df44b`） | **30** |
+| 独立复核覆盖 | 到 **`8a570a8`** 为止的最后一个代码提交（明鉴：可收尾、0 阻塞；A 批/B 批/上次两轮返工/本轮定点，共 5 份报告）。本节文档提交本身不含代码，未单独复核。 |
 
 ### 15.2 本轮提交（每源一个，可单源 revert）
 
@@ -418,5 +420,6 @@ node scripts/check-public-data.mjs   → 非公开记录 0 条（memos PUBLIC 26
 
 - 回滚：按源 `git revert <commit>` 即可，各提交只碰自己的模块 + `registry.mjs` + 自己那段 `sync-data.mjs`；框架 `3a24124` 需最后回滚。整轮回滚 `git reset --hard 630519c`（会丢本轮全部迁移，不推荐）。
 - 合入前必须做：`git rebase origin/main`（唯一冲突面 `src/data/memos.json`）→ 再跑一次 `ci-local`（不带 `--offline`）+ 隐私闸门 → push。以上均待授权。
-- 独立复核报告：`/data/workspace/bots/明鉴/reviews/2026-11-26-A-batch-0b3487a.md`、`...-B-batch-c2a2848.md`、`...-final-86bb735-rank-contract.md`。
+- 独立复核报告：`/data/workspace/bots/明鉴/reviews/2026-11-26-A-batch-0b3487a.md`、`...-B-batch-c2a2848.md`、`...-final-86bb735-rank-contract.md`、`...-final-8a570a8.md`。
+- 终轮复核对 `8a570a8` 的结论：可收尾、0 阻塞；两条护栏各自有可回归的变异证明（`|null` 由 2 条测试钉住、`error:'null?'` 由 3 条钉住），恢复后 `ingest-rank` 12 passed、`astro check` 246 files / 0 errors。
 - 主检出 `astro-book` 仍是 `128e6a9`，其 TMDB 相关 `ci.yml`/`sync-emby.mjs` 改动未触碰。
