@@ -188,6 +188,54 @@ export const contracts = {
             }
         }
     },
+    // modureader 阅读汇总 → src/data/reading.json（阅读页 / 阅读卡片）；books/days 都没有稳定 id
+    'reading.digest': {
+        version: 1,
+        file: 'reading.json',
+        writeMode: 'replace',
+        allowEmpty: false,
+        description: '每日阅读汇总（总计 / 书目 / 按天明细 / 清洗告警），可选源',
+        shape: 'object',
+        countField: 'days',
+        fields: {
+            generatedAt: 'string',
+            source: 'string',
+            totals: 'object',
+            books: {
+                type: 'array',
+                item: {
+                    title: 'string',
+                    seconds: 'number',
+                    days: 'number',
+                    author: 'string?',
+                    cover: 'string?',
+                    description: 'string?',
+                    progress: 'number|null?'
+                }
+            },
+            days: {
+                type: 'array',
+                item: {
+                    date: 'string',
+                    seconds: 'number',
+                    books: {
+                        type: 'array',
+                        item: {
+                            title: 'string',
+                            seconds: 'number',
+                            highlights: 'array',
+                            author: 'string?',
+                            cover: 'string?',
+                            description: 'string?',
+                            progress: 'number|null?',
+                            progressEst: 'number?'
+                        }
+                    }
+                }
+            },
+            warnings: 'array'
+        }
+    },
     // 足迹 GeoJSON → src/data/geojson.json：FeatureCollection，features 没有稳定 id（key 省略）
     'map.geojson': {
         version: 1,

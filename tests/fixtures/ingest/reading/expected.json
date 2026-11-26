@@ -1,0 +1,60 @@
+{
+  "source": "modureader-webdav",
+  "totals": {
+    "seconds": 2700,
+    "days": 2,
+    "books": 2
+  },
+  "books": [
+    {
+      "title": "夜航西飞",
+      "seconds": 1800,
+      "days": 2,
+      "author": "柏瑞尔·马卡姆",
+      "progress": 55
+    },
+    {
+      "title": "人类简史",
+      "seconds": 900,
+      "days": 1,
+      "author": "尤瓦尔·赫拉利"
+    }
+  ],
+  "days": [
+    {
+      "date": "2026-11-21",
+      "seconds": 1500,
+      "books": [
+        {
+          "title": "人类简史",
+          "seconds": 900,
+          "highlights": [],
+          "author": "尤瓦尔·赫拉利"
+        },
+        {
+          "title": "夜航西飞",
+          "seconds": 600,
+          "highlights": [],
+          "author": "柏瑞尔·马卡姆",
+          "progress": 55,
+          "progressEst": 55
+        }
+      ]
+    },
+    {
+      "date": "2026-11-20",
+      "seconds": 1200,
+      "books": [
+        {
+          "title": "夜航西飞",
+          "seconds": 1200,
+          "highlights": [],
+          "author": "柏瑞尔·马卡姆",
+          "progress": 55,
+          "progressEst": 37
+        }
+      ]
+    }
+  ],
+  "warnings": []
+}

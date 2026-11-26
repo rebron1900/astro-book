@@ -143,10 +143,6 @@ export { gtsStatusToMemo, trimMemos } from './lib/sources/memos.mjs';
 // ---------- 主流程 ----------
 const SOURCES = {
     rank: { run: () => syncRank(), file: 'rank.json' },
-    // reading：modureader 的 WebDAV 分片库，聚合/清洗在 src/lib/reading.ts 与 scripts/lib/book-title.mjs
-    // optional：外部自建服务（NAS 上的 WebDAV）。它打吨时不应该把整轮定时任务 / 发布拖下水，
-    // 失败只告警并保留已有 reading.json。
-    reading: { run: (env) => import('./sync-reading.mjs').then((m) => m.syncReading(env)), file: 'reading.json', optional: true }
     // emby / imagemeta 已迁到模块层（scripts/lib/sources/ + registry.mjs），由执行器统一校验与写盘。
 };
 

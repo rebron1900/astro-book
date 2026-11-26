@@ -13,6 +13,7 @@ export const sources = {
     flux: { module: '../sources/flux.mjs', optional: false },
     intervals: { module: '../sources/intervals.mjs', optional: false },
     map: { module: '../sources/map.mjs', optional: false },
+    reading: { module: '../sources/reading.mjs', optional: true },
     imagemeta: { module: '../sources/imagemeta.mjs', optional: false }
 };
 

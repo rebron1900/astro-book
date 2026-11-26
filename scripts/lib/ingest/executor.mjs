@@ -227,6 +227,8 @@ function buildContext({ name, meta, env, log, projectRoot, dataDir, dryRun, time
     return {
         ctx: {
             env: injected,
+            // 只读：模块需要用「项目根」定位 src/data 里的旁路输入/产物（reading 的 override、封面目录）
+            projectRoot,
             log: Object.assign(safeLog('log'), {
                 warn: safeLog('warn'),
                 error: safeLog('error')
