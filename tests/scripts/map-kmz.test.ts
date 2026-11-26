@@ -124,6 +124,62 @@ describe('points / lines / polygons：结构与键顺序', () => {
     });
 });
 
+describe('只解压 doc.kml：其它条目忽略（Python 也只 read(\'doc.kml\')）', () => {
+    /** 把某个条目的压缩方法改成 method（本地头与中央目录各一处），用来构造「方法不支持/数据损坏」的条目。 */
+    function forceMethod(zip: Buffer, entryName: string, method: number): Buffer {
+        const copy = Buffer.from(zip);
+        const nameBytes = Buffer.from(entryName);
+        let hit = 0;
+        let from = 0;
+        for (;;) {
+            const at = copy.indexOf(nameBytes, from);
+            if (at < 0) break;
+            if (at >= 30 && copy.readUInt32LE(at - 30) === 0x04034b50) {
+                copy.writeUInt16LE(method, at - 30 + 8); // 本地头的方法字段
+                hit += 1;
+            } else if (at >= 46 && copy.readUInt32LE(at - 46) === 0x02014b50) {
+                copy.writeUInt16LE(method, at - 46 + 10); // 中央目录的方法字段
+                hit += 1;
+            }
+            from = at + nameBytes.length;
+        }
+        if (hit !== 2) throw new Error(`条目 ${entryName} 的方法字段只改到 ${hit} 处（应为 2 处）`);
+        return copy;
+    }
+
+    const kmlText = KML_HEAD(`
+        <Placemark><name>甲</name><Point><coordinates>116.5,39.9,0</coordinates></Point></Placemark>
+        <Placemark><name>乙</name><LineString><coordinates>1,1,0 2,2,0</coordinates></LineString></Placemark>`);
+    const baseline = convert(kmzOf(kmlText));
+
+    it('doc.kml + 一个 method=12(bzip2) 的条目 → 转换成功，条数与只有 doc.kml 时一致', () => {
+        const zipped = buildZip([
+            { name: 'doc.kml', data: kmlText, method: 8 },
+            { name: 'files/huge.bin', data: 'whatever', method: 12 }
+        ]);
+        const converted = convert(zipped);
+        expect(converted.features).toHaveLength(baseline.features.length);
+        expect(converted).toEqual(baseline);
+    });
+
+    it('doc.kml + deflate 的 files/x.png：成功且与基线相同；该条目即使数据损坏也不解、不报错', () => {
+        const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x01, 0x02, 0x03, 0xff, 0xfe]);
+        const withPng = buildZip([
+            { name: 'doc.kml', data: kmlText, method: 8 },
+            { name: 'files/x.png', data: png, method: 8 }
+        ]);
+        expect(convert(withPng)).toEqual(baseline);
+
+        // 同样一个 png 条目，把内容换成「声明 deflate、其实不是 deflate」的字节：
+        // 实现若去解压它，这里必然抛「解压失败」；能过就证明它被跳过了。
+        const broken = forceMethod(buildZip([
+            { name: 'doc.kml', data: kmlText, method: 8 },
+            { name: 'files/x.png', data: png, method: 0 }
+        ]), 'files/x.png', 8);
+        expect(convert(broken)).toEqual(baseline);
+    });
+});
+
 describe('异常输入：普通 Error + 中文可读', () => {
     it('非 ZIP', () => {
         expect(() => convertKmzToGeojson(Buffer.from('这不是 ZIP'))).toThrow(/不是有效的 ZIP/);

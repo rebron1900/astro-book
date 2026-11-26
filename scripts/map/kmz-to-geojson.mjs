@@ -5,6 +5,7 @@
  * 已在本轮随 JS 版一起删除，可在 git 历史里查看）的语义，
  * 不「改进」：
  *  - 只认 ZIP 里精确名为 doc.kml 的条目（store / deflate 两种压缩，其它方法报错）；
+ *  - 其它条目一律忽略：不解压、不校验压缩方法（Python 只 read('doc.kml')，同理）；
  *  - 只认 http://www.opengis.net/kml/2.2 命名空间下的元素，其它前缀/命名空间忽略；
  *  - 按文档顺序遍历 Placemark；properties.name 在前、description 在后，同名字段后者覆盖前者，
  *    元素存在但无文本 → null，元素不存在 → 该键不出现；
@@ -92,8 +93,12 @@ function readU32(bytes, offset) {
     return (bytes[offset] | (bytes[offset + 1] << 8) | (bytes[offset + 2] << 16) | (bytes[offset + 3] << 24)) >>> 0;
 }
 
-/** 解出 ZIP 的 { 文件名: 解压后的字节 }；遇到不支持的压缩方法或损坏结构直接报错。 */
-function readZipEntries(bytes) {
+/**
+ * 扫中央目录，只收集元数据 { name, method, compressedSize, localOffset }。
+ * 不解压、也不看压缩方法：Python 的 zipfile.read('doc.kml') 也只碰那一个条目，
+ * 嵌入的图片等条目无论用什么方法都不影响转换。
+ */
+function readCentralDirectory(bytes) {
     if (bytes.length < 22) throw new Error('KMZ 不是有效的 ZIP：文件太短');
     let eocd = -1;
     const stop = Math.max(0, bytes.length - 22 - 65535);
@@ -120,25 +125,30 @@ function readZipEntries(bytes) {
         const commentLength = readU16(bytes, cursor + 32);
         const localOffset = readU32(bytes, cursor + 42);
         const name = new TextDecoder('utf-8').decode(bytes.subarray(cursor + 46, cursor + 46 + nameLength));
-
-        if (readU32(bytes, localOffset) !== SIG_LOCAL) throw new Error(`KMZ 不是有效的 ZIP：条目 ${name} 的本地头损坏`);
-        const localNameLength = readU16(bytes, localOffset + 26);
-        const localExtraLength = readU16(bytes, localOffset + 28);
-        const dataStart = localOffset + 30 + localNameLength + localExtraLength;
-        const raw = bytes.subarray(dataStart, dataStart + compressedSize);
-
-        if (method === 0) entries.set(name, raw);
-        else if (method === 8) {
-            try {
-                entries.set(name, inflateRawSync(raw));
-            } catch {
-                throw new Error(`KMZ 条目 ${name} 解压失败（deflate 数据损坏）`);
-            }
-        } else throw new Error(`KMZ 条目 ${name} 使用了不支持的压缩方法 ${method}（只支持 store/deflate）`);
-
+        entries.set(name, { name, method, compressedSize, localOffset });
         cursor += 46 + nameLength + extraLength + commentLength;
     }
     return entries;
+}
+
+/** 解压指定条目（读本地头 → 校验签名 → store/deflate；其它方法报错）。只对 doc.kml 调用。 */
+function readEntry(bytes, entry) {
+    const { name, method, compressedSize, localOffset } = entry;
+    if (readU32(bytes, localOffset) !== SIG_LOCAL) throw new Error(`KMZ 不是有效的 ZIP：条目 ${name} 的本地头损坏`);
+    const localNameLength = readU16(bytes, localOffset + 26);
+    const localExtraLength = readU16(bytes, localOffset + 28);
+    const dataStart = localOffset + 30 + localNameLength + localExtraLength;
+    const raw = bytes.subarray(dataStart, dataStart + compressedSize);
+
+    if (method === 0) return raw;
+    if (method === 8) {
+        try {
+            return inflateRawSync(raw);
+        } catch {
+            throw new Error(`KMZ 条目 ${name} 解压失败（deflate 数据损坏）`);
+        }
+    }
+    throw new Error(`KMZ 条目 ${name} 使用了不支持的压缩方法 ${method}（只支持 store/deflate）`);
 }
 
 // ---------------------------------------------------------------------------
@@ -392,9 +402,11 @@ export function convertKmzToGeojson(input) {
     const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
     if (!bytes || bytes.length === 0) throw new Error('KMZ 文件为空');
 
-    const entries = readZipEntries(bytes);
-    const kmlBytes = entries.get('doc.kml');
-    if (!kmlBytes) throw new Error('KMZ 里没有 doc.kml');
+    const entries = readCentralDirectory(bytes);
+    const kmlEntry = entries.get('doc.kml');
+    if (!kmlEntry) throw new Error('KMZ 里没有 doc.kml');
+    // 只解这一个条目：其它条目（嵌入图片等）不解压、不校验方法，与 Python 行为一致
+    const kmlBytes = readEntry(bytes, kmlEntry);
 
     const kml = new TextDecoder('utf-8').decode(kmlBytes);
     const root = parseXml(kml);
