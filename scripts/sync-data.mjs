@@ -127,47 +127,6 @@ async function writeJson(filename, data, options = {}) {
 // 只在 JSON 中保留这些字段，控制体积；上游全量拉取后裁剪。
 // 启用新字段：往对应白名单加字段名，重跑同步即可（可逆）。
 
-async function syncMap(env) {
-    if (!env.MAP_KMZ_URL) throw new Error('缺少 MAP_KMZ_URL，无法同步地图数据');
-
-    const outputFile = path.join(DATA_DIR, 'geojson.json');
-    const headers = { 'User-Agent': 'astro-book-map-sync' };
-    if (env.SYNC_FULL !== '1' && existsSync(outputFile)) headers['If-Modified-Since'] = statSync(outputFile).mtime.toUTCString();
-
-    const response = await fetch(env.MAP_KMZ_URL, {
-        signal: AbortSignal.timeout(30000),
-        headers
-    });
-    if (response.status === 304 && existsSync(outputFile)) {
-        console.log('[map] 未修改，复用本地 geojson.json');
-        return JSON.parse(readFileSync(outputFile, 'utf8'));
-    }
-    if (!response.ok) throw new Error(`[map] KMZ 下载失败: HTTP ${response.status}`);
-
-    const buffer = Buffer.from(await response.arrayBuffer());
-    if (buffer.length === 0) throw new Error('[map] KMZ 文件为空');
-
-    const tempFile = path.join(tmpdir(), `astro-book-map-${Date.now()}.kmz`);
-    writeFileSync(tempFile, buffer);
-    try {
-        execFileSync(process.env.PYTHON || 'python3', [
-            path.join(__dirname, 'map', 'convert_kmz_to_geojson.py'),
-            tempFile,
-            outputFile
-        ], { stdio: 'inherit' });
-    } finally {
-        try {
-            if (existsSync(tempFile)) unlinkSync(tempFile);
-        } catch {
-            // 临时文件清理失败不影响同步结果。
-        }
-    }
-
-    const geojson = JSON.parse(readFileSync(outputFile, 'utf8'));
-    if (!Array.isArray(geojson.features)) throw new Error('[map] 转换结果缺少 features');
-    return geojson;
-}
-
 async function syncRank() {
     try {
         return await fetchJson('https://divine-cell-831a.me-d1b.workers.dev/', {}, 10000);
@@ -183,7 +142,6 @@ export { gtsStatusToMemo, trimMemos } from './lib/sources/memos.mjs';
 
 // ---------- 主流程 ----------
 const SOURCES = {
-    map: { run: (env) => syncMap(env), file: 'geojson.json' },
     rank: { run: () => syncRank(), file: 'rank.json' },
     // reading：modureader 的 WebDAV 分片库，聚合/清洗在 src/lib/reading.ts 与 scripts/lib/book-title.mjs
     // optional：外部自建服务（NAS 上的 WebDAV）。它打吨时不应该把整轮定时任务 / 发布拖下水，

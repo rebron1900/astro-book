@@ -188,6 +188,28 @@ export const contracts = {
             }
         }
     },
+    // 足迹 GeoJSON → src/data/geojson.json：FeatureCollection，features 没有稳定 id（key 省略）
+    'map.geojson': {
+        version: 1,
+        file: 'geojson.json',
+        writeMode: 'replace',
+        allowEmpty: false,
+        description: 'KMZ 转换出的足迹标点（FeatureCollection，features 无稳定 id）',
+        shape: 'object',
+        countField: 'features',
+        fields: {
+            type: 'string',
+            features: {
+                type: 'array',
+                allowEmpty: false,
+                item: {
+                    type: 'string',
+                    properties: 'object?',
+                    geometry: 'object'
+                }
+            }
+        }
+    },
     // intervals.icu 运动记录 → src/data/activities.json：升序（页面时间线按 start_date_local 从早到晚）
     'intervals.activities': {
         version: 1,

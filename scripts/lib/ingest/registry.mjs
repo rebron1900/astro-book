@@ -12,6 +12,7 @@ export const sources = {
     neodb: { module: '../sources/neodb.mjs', optional: false },
     flux: { module: '../sources/flux.mjs', optional: false },
     intervals: { module: '../sources/intervals.mjs', optional: false },
+    map: { module: '../sources/map.mjs', optional: false },
     imagemeta: { module: '../sources/imagemeta.mjs', optional: false }
 };
 
