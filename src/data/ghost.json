@@ -8,46 +8,53 @@
     "cover_image": "https://cdn.1900.live/assets/2024/01/72022年10月31日.jpg",
     "facebook": null,
     "twitter": null,
-    "lang": "zh",
+    "threads": null,
+    "bluesky": null,
+    "mastodon": null,
+    "tiktok": null,
+    "youtube": null,
+    "instagram": null,
+    "linkedin": null,
+    "locale": "zh",
     "timezone": "Asia/Hong_Kong",
     "codeinjection_head": "\n<script>\n  var commentinfo = { type: \"artalk\", name: \"1900'Blog\" ,server: \"https://artalk.1900.live\", el:\".at-comments\"}\n</script>\n",
     "codeinjection_foot": "<script defer data-domain=\"1900.live\" src=\"https://chart.1900.live/js/script.js\"></script>\n<script>\n    var gh_search_key = '78e1deb26260dcc3a2fbf7cf82';\n    var gh_search_migration = 'v2';\n    var umiData={id:\"a749d302-00ed-416c-bead-e5b5be397cf7\",\n                 url:\"https://chart.1900.live\",\n                 token:\"0pPboqBxZIQSKKZXTgIdXNwnfGduGyHa+sH8U76sbqh8/DB0hSq62y9e33Mw3QERZv34dFiXAQeRB3IOzcQV0eV/y7wg5mq3XPCnhkFgQV6sUdbaCY63++g8eIJhy2OFH/uAoJZaNzoLX4xhCNekWpq48/Y/BAJjmMEAJRdFU/Gcp1A2/Ohz1V0G2gzEgOxZ5wtXhWPNZ7vKfyVSBkeLc1kzgzBWmPmF4kP6JwWJggAoy61wV7ks6EcemfhuhU/MTxC38bP0u+1OC/ufsof818jvtXo8OdpzWFJufchRAw/k/08ImVJDvd4gibLE9nUIYeHM5ddUXbandV3UHN7l54aDmFc8/EF94g==\"}\n    var  memos_url = \"https://memos.1900.live\";\n</script>\n",
     "navigation": [
       {
-        "label": "首页 🏠",
-        "url": "/"
+        "url": "/",
+        "label": "首页 🏠"
       },
       {
-        "label": "左邻右舍 🧑‍🤝‍🧑",
-        "url": "/links/"
+        "url": "/links/",
+        "label": "左邻右舍 🧑‍🤝‍🧑"
       },
       {
-        "label": "Now 🚩",
-        "url": "/timeline/memo/"
+        "url": "/timeline/memo/",
+        "label": "Now 🚩"
       },
       {
-        "label": "书影音游 📖",
-        "url": "/douban/"
+        "url": "/douban/",
+        "label": "书影音游 📖"
       },
       {
-        "label": "关于 😎",
-        "url": "/about/"
+        "url": "/about/",
+        "label": "关于 😎"
       },
       {
-        "label": "运动&足迹 🧗‍♂️",
-        "url": "/activity/"
+        "url": "/activity/",
+        "label": "运动&足迹 🧗‍♂️"
       },
       {
-        "label": "好奇心花园🪴",
-        "url": "/garden/"
+        "url": "/garden/",
+        "label": "好奇心花园🪴"
       },
       {
-        "label": "归档 📦",
-        "url": "/archives/"
+        "url": "/archives/",
+        "label": "归档 📦"
       },
       {
-        "label": "Tags 📌",
-        "url": "/tags/"
+        "url": "/tags/",
+        "label": "Tags 📌"
       }
     ],
     "secondary_navigation": [],
@@ -60,7 +67,53 @@
     "twitter_title": null,
     "twitter_description": null,
     "members_support_address": "noreply",
-    "url": "https://cms.1900.live/"
+    "members_enabled": true,
+    "donations_enabled": false,
+    "allow_self_signup": true,
+    "members_invite_only": false,
+    "members_signup_access": "all",
+    "paid_members_enabled": false,
+    "firstpromoter_account": null,
+    "portal_button_style": "icon-only",
+    "portal_button_signup_text": "订阅",
+    "portal_button_icon": "icon-3",
+    "portal_signup_terms_html": "请放心订阅，您不会收到AD邮件，也不用担心泄露邮箱。",
+    "portal_signup_checkbox_required": false,
+    "portal_signup_gift_promotion": true,
+    "portal_account_gift_promotion": true,
+    "portal_plans": [
+      "free",
+      "monthly",
+      "yearly"
+    ],
+    "portal_default_plan": "yearly",
+    "portal_name": true,
+    "portal_button": false,
+    "comments_enabled": "all",
+    "recommendations_enabled": true,
+    "outbound_link_tagging": true,
+    "default_email_address": "me@1900.live",
+    "support_email_address": "noreply@cms.1900.live",
+    "editor_default_email_recipients": "disabled",
+    "labs": {
+      "additionalPaymentMethods": false,
+      "ActivityPub": true,
+      "selfServeArchives": true,
+      "admin7EditorImprovements": true,
+      "membersCustomFields": true,
+      "stripeCheckoutCollection": true,
+      "customFieldTypePhone": true,
+      "members": true
+    },
+    "transistor_portal_enabled": false,
+    "transistor_portal_heading": "Podcasts",
+    "transistor_portal_description": "Access your private podcast feed",
+    "transistor_portal_button_text": "View",
+    "transistor_portal_url_template": "https://partner.transistor.fm/ghost/{memberUuid}",
+    "site_uuid": "95975053-b06e-4343-9db6-18996a8fa367",
+    "lang": "zh",
+    "url": "https://cms.1900.live/",
+    "version": "6.78"
   },
   "posts": [
     {
@@ -8171,7 +8224,6 @@
       "published_at": "2024-03-20T15:57:26.000+08:00",
       "updated_at": "2024-03-20T15:57:26.000+08:00",
       "created_at": "2024-03-20T15:57:02.000+08:00",
-      "reading_time": 0,
       "tags": [
         {
           "id": "63158311cf533d1c2cf2992c",
@@ -8249,7 +8301,6 @@
       "published_at": "2024-03-05T09:00:56.000+08:00",
       "updated_at": "2024-03-05T09:00:56.000+08:00",
       "created_at": "2024-03-04T12:38:26.000+08:00",
-      "reading_time": 0,
       "tags": [
         {
           "id": "63158311cf533d1c2cf2992c",
@@ -8327,7 +8378,6 @@
       "published_at": "2024-02-19T01:00:08.000+08:00",
       "updated_at": "2024-02-19T01:00:08.000+08:00",
       "created_at": "2024-02-16T22:17:54.000+08:00",
-      "reading_time": 0,
       "tags": [
         {
           "id": "63158311cf533d1c2cf2992c",
@@ -8405,7 +8455,6 @@
       "published_at": "2024-02-04T09:00:13.000+08:00",
       "updated_at": "2024-02-04T17:13:04.000+08:00",
       "created_at": "2024-02-01T21:41:37.000+08:00",
-      "reading_time": 0,
       "tags": [
         {
           "id": "63158311cf533d1c2cf2992c",
@@ -8627,7 +8676,6 @@
       "published_at": "2024-01-20T12:47:25.000+08:00",
       "updated_at": "2024-01-20T12:47:25.000+08:00",
       "created_at": "2024-01-20T12:44:30.000+08:00",
-      "reading_time": 0,
       "tags": [
         {
           "id": "63158311cf533d1c2cf2992c",
@@ -8876,7 +8924,6 @@
       "published_at": "2024-01-06T22:41:34.000+08:00",
       "updated_at": "2024-01-07T12:09:29.000+08:00",
       "created_at": "2024-01-06T22:37:40.000+08:00",
-      "reading_time": 0,
       "tags": [
         {
           "id": "63158311cf533d1c2cf2992c",
@@ -23117,7 +23164,6 @@
       "published_at": "2014-08-07T07:06:59.000+08:00",
       "updated_at": "2018-04-13T19:27:24.000+08:00",
       "created_at": "2014-08-07T07:06:59.000+08:00",
-      "reading_time": 0,
       "tags": [],
       "authors": [
         {
@@ -23143,7 +23189,6 @@
       "published_at": "2014-08-07T07:01:44.000+08:00",
       "updated_at": "2018-04-13T19:27:24.000+08:00",
       "created_at": "2014-08-07T07:01:44.000+08:00",
-      "reading_time": 0,
       "tags": [],
       "authors": [
         {
@@ -28317,7 +28362,6 @@
       "published_at": "2012-05-01T19:05:59.000+08:00",
       "updated_at": "2018-04-13T19:36:53.000+08:00",
       "created_at": "2012-05-01T19:05:59.000+08:00",
-      "reading_time": 0,
       "tags": [],
       "authors": [
         {
@@ -29413,7 +29457,6 @@
       "published_at": "2016-09-18T09:16:00.000+08:00",
       "updated_at": "2023-05-29T10:05:50.000+08:00",
       "created_at": "2016-09-18T09:16:19.000+08:00",
-      "reading_time": 0,
       "tags": [],
       "authors": [
         {
@@ -29439,7 +29482,6 @@
       "published_at": "2024-09-14T14:14:14.000+08:00",
       "updated_at": "2024-09-14T14:14:14.000+08:00",
       "created_at": "2024-04-26T13:32:12.000+08:00",
-      "reading_time": 0,
       "tags": [
         {
           "id": "63158311cf533d1c2cf29930",
@@ -29498,7 +29540,6 @@
       "published_at": "2021-05-22T16:41:26.000+08:00",
       "updated_at": "2024-09-08T16:52:23.000+08:00",
       "created_at": "2021-05-22T16:41:15.000+08:00",
-      "reading_time": 0,
       "tags": [],
       "authors": [
         {
@@ -29524,7 +29565,6 @@
       "published_at": "2021-12-01T21:32:52.000+08:00",
       "updated_at": "2024-09-14T14:13:59.000+08:00",
       "created_at": "2021-12-01T21:32:45.000+08:00",
-      "reading_time": 0,
       "tags": [],
       "authors": [
         {
@@ -29550,7 +29590,6 @@
       "published_at": "2016-09-18T09:20:14.000+08:00",
       "updated_at": "2024-09-14T14:14:05.000+08:00",
       "created_at": "2016-09-18T09:20:14.000+08:00",
-      "reading_time": 0,
       "tags": [],
       "authors": [
         {
@@ -29609,7 +29648,6 @@
       "published_at": "2025-08-26T10:08:09.000+08:00",
       "updated_at": "2025-08-26T10:08:09.000+08:00",
       "created_at": "2025-08-26T10:07:58.000+08:00",
-      "reading_time": 0,
       "tags": [
         {
           "id": "63158311cf533d1c2cf29930",
@@ -37745,7 +37783,6 @@
           "published_at": "2024-03-20T15:57:26.000+08:00",
           "updated_at": "2024-03-20T15:57:26.000+08:00",
           "created_at": "2024-03-20T15:57:02.000+08:00",
-          "reading_time": 0,
           "tags": [
             {
               "id": "63158311cf533d1c2cf2992c",
@@ -37773,7 +37810,6 @@
           "published_at": "2024-03-05T09:00:56.000+08:00",
           "updated_at": "2024-03-05T09:00:56.000+08:00",
           "created_at": "2024-03-04T12:38:26.000+08:00",
-          "reading_time": 0,
           "tags": [
             {
               "id": "63158311cf533d1c2cf2992c",
@@ -37801,7 +37837,6 @@
           "published_at": "2024-02-19T01:00:08.000+08:00",
           "updated_at": "2024-02-19T01:00:08.000+08:00",
           "created_at": "2024-02-16T22:17:54.000+08:00",
-          "reading_time": 0,
           "tags": [
             {
               "id": "63158311cf533d1c2cf2992c",
@@ -37829,7 +37864,6 @@
           "published_at": "2024-02-04T09:00:13.000+08:00",
           "updated_at": "2024-02-04T17:13:04.000+08:00",
           "created_at": "2024-02-01T21:41:37.000+08:00",
-          "reading_time": 0,
           "tags": [
             {
               "id": "63158311cf533d1c2cf2992c",
@@ -37857,7 +37891,6 @@
           "published_at": "2024-01-20T12:47:25.000+08:00",
           "updated_at": "2024-01-20T12:47:25.000+08:00",
           "created_at": "2024-01-20T12:44:30.000+08:00",
-          "reading_time": 0,
           "tags": [
             {
               "id": "63158311cf533d1c2cf2992c",
@@ -37885,7 +37918,6 @@
           "published_at": "2024-01-06T22:41:34.000+08:00",
           "updated_at": "2024-01-07T12:09:29.000+08:00",
           "created_at": "2024-01-06T22:37:40.000+08:00",
-          "reading_time": 0,
           "tags": [
             {
               "id": "63158311cf533d1c2cf2992c",
@@ -40904,7 +40936,6 @@
           "published_at": "2024-03-20T15:57:26.000+08:00",
           "updated_at": "2024-03-20T15:57:26.000+08:00",
           "created_at": "2024-03-20T15:57:02.000+08:00",
-          "reading_time": 0,
           "tags": [
             {
               "id": "63158311cf533d1c2cf2992c",
@@ -40932,7 +40963,6 @@
           "published_at": "2024-03-05T09:00:56.000+08:00",
           "updated_at": "2024-03-05T09:00:56.000+08:00",
           "created_at": "2024-03-04T12:38:26.000+08:00",
-          "reading_time": 0,
           "tags": [
             {
               "id": "63158311cf533d1c2cf2992c",
@@ -40960,7 +40990,6 @@
           "published_at": "2024-02-19T01:00:08.000+08:00",
           "updated_at": "2024-02-19T01:00:08.000+08:00",
           "created_at": "2024-02-16T22:17:54.000+08:00",
-          "reading_time": 0,
           "tags": [
             {
               "id": "63158311cf533d1c2cf2992c",
@@ -40988,7 +41017,6 @@
           "published_at": "2024-02-04T09:00:13.000+08:00",
           "updated_at": "2024-02-04T17:13:04.000+08:00",
           "created_at": "2024-02-01T21:41:37.000+08:00",
-          "reading_time": 0,
           "tags": [
             {
               "id": "63158311cf533d1c2cf2992c",
@@ -41016,7 +41044,6 @@
           "published_at": "2024-01-20T12:47:25.000+08:00",
           "updated_at": "2024-01-20T12:47:25.000+08:00",
           "created_at": "2024-01-20T12:44:30.000+08:00",
-          "reading_time": 0,
           "tags": [
             {
               "id": "63158311cf533d1c2cf2992c",
@@ -41044,7 +41071,6 @@
           "published_at": "2024-01-06T22:41:34.000+08:00",
           "updated_at": "2024-01-07T12:09:29.000+08:00",
           "created_at": "2024-01-06T22:37:40.000+08:00",
-          "reading_time": 0,
           "tags": [
             {
               "id": "63158311cf533d1c2cf2992c",

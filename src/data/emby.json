@@ -1,5 +1,53 @@
 [
   {
+    "id": "41423",
+    "type": "movie",
+    "title": "野兽之心",
+    "meta": "2026 · 冒险",
+    "overview": "一名前陆军特种部队士兵与他退役战犬在阿拉斯加深处遭遇坠机事故后，这对老搭档必须在环境严酷的极地荒野中相互扶持，为生存而战。",
+    "minutes": 101,
+    "rating": 7.9,
+    "seriesRating": null,
+    "seriesOverview": null,
+    "played": false,
+    "playedPercent": 39,
+    "lastPlayedAt": 1795779472000,
+    "imageTag": "2fe45d925ae1a36464e1deba39e2187e_639313472224992394",
+    "cover": "/emby-cover/41423.jpg"
+  },
+  {
+    "id": "41421",
+    "type": "episode",
+    "title": "沧元图",
+    "episodeCode": "S01E105",
+    "episodeTitle": "第 105 集",
+    "minutes": 23,
+    "rating": null,
+    "seriesRating": 9.1,
+    "seriesOverview": "沧元界妖邪作乱，人族饱受摧残，主角孟川自小立下为母复仇的誓言，以镜湖道院为起点，凭借坚毅无畏的心志与利落果决的刀法身手，惩处奸恶，溃灭妖族，登顶四大道院，名满东宁府，拜上元初山，成就一代神魔。",
+    "played": false,
+    "playedPercent": 85,
+    "lastPlayedAt": 1795756137000,
+    "cover": "/emby-cover/7793.jpg"
+  },
+  {
+    "id": "41331",
+    "type": "episode",
+    "title": "沧元图",
+    "episodeCode": "S01E104",
+    "episodeTitle": "欢迎回家",
+    "overview": "孟川回归沧元界后，与风雪王在风雪关内展开的一场激烈交手。这场对决表面上剑拔弩张，实则是长辈对后辈的一次实力试炼。",
+    "minutes": 22,
+    "rating": null,
+    "seriesRating": 9.1,
+    "seriesOverview": "沧元界妖邪作乱，人族饱受摧残，主角孟川自小立下为母复仇的誓言，以镜湖道院为起点，凭借坚毅无畏的心志与利落果决的刀法身手，惩处奸恶，溃灭妖族，登顶四大道院，名满东宁府，拜上元初山，成就一代神魔。",
+    "played": true,
+    "playedPercent": 100,
+    "lastPlayedAt": 1795756131000,
+    "imageTag": "eb71ab7725026ab9d042b9361fcaa687_639313431609441167",
+    "cover": "/emby-cover/7793.jpg"
+  },
+  {
     "id": "40966",
     "type": "episode",
     "title": "灵境行者",
@@ -499,23 +547,6 @@
     "cover": "/emby-cover/7782.jpg"
   },
   {
-    "id": "41331",
-    "type": "episode",
-    "title": "沧元图",
-    "episodeCode": "S01E104",
-    "episodeTitle": "欢迎回家",
-    "overview": "孟川回归沧元界后，与风雪王在风雪关内展开的一场激烈交手。这场对决表面上剑拔弩张，实则是长辈对后辈的一次实力试炼。",
-    "minutes": 22,
-    "rating": null,
-    "seriesRating": 9.1,
-    "seriesOverview": "沧元界妖邪作乱，人族饱受摧残，主角孟川自小立下为母复仇的誓言，以镜湖道院为起点，凭借坚毅无畏的心志与利落果决的刀法身手，惩处奸恶，溃灭妖族，登顶四大道院，名满东宁府，拜上元初山，成就一代神魔。",
-    "played": false,
-    "playedPercent": 81,
-    "lastPlayedAt": 1795183741000,
-    "imageTag": "eb71ab7725026ab9d042b9361fcaa687_639308783938490801",
-    "cover": "/emby-cover/7793.jpg"
-  },
-  {
     "id": "40969",
     "type": "movie",
     "title": "小小的愿望",
@@ -859,7 +890,7 @@
     "played": true,
     "playedPercent": 100,
     "lastPlayedAt": 1794844114000,
-    "imageTag": "34bce907b3f4fcdd5ec1e682084a750b_639308783925421431",
+    "imageTag": "34bce907b3f4fcdd5ec1e682084a750b_639313431602116112",
     "cover": "/emby-cover/7793.jpg"
   },
   {
@@ -1267,7 +1298,7 @@
     "played": false,
     "playedPercent": 86,
     "lastPlayedAt": 1794073295000,
-    "imageTag": "549541cbef44f673271177fc89e05667_639308783913186371",
+    "imageTag": "549541cbef44f673271177fc89e05667_639313431586400171",
     "cover": "/emby-cover/7793.jpg"
   },
   {
@@ -1699,7 +1730,7 @@
     "played": false,
     "playedPercent": 86,
     "lastPlayedAt": 1793374547000,
-    "imageTag": "79774135e6b7a87bab04b907aaf2387f_639308783899934871",
+    "imageTag": "79774135e6b7a87bab04b907aaf2387f_639313431578279698",
     "cover": "/emby-cover/7793.jpg"
   },
   {
@@ -1716,7 +1747,7 @@
     "played": true,
     "playedPercent": 100,
     "lastPlayedAt": 1793374541000,
-    "imageTag": "c434a413ae54f3c65bf0bacc56c78c78_639308783888299581",
+    "imageTag": "c434a413ae54f3c65bf0bacc56c78c78_639313431569959305",
     "cover": "/emby-cover/7793.jpg"
   },
   {
