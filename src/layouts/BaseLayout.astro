@@ -3,6 +3,7 @@
 import type { Tag } from '@ts-ghost/content-api';
 import { settings } from '../api/store';
 import TabBar from '../components/layout/TabBar.astro';
+import MetricSprite from '../components/ui/MetricSprite.astro';
 import '../styles/book.scss';
 // ...
 const { post, slug, hideToc = false } = Astro.props as { post?: any; slug?: string; hideToc?: boolean };
@@ -60,6 +61,9 @@ const isFullWidth = post && (post.slug?.includes('albums') || post.tags?.some((t
 
         {/* 移动端底部导航（常驻 4 个 + 「更多」浮层），桌面端 display:none */}
         <TabBar />
+
+        {/* 指标图标的 <symbol> 定义，整页一份，行内只引用 */}
+        <MetricSprite />
 
         <Fragment set:html={settings?.codeinjection_foot} />
     </body>

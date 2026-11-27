@@ -1002,10 +1002,13 @@ html {
             margin: 0;
         }
 
-        /* 平铺行：没有分隔线、没有底色块，按下去才浮一层淡灰 */
+        /* 平铺行：没有分隔线、没有底色块，按下去才浮一层淡灰。
+           最后一条是「不在分组里」的导航行（花园抽屉的「返回博客」），
+           它不套 .book-section-flat，得给同一套行高与缩进才对得上 */
         .book-section-flat > ul.book-collspan > li > a,
         .book-section-flat > ul.book-collspan > li > label,
-        .book-section-flat > ul.book-collspan > li > button.menu-folder-row {
+        .book-section-flat > ul.book-collspan > li > button.menu-folder-row,
+        .book-menu-nav > .menu-flag-item > a.menu-flag {
             display: flex;
             align-items: center;
             gap: 0.6rem;
@@ -1047,7 +1050,8 @@ html {
         }
 
         .book-section-flat > ul.book-collspan > li > a .book-icon,
-        .book-section-flat > ul.book-collspan > li > button .book-icon {
+        .book-section-flat > ul.book-collspan > li > button .book-icon,
+        .book-menu-nav > .menu-flag-item > a.menu-flag .book-icon {
             flex: none;
             inline-size: 1.15rem;
             block-size: 1.15rem;

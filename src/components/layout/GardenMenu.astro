@@ -320,9 +320,12 @@ const currentId = pathname === '/garden' ? '' : pathname.replace(/^\/garden\//, 
             padding-inline-start: 0.55rem;
         }
 
+        /* 「返回博客」在窄屏里跟其它导航行完全一致：
+           不要那条只有它有的分隔线，行高/缩进由 _main.scss 那套平铺行接管 */
         .book-menu-content > nav[data-garden='true'] .garden-return-nav {
-            margin-block-start: 0.4rem;
-            padding-block-start: 0.5rem;
+            margin-block-start: 0.35rem;
+            padding-block-start: 0;
+            border-block-start: 0;
         }
 
         /* 窄屏抽屉跟博客左栏走同一套：整栏一起滚，不把目录树框成独立滚动区。

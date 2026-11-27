@@ -16,7 +16,7 @@ const href = `/golink?target=${btoa(encodeURIComponent(mark.item.id ?? `https://
 <div class="neodb-card">
     <div class="cover">
         {mark.item.cover_image_url ? (
-            <img src={mark.item.cover_image_url} alt={`${title}封面`} loading="lazy" referrerpolicy="no-referrer" />
+            <img src={mark.item.cover_image_url} alt={`${title}封面`} loading="lazy" decoding="async" referrerpolicy="no-referrer" />
         ) : (
             <span aria-hidden="true">{title.slice(0, 1)}</span>
         )}

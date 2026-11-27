@@ -11,4 +11,12 @@
     overflow: visible;
     vertical-align: -0.08em;
     opacity: 0.8;
+    /* 描边语言原本是写在每个 <svg> 上的属性；一张运动页有 1000 多个图标，
+       挪到 CSS 后每处只剩一行 <use> 引用，HTML 少一百多 KB。
+       这些属性都是可继承的，会透过 <use> 的 shadow 树作用到 symbol 里的路径上。 */
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }

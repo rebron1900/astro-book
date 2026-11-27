@@ -339,26 +339,21 @@ html[data-astro-transition] {
     }
 }
 
-/* 外壳原地不动：两张快照都改成普通混合、关掉自带的淡入淡出。
-   默认的 plus-lighter 会把两张叠加成两倍亮度，而位置尺寸完全相同的新旧快照
-   用普通混合时新图刚好盖住旧图——不闪、不亮、也不跟着整页滑走 */
-::view-transition-old(bk-bar),
-::view-transition-old(bk-tabs),
-::view-transition-old(bk-more) {
+/* 外壳原地不动：整页滑走时它们留在原地。
+   - group 关掉动画：新旧快照的盒子不去插值，不会因几像素差异被拉伸；
+   - old/new 保留默认的交叉淡入（plus-lighter 两边互补，不会变亮）：
+     标题/介绍这类内容自然淡入淡出；如果关掉动画直接叠图，半透明的玻璃面会把
+     旧文字透上来，看起来就是“重叠” */
+::view-transition-group(bk-bar),
+::view-transition-group(bk-tabs),
+::view-transition-group(bk-more) {
     animation: none;
-    mix-blend-mode: normal;
 }
 
-::view-transition-new(bk-bar),
-::view-transition-new(bk-tabs),
-::view-transition-new(bk-more) {
-    animation: none;
-    mix-blend-mode: normal;
-}
-
-/* 滑块：从旧格子补间到新格子（盒子自己插值），带一点过冲 */
+/* 滑块：从旧格子补间到新格子（盒子自己插值）。
+   时长跟整页过渡对齐（300ms），过渡一结束就能点，不把可交互时间拖到 520ms */
 ::view-transition-group(bk-glide) {
-    animation-duration: 520ms;
+    animation-duration: 300ms;
     animation-timing-function: cubic-bezier(0.34, 1.22, 0.34, 1);
 }
 
@@ -366,4 +361,10 @@ html[data-astro-transition] {
 ::view-transition-new(bk-glide) {
     animation: none;
     mix-blend-mode: normal;
+}
+
+/* 换页过渡期间页面本来就是新的 DOM，但那层快照会吞掉点击：
+   快速连点下一个底栏按钮时就没反应。放开命中测试，让它直接落到真实页面上。 */
+::view-transition {
+    pointer-events: none;
 }

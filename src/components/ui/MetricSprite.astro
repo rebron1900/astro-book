@@ -1,0 +1,30 @@
+---
+import { METRIC_ICONS } from '../../lib/metric-icons';
+
+/**
+ * 指标图标的 <symbol> 集合，整页只渲染一次（挂在 BaseLayout 里）。
+ *
+ * 为什么要 sprite：运动页 178 张卡片、每张 5–6 个指标图标，内联的话一页要写
+ * 1000 多个 <path>，HTML 多出近 300KB、多出 1000 多个节点——窄屏切页时的解析和
+ * 布局开销主要就花在这上面。改成 <symbol> + <use> 后每个图标只剩一行引用，
+ * 图标仍然跟着 currentColor 走，观感完全不变。
+ */
+---
+
+<svg class="metric-sprite" aria-hidden="true" focusable="false" width="0" height="0">
+    {
+        Object.entries(METRIC_ICONS).map(([kind, paths]) => (
+            <symbol id={`mi-${kind}`} viewBox="0 0 24 24" set:html={paths} />
+        ))
+    }
+</svg>
+
+<style>
+    /* 只做定义，不占位、不参与布局 */
+    .metric-sprite {
+        position: absolute;
+        inline-size: 0;
+        block-size: 0;
+        overflow: hidden;
+    }
+</style>
