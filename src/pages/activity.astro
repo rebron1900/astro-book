@@ -131,11 +131,10 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
         og_url={`${import.meta.env.SITE}/activity/`}
     />
 
-    <Header slot="header" title="运动与足迹" />
+    <Header slot="header" title="运动与足迹" subtitle="运动记录与足迹地图" />
     <Menu slot="menu" />
 
     <article slot="content" class="exercise-page activity-page" data-activity-mode="exercise">
-        <label for="toc-control" class="act-toc-scrim" aria-label="关闭侧边栏"></label>
         <PageIntro
             title="动起来的日子，都留下了痕迹。"
             copy="同一条时间线，两种看法：一边是每次出门的路线和成绩，一边是那些路线上真正站过的地方。地图右上角可以随时换。"

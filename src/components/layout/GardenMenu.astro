@@ -299,6 +299,33 @@ const currentId = pathname === '/garden' ? '' : pathname.replace(/^\/garden\//, 
         display: inline-block;
     }
 
+    /* 窄屏抽屉：跟着博客左栏那套平铺排版走（见 _main.scss 抽屉一节） */
+    @media screen and (max-width: 47.84rem) {
+        /* 「配色」到「花园目录」的间距按抽屉里的栏目间距收紧 */
+        .book-menu-content > nav[data-garden='true'] .book-theme {
+            margin-block: 0 0.3rem;
+        }
+
+        .book-menu-content > nav[data-garden='true'] .garden-explorer-head {
+            padding-block: 0.7rem 0.25rem;
+        }
+
+        .book-menu-content > nav[data-garden='true'] .garden-explorer-title {
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        /* 树每层只缩进一小档：296px 的抽屉里深目录也读得清 */
+        .book-menu-nav.garden-explorer .garden-children {
+            padding-inline-start: 0.55rem;
+        }
+
+        .book-menu-content > nav[data-garden='true'] .garden-return-nav {
+            margin-block-start: 0.4rem;
+            padding-block-start: 0.5rem;
+        }
+    }
+
 </style>
 
 <script>

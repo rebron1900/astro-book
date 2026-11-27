@@ -54,7 +54,7 @@ const description = isIndex ? '花园里全部标签' : `标签 ${tagTitle} 下�
         }}
     />
 
-    <Header slot="header" title={pageTitle} />
+    <Header slot="header" title={pageTitle} subtitle={isIndex ? '花园里全部标签' : `标签 ${tagTitle} 下的 ${notes.length} 篇笔记`} />
 
     <Menu slot="menu" title={pageTitle} garden />
 

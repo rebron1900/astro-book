@@ -83,7 +83,7 @@ const title = kindLabels[kind] ?? '时间线';
 <BaseLayout>
     <Head slot="head" site={settings} title={`${title} | ${settings?.title}`} og_url={import.meta.env.SITE + page.url.current} />
 
-    <Header slot="header" title={settings?.title} />
+    <Header slot="header" title={kindLabels[kind] ?? settings?.title} subtitle={settings?.description} />
 
     <Menu slot="menu" title={page.currentPage != 1 ? `${title} · 第 ${page.currentPage} 页` : title} />
 

@@ -1,20 +1,22 @@
 ---
-import { TableOfContents } from '@lucide/astro';
+import { Menu, TableOfContents } from '@lucide/astro';
 
-const { title } = Astro.props;
+const { title, subtitle } = Astro.props;
 ---
 
 <!--
     移动端悬浮顶栏：两颗圆按钮 + 中间一枚胶囊，都是磨砂玻璃。
     桌面端整块 display:none（见 .book-header），这里的结构只服务窄屏。
+    胶囊里两行：上面是标题（粗体），下面是这一页的介绍。
 -->
 <div class="bk-bar">
-    <label class="bk-btn bk-btn-logo" for="menu-control" aria-label="打开菜单">
-        <img src="/logo.svg" alt="" width="44" height="44" aria-hidden="true" />
+    <label class="bk-btn" for="menu-control" aria-label="打开菜单">
+        <Menu class="bk-icon" aria-hidden="true" />
     </label>
 
     <div class="bk-pill">
         <strong class="bk-title" title={title}>{title}</strong>
+        {subtitle && <span class="bk-subtitle" title={subtitle}>{subtitle}</span>}
     </div>
 
     <label class="bk-btn" for="toc-control" aria-label="打开目录">

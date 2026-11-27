@@ -57,7 +57,7 @@ const lostReasonLabels = { error: '抓取失败', empty: '暂无文章', disable
 
 <BaseLayout post={fullWidthPage} hideToc>
     <Head slot="head" post={page} site={settings} title={`${page?.title || '友邻'} | ${settings?.title} - ${settings?.description}`} />
-    <Header slot="header" title="友邻" />
+    <Header slot="header" title="友邻" subtitle={`${totalFriends} 位友邻的最新动态`} />
     <Menu slot="menu" />
 
     <article slot="content" class="markdown book-article pv-page">

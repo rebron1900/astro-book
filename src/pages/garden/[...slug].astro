@@ -117,7 +117,7 @@ const childFolders = props.childFolders ?? [];
                 title={`${folderName} | 花园 · ${settings?.title ?? ''}`}
             />
 
-            <Header slot="header" title={folderName} />
+            <Header slot="header" title={folderName} subtitle={`${props.childNotes?.length ?? 0} 篇笔记${props.childFolders?.length ? ` · ${props.childFolders.length} 个子目录` : ''}`} />
 
             <Menu slot="menu" title={folderName} garden />
 

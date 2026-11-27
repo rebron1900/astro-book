@@ -49,7 +49,7 @@ const postTotal = postIds.size;
 <BaseLayout post={page}>
     <Head slot="head" post={page} site={settings} title={page?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
 
-    <Header slot="header" title={page?.title} />
+    <Header slot="header" title={page?.title} subtitle={page?.excerpt} />
     <Menu slot="menu" />
 
     <div slot="content" class="markdown book-article tags-page">

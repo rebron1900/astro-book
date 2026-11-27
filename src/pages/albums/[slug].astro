@@ -40,7 +40,7 @@ const yearlySolarTermGroups = getSolarTermGroups(album);
 <BaseLayout post={page}>
     <Head slot="head" post={page} site={settings} title={`${album.name} | ${settings?.title} - 相册`} />
 
-    <Header slot="header" title={`${album.name} 相册`} />
+    <Header slot="header" title={`${album.name} 相册`} subtitle={page.excerpt} />
     <Menu slot="menu" />
     <article slot="content" class="markdown book-article">
         <h1 class="book-title page-title">{album.name}</h1>

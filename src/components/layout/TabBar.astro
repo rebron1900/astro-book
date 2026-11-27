@@ -25,9 +25,23 @@ const ICONS: Record<string, typeof HouseHeart> = {
 
 // 当前页在「更多」里时，点亮「更多」这一格
 const moreActive = more.some((item) => item.active);
+
+const count = tabs.length + 1;
+// 激活的是第几格（-1 = 这一页不属于任何一格，比如文章页），滑块的初始位置靠它
+const activeIndex = [...tabs.map((item) => item.active), moreActive].findIndex(Boolean);
 ---
 
-<nav class="bk-tabs" aria-label="底部导航">
+<nav
+    class:list={['bk-tabs', { 'is-idle': activeIndex < 0 }]}
+    aria-label="底部导航"
+    data-bk-tabs
+    data-bk-index={activeIndex}
+    style={`--bk-index:${Math.max(activeIndex, 0)};--bk-count:${count}`}
+    transition:persist="bk-tabs"
+>
+    {/* 液态玻璃滑块：整格包裹当前项，切页时横向滑过去 */}
+    <span class="bk-glide" aria-hidden="true"><span class="bk-glide-fill"></span></span>
+
     {
         tabs.map((item) => {
             const Icon = ICONS[item.url] ?? HouseHeart;
@@ -35,6 +49,7 @@ const moreActive = more.some((item) => item.active);
                 <a
                     class:list={['bk-tab', { 'is-active': item.active }]}
                     href={item.url}
+                    data-nav={item.url}
                     aria-current={item.active ? 'page' : undefined}
                 >
                     <span class="bk-tab-icon">
@@ -50,9 +65,11 @@ const moreActive = more.some((item) => item.active);
         type="button"
         class:list={['bk-tab', 'bk-tab-more', { 'is-active': moreActive }]}
         data-bk-more-open
+        data-more-nav={more.map((item) => item.url).join('|')}
         aria-expanded="false"
         aria-controls="bk-more-sheet"
         aria-haspopup="dialog"
+        aria-current={moreActive ? 'page' : undefined}
     >
         <span class="bk-tab-icon">
             <Ellipsis aria-hidden="true" />
@@ -61,7 +78,14 @@ const moreActive = more.some((item) => item.active);
     </button>
 </nav>
 
-<div class="bk-more" id="bk-more-sheet" role="dialog" aria-label="更多导航" aria-hidden="true">
+<div
+    class="bk-more"
+    id="bk-more-sheet"
+    role="dialog"
+    aria-label="更多导航"
+    aria-hidden="true"
+    transition:persist="bk-more-sheet"
+>
     <button type="button" class="bk-more-scrim" data-bk-more-close aria-label="关闭" tabindex="-1"></button>
 
     <div class="bk-more-sheet">
@@ -86,88 +110,7 @@ const moreActive = more.some((item) => item.active);
 </div>
 
 <script>
-    import { onPageLoad } from '../../lib/client/mount';
+    import { bindTabBar } from '../../lib/client/tabbar';
 
-    /*
-        开合只切一个类（html.bk-more-open），面板位移、遮罩透明度全交给 CSS 的 transform /
-        opacity 过渡；这里只补 CSS 做不到的：Esc 关闭、点条目/遮罩关闭、滚动锁、焦点归还。
-    */
-    onPageLoad(() => {
-        const root = document.documentElement;
-        const sheet = document.getElementById('bk-more-sheet');
-        const openBtn = document.querySelector<HTMLButtonElement>('[data-bk-more-open]');
-        if (!sheet || !openBtn) return;
-
-        const setOpen = (open: boolean) => {
-            root.classList.toggle('bk-more-open', open);
-            openBtn.setAttribute('aria-expanded', String(open));
-            sheet.setAttribute('aria-hidden', String(!open));
-        };
-
-        const close = () => {
-            if (!root.classList.contains('bk-more-open')) return;
-            setOpen(false);
-            // 焦点回到「更多」按钮本身：手机上的点击不一定把焦点给它，回 lastFocus 会落空
-            openBtn.focus({ preventScroll: true });
-        };
-
-        const open = () => {
-            setOpen(true);
-            // 焦点落到面板第一项，键盘和读屏才跟得上；等一帧让面板先变成可见
-            requestAnimationFrame(() => {
-                sheet.querySelector<HTMLElement>('.bk-more-list a')?.focus({ preventScroll: true });
-            });
-        };
-
-        const onClick = (event: MouseEvent) => {
-            const target = event.target as HTMLElement | null;
-            if (!target) return;
-            if (target.closest('[data-bk-more-open]')) {
-                event.preventDefault();
-                if (root.classList.contains('bk-more-open')) close();
-                else open();
-                return;
-            }
-            // 点遮罩、关闭按钮，或点了面板里的链接（页面已经要走人了）都收起
-            if (root.classList.contains('bk-more-open') && (target.closest('[data-bk-more-close]') || target.closest('.bk-more-list a'))) {
-                setOpen(false);
-            }
-        };
-
-        const onKeydown = (event: KeyboardEvent) => {
-            if (!root.classList.contains('bk-more-open')) return;
-            if (event.key === 'Escape') {
-                event.preventDefault();
-                close();
-                return;
-            }
-            // Tab 只在面板里转，别跑到背后的正文上
-            if (event.key !== 'Tab') return;
-            const focusables = [...sheet.querySelectorAll<HTMLElement>('a[href], button')].filter(
-                (el) => !el.hasAttribute('disabled') && el.tabIndex >= 0
-            );
-            if (focusables.length === 0) return;
-            const first = focusables[0];
-            const last = focusables[focusables.length - 1];
-            if (event.shiftKey && document.activeElement === first) {
-                event.preventDefault();
-                last.focus();
-            } else if (!event.shiftKey && document.activeElement === last) {
-                event.preventDefault();
-                first.focus();
-            }
-        };
-
-        document.addEventListener('click', onClick);
-        document.addEventListener('keydown', onKeydown);
-
-        // 换页后一律从关闭态开始（SPA 导航不会重置 DOM 上的类）
-        setOpen(false);
-
-        return () => {
-            document.removeEventListener('click', onClick);
-            document.removeEventListener('keydown', onKeydown);
-            root.classList.remove('bk-more-open');
-        };
-    });
+    bindTabBar();
 </script>

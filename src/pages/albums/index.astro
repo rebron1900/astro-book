@@ -29,7 +29,7 @@ if (!page) {
 <BaseLayout post={page}>
     <Head slot="head" post={page} site={settings} title={page?.title + ' | ' + settings?.title + ' - ' + settings?.description} />
 
-    <Header slot="header" title={page.title} />
+    <Header slot="header" title={page.title} subtitle={page.excerpt} />
     <Menu slot="menu" />
 
     <article slot="content" class="markdown book-article">

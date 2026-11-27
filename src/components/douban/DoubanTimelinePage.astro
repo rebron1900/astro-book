@@ -36,7 +36,7 @@ const filterNav = [
         site={settings}
         title={`${pageDouban?.title || '书影音游'} | ${settings?.title} - ${settings?.description}`}
     />
-    <Header slot="header" title={pageDouban?.title || '书影音游'} />
+    <Header slot="header" title={pageDouban?.title || '书影音游'} subtitle={pageDouban?.excerpt} />
     <Menu slot="menu" title="书影音" />
 
     <List slot="content" page={page} filterKind="neodb" filterNav={filterNav} groupBy="month" monthCategory={activeCategory} />

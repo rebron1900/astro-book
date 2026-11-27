@@ -38,7 +38,7 @@ const { page } = Astro.props;
 <BaseLayout post={custompage}>
     <Head slot="head" post={custompage} site={settings} title={custompage?.title + ' | ' + settings?.title + ' - ' + settings?.description}> afas </Head>
 
-    <Header slot="header" title={custompage.title} />
+    <Header slot="header" title={custompage.title} subtitle={custompage?.excerpt} />
     <Menu slot="menu" />
 
     <div slot="content" class="markdown book-article page-memos">

@@ -115,7 +115,7 @@ const headPost = {
 <BaseLayout>
     <Head slot="head" post={headPost} site={settings} title={`${title} | 花园 · ${settings?.title ?? ''}`} />
 
-    <Header slot="header" title={title} />
+    <Header slot="header" title={title} subtitle={excerpt} />
 
     <Menu slot="menu" title={title} garden />
 

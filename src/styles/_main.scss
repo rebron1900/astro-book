@@ -649,8 +649,10 @@ body[dir='rtl'] .book-menu {
         background: rgb(0 0 0 / 0.38);
     }
 
-    /* 只在真的有目录/反链面板的页面铺遮罩，避免首页之类按到目录图标时只锁滚动 */
-    #toc-control:checked ~ main:has(.book-header aside) .book-toc-overlay {
+    /* 只在真的有目录/反链面板的页面铺遮罩，避免首页之类按到目录图标时只锁滚动。
+       活动页的右侧统计栏复用同一个 #toc-control，也走这块遮罩。 */
+    #toc-control:checked ~ main:has(.book-header aside) .book-toc-overlay,
+    #toc-control:checked ~ main:has(.activity-page) .book-toc-overlay {
         display: block;
     }
 
@@ -845,39 +847,40 @@ html {
         stroke-width: 1.9;
     }
 
-    /* 左边那颗不是图标，是站点自身的圆形 logo */
-    .bk-btn-logo {
-        padding: 0;
-        overflow: hidden;
-        background: var(--body-background);
-    }
-
-    .bk-btn-logo img {
-        display: block;
-        inline-size: 100%;
-        block-size: 100%;
-        border-radius: 50%;
-        object-fit: cover;
-    }
-
+    /* 中间胶囊：上面一行粗体标题，下面一行灰色介绍 */
     .bk-pill {
         display: flex;
         flex: 1 1 auto;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
+        gap: 0.05rem;
         min-inline-size: 0;
         block-size: var(--bk-bar-h);
-        padding-inline: 0.95rem;
+        padding-inline: 0.85rem;
         border-radius: 999px;
+        text-align: center;
     }
 
     .bk-title {
-        min-inline-size: 0;
+        display: block;
+        max-inline-size: 100%;
         overflow: hidden;
-        font-size: 0.95rem;
-        font-weight: 600;
+        font-size: 0.9rem;
+        font-weight: 700;
         line-height: 1.2;
-        text-align: center;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .bk-subtitle {
+        display: block;
+        max-inline-size: 100%;
+        overflow: hidden;
+        color: var(--gray-700);
+        font-size: 0.66rem;
+        font-weight: 400;
+        line-height: 1.25;
         white-space: nowrap;
         text-overflow: ellipsis;
     }
@@ -960,12 +963,27 @@ html {
             line-height: 1.5;
         }
 
+        /* 配色那一块是 ul.book-theme，自带 2rem 下边距；抽屉里跟其它栏目用同一档间距 */
+        .book-theme {
+            margin-block: 0 0.3rem;
+        }
+
+        /* 第一栏（配色）紧跟在搜索框下面，不再多一层上边距 */
+        .book-theme .book-section-flat {
+            margin-block-start: 0;
+        }
+
+        /* 页脚那块（book-copy 里的「其他」）不再叠一层栏目间距 */
+        .book-copy .book-section-flat {
+            margin-block: 0;
+        }
+
         .book-section-flat {
-            margin: 0 0 0.5rem;
+            margin: 0.9rem 0 0.3rem;
 
             > span {
                 display: block;
-                padding: 0.7rem 0.65rem 0.3rem;
+                padding: 0.7rem 0.65rem 0.25rem;
                 color: var(--body-font-color);
                 font-size: 0.85rem;
                 font-weight: 700;
@@ -1041,10 +1059,10 @@ html {
             color: currentColor;
         }
 
-        /* 折叠子菜单（配色列表等）：同一列里再缩进一档 */
+        /* 折叠子菜单：每一层缩进一档，行里不再自带层级缩进 */
         .book-section-flat > ul.book-collspan ul {
-            margin: 0 0 0.25rem;
-            padding-inline-start: 0;
+            margin: 0 0 0.15rem;
+            padding-inline-start: 1rem;
             list-style: none;
         }
 
@@ -1053,7 +1071,7 @@ html {
             align-items: center;
             min-block-size: 2.35rem;
             margin: 0;
-            padding: 0 0.65rem 0 2.35rem;
+            padding: 0.3rem 0.5rem;
             font-size: 0.9rem;
         }
 

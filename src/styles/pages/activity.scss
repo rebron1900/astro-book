@@ -684,30 +684,30 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
     color: color-mix(in srgb, var(--body-background) 78%, transparent);
 }
 
-/* 桌面端不显示遮罩；移动端打开侧栏时才有 */
-.act-toc-scrim {
-    display: none;
-}
-
 /* ---------- 移动端：右侧统计栏收成抽屉，沿用主题的 #toc-control 折叠逻辑 ---------- */
 @media screen and (max-width: 47.84rem) {
     body:has(.activity-page) .book-toc {
         display: block;
         position: fixed;
-        inset-block: 0;
-        inset-inline-end: 0;
-        z-index: 90;
-        inline-size: min(17rem, calc(100vw - 2.75rem));
+        /* 和其它抽屉同一套「浮在页面上的圆角面板」：四周留缝、圆角、同阴影 */
+        inset-block: calc(0.5rem + env(safe-area-inset-top)) calc(0.5rem + env(safe-area-inset-bottom));
+        inset-inline-end: 0.5rem;
+        /* 压住顶栏(60)与底栏(55)，被全屏遮罩(94)盖住 */
+        z-index: 96;
+        inline-size: var(--bk-sheet-w);
         min-inline-size: 0;
-        max-inline-size: 17rem;
+        max-inline-size: none;
         margin: 0;
+        border-radius: 1.35rem;
         background: var(--body-background);
-        box-shadow: -14px 0 36px rgb(0 0 0 / 0.18);
-        transform: translateX(100%);
+        box-shadow:
+            0 18px 48px rgb(0 0 0 / 0.24),
+            0 2px 6px rgb(0 0 0 / 0.08);
+        transform: translateX(calc(100% + 0.75rem));
         visibility: hidden;
         transition:
-            transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
-            visibility 240ms;
+            transform 340ms cubic-bezier(0.32, 0.72, 0, 1),
+            visibility 340ms;
         overflow: hidden;
     }
 
@@ -720,22 +720,9 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
         position: static;
         inline-size: auto;
         block-size: 100%;
-        padding: 1rem 0.85rem 1.5rem;
+        padding: 1rem 0.75rem 1.2rem;
         overflow-x: hidden;
         overflow-y: auto;
     }
 
-    .act-toc-scrim {
-        position: fixed;
-        inset: 0;
-        z-index: 85;
-        display: none;
-        background: rgb(0 0 0 / 0.3);
-        backdrop-filter: blur(1px);
-        -webkit-backdrop-filter: blur(1px);
-    }
-
-    body:has(.activity-page) #toc-control:checked ~ main .act-toc-scrim {
-        display: block;
-    }
 }
