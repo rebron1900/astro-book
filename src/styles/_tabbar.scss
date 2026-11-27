@@ -341,12 +341,24 @@ html[data-astro-transition] {
 
 /* 外壳原地不动：整页滑走时它们留在原地。
    - group 关掉动画：新旧快照的盒子不去插值，不会因几像素差异被拉伸；
-   - old/new 保留默认的交叉淡入（plus-lighter 两边互补，不会变亮）：
-     标题/介绍这类内容自然淡入淡出；如果关掉动画直接叠图，半透明的玻璃面会把
-     旧文字透上来，看起来就是“重叠” */
+   - 旧快照直接不进画面：底栏和胶囊都是半透明玻璃，如果让两张叠着做交叉淡入，
+     新胶囊 74% 的背景会把旧标题透上来，看起来就是标题重叠。直接换成新图。 */
 ::view-transition-group(bk-bar),
 ::view-transition-group(bk-tabs),
 ::view-transition-group(bk-more) {
+    animation: none;
+}
+
+::view-transition-old(bk-bar),
+::view-transition-old(bk-tabs),
+::view-transition-old(bk-more) {
+    animation: none;
+    opacity: 0;
+}
+
+::view-transition-new(bk-bar),
+::view-transition-new(bk-tabs),
+::view-transition-new(bk-more) {
     animation: none;
 }
 
@@ -357,10 +369,13 @@ html[data-astro-transition] {
     animation-timing-function: cubic-bezier(0.34, 1.22, 0.34, 1);
 }
 
-::view-transition-old(bk-glide),
+::view-transition-old(bk-glide) {
+    animation: none;
+    opacity: 0;
+}
+
 ::view-transition-new(bk-glide) {
     animation: none;
-    mix-blend-mode: normal;
 }
 
 /* 换页过渡期间页面本来就是新的 DOM，但那层快照会吞掉点击：
