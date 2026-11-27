@@ -73,7 +73,8 @@ html {
         inline-size: calc((100% - 0.4rem) / var(--bk-count, 5));
         transform: translate3d(calc(var(--bk-index, 0) * 100%), 0, 0);
         transition:
-            transform 480ms cubic-bezier(0.32, 0.72, 0, 1),
+            /* 带一点过冲的弹性：滑到目标后轻轻回弹，像液体被拖过去 */
+            transform 520ms cubic-bezier(0.34, 1.22, 0.34, 1),
             opacity 180ms ease;
         pointer-events: none;
     }

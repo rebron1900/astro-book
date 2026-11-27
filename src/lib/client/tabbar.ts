@@ -9,7 +9,7 @@
 import { isActiveUrl } from '../utils/active-url';
 import { onPageLoad } from './mount';
 
-const GLIDE_DURATION = 480;
+const GLIDE_DURATION = 520;
 
 const reducedMotion = () =>
     typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -56,11 +56,11 @@ const syncActive = () => {
     fill.animate(
         [
             { transform: 'scaleX(1)' },
-            { transform: 'scaleX(1.16)', offset: 0.34 },
-            { transform: 'scaleX(0.97)', offset: 0.68 },
+            { transform: 'scaleX(1.18)', offset: 0.3 },
+            { transform: 'scaleX(0.98)', offset: 0.72 },
             { transform: 'scaleX(1)' }
         ],
-        { duration: GLIDE_DURATION, easing: 'cubic-bezier(0.32, 0.72, 0, 1)' }
+        { duration: GLIDE_DURATION, easing: 'cubic-bezier(0.34, 1.22, 0.34, 1)' }
     );
 };
 
