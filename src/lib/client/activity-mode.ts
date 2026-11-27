@@ -183,25 +183,50 @@ export default function initActivityMode(): () => void {
     }
 
     // 足迹地图吸顶：和运动页一样，滚过哨兵就切到「悬浮条」形态
-    const sentinel = document.querySelector('.act-fp-sentinel');
-    const fpMap = document.querySelector<HTMLElement>('.ex-fp-map-wrap');
+    //
+    // 两点必须注意：
+    // 1. 地图岛是 client:load，水合时会替换服务端那批 DOM。init 时把哨兵/地图节点存下来，
+    //    观察器盯的就是一个已被摘出文档的旧节点，之后滚动再也不回调 —— 站内软导航进来后
+    //    「地图吸顶了却没有投影」就是这么来的（整页刷新时偶发顺序对了才看不出问题）。
+    //    所以回调和兜底里一律现查节点。
+    // 2. IO 只在「跨过」时回调，首帧位置、字体/图片撑开布局、容器尺寸变化都不保证重算，
+    //    加一条 rAF 节流的 scroll/resize 兜底，任何加载方式都跟得住，代价是每帧读一个 rect。
+    const syncFootprintStuck = (): void => {
+        const pageEl = document.querySelector('.activity-page');
+        // 运动模式下这张地图是 display:none，此时哨兵 rect 恒为 0，
+        // 算出来的是假状态；等切回足迹时由 syncStuckState 补上
+        if (!pageEl || pageEl.getAttribute('data-activity-mode') !== 'footprint') return;
+        const wrap = document.querySelector<HTMLElement>('.ex-fp-map-wrap');
+        const sen = document.querySelector('.act-fp-sentinel');
+        if (wrap && sen) wrap.classList.toggle('is-stuck', stickyBySentinel(sen));
+    };
+
+    let stuckFrame = 0;
+    const onScrollSync = (): void => {
+        if (stuckFrame) return;
+        stuckFrame = requestAnimationFrame(() => {
+            stuckFrame = 0;
+            syncFootprintStuck();
+        });
+    };
+
+    syncFootprintStuck();
+    window.addEventListener('scroll', onScrollSync, { passive: true });
+    window.addEventListener('resize', onScrollSync, { passive: true });
+
     let observer: IntersectionObserver | null = null;
-    if (sentinel && fpMap && typeof IntersectionObserver !== 'undefined') {
-        observer = new IntersectionObserver(
-            () => {
-                // 运动模式下这张地图是 display:none，此时哨兵 rect 恒为 0，
-                // 拿它算出来的是假状态；等切回足迹时由 syncStuckState 补上
-                if (page.getAttribute('data-activity-mode') !== 'footprint') return;
-                fpMap.classList.toggle('is-stuck', stickyBySentinel(sentinel));
-            },
-            { threshold: 0 }
-        );
-        observer.observe(sentinel);
+    if (typeof IntersectionObserver !== 'undefined') {
+        observer = new IntersectionObserver(() => syncFootprintStuck(), { threshold: 0 });
+        const liveSentinel = document.querySelector('.act-fp-sentinel');
+        if (liveSentinel) observer.observe(liveSentinel);
     }
 
     return () => {
         document.removeEventListener('click', onClick);
         observer?.disconnect();
+        if (stuckFrame) cancelAnimationFrame(stuckFrame);
+        window.removeEventListener('scroll', onScrollSync);
+        window.removeEventListener('resize', onScrollSync);
         clearHeightAnimation();
     };
 }
