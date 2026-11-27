@@ -127,6 +127,8 @@ const COMPACT_TILT_PITCH = 20;
 /** 激活标点固定缩放：足迹只交代大概位置，不学运动地图贴脸看轨迹 */
 const FOCUS_ZOOM = 11.4;
 const TILT_BEARING = -20;
+/** 旋转开始时其余标点的淡出时长；淡完才摘出 DOM（摘掉的元素不再参与每帧定位） */
+const MARKER_RECEDE_MS = 200;
 /** tooltip 悬停延迟：进得快一点，出得慢一点，鼠标扫过一排标点不会闪 */
 const TIP_SHOW_DELAY = 70;
 const TIP_HIDE_DELAY = 150;
@@ -194,6 +196,12 @@ class FootprintMapInstance implements FootprintMapController {
     private rotateFrame: number | null = null;
     private rotateLast = 0;
     private rotateResumeTimer: ReturnType<typeof setTimeout> | null = null;
+    /** 自动旋转期间：只留激活的标点在 DOM 里，其余临时摘下 */
+    private markersDetached = false;
+    /** 摘下前的淡出计时（淡完才真的从 DOM 拿掉） */
+    private detachTimer: ReturnType<typeof setTimeout> | null = null;
+    /** 摘下时记住它们的挂载点（Mapbox 的 canvas 容器），放回时用 */
+    private markerHost: HTMLElement | null = null;
     private dragging = false;
     /** 聚焦点被聚合藏起来时的补位标点：保证「聚焦」在任何层级都看得见那个点 */
     private focusMarker: { marker: mapboxgl.Marker; element: HTMLButtonElement } | null = null;
@@ -439,6 +447,9 @@ class FootprintMapInstance implements FootprintMapController {
         this.rotateTimer = setTimeout(() => {
             this.rotateTimer = null;
             this.rotateLast = 0;
+            // 旋转一起步就把无关标点摘掉：上百个标点每帧都要跟着镜头写一次 transform，
+            // 全挂在 DOM 上时旋转一半的帧时间花在它们身上（本地实测 6.2 → 9.5 fps）
+            this.setMarkersDetached(true);
             const step = (now: number) => {
                 this.rotateFrame = null;
                 const map = this.map;
@@ -460,6 +471,8 @@ class FootprintMapInstance implements FootprintMapController {
     }
 
     private stopAutoRotate(): void {
+        // 旋转停下就把标点放回来：用户要自己操作地图时，所有标点都得能点
+        this.setMarkersDetached(false);
         if (this.rotateTimer !== null) {
             clearTimeout(this.rotateTimer);
             this.rotateTimer = null;
@@ -481,6 +494,55 @@ class FootprintMapInstance implements FootprintMapController {
             this.rotateResumeTimer = null;
             if (!this.destroyed && this.pitchMode === 'tilt' && this.selectedId) this.startAutoRotate(0);
         }, delay);
+    }
+
+    /**
+     * 旋转的这几十秒里，只留当前激活的那个标点。其余标点是纯装饰，
+     * 却要每帧跟着镜头重写 transform（上百个元素），既是卡顿的主要来源，
+     * 也让旋转的画面按成一团。用户一动地图（旋转立即暂停）它们就回来。
+     */
+    private setMarkersDetached(on: boolean): void {
+        if (this.markersDetached === on) return;
+        this.markersDetached = on;
+        if (this.detachTimer !== null) {
+            clearTimeout(this.detachTimer);
+            this.detachTimer = null;
+        }
+        if (on) {
+            // 先淡出再摘：直接让一百个点消失，看起来像意外
+            for (const entry of this.entries.values()) {
+                if (!entry.element.classList.contains('is-active')) entry.element.classList.add('is-receding');
+            }
+            this.detachTimer = setTimeout(() => {
+                this.detachTimer = null;
+                this.syncMarkerAttachment();
+            }, MARKER_RECEDE_MS);
+            return;
+        }
+        // 回来要立即能点：去掉淡出修饰、直接挂回，不做入场动画
+        for (const entry of this.entries.values()) entry.element.classList.remove('is-receding');
+        this.syncMarkerAttachment();
+    }
+
+    /** 把「谁该在 DOM 里」对齐到当前的 markersDetached 状态 */
+    private syncMarkerAttachment(): void {
+        const detach = this.markersDetached;
+        for (const entry of this.entries.values()) {
+            const element = entry.element;
+            const isActive = element.classList.contains('is-active');
+            if (detach && !isActive) {
+                if (element.isConnected) {
+                    this.markerHost ??= element.parentElement;
+                    // 旋转中新冒出来的标点：同一帧建、同一帧摘，不会闪光
+                    element.classList.add('is-receding');
+                    element.remove();
+                }
+                continue;
+            }
+            if (element.isConnected) continue;
+            const host = this.markerHost ?? this.map?.getCanvasContainer() ?? null;
+            if (host) host.appendChild(element);
+        }
     }
 
     private handleUserInteract = (): void => {
@@ -886,6 +948,8 @@ class FootprintMapInstance implements FootprintMapController {
         this.applyHighlight();
         this.applyFilter();
         this.syncFocusMarker();
+        // 旋转中新冒出来的标点（缩放跨档）也要守同一条规则：只留激活的
+        this.syncMarkerAttachment();
     }
 
     /** 把 entries 投影回按 地名 / 聚合 id 索引的两张表（选中、高亮、筛选都走这两张表） */
@@ -1066,6 +1130,7 @@ class FootprintMapInstance implements FootprintMapController {
         this.entries.clear();
         this.markerElements.clear();
         this.clusterElements.clear();
+        this.markerHost = null;
     }
 
     /* ------------------------------ tooltip ------------------------------ */

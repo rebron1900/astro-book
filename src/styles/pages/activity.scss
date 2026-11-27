@@ -225,6 +225,15 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
     font-size: 16.25px;
 }
 
+/* 自动旋转时只留激活的那个标点：其余先淡出，淡完再从 DOM 摘下（见 footprint-map.ts）。
+   上百个标点每帧都要跟着镜头重写一次 transform，是旋转卡顿的主要来源，
+   画面也会被这些点在旋转时压成一团。用户一动地图（旋转立即暂停）它们就全部回来。 */
+.act-mode--footprint .ex-fp-map .marker.ex-fp-point.is-receding {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease-out;
+}
+
 .act-mode--footprint .ex-fp-map .marker.ex-fp-point:hover {
     box-shadow:
         0 0 0 2px var(--color-link),
