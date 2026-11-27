@@ -99,6 +99,28 @@ describe('ghost：冻结输入等价（旧实现走 ts-ghost 客户端产出的 
         expect(tagPost.type).toBe('post');
     });
 
+    it('真实 API 的 null 正文：html/excerpt→空串、reading_time 省略，产物过契约校验', async () => {
+        // 2026-11-27 CI 实测：真实 Ghost 对邮件版/无正文条目返回 html=null、excerpt=null，
+        // 旧实现直接把 null 写进 ghost.json，新契约（string?）判它类型不符，整源失败。
+        const root = makeProject();
+        const postsBody = JSON.parse(JSON.stringify(fixture.bodies.posts));
+        const target = postsBody.posts[0];
+        target.html = null;
+        target.excerpt = null;
+        target.reading_time = null;
+        const { fetchImpl } = stubFetch({ posts: { status: 200, body: postsBody } });
+        const result = await runIngestSource('ghost', { projectRoot: root, env: ENV, fetchImpl, log: quiet });
+        const written = JSON.parse(readFileSync(path.join(root, 'src/data/ghost.json'), 'utf8'));
+        const post = written.posts.find((p: { id: string }) => p.id === target.id);
+        expect(post.html).toBe('');
+        expect(post.excerpt).toBe('');
+        expect(post).not.toHaveProperty('reading_time');
+        const tagPosts: Array<{ id: string; excerpt?: unknown }> = written.tags.flatMap((t: { posts: Array<{ id: string; excerpt?: unknown }> }) => t.posts);
+        expect(tagPosts.filter((p) => p.id === target.id).every((p) => p.excerpt === '')).toBe(true);
+        expect(validateDataset('ghost.content', written).errors).toEqual([]);
+        expect(result.outputs[0].data).toEqual(written);
+    });
+
     it('真实 src/data/ghost.json 过契约校验：0 错误，count 取 posts 长度', () => {
         const real = JSON.parse(readFileSync(path.join(__dirname, '..', '..', 'src', 'data', 'ghost.json'), 'utf8'));
         const result = validateDataset('ghost.content', real);

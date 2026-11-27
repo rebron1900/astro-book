@@ -95,6 +95,8 @@ src/data/*.json  ──►  astro build（只读文件，不发请求）
 - **`intervals` 是升序**（`orderBy: start_date_local`，`orderDir: 'asc'`），页面时间线按它从早到晚排；其余 list 契约默认降序。
 - **`rank` 与 `reading` 必须是可选源**：远端打盹时迁移前就是「只告警、退出码 0」，标成必需会把一次抖动升级成整轮失败。
 
+`ghost` 的一个真实边界（2026-11-27 CI 实测）：邮件版 / 无正文的条目，Ghost Content API 会返回 `html: null`、`excerpt: null`（当次 106 处），`reading_time` 也可能为 `null`。落盘前统一归一：`html`/`excerpt` → `''`（页面本来就按 `?? ''` 消费），`reading_time` 为空则省略该字段（列表只展示 `> 0` 的值），**不编 0**。契约仍是 `string?` / `number?`，所以取值方看到的一直是字符串或缺失，不会出现 `null`。
+
 ---
 
 ## 4. 调用入口、参数与退出码
@@ -112,6 +114,7 @@ npm run sync:data                          # = node scripts/sync-data.mjs
 ```
 
 - 环境变量来源：仓库根 `.env` 全部键；`process.env` 只接受白名单前缀（`GHOST_ NEODB_ FLUX_ MAP_ CDN_ INTERVALS_ GOTOSOCIAL_ MEMOS_ MODU_ EMBY_`）。**新增来源若用别的前缀，必须同时加进 `sync-data.mjs` 的 `loadEnv()`**，否则进程环境里设了也不生效。
+- `SYNC_ENV_FILE` 可以换掉 `.env` 的位置（缺省仍是仓库根 `.env`）。测试里用它指向一个不存在的路径，来保证「缺凭据」用例真的看不到仓库里的凭据；CI 在跑测试前已经写好带凭据的 `.env`，不隔离就会变成真联网（2026-11-27 CI #566 就是这么失败的）。
 - 逗号分隔**不支持**（`ghost,neodb` 会被当成一个未知源名 → 警告 → 一个都不跑 → 退出 0）。这与 `sync-data.mjs` 顶部注释里写的「逗号分隔」不一致，属既有缺口，按实际行为（空格分隔）使用。
 
 退出码：
@@ -484,8 +487,8 @@ node scripts/check-public-data.mjs                # 隐私闸门
 
 **未验证（不要当成已联调）**：
 
-1. 真实上游同步：Ghost / GTS / NeoDB / Flux / intervals / map / reading 均未跑真实同步（无凭据或按约束不跑）；等价性靠「冻结输入 + 真实文件重算」。
-2. GitHub Actions 从未在本轮运行（`ci.yml` 有改动未提交至远端）。
-3. 地图转换：JS 版已在本机实跑（测试与真实 127 条数据闭环），但**未与旧 Python 版对跑**（本机无 python3），也无真实 KMZ 样本，见 §7.5。
+1. 真实上游同步：GTS / NeoDB / Flux / intervals / map / reading 均未跑真实同步（无凭据或按约束不跑）；等价性靠「冻结输入 + 真实文件重算」。Ghost 在 2026-11-27 的 CI 里首次真实跑过：契约在 `html/excerpt = null` 上失败（106 处），已按 §3 末段归一；**归一后的真实同步尚未跑过**，等下一次定时任务验证。
+2. GitHub Actions：2026-11-27 首次在本分支运行并失败（CI #566，测试隔离 + Ghost null 两个原因，均已修）；修复后的运行结果未回来前，不要宣称 CI 绿。
+3. 地图转换：JS 版已在本机实跑（测试与真实 127 条数据闭环），但**未与旧 Python 版对跑**（本机无 python3），也无真实 KMZ 样本，见 §7.5；真实 `MAP_KMZ_URL` 也尚未跑过。
 4. 翻页与增量：`ghost` / `neodb` 仅单页 fixture；`intervals` 真实多窗口未验。
 5. `rank.status`：仓库里现存 `src/data/rank.json` 是上游错误载荷（`{"success":false,"error":"…"}`），契约会拒绝它并保留旧文件——即页面短期内仍显示 0 小时，直到上游恢复正常。

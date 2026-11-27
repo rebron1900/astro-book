@@ -37,7 +37,8 @@ const DATA_DIR = path.join(ROOT, 'src', 'data');
 // ---------- 配置加载 ----------
 function loadEnv() {
     const env = {};
-    const envFile = path.join(ROOT, '.env');
+    // SYNC_ENV_FILE 显式指定配置文件（测试用来隔离真实 .env）；缺省仍是仓库根的 .env。
+    const envFile = process.env.SYNC_ENV_FILE ? path.resolve(process.env.SYNC_ENV_FILE) : path.join(ROOT, '.env');
     if (existsSync(envFile)) {
         const content = readFileSync(envFile, 'utf8');
         for (const line of content.split('\n')) {

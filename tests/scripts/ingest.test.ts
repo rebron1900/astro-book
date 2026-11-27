@@ -551,6 +551,9 @@ describe('CLI 行为不变（dry-run，零网络）', () => {
         const before = readFileSync(path.join(repoRoot, 'src/data/emby.json'), 'utf8');
         const env = { ...process.env };
         for (const key of ['EMBY_BASE_URL', 'EMBY_USER_ID', 'EMBY_API_KEY']) delete env[key];
+        // 隔离仓库真实 .env：CI 的 Prepare build environment 会先写入带凭据的 .env，
+        // 不隔离这里就不是「缺凭据」而是真联网（2026-11-27 CI 就是这项失败）。
+        env.SYNC_ENV_FILE = path.join(os.tmpdir(), 'no-such-env-for-dry-run-test');
         const run = spawnSync('node', ['scripts/sync-data.mjs', 'emby', '--dry-run'], { cwd: repoRoot, encoding: 'utf8', env, timeout: 60_000 });
         const output = `${run.stdout}\n${run.stderr}`;
         expect(run.status).toBe(0);
@@ -567,6 +570,7 @@ describe('CLI 行为不变（dry-run，零网络）', () => {
             const before = readFileSync(path.join(repoRoot, 'src/data', file), 'utf8');
             const env = { ...process.env };
             for (const key of credKeys) delete env[key];
+            env.SYNC_ENV_FILE = path.join(os.tmpdir(), 'no-such-env-for-dry-run-test');
             const run = spawnSync('node', ['scripts/sync-data.mjs', source, '--dry-run'], { cwd: repoRoot, encoding: 'utf8', env, timeout: 60_000 });
             const output = `${run.stdout}\n${run.stderr}`;
             expect(run.status).toBe(1);

@@ -55,6 +55,19 @@ export function trimTagPost(p) {
     const e = pick(p, TAG_POST_FIELDS);
     if (Array.isArray(e.tags)) e.tags = e.tags.map((t) => pick(t, TAG_FIELDS));
     e.type = 'post';
+    return normalizeNullBody(e);
+}
+
+/**
+ * 真实 Ghost 对「邮件版 / 无正文」条目会返回 html=null、excerpt=null、reading_time=null
+ * （2026-11-27 CI 实测 106 处），而契约里 html/excerpt 是 string?、reading_time 是 number?。
+ * 落盘统一成既有数据形状：正文与摘要退化为空串（页面本来就按 `?? ''` 消费），
+ * 不知道阅读时长就省略该字段（PostMeta 只展示 > 0 的值），不编一个 0。
+ */
+function normalizeNullBody(e) {
+    if (e.html === null) e.html = '';
+    if (e.excerpt === null) e.excerpt = '';
+    if (e.reading_time === null) delete e.reading_time;
     return e;
 }
 
@@ -64,7 +77,7 @@ export function trimEntry(entry, type) {
     if (Array.isArray(e.authors)) e.authors = e.authors.map((a) => pick(a, AUTHOR_FIELDS));
     if (e.primary_author) e.primary_author = pick(e.primary_author, AUTHOR_FIELDS);
     e.type = type;
-    return e;
+    return normalizeNullBody(e);
 }
 
 /** 内容 API 的 URL 拼装：路径与 query 与原客户端一致（key 放最后，避免日志先打到 key）。 */
