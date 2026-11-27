@@ -350,9 +350,20 @@ function excerptText(value: string | null | undefined, max = 150) {
                         </div>
 
                         <div class="card-foot">
-                            <time class="card-time" datetime={new Date(entry.time).toISOString()} title={fullDate(entry.time)}>
-                                {fullDate(entry.time)}
-                            </time>
+                            {entry.kind === 'reading' ? (
+                                /* 阅读只有自然日 + 当日累计秒数（modureader 的 time 记录无时刻），不伪造 00:00 */
+                                <time
+                                    class="card-time"
+                                    datetime={entry.data.date}
+                                    title={`${entry.data.date} 当天累计阅读，数据只有日期没有具体时刻`}
+                                >
+                                    {entry.data.date} 全天
+                                </time>
+                            ) : (
+                                <time class="card-time" datetime={new Date(entry.time).toISOString()} title={fullDate(entry.time)}>
+                                    {fullDate(entry.time)}
+                                </time>
+                            )}
                         </div>
                     </div>
                 </article>

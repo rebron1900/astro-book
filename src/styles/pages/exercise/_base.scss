@@ -563,7 +563,8 @@ body:has(.exercise-page) .book-toc .book-toc-content {
 /* ---------- 运动卡片：外观沿用 blocks/_strava-card.scss，这里只补运动页的交互 ---------- */
 .ex-timeline .strava-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+    /* auto-fit（不是 auto-fill）：某个月只有 1 条运动时，空轨道折叠，卡片铺满整行，不会维持多列窄卡 */
+    grid-template-columns: repeat(auto-fit, minmax(15.5rem, 1fr));
     gap: 0.8rem;
 }
 
