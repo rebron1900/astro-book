@@ -324,6 +324,33 @@ const currentId = pathname === '/garden' ? '' : pathname.replace(/^\/garden\//, 
             margin-block-start: 0.4rem;
             padding-block-start: 0.5rem;
         }
+
+        /* 窄屏抽屉跟博客左栏走同一套：整栏一起滚，不把目录树框成独立滚动区。
+           否则内容少时 `flex: 1 1 auto` 会把树拉满一屏、页脚钉在抽屉底部，
+           中间空出一大片，和博客抽屉完全不是一回事。 */
+        .book-menu-content:has(> nav[data-garden='true']) {
+            overflow-y: auto;
+        }
+
+        .book-menu-content > nav[data-garden='true'] {
+            block-size: auto;
+            min-block-size: 0;
+        }
+
+        .garden-menu-scroll {
+            flex: none;
+            margin-inline-start: 0;
+            padding-inline-start: 0;
+            overflow: visible;
+            -webkit-mask-image: none;
+            mask-image: none;
+        }
+
+        /* 「花园目录」是独立的一块标题（不在 .book-section-flat 里），
+           左缩进要和博客抽屉的「路线牌」「其他」同一档 */
+        .book-menu-content > nav[data-garden='true'] .garden-explorer-head {
+            padding-inline: 0.65rem;
+        }
     }
 
 </style>
@@ -356,6 +383,15 @@ const currentId = pathname === '/garden' ? '' : pathname.replace(/^\/garden\//, 
     };
 
     /**
+     * 目录树真正滚动的盒子。桌面是它自己（固定表头 + 树滚动）；窄屏抽屉里
+     * 整栏一起滚（见样式里的 max-width 那段），箭头要指到 .book-menu-content。
+     */
+    const scrollBoxOf = (el: HTMLElement): HTMLElement => {
+        const menu = el.closest<HTMLElement>('.book-menu-content');
+        return menu && el.scrollHeight <= el.clientHeight + 1 ? menu : el;
+    };
+
+    /**
      * 换页后恢复目录树的滚动位置。
      * 有上次记录就精确还原，保留用户浏览目录的位置；首次进入或深链没有记录时，
      * 再把当前笔记滚进可视区，避免它落在屏幕外。
@@ -363,11 +399,13 @@ const currentId = pathname === '/garden' ? '' : pathname.replace(/^\/garden\//, 
     const restoreScroll = () => {
         const scroll = document.querySelector<HTMLElement>('[data-garden-scroll]');
         if (!scroll) return;
+        const box = scrollBoxOf(scroll);
 
-        const saved = readScrollTop();
+        // 窄屏把位置记在整栏上，和桌面的树偏移不是同一把尺子，只按当前项定位
+        const saved = box === scroll ? readScrollTop() : null;
         if (saved !== null) {
             // 有上次位置就以它为准：用户可能刻意滚到别处看目录，不要强行拉回当前项
-            scroll.scrollTop = saved;
+            box.scrollTop = saved;
             return;
         }
 
@@ -375,15 +413,15 @@ const currentId = pathname === '/garden' ? '' : pathname.replace(/^\/garden\//, 
         const current = scroll.querySelector<HTMLElement>('a.menu-flag.current');
         if (!current) return;
 
-        const box = scroll.getBoundingClientRect();
+        const area = box.getBoundingClientRect();
         const item = current.getBoundingClientRect();
         // 祖先文件夹被手动折叠时当前项没有布局，跳过
         if (!item.height) return;
 
-        if (item.top < box.top + SCROLL_PAD) {
-            scroll.scrollTop += item.top - box.top - SCROLL_PAD;
-        } else if (item.bottom > box.bottom - SCROLL_PAD) {
-            scroll.scrollTop += item.bottom - box.bottom + SCROLL_PAD;
+        if (item.top < area.top + SCROLL_PAD) {
+            box.scrollTop += item.top - area.top - SCROLL_PAD;
+        } else if (item.bottom > area.bottom - SCROLL_PAD) {
+            box.scrollTop += item.bottom - area.bottom + SCROLL_PAD;
         }
     };
 
@@ -450,7 +488,12 @@ const currentId = pathname === '/garden' ? '' : pathname.replace(/^\/garden\//, 
         if (!scroll || scroll.dataset.fadeReady === 'true') return;
         scroll.dataset.fadeReady = 'true';
 
+        // 窄屏抽屉里树不单独滚（mask 也关了），监听整栏那层
+        const box = scrollBoxOf(scroll);
+        const own = box === scroll;
+
         const update = () => {
+            if (!own) return;
             const remaining = scroll.scrollHeight - scroll.clientHeight - scroll.scrollTop;
             scroll.classList.toggle('is-faded-top', scroll.scrollTop > 1);
             scroll.classList.toggle('is-faded-bottom', remaining > 1);
@@ -458,10 +501,10 @@ const currentId = pathname === '/garden' ? '' : pathname.replace(/^\/garden\//, 
 
         const onScroll = () => {
             update();
-            saveScrollTop(scroll.scrollTop);
+            saveScrollTop(box.scrollTop);
         };
 
-        scroll.addEventListener('scroll', onScroll, { passive: true });
+        box.addEventListener('scroll', onScroll, { passive: true });
 
         // 展开/收起文件夹或换页后会改变内容高度，尺寸监听顺带修正底部渐隐
         if (typeof ResizeObserver !== 'undefined') {
@@ -476,7 +519,7 @@ const currentId = pathname === '/garden' ? '' : pathname.replace(/^\/garden\//, 
     // 换页前再存一次，避免用户刚点链接、滚动事件还没落盘就换页
     document.addEventListener('astro:before-swap', () => {
         const scroll = document.querySelector<HTMLElement>('[data-garden-scroll]');
-        if (scroll) saveScrollTop(scroll.scrollTop);
+        if (scroll) saveScrollTop(scrollBoxOf(scroll).scrollTop);
     });
 
     initExplorer();

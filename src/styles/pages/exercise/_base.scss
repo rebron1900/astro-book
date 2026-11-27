@@ -677,15 +677,10 @@ body:has(.exercise-page) .book-toc .book-toc-content {
 }
 
 @media screen and (max-width: 47.84rem) {
-    /* 移动端抽屉菜单必须盖住吸顶地图 */
-    body:has(.exercise-page) .book-menu {
-        z-index: 40;
-    }
-
-    body:has(.exercise-page) .book-menu-overlay {
-        z-index: 35;
-    }
-
+    /* 抽屉的层级由全局那套决定（抽屉 95 / 遮罩 94）。这里原来有一份
+       `z-index: 40 / 35` 的旧覆盖（当年吸顶地图层级更高），会把抽屉压到
+       顶栏（60）和地图下面，抽屉一开就被顶栏盖掉半截。地图现在最高 35，
+       交给全局层级即可，不要再覆盖。 */
     .ex-map-viewport {
         --ex-map-full: 13rem;
         --ex-map-stuck: 10rem;

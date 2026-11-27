@@ -310,3 +310,60 @@ html {
         }
     }
 }
+
+/* ==========================================================================
+   换页过渡：固定外壳不跟着整页淡出 / 上滑
+   --------------------------------------------------------------------------
+   站内换页走 ClientRouter 的 View Transition：旧页 90ms 淡出并向左滑、新页 210ms
+   淡入并从右滑入。顶栏、底栏这些外壳没有单独的名字，就会被包进 root 快照，跟着
+   整页一起滑走再滑回来——看起来就像底栏被重新加载了一遍。
+   给它们各自取一个 view-transition-name（只在换页那一刻挂上，避免影响换主题的整页
+   裁切动画），它们就退出 root 快照，页面滑走时留在原地；滑块再单独取一个名字，
+   浏览器会把旧格子的胶囊补间到新格子，换页时照样是滑过去的。
+   ========================================================================== */
+html[data-astro-transition] {
+    .bk-bar {
+        view-transition-name: bk-bar;
+    }
+
+    .bk-tabs {
+        view-transition-name: bk-tabs;
+    }
+
+    .bk-more {
+        view-transition-name: bk-more;
+    }
+
+    .bk-glide {
+        view-transition-name: bk-glide;
+    }
+}
+
+/* 外壳原地不动：两张快照都改成普通混合、关掉自带的淡入淡出。
+   默认的 plus-lighter 会把两张叠加成两倍亮度，而位置尺寸完全相同的新旧快照
+   用普通混合时新图刚好盖住旧图——不闪、不亮、也不跟着整页滑走 */
+::view-transition-old(bk-bar),
+::view-transition-old(bk-tabs),
+::view-transition-old(bk-more) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+::view-transition-new(bk-bar),
+::view-transition-new(bk-tabs),
+::view-transition-new(bk-more) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+/* 滑块：从旧格子补间到新格子（盒子自己插值），带一点过冲 */
+::view-transition-group(bk-glide) {
+    animation-duration: 520ms;
+    animation-timing-function: cubic-bezier(0.34, 1.22, 0.34, 1);
+}
+
+::view-transition-old(bk-glide),
+::view-transition-new(bk-glide) {
+    animation: none;
+    mix-blend-mode: normal;
+}
