@@ -1,0 +1,311 @@
+/* ==========================================================================
+   移动端底部导航：4 个常驻入口 + 「更多」浮层（二级菜单）
+   性能取向（与顶栏同一套前提）：
+   1) 模糊只铺在底栏这一条固定高度的表面上，一屏约 6% 面积；滚动时不做任何 JS 计算，
+      也没有 scroll 监听；
+   2) 开合只动 transform / opacity，不碰布局、不动画化模糊半径；
+   3) 「更多」浮层盖住大半屏，用接近实心的表面，不做模糊；
+   4) 低端机 / 系统「降低透明效果」时沿用顶栏的 data-bk-lite=on 直接关模糊。
+   ========================================================================== */
+html {
+    --bk-tab-h: 3.4rem;
+    --bk-tab-inset: 0.55rem;
+    /* 底栏是 fixed，不占文档流；正文按这个高度让出空间 */
+    --bk-tab-space: 0px;
+}
+
+/* 桌面端不出现（移动端断点内的样式才把它还原成 grid / flex） */
+.bk-tabs,
+.bk-more {
+    display: none;
+}
+
+@media screen and (max-width: $mobile-breakpoint) {
+    html {
+        --bk-tab-space: calc(var(--bk-tab-h) + var(--bk-tab-inset) * 2 + env(safe-area-inset-bottom));
+    }
+
+    /* 让出底栏：否则最后一段正文和页脚会被压在导航下面 */
+    body {
+        padding-block-end: calc(var(--bk-tab-space) + 0.9rem);
+    }
+
+    /* ---------- 底栏本体：一条悬浮的胶囊 ---------- */
+    .bk-tabs {
+        position: fixed;
+        inset-inline: var(--bk-tab-inset);
+        inset-block-end: calc(var(--bk-tab-inset) + env(safe-area-inset-bottom));
+        z-index: 55;
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        align-items: stretch;
+        block-size: var(--bk-tab-h);
+        padding: 0.2rem;
+        border: 1px solid var(--bk-glass-line);
+        border-radius: 1.7rem;
+        background: var(--bk-glass);
+        box-shadow:
+            0 1px 1px rgb(0 0 0 / 0.04),
+            0 -2px 12px rgb(0 0 0 / 0.05),
+            0 8px 24px rgb(0 0 0 / 0.12);
+        -webkit-backdrop-filter: blur(16px) saturate(1.8);
+        backdrop-filter: blur(16px) saturate(1.8);
+        -webkit-tap-highlight-color: transparent;
+        transition:
+            transform 240ms cubic-bezier(0.32, 0.72, 0, 1),
+            opacity 180ms ease;
+    }
+
+    /* 抽屉打开时底栏让位（只动 transform / opacity），不让它从抽屉底下露出半截 */
+    html.drawer-open .bk-tabs {
+        transform: translateY(calc(100% + 1rem));
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .bk-tab {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.05rem;
+        min-inline-size: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 1.35rem;
+        background: none;
+        color: var(--gray-700);
+        font: inherit;
+        line-height: 1;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition:
+            transform 140ms cubic-bezier(0.22, 1, 0.36, 1),
+            color 160ms ease;
+    }
+
+    .bk-tab:active {
+        transform: scale(0.94);
+    }
+
+    .bk-tab-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        inline-size: 2.1rem;
+        block-size: 1.45rem;
+        border-radius: 999px;
+        transition: background-color 180ms ease;
+    }
+
+    .bk-tab-icon svg {
+        inline-size: 1.3rem;
+        block-size: 1.3rem;
+        stroke-width: 1.9;
+    }
+
+    .bk-tab-label {
+        overflow: hidden;
+        max-inline-size: 100%;
+        font-size: 0.625rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        line-height: 1.15;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .bk-tab.is-active {
+        color: var(--color-link);
+    }
+
+    /* 当前项：图标底下垫一枚淡色药丸，只改底色，不做每帧动画 */
+    .bk-tab.is-active .bk-tab-icon {
+        background: color-mix(in srgb, var(--color-link) 14%, transparent);
+    }
+
+    .bk-tab:focus-visible {
+        outline: 2px solid var(--color-link);
+        outline-offset: -2px;
+    }
+
+    /* ---------- 「更多」浮层（二级菜单） ---------- */
+    .bk-more {
+        position: fixed;
+        inset: 0;
+        z-index: 97;
+        display: flex;
+        align-items: flex-end;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    .bk-more-scrim {
+        position: absolute;
+        inset: 0;
+        padding: 0;
+        border: 0;
+        background: rgb(0 0 0 / 0.34);
+        opacity: 0;
+        cursor: pointer;
+        transition: opacity 220ms ease;
+    }
+
+    .bk-more-sheet {
+        position: relative;
+        inline-size: 100%;
+        margin: 0.4rem;
+        padding: 0.35rem 0.85rem calc(0.85rem + env(safe-area-inset-bottom));
+        border-radius: 1.55rem;
+        /* 盖住大半屏的面板不做模糊，直接接近实心，最省 */
+        background: color-mix(in srgb, var(--body-background) 97%, transparent);
+        box-shadow:
+            0 18px 48px rgb(0 0 0 / 0.28),
+            0 2px 6px rgb(0 0 0 / 0.08);
+        transform: translateY(calc(100% + 1rem));
+        transition: transform 340ms cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    html.bk-more-open {
+        overflow: hidden;
+    }
+
+    html.bk-more-open .bk-more {
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    html.bk-more-open .bk-more-scrim {
+        opacity: 1;
+    }
+
+    html.bk-more-open .bk-more-sheet {
+        transform: translateY(0);
+    }
+
+    .bk-more-grabber {
+        display: block;
+        inline-size: 2.1rem;
+        block-size: 0.25rem;
+        margin: 0.3rem auto 0.7rem;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--gray-700) 28%, transparent);
+    }
+
+    .bk-more-title {
+        margin: 0 0 0.45rem 0.35rem;
+        color: var(--gray-700);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+    }
+
+    .bk-more-list {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        border-radius: 0.95rem;
+        background: color-mix(in srgb, var(--gray-200) 52%, transparent);
+        list-style: none;
+    }
+
+    .bk-more-list li {
+        position: relative;
+    }
+
+    /* 内缩发丝线，和抽屉里的分组卡片同一套观感 */
+    .bk-more-list li + li::before {
+        content: '';
+        position: absolute;
+        inset-block-start: 0;
+        inset-inline: 0.9rem 0;
+        block-size: 1px;
+        background: color-mix(in srgb, var(--gray-700) 15%, transparent);
+        pointer-events: none;
+    }
+
+    .bk-more-list a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        min-block-size: 2.75rem;
+        padding: 0.5rem 0.9rem;
+        color: inherit;
+        font-size: 0.95rem;
+        line-height: 1.35;
+        text-decoration: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .bk-more-list a:active {
+        background: color-mix(in srgb, var(--gray-700) 12%, transparent);
+    }
+
+    .bk-more-list a.is-active {
+        color: var(--color-link);
+        font-weight: 600;
+    }
+
+    .bk-more-chevron {
+        flex: none;
+        inline-size: 1rem;
+        block-size: 1rem;
+        color: var(--gray-500);
+    }
+
+    .bk-more-close {
+        display: block;
+        inline-size: 100%;
+        min-block-size: 2.75rem;
+        margin-block-start: 0.55rem;
+        padding: 0.5rem;
+        border: 0;
+        border-radius: 0.95rem;
+        background: color-mix(in srgb, var(--gray-200) 52%, transparent);
+        color: inherit;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .bk-more-close:active {
+        background: color-mix(in srgb, var(--gray-700) 12%, transparent);
+    }
+
+    /* ---------- 兜底：不支持模糊 / 被降级 / 系统要求降低透明 ---------- */
+    html[data-bk-lite='on'] .bk-tabs {
+        background: color-mix(in srgb, var(--body-background) 96%, transparent);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+        .bk-tabs {
+            background: color-mix(in srgb, var(--body-background) 96%, transparent);
+        }
+    }
+
+    @media (prefers-reduced-transparency: reduce) {
+        .bk-tabs {
+            background: color-mix(in srgb, var(--body-background) 96%, transparent);
+            -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .bk-tab,
+        .bk-tabs,
+        .bk-more-sheet,
+        .bk-more-scrim {
+            transition: none;
+        }
+
+        .bk-tab:active {
+            transform: none;
+        }
+    }
+}

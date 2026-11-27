@@ -2,6 +2,7 @@
 // import lib
 import type { Tag } from '@ts-ghost/content-api';
 import { settings } from '../api/store';
+import TabBar from '../components/layout/TabBar.astro';
 import '../styles/book.scss';
 // ...
 const { post, slug, hideToc = false } = Astro.props as { post?: any; slug?: string; hideToc?: boolean };
@@ -56,6 +57,10 @@ const isFullWidth = post && (post.slug?.includes('albums') || post.tags?.some((t
                 </aside>
             )}
         </main>
+
+        {/* 移动端底部导航（常驻 4 个 + 「更多」浮层），桌面端 display:none */}
+        <TabBar />
+
         <Fragment set:html={settings?.codeinjection_foot} />
     </body>
 </html>
