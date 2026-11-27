@@ -156,8 +156,8 @@ html {
         position: relative;
         inline-size: 100%;
         margin: 0.4rem;
-        padding: 0.35rem 0.85rem calc(0.85rem + env(safe-area-inset-bottom));
-        border-radius: 1.55rem;
+        padding: 0.5rem 0.6rem calc(0.85rem + env(safe-area-inset-bottom));
+        border-radius: 1.35rem;
         /* 盖住大半屏的面板不做模糊，直接接近实心，最省 */
         background: color-mix(in srgb, var(--body-background) 97%, transparent);
         box-shadow:
@@ -184,63 +184,45 @@ html {
         transform: translateY(0);
     }
 
-    .bk-more-grabber {
-        display: block;
-        inline-size: 2.1rem;
-        block-size: 0.25rem;
-        margin: 0.3rem auto 0.7rem;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--gray-700) 28%, transparent);
-    }
-
+    /* 和抽屉里的小标题同一套：深色加粗、左对齐，不用 iOS 的抓手条 */
     .bk-more-title {
-        margin: 0 0 0.45rem 0.35rem;
-        color: var(--gray-700);
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.01em;
+        margin: 0;
+        padding: 0.45rem 0.65rem 0.3rem;
+        color: var(--body-font-color);
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0;
     }
 
     .bk-more-list {
         margin: 0;
         padding: 0;
-        overflow: hidden;
-        border-radius: 0.95rem;
-        background: color-mix(in srgb, var(--gray-200) 52%, transparent);
         list-style: none;
     }
 
     .bk-more-list li {
         position: relative;
+        margin: 0;
     }
 
-    /* 内缩发丝线，和抽屉里的分组卡片同一套观感 */
-    .bk-more-list li + li::before {
-        content: '';
-        position: absolute;
-        inset-block-start: 0;
-        inset-inline: 0.9rem 0;
-        block-size: 1px;
-        background: color-mix(in srgb, var(--gray-700) 15%, transparent);
-        pointer-events: none;
-    }
-
+    /* 平铺行，与抽屉内的菜单行尺寸、颜色一致 */
     .bk-more-list a {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-        min-block-size: 2.75rem;
-        padding: 0.5rem 0.9rem;
-        color: inherit;
+        gap: 0.6rem;
+        min-block-size: 2.5rem;
+        padding: 0.45rem 0.65rem;
+        border-radius: 0.5rem;
+        color: var(--body-font-color);
         font-size: 0.95rem;
         line-height: 1.35;
         text-decoration: none;
         -webkit-tap-highlight-color: transparent;
+        transition: background-color 140ms ease;
     }
 
     .bk-more-list a:active {
-        background: color-mix(in srgb, var(--gray-700) 12%, transparent);
+        background: color-mix(in srgb, var(--gray-200) 65%, transparent);
     }
 
     .bk-more-list a.is-active {
@@ -248,31 +230,16 @@ html {
         font-weight: 600;
     }
 
-    .bk-more-chevron {
+    .bk-more-icon {
         flex: none;
-        inline-size: 1rem;
-        block-size: 1rem;
-        color: var(--gray-500);
+        inline-size: 1.15rem;
+        block-size: 1.15rem;
+        color: var(--gray-700);
+        stroke-width: 1.9;
     }
 
-    .bk-more-close {
-        display: block;
-        inline-size: 100%;
-        min-block-size: 2.75rem;
-        margin-block-start: 0.55rem;
-        padding: 0.5rem;
-        border: 0;
-        border-radius: 0.95rem;
-        background: color-mix(in srgb, var(--gray-200) 52%, transparent);
-        color: inherit;
-        font: inherit;
-        font-weight: 600;
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    .bk-more-close:active {
-        background: color-mix(in srgb, var(--gray-700) 12%, transparent);
+    .bk-more-list a.is-active .bk-more-icon {
+        color: currentColor;
     }
 
     /* ---------- 兜底：不支持模糊 / 被降级 / 系统要求降低透明 ---------- */

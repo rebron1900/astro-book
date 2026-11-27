@@ -548,36 +548,33 @@ pre:focus-within > .copy-button {
 }
 
 .relitu-container {
+    /* 9 列按容器宽度均分，格子跟着列宽变成正方形，不再写死 18px */
     display: grid;
-    grid-template-columns: repeat(9, 18px);
-    grid-template-rows: repeat(7, 18px);
+    grid-template-columns: repeat(9, minmax(0, 1fr));
     gap: 5px;
+    /* 星期标签挂在网格右侧这条缝里，不占列宽 */
+    padding-inline-end: 1.1rem;
     margin: 1em 0;
     position: relative;
 
     .grid-column {
         display: grid;
+        grid-auto-rows: 1fr;
         gap: 5px;
     }
 
     .grid-item {
-        align-items: center;
-        display: flex;
-        justify-content: center;
-        min-height: 18px;
         position: relative;
+        aspect-ratio: 1;
+        min-inline-size: 0;
     }
 
     .item-info {
-        font-size: 10px;
-        height: 100%;
-        width: 100%;
+        display: block;
+        block-size: 100%;
+        inline-size: 100%;
         background-color: var(--gray-200);
         border-radius: 0.25rem;
-
-        font-size: 10px;
-        height: 100%;
-        width: 100%;
     }
 
     .current-item {
@@ -586,8 +583,13 @@ pre:focus-within > .copy-button {
 
     div:nth-child(9) > div:after {
         position: absolute;
-        right: -18px;
+        inset-block-start: 50%;
+        inset-inline-start: 100%;
+        margin-inline-start: 4px;
         color: var(--gray-500);
+        font-size: 0.7rem;
+        line-height: 1;
+        transform: translateY(-50%);
     }
 
     div:nth-child(9) > div:nth-child(1):after {

@@ -845,23 +845,30 @@ html {
         stroke-width: 1.9;
     }
 
+    /* 左边那颗不是图标，是站点自身的圆形 logo */
+    .bk-btn-logo {
+        padding: 0;
+        overflow: hidden;
+        background: var(--body-background);
+    }
+
+    .bk-btn-logo img {
+        display: block;
+        inline-size: 100%;
+        block-size: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
     .bk-pill {
         display: flex;
         flex: 1 1 auto;
         align-items: center;
-        gap: 0.5rem;
+        justify-content: center;
         min-inline-size: 0;
         block-size: var(--bk-bar-h);
-        padding-inline: 0.5rem 0.95rem;
+        padding-inline: 0.95rem;
         border-radius: 999px;
-    }
-
-    .bk-avatar {
-        flex: none;
-        inline-size: 1.75rem;
-        block-size: 1.75rem;
-        border-radius: 0.55rem;
-        object-fit: cover;
     }
 
     .bk-title {
@@ -870,6 +877,7 @@ html {
         font-size: 0.95rem;
         font-weight: 600;
         line-height: 1.2;
+        text-align: center;
         white-space: nowrap;
         text-overflow: ellipsis;
     }
@@ -915,33 +923,59 @@ html {
         transform: translateX(0);
     }
 
-    /* ---------- 抽屉里的内容：分组卡片 + 44px 行高（苹果「设置」那一路） ---------- */
+    /* ---------- 抽屉里的内容：沿用站内左栏那套排版（图标 + 平铺行 + 竖条标记），不再套 iOS 分组卡片 ---------- */
     :is(.book-menu .book-menu-content, .book-header aside) {
+        /* 顶部品牌：缩到 1.9rem，去掉模糊光晕，标题按正文那套字重 */
         .book-brand {
-            margin: 0 0 1rem;
-            padding-inline: 0.35rem;
+            margin: 0 0 0.85rem;
+            padding: 0 0.2rem;
         }
 
-        .book-section-flat {
-            margin: 0 0 1.05rem;
+        .book-brand .site-logo .bislight {
+            display: none;
+        }
 
-            > span {
-                display: block;
-                padding: 0 0.7rem 0.4rem;
-                color: var(--gray-700);
-                font-size: 0.72rem;
-                font-weight: 600;
-                letter-spacing: 0.02em;
+        .book-brand img {
+            inline-size: 1.9rem;
+            block-size: 1.9rem;
+            margin-inline-end: 0.55rem;
+            border-radius: 0.5rem;
+        }
+
+        .book-brand .site-title {
+            font-size: 1rem;
+            line-height: 1.25;
+
+            svg {
+                inline-size: 0.95rem;
+                block-size: 0.95rem;
+                margin-inline-start: 0.25rem;
             }
         }
 
-        /* 一整块浅色底 + 内缩发丝线，替代一行一行的边框 */
+        .book-brand .site-description {
+            inline-size: auto;
+            max-inline-size: 15rem;
+            font-size: 0.72rem;
+            line-height: 1.5;
+        }
+
+        .book-section-flat {
+            margin: 0 0 0.5rem;
+
+            > span {
+                display: block;
+                padding: 0.7rem 0.65rem 0.3rem;
+                color: var(--body-font-color);
+                font-size: 0.85rem;
+                font-weight: 700;
+                letter-spacing: 0;
+            }
+        }
+
         .book-section-flat > ul.book-collspan {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            border-radius: 0.85rem;
-            background: color-mix(in srgb, var(--gray-200) 52%, transparent);
             list-style: none;
         }
 
@@ -950,46 +984,48 @@ html {
             margin: 0;
         }
 
-        .book-section-flat > ul.book-collspan > li + li::before {
-            content: '';
-            position: absolute;
-            inset-block-start: 0;
-            inset-inline: 0.85rem 0;
-            block-size: 1px;
-            background: color-mix(in srgb, var(--gray-700) 15%, transparent);
-            pointer-events: none;
-        }
-
+        /* 平铺行：没有分隔线、没有底色块，按下去才浮一层淡灰 */
         .book-section-flat > ul.book-collspan > li > a,
         .book-section-flat > ul.book-collspan > li > label,
         .book-section-flat > ul.book-collspan > li > button.menu-folder-row {
             display: flex;
             align-items: center;
             gap: 0.6rem;
-            min-block-size: 2.75rem;
-            padding: 0.55rem 0.85rem;
-            color: inherit;
+            min-block-size: 2.5rem;
+            padding: 0.45rem 0.65rem 0.45rem 0.85rem;
+            border-radius: 0.5rem;
+            color: var(--body-font-color);
             font-size: 0.95rem;
             line-height: 1.35;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
+            transition: background-color 140ms ease;
         }
 
         .book-section-flat > ul.book-collspan > li > a:active,
         .book-section-flat > ul.book-collspan > li > label:active,
         .book-section-flat > ul.book-collspan > li > button.menu-folder-row:active {
-            background: color-mix(in srgb, var(--gray-700) 12%, transparent);
+            background: color-mix(in srgb, var(--gray-200) 65%, transparent);
         }
 
         .book-section-flat > ul.book-collspan > li > a.current {
-            background: color-mix(in srgb, var(--color-link) 10%, transparent);
             color: var(--color-link);
             font-weight: 600;
         }
 
-        /* 当前项原本靠一根浮动竖条标记；窄屏改成整行底色，顺带省掉每帧动画 */
-        .menu-flag-marker {
-            display: none;
+        /* 当前项用站内那根竖条标记，只是不飘（省掉每帧动画） */
+        .book-menu-nav .menu-flag-item > .menu-flag-marker {
+            position: absolute;
+            inset-block-start: 50%;
+            inset-inline-start: 0.15rem;
+            inline-size: 3px;
+            block-size: 1.05rem;
+            margin-block-start: -0.525rem;
+            border-radius: 999px;
+            background-color: var(--color-link);
+            animation: none;
+            transform: none;
+            will-change: auto;
         }
 
         .book-section-flat > ul.book-collspan > li > a .book-icon,
@@ -998,40 +1034,46 @@ html {
             inline-size: 1.15rem;
             block-size: 1.15rem;
             margin: 0;
+            color: var(--gray-700);
         }
 
-        /* 折叠子菜单（配色列表等）：同一块卡片里再缩进一档 */
+        .book-section-flat > ul.book-collspan > li > a.current .book-icon {
+            color: currentColor;
+        }
+
+        /* 折叠子菜单（配色列表等）：同一列里再缩进一档 */
         .book-section-flat > ul.book-collspan ul {
-            margin: 0;
+            margin: 0 0 0.25rem;
             padding-inline-start: 0;
+            list-style: none;
         }
 
         .book-section-flat > ul.book-collspan ul li {
             display: flex;
             align-items: center;
-            min-block-size: 2.5rem;
+            min-block-size: 2.35rem;
             margin: 0;
-            padding: 0 0.85rem 0 2.55rem;
+            padding: 0 0.65rem 0 2.35rem;
             font-size: 0.9rem;
         }
 
-        /* 热力图最右一列的星期几靠 right:-18px 挂在网格外，抽屉里给它留出这条缝 */
-        .relitu-container {
-            margin-inline-end: 1.15rem;
-        }
-
         .book-search {
-            margin: 0 0 1rem;
-            padding: 0 0.15rem;
+            margin: 0 0 0.6rem;
+            padding: 0 0.2rem;
             border: 0;
 
             input {
-                block-size: 2.25rem;
-                padding: 0 0.85rem;
-                border: 0;
-                border-radius: 0.7rem;
-                background: color-mix(in srgb, var(--gray-200) 70%, transparent);
+                block-size: 2.4rem;
+                padding: 0 0.75rem;
+                border: 1px solid transparent;
+                border-radius: 0.55rem;
+                background: var(--gray-200);
                 font-size: 1rem;
+
+                &:focus {
+                    border-color: var(--color-link);
+                    background: var(--body-background);
+                }
             }
         }
     }

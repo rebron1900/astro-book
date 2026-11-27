@@ -1,5 +1,5 @@
 ---
-import { ChevronRight, Ellipsis, HouseHeart, MessageCircleHeart, Sparkles, SportShoe } from '@lucide/astro';
+import { DoorOpen, Ellipsis, Flower2, HouseHeart, MessageCircleHeart, Package, Sparkles, SportShoe, Sprout, Tags } from '@lucide/astro';
 import { settings } from '../../api/store';
 import { buildTabBar } from '../../lib/tabbar';
 
@@ -14,7 +14,13 @@ const ICONS: Record<string, typeof HouseHeart> = {
     '/': HouseHeart,
     '/timeline/memo/': MessageCircleHeart,
     '/activity/': SportShoe,
-    '/douban/': Sparkles
+    '/douban/': Sparkles,
+    // 「更多」里那几个入口用和左栏菜单同一套图标
+    '/links/': DoorOpen,
+    '/about/': Sprout,
+    '/garden/': Flower2,
+    '/archives/': Package,
+    '/tags/': Tags
 };
 
 // 当前页在「更多」里时，点亮「更多」这一格
@@ -59,23 +65,23 @@ const moreActive = more.some((item) => item.active);
     <button type="button" class="bk-more-scrim" data-bk-more-close aria-label="关闭" tabindex="-1"></button>
 
     <div class="bk-more-sheet">
-        <span class="bk-more-grabber" aria-hidden="true"></span>
         <p class="bk-more-title">更多</p>
 
         <ul class="bk-more-list">
             {
-                more.map((item) => (
-                    <li>
-                        <a class:list={[{ 'is-active': item.active }]} href={item.url}>
-                            <span>{item.label}</span>
-                            <ChevronRight class="bk-more-chevron" aria-hidden="true" />
-                        </a>
-                    </li>
-                ))
+                more.map((item) => {
+                    const Icon = ICONS[item.url];
+                    return (
+                        <li>
+                            <a class:list={[{ 'is-active': item.active }]} href={item.url}>
+                                {Icon && <Icon class="bk-more-icon" aria-hidden="true" />}
+                                <span>{item.label}</span>
+                            </a>
+                        </li>
+                    );
+                })
             }
         </ul>
-
-        <button type="button" class="bk-more-close" data-bk-more-close>关闭</button>
     </div>
 </div>
 

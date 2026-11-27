@@ -11,7 +11,10 @@ import config from '../../config';
                 {
                     config.footer.map((item) => (
                         <li>
-                            <Fragment set:html={item.html} />
+                            {/* 包一层 p：抽屉里的菜单行样式只认 li 的直接子元素，页脚这几行要当普通小字 */}
+                            <p class="book-copy-line">
+                                <Fragment set:html={item.html} />
+                            </p>
                         </li>
                     ))
                 }
@@ -49,6 +52,11 @@ import config from '../../config';
 </script>
 
 <style is:global>
+    /* 页脚每行包在 p 里，默认段落外边距会把它抻开 */
+    .book-copy-line {
+        margin: 0;
+    }
+
     /* 桌面端保持原样：隐藏 summary，details 默认就是展开的 */
     @media screen and (min-width: 47.85rem) {
         .book-copy-summary {
@@ -59,22 +67,23 @@ import config from '../../config';
     /* 移动端左抽屉：底部「其他」收成一行，目录树多出约 220px 可视高度 */
     @media screen and (max-width: 47.84rem) {
         .book-copy-wrap {
-            margin-block-start: 10px;
-            padding-block-start: 10px;
-            border-block-start: 1px solid var(--gray-200);
+            margin-block-start: 0.2rem;
+            padding-block-start: 0;
         }
 
+        /* 和「配色」「路线牌」同一套小标题：深色、加粗，不带底色 */
         .book-copy-summary {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.35rem 0;
-            color: var(--gray-600);
-            font-size: 0.8rem;
-            font-weight: 600;
+            padding: 0.7rem 0.65rem 0.3rem;
+            color: var(--body-font-color);
+            font-size: 0.85rem;
+            font-weight: 700;
             line-height: 1.4;
             list-style: none;
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .book-copy-summary::-webkit-details-marker {
@@ -94,6 +103,27 @@ import config from '../../config';
         /* 展开后不再重复显示「其他」小标题，summary 本身就是标题 */
         .book-copy-wrap .book-copy .book-section-flat > span {
             display: none;
+        }
+
+        /* 页脚这些小字也跟着站内那套走：灰、小、行距松，不加卡片 */
+        .book-copy-wrap .book-copy {
+            padding: 0 0.65rem 0.4rem;
+            color: var(--gray-700);
+            font-size: 0.78rem;
+            line-height: 1.75;
+        }
+
+        .book-copy-wrap .book-copy li {
+            margin: 0;
+            padding: 0;
+        }
+
+        .book-copy-wrap .book-copy-line {
+            margin: 0;
+        }
+
+        .book-copy-wrap .book-copy a {
+            color: inherit;
         }
     }
 </style>

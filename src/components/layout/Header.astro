@@ -1,5 +1,5 @@
 ---
-import { TableOfContents, Menu } from '@lucide/astro';
+import { TableOfContents } from '@lucide/astro';
 
 const { title } = Astro.props;
 ---
@@ -9,12 +9,11 @@ const { title } = Astro.props;
     桌面端整块 display:none（见 .book-header），这里的结构只服务窄屏。
 -->
 <div class="bk-bar">
-    <label class="bk-btn" for="menu-control" aria-label="打开菜单">
-        <Menu class="bk-icon" aria-hidden="true" />
+    <label class="bk-btn bk-btn-logo" for="menu-control" aria-label="打开菜单">
+        <img src="/logo.svg" alt="" width="44" height="44" aria-hidden="true" />
     </label>
 
     <div class="bk-pill">
-        <img class="bk-avatar" src="/logo.svg" alt="" width="28" height="28" aria-hidden="true" />
         <strong class="bk-title" title={title}>{title}</strong>
     </div>
 
