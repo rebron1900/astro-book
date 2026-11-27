@@ -1321,7 +1321,7 @@ body.is-fp-modal {
     .ex-fp-map-wrap {
         position: sticky;
         z-index: 3;
-        inset-block-start: 0;
+        inset-block-start: var(--bk-sticky-top, 0px);
         block-size: 42svh;
         min-block-size: 15rem;
         border-radius: 0 0 0.9rem 0.9rem;

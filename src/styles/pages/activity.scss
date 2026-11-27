@@ -14,7 +14,7 @@
 .act-switch-bar {
     /* 跟着地图一起吸顶：地图滚到顶时按钮也停在它的右上角 */
     position: sticky;
-    inset-block-start: 0;
+    inset-block-start: var(--bk-sticky-top, 0px);
     z-index: 35;
     display: flex;
     justify-content: flex-end;
@@ -155,7 +155,7 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
 
 .act-mode--footprint .ex-fp-map-wrap {
     position: sticky;
-    inset-block-start: 0;
+    inset-block-start: var(--bk-sticky-top, 0px);
     z-index: 25;
     /* 足迹地图固定和悬浮都是 21rem：吸顶不改变高度，只切换阴影 */
     block-size: 21rem;

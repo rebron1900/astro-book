@@ -1,5 +1,6 @@
 import { createSignal, onCleanup, onMount } from 'solid-js';
 import { ACTIVITY_MODE_EVENT, type ActivityModeDetail } from '../../lib/client/activity';
+import { floatingBarOffset } from '../../lib/client/bar-offset';
 import type { ExerciseHoverDetail, ExerciseRecord, ExerciseScope, ExerciseSelectDetail, SportKey } from '../../lib/exercise';
 import { EXERCISE_HOVER_EVENT, EXERCISE_SELECT_EVENT, SPORT_META, SPORT_ORDER } from '../../lib/exercise';
 import ExerciseMap from './ExerciseMap';
@@ -74,7 +75,8 @@ export default function ExerciseMapPanel(props: ExerciseMapPanelProps) {
             if (!sentinel || !hero) return;
             // display:none 时 rect 恒为 0，算出来的是假状态；等切回来时由 ACTIVITY_MODE_EVENT 补同步
             if (!hero.offsetParent) return;
-            setStuck(sentinel.getBoundingClientRect().bottom <= 0);
+            // 吸顶位置 = 视口顶部 + 移动端悬浮顶栏，判断也要按这个偏移（桌面端为 0）
+            setStuck(sentinel.getBoundingClientRect().bottom <= floatingBarOffset());
         };
 
         let observer: IntersectionObserver | null = null;

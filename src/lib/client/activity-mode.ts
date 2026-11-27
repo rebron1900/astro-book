@@ -1,4 +1,5 @@
 import { ACTIVITY_FOCUS_PLACE_EVENT, ACTIVITY_MODE_EVENT, type ActivityFocusPlaceDetail, type ActivityModeDetail } from './activity';
+import { floatingBarOffset } from './bar-offset';
 import { prefersReducedMotion } from './dom';
 import { createTippy } from './tippy';
 
@@ -20,11 +21,11 @@ export default function initActivityMode(): () => void {
     const mapBlock = (mode: string) => document.querySelector<HTMLElement>(mode === 'footprint' ? '.ex-fp-map-wrap' : '.ex-map-hero');
 
     /**
-     * 吸顶与否只认一个判据：哨兵是否已经滚出视口顶部。
+     * 吸顶与否只认一个判据：哨兵是否已经滚出「视口顶部 + 悬浮顶栏」。
      * 不用 IntersectionObserver 回调里的 entry.isIntersecting —— 那个值可能在切模式、
      * 布局刚变的那一刻就过期了，拿它覆盖 DOM 会让地图已经吸顶却没有投影（或反过来）。
      */
-    const stickyBySentinel = (sentinel: Element | null) => (sentinel ? sentinel.getBoundingClientRect().bottom <= 0 : false);
+    const stickyBySentinel = (sentinel: Element | null) => (sentinel ? sentinel.getBoundingClientRect().bottom <= floatingBarOffset() : false);
 
     /** 切模式时按当前滚动位置确定新地图的吸顶态，避免 display:none → block 时误判 */
     const syncStuckState = (mode: string) => {

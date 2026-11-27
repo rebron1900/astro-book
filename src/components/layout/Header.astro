@@ -4,15 +4,33 @@ import { TableOfContents, Menu } from '@lucide/astro';
 const { title } = Astro.props;
 ---
 
-<div class="flex align-center justify-between">
-    <label for="menu-control" aria-label="打开菜单">
-        <Menu class="book-icon" aria-hidden="true" />
+<!--
+    移动端悬浮顶栏：两颗圆按钮 + 中间一枚胶囊，都是磨砂玻璃。
+    桌面端整块 display:none（见 .book-header），这里的结构只服务窄屏。
+-->
+<div class="bk-bar">
+    <label class="bk-btn" for="menu-control" aria-label="打开菜单">
+        <Menu class="bk-icon" aria-hidden="true" />
     </label>
 
-    <strong class="ellipsis"> {title} </strong>
+    <div class="bk-pill">
+        <img class="bk-avatar" src="/logo.svg" alt="" width="28" height="28" aria-hidden="true" />
+        <strong class="bk-title" title={title}>{title}</strong>
+    </div>
 
-    <label for="toc-control" aria-label="打开目录">
-        <!-- 这里是 toc 图标的 SVG 内容 -->
-        <TableOfContents class="book-icon" aria-hidden="true" />
+    <label class="bk-btn" for="toc-control" aria-label="打开目录">
+        <TableOfContents class="bk-icon" aria-hidden="true" />
     </label>
 </div>
+
+<script>
+    // 磨砂玻璃只在能扛住的设备上开：模糊是每帧重算的像素开销，
+    // 低端机（核心少 / 内存小）和系统「降低透明度」时直接退化成接近实心的表面。
+    const root = document.documentElement;
+    if (root.dataset.bkLite === undefined) {
+        const cores = navigator.hardwareConcurrency ?? 8;
+        const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
+        const opaque = window.matchMedia('(prefers-reduced-transparency: reduce)').matches;
+        root.dataset.bkLite = opaque || (cores <= 4 && memory <= 4) ? 'on' : 'off';
+    }
+</script>

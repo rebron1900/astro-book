@@ -41,7 +41,8 @@ body:has(.exercise-page) .book-toc .book-toc-content {
 
 .ex-map-hero {
     position: sticky;
-    inset-block-start: 0;
+    /* 让开移动端悬浮顶栏；桌面端 --bk-sticky-top 为 0 */
+    inset-block-start: var(--bk-sticky-top, 0px);
     /* 高于时间线卡片（卡片是 position:relative），低于移动端抽屉菜单（见下方覆盖） */
     z-index: 30;
     margin-block-end: 1.6rem;

@@ -389,18 +389,10 @@ body[dir='rtl'] .book-menu {
     }
 }
 
+// 移动端悬浮顶栏的详细样式见文件末尾「移动端：磨砂玻璃顶栏 + 抽屉」一节。
 .book-header {
     display: none;
     margin-bottom: $padding-16;
-
-    label {
-        line-height: 0;
-    }
-
-    svg.book-icon {
-        height: 1.5em;
-        width: 1.5em;
-    }
 }
 
 .book-pagination svg.book-icon {
@@ -629,8 +621,8 @@ body[dir='rtl'] .book-menu {
         }
 
         .book-menu .book-menu-content {
-            transform: translateX($menu-width);
-            box-shadow: 14px 0 36px rgb(0 0 0 / 0.18);
+            /* 抽屉是浮在视口里的圆角面板，开合只靠自身的位移，见文末抽屉一节 */
+            transform: translateX(0);
             background-color: var(--body-background);
 
             span.menu-flag.current {
@@ -647,15 +639,14 @@ body[dir='rtl'] .book-menu {
         @include outline;
     }
 
-    /* 两个抽屉共用一块全屏遮罩：点空白处关闭；正文不再用整页 opacity 压暗 */
+    /* 两个抽屉共用一块全屏遮罩：点空白处关闭；正文不再用整页 opacity 压暗。
+       遮罩不做模糊——全屏 backdrop-filter 每帧都要重算一次，是窄屏上最贵的一笔。 */
     .book-menu-overlay,
     .book-toc-overlay {
         position: fixed;
         inset: 0;
         z-index: 94;
-        background: rgb(0 0 0 / 0.35);
-        backdrop-filter: blur(1px);
-        -webkit-backdrop-filter: blur(1px);
+        background: rgb(0 0 0 / 0.38);
     }
 
     /* 只在真的有目录/反链面板的页面铺遮罩，避免首页之类按到目录图标时只锁滚动 */
@@ -721,7 +712,7 @@ body[dir='rtl'] .book-menu {
     // for RTL support
     body[dir='rtl'] #menu-control:checked ~ main {
         .book-menu .book-menu-content {
-            transform: translateX(-$menu-width);
+            transform: translateX(0);
         }
     }
 }
@@ -769,4 +760,346 @@ html[data-theme-changing] .book-toc-content {
 
 .no-transition {
     view-transition-name: none;
+}
+
+/* ==========================================================================
+   移动端：磨砂玻璃顶栏 + 抽屉
+   性能取向（这也是这套样式的前提）：
+   1) 模糊只铺在三个固定的小表面上（两颗 44px 圆按钮 + 中间一枚胶囊），
+      不给整页遮罩、不给滚动内容加 backdrop-filter——模糊面积直接决定每帧开销；
+   2) 开合、按压只动 transform / opacity，不参与布局，也不动画化模糊半径；
+   3) 低端机（核心少 / 内存小）或系统开了「降低透明效果」时，Header 的脚本会在
+      html 上写 data-bk-lite=on，这里直接把模糊关掉、换成接近实心的表面。
+   ========================================================================== */
+html {
+    --bk-bar-h: 2.75rem;
+    --bk-bar-gap: 0.65rem;
+    --bk-glass: color-mix(in srgb, var(--body-background) 74%, transparent);
+    --bk-glass-line: color-mix(in srgb, var(--gray-700) 22%, transparent);
+    --bk-glass-shadow:
+        0 1px 1px rgb(0 0 0 / 0.04),
+        0 6px 18px rgb(0 0 0 / 0.1);
+    --bk-sheet-w: 18.5rem;
+    /* 内容里需要吸顶的块（运动页 / 足迹地图）让开顶栏的高度；桌面端为 0 */
+    --bk-sticky-top: 0px;
+}
+
+@media screen and (max-width: $mobile-breakpoint) {
+    html {
+        --bk-sticky-top: calc(var(--bk-bar-h) + var(--bk-bar-gap) * 2 + env(safe-area-inset-top));
+    }
+
+    /* 顶栏本身脱离文档流，用 header 的高度在原位占住这块空间 */
+    .book-header:has(.bk-bar) {
+        block-size: calc(var(--bk-bar-h) + var(--bk-bar-gap) * 2 + env(safe-area-inset-top));
+        margin-block-end: 0.5rem;
+    }
+
+    .bk-bar {
+        position: fixed;
+        inset-block-start: 0;
+        inset-inline: 0;
+        z-index: 60;
+        display: flex;
+        align-items: center;
+        gap: var(--bk-bar-gap);
+        padding: calc(var(--bk-bar-gap) + env(safe-area-inset-top)) var(--bk-bar-gap) var(--bk-bar-gap);
+        /* 按钮之间的空白不挡正文：只有三个表面接收点击 */
+        pointer-events: none;
+    }
+
+    .bk-bar > * {
+        pointer-events: auto;
+    }
+
+    .bk-btn,
+    .bk-pill {
+        border: 1px solid var(--bk-glass-line);
+        background: var(--bk-glass);
+        box-shadow: var(--bk-glass-shadow);
+        -webkit-backdrop-filter: blur(14px) saturate(1.7);
+        backdrop-filter: blur(14px) saturate(1.7);
+    }
+
+    .bk-btn {
+        display: inline-flex;
+        flex: none;
+        align-items: center;
+        justify-content: center;
+        inline-size: var(--bk-bar-h);
+        block-size: var(--bk-bar-h);
+        border-radius: 50%;
+        color: var(--body-font-color);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .bk-btn:active {
+        transform: scale(0.93);
+    }
+
+    .bk-btn .bk-icon {
+        inline-size: 1.3rem;
+        block-size: 1.3rem;
+        stroke-width: 1.9;
+    }
+
+    .bk-pill {
+        display: flex;
+        flex: 1 1 auto;
+        align-items: center;
+        gap: 0.5rem;
+        min-inline-size: 0;
+        block-size: var(--bk-bar-h);
+        padding-inline: 0.5rem 0.95rem;
+        border-radius: 999px;
+    }
+
+    .bk-avatar {
+        flex: none;
+        inline-size: 1.75rem;
+        block-size: 1.75rem;
+        border-radius: 0.55rem;
+        object-fit: cover;
+    }
+
+    .bk-title {
+        min-inline-size: 0;
+        overflow: hidden;
+        font-size: 0.95rem;
+        font-weight: 600;
+        line-height: 1.2;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    /* 侧栏 / 目录：浮在视口里的圆角面板，四周留一条缝露出下面的页面 */
+    .book-menu .book-menu-content {
+        inset-block: calc(0.5rem + env(safe-area-inset-top)) calc(0.5rem + env(safe-area-inset-bottom));
+        inset-inline-start: 0.5rem;
+        inline-size: var(--bk-sheet-w);
+        padding: 0.85rem 0.7rem 1.1rem;
+        border-radius: 1.35rem;
+        background: var(--body-background);
+        box-shadow:
+            0 18px 48px rgb(0 0 0 / 0.24),
+            0 2px 6px rgb(0 0 0 / 0.08);
+        transform: translateX(calc(-100% - 0.75rem));
+        transition: transform 340ms cubic-bezier(0.32, 0.72, 0, 1);
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #menu-control:checked ~ main .book-menu .book-menu-content {
+        transform: translateX(0);
+    }
+
+    .book-header aside {
+        inset-block: calc(0.5rem + env(safe-area-inset-top)) calc(0.5rem + env(safe-area-inset-bottom));
+        inset-inline-end: 0.5rem;
+        inline-size: var(--bk-sheet-w);
+        max-inline-size: none;
+        padding: 0.9rem 0.75rem 1.2rem;
+        border-radius: 1.35rem;
+        box-shadow:
+            0 18px 48px rgb(0 0 0 / 0.24),
+            0 2px 6px rgb(0 0 0 / 0.08);
+        transform: translateX(calc(100% + 0.75rem));
+        transition: transform 340ms cubic-bezier(0.32, 0.72, 0, 1);
+        font-size: 0.95rem;
+        line-height: 1.45;
+    }
+
+    #toc-control:checked ~ main .book-header aside {
+        transform: translateX(0);
+    }
+
+    /* ---------- 抽屉里的内容：分组卡片 + 44px 行高（苹果「设置」那一路） ---------- */
+    :is(.book-menu .book-menu-content, .book-header aside) {
+        .book-brand {
+            margin: 0 0 1rem;
+            padding-inline: 0.35rem;
+        }
+
+        .book-section-flat {
+            margin: 0 0 1.05rem;
+
+            > span {
+                display: block;
+                padding: 0 0.7rem 0.4rem;
+                color: var(--gray-700);
+                font-size: 0.72rem;
+                font-weight: 600;
+                letter-spacing: 0.02em;
+            }
+        }
+
+        /* 一整块浅色底 + 内缩发丝线，替代一行一行的边框 */
+        .book-section-flat > ul.book-collspan {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            border-radius: 0.85rem;
+            background: color-mix(in srgb, var(--gray-200) 52%, transparent);
+            list-style: none;
+        }
+
+        .book-section-flat > ul.book-collspan > li {
+            position: relative;
+            margin: 0;
+        }
+
+        .book-section-flat > ul.book-collspan > li + li::before {
+            content: '';
+            position: absolute;
+            inset-block-start: 0;
+            inset-inline: 0.85rem 0;
+            block-size: 1px;
+            background: color-mix(in srgb, var(--gray-700) 15%, transparent);
+            pointer-events: none;
+        }
+
+        .book-section-flat > ul.book-collspan > li > a,
+        .book-section-flat > ul.book-collspan > li > label,
+        .book-section-flat > ul.book-collspan > li > button.menu-folder-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            min-block-size: 2.75rem;
+            padding: 0.55rem 0.85rem;
+            color: inherit;
+            font-size: 0.95rem;
+            line-height: 1.35;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .book-section-flat > ul.book-collspan > li > a:active,
+        .book-section-flat > ul.book-collspan > li > label:active,
+        .book-section-flat > ul.book-collspan > li > button.menu-folder-row:active {
+            background: color-mix(in srgb, var(--gray-700) 12%, transparent);
+        }
+
+        .book-section-flat > ul.book-collspan > li > a.current {
+            background: color-mix(in srgb, var(--color-link) 10%, transparent);
+            color: var(--color-link);
+            font-weight: 600;
+        }
+
+        /* 当前项原本靠一根浮动竖条标记；窄屏改成整行底色，顺带省掉每帧动画 */
+        .menu-flag-marker {
+            display: none;
+        }
+
+        .book-section-flat > ul.book-collspan > li > a .book-icon,
+        .book-section-flat > ul.book-collspan > li > button .book-icon {
+            flex: none;
+            inline-size: 1.15rem;
+            block-size: 1.15rem;
+            margin: 0;
+        }
+
+        /* 折叠子菜单（配色列表等）：同一块卡片里再缩进一档 */
+        .book-section-flat > ul.book-collspan ul {
+            margin: 0;
+            padding-inline-start: 0;
+        }
+
+        .book-section-flat > ul.book-collspan ul li {
+            display: flex;
+            align-items: center;
+            min-block-size: 2.5rem;
+            margin: 0;
+            padding: 0 0.85rem 0 2.55rem;
+            font-size: 0.9rem;
+        }
+
+        /* 热力图最右一列的星期几靠 right:-18px 挂在网格外，抽屉里给它留出这条缝 */
+        .relitu-container {
+            margin-inline-end: 1.15rem;
+        }
+
+        .book-search {
+            margin: 0 0 1rem;
+            padding: 0 0.15rem;
+            border: 0;
+
+            input {
+                block-size: 2.25rem;
+                padding: 0 0.85rem;
+                border: 0;
+                border-radius: 0.7rem;
+                background: color-mix(in srgb, var(--gray-200) 70%, transparent);
+                font-size: 1rem;
+            }
+        }
+    }
+
+    /* 目录抽屉里的列表也按同样的行距走 */
+    .book-header aside {
+        nav ul {
+            padding-inline-start: 0;
+        }
+
+        nav ul li {
+            margin: 0.1rem 0;
+        }
+
+        nav ul ul {
+            padding-inline-start: 0.6rem;
+        }
+
+        a {
+            display: block;
+            padding: 0.5rem 0.6rem;
+            border-radius: 0.6rem;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        a:active {
+            background: color-mix(in srgb, var(--gray-700) 12%, transparent);
+        }
+
+        a.active,
+        li.active > a {
+            background: color-mix(in srgb, var(--color-link) 10%, transparent);
+        }
+    }
+
+    /* 兜底：不支持模糊，或被降级时，表面接近实心，布局与圆角完全一致 */
+    html[data-bk-lite='on'] .bk-btn,
+    html[data-bk-lite='on'] .bk-pill {
+        background: color-mix(in srgb, var(--body-background) 96%, transparent);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+        .bk-btn,
+        .bk-pill {
+            background: color-mix(in srgb, var(--body-background) 96%, transparent);
+        }
+    }
+
+    @media (prefers-reduced-transparency: reduce) {
+        .bk-btn,
+        .bk-pill {
+            background: color-mix(in srgb, var(--body-background) 96%, transparent);
+            -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .bk-btn,
+        .book-menu .book-menu-content,
+        .book-header aside {
+            transition: none;
+        }
+
+        .bk-btn:active {
+            transform: none;
+        }
+    }
 }
