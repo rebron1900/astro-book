@@ -125,5 +125,8 @@ export function routeSketch(encoded: string | undefined, options: { maxPoints?: 
     const path = projected.map(([x, y], index) => `${index === 0 ? 'M' : 'L'}${x.toFixed(precision)},${y.toFixed(precision)}`).join(' ');
     const [startX, startY] = projected[0];
     const [endX, endY] = projected.at(-1)!;
-    return { path, startX, startY, endX, endY };
+    // 起终点圆点按一位小数取整：十七位浮点小数对一张 620×120 的缩略图没有任何意义，
+    // 一页近两百张卡片下来能省十几 KB
+    const round1 = (value: number) => Math.round(value * 10) / 10;
+    return { path, startX: round1(startX), startY: round1(startY), endX: round1(endX), endY: round1(endY) };
 }

@@ -68,7 +68,7 @@ function visibleTags(post: ArchivePost) {
                 <div class="archive-card-grid">
                     {group.items.map((post) => (
                         <a class="archive-card" href={normalizeSlug(post.slug)} data-full-title={post.title}>
-                            <h2 class="archive-card-title" data-archive-title data-full-title={post.title}>{post.title}</h2>
+                            <h2 class="archive-card-title" data-archive-title>{post.title}</h2>
                             <div class="archive-card-meta">
                                 <time datetime={cardDate(post)}>{cardDate(post)}</time>
                                 {visibleTags(post).length > 0 && (
