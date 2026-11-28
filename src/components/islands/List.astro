@@ -341,11 +341,11 @@ function excerptText(value: string | null | undefined, max = 150) {
                             {stravaGroup ? (
                                 <div class="strava-cards is-group">
                                     {stravaGroup.map((groupEntry) => (
-                                        <LedgerStrava activity={groupEntry.data} metricIcons />
+                                        <LedgerStrava activity={groupEntry.data} metricIcons sketchMaxPoints={32} />
                                     ))}
                                 </div>
                             ) : (
-                                entry.kind === 'strava' && <LedgerStrava activity={entry.data} metricIcons />
+                                entry.kind === 'strava' && <LedgerStrava activity={entry.data} metricIcons sketchMaxPoints={32} />
                             )}
                         </div>
 

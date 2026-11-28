@@ -83,6 +83,7 @@ if (post) {
 
 <script>
     import { createTippy } from '../../lib/client/tippy';
+    import { prefetchRelitu, relituContent } from '../../lib/client/relitu';
 
     import { initCards } from '../../lib/client/cards-loader';
     import initZoom from '../../lib/client/zoom';
@@ -113,7 +114,14 @@ if (post) {
             interactive: true,
             maxWidth: 'none',
             theme: 'auto',
-            appendTo: () => document.body
+            appendTo: () => document.body,
+            // 内容热力图的提示按需现拼（数据在 /relitu.json），数据没到就先退回格子自带的 title
+            content: (reference: Element) => {
+                const el = reference as HTMLElement;
+                return relituContent(el.dataset.relituDay) || el.getAttribute('title') || '';
+            }
         });
+
+        prefetchRelitu();
     });
 </script>

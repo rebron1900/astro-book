@@ -168,6 +168,15 @@
     display: none;
 }
 
+/* 长列表的渲染让位：一行不在视口附近时，浏览器跳过它的样式计算、布局和绘制，
+   只按记忆高度占位（contain-intrinsic-size 的 auto）。时间线一页几百张卡片、
+   上千个节点，手机上真正的开销就在这里；滚到附近时浏览器会先渲染再进入视口，
+   观感和滚动条长度都不变。 */
+.ledger-row {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 190px;
+}
+
 .timeline-list {
     inline-size: 100%;
     margin-block: 0.5rem 1.5rem;

@@ -1,5 +1,4 @@
 ---
-import { Bike, Dumbbell, Footprints, Mountain, Waves } from '@lucide/astro';
 import type { StravaStat } from '../../lib/strava-preview';
 import MetricIcon from '../ui/MetricIcon.astro';
 
@@ -25,18 +24,19 @@ interface Props {
 
 const { activity, route, meta, dataId, dataDate, dataSport, metricIcons = false } = Astro.props as Props;
 
-const SPORT_ICONS: Record<SportKey, any> = {
-    run: Footprints,
-    ride: Bike,
-    walk: Footprints,
-    hike: Mountain,
-    climb: Mountain,
-    swim: Waves,
-    stair: Footprints,
-    other: Dumbbell
+/** 卡片图标走整页一份的 sprite（见 ui/CardSprite.astro）：每个图标从 530 字节降到一行 <use> */
+const SPORT_ICON_IDS: Record<SportKey, string> = {
+    run: '#ci-footprints',
+    ride: '#ci-bike',
+    walk: '#ci-footprints',
+    hike: '#ci-mountain',
+    climb: '#ci-mountain',
+    swim: '#ci-footprints',
+    stair: '#ci-footprints',
+    other: '#ci-dumbbell'
 };
 
-const SportIcon = SPORT_ICONS[meta.key] ?? Footprints;
+const sportIconId = SPORT_ICON_IDS[meta.key] ?? '#ci-footprints';
 ---
 
 <div class:list={['strava-card', `sport-${meta.key}`]} data-exercise-id={dataId} data-date={dataDate} data-sport={dataSport}>
@@ -50,7 +50,7 @@ const SportIcon = SPORT_ICONS[meta.key] ?? Footprints;
     <div class="strava-content">
         <div class="strava-head">
             <div class="strava-title-row">
-                <SportIcon class="strava-sport-icon" size={14} aria-hidden="true" />
+                <svg class="strava-sport-icon" viewBox="0 0 24 24" aria-hidden="true"><use href={sportIconId} /></svg>
                 <span class="strava-sport-name">{meta.label}</span>
                 <h2 class="entry-title">{activity.name}</h2>
             </div>

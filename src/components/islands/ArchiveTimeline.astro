@@ -1,6 +1,5 @@
 ---
 import type { Post } from '@ts-ghost/content-api';
-import { BookOpenText } from '@lucide/astro';
 import { normalizeData, normalizeSlug, cnDateParts } from '../../lib/utils/help';
 import '../../styles/pages/archives.scss';
 
@@ -63,7 +62,7 @@ function visibleTags(post: ArchivePost) {
                 <span class="archive-month-count">{group.items.length} 篇</span>
             </div>
             <div class="archive-month-rail" aria-hidden="true">
-                <span class="rail-marker"><BookOpenText /></span>
+                <span class="rail-marker"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ci-book-open-text" /></svg></span>
             </div>
             <div class="archive-month-content">
                 <div class="archive-card-grid">

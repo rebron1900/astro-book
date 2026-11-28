@@ -22,7 +22,7 @@ const { activity, dataId, dataSport, sketchMaxPoints, dataDate, metricIcons } = 
 
 <StravaCardPreview
     activity={activity}
-    route={routeSketch(activity.polyline, { maxPoints: sketchMaxPoints ?? 0 })}
+    route={routeSketch(activity.polyline, { maxPoints: sketchMaxPoints ?? 40, precision: 0 })}
     meta={stravaMetaFor(activity)}
     dataId={dataId}
     dataSport={dataSport}

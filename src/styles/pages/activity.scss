@@ -726,3 +726,10 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-side--footprint {
     }
 
 }
+
+/* 运动页时间线按「月」成组，一个月里常有好几张卡片：屏外月份整块跳过渲染，
+   高度按上次实测记忆（contain-intrinsic-size 的 auto），滚动条不会乱跳。 */
+.ex-month-row {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 560px;
+}

@@ -1,0 +1,30 @@
+---
+import { CARD_ICONS } from '../../lib/card-icons';
+
+/**
+ * 卡片图标的 <symbol> 集合，整页只渲染一次（挂在 BaseLayout 里，约 1.2KB）。
+ *
+ * 运动页 178 张卡片、归档页 150 个月份原本各自内联整段 Lucide 路径，
+ * 一页要多写 90–120KB；改成 <use> 引用后每处只剩一行。
+ * fill/stroke 写在 <symbol> 上，子路径继承，颜色仍跟 currentColor 走。
+ */
+const icons = Object.entries(CARD_ICONS);
+---
+
+<svg class="card-sprite" aria-hidden="true" focusable="false" width="0" height="0">
+    {
+        icons.map(([name, paths]) => (
+            <symbol id={`ci-${name}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={paths} />
+        ))
+    }
+</svg>
+
+<style>
+    /* 只做定义，不占位、不参与布局 */
+    .card-sprite {
+        position: absolute;
+        inline-size: 0;
+        block-size: 0;
+        overflow: hidden;
+    }
+</style>
