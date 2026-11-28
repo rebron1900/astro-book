@@ -166,7 +166,14 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
 
             <div class="act-mode act-mode--footprint">
                 <div class="act-fp-sentinel" aria-hidden="true"></div>
-                <ExerciseFootprintLoader client:idle dataUrl="/footprint-data.json" token={mapToken} activeMode="footprint" />
+                {/*
+                    这里必须用 client:visible，不能用 client:idle。
+                    运动那张地图是 client:load、按帧渲染地形和自动旋转，主线程很少有空闲，
+                    client:idle 的 requestIdleCallback 在手机上可以整页都等不到（实测 390 宽
+                    等 10 秒、连 "正在加载足迹…" 的骨架都还在）。改成 visible：这一栏
+                    display:none 时不加载任何东西，切到足迹、它真的可见了才水合。
+                */}
+                <ExerciseFootprintLoader client:visible dataUrl="/footprint-data.json" token={mapToken} activeMode="footprint" />
             </div>
         </div>
     </article>
