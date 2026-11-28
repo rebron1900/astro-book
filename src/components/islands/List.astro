@@ -257,7 +257,7 @@ function excerptText(value: string | null | undefined, max = 150) {
         {groupBy === 'month' ? (
             <TimelineMonthList entries={entries} page={page} category={monthCategory} autoLoad={autoLoad} />
         ) : (
-            <div class="tl tl-ledger timeline-list" data-timeline-list data-auto-load={autoLoad ? 'true' : 'false'} data-next={page.url?.next ?? ''}>
+            <div class:list={['tl', 'tl-ledger', 'timeline-list', { 'is-filter-strava': activeKind === 'strava' }]} data-timeline-list data-auto-load={autoLoad ? 'true' : 'false'} data-next={page.url?.next ?? ''}>
         {entries.map((entry, index) => {
             if (stravaGroupMembers.has(index) || neodbGroupMembers.has(index) || mediaGroupMembers.has(index)) return null;
             const showDate = index === 0 || dateKey(entries[index - 1].time) !== dateKey(entry.time);
@@ -338,14 +338,14 @@ function excerptText(value: string | null | undefined, max = 150) {
                                     )}
                                 </div>
                             )}
-                            {stravaGroup ? (
-                                <div class="strava-cards is-group">
-                                    {stravaGroup.map((groupEntry) => (
+                            {/* 运动卡片也走两列网格：一天只有一条记录时不再拉成一整行宽，
+                                和书影音 / 阅读卡片的排版一致（单独一张就占一列） */}
+                            {entry.kind === 'strava' && (
+                                <div class:list={['strava-cards', { 'is-group': Boolean(stravaGroup) }]}>
+                                    {(stravaGroup ?? [entry]).map((groupEntry) => (
                                         <LedgerStrava activity={groupEntry.data} metricIcons sketchMaxPoints={32} />
                                     ))}
                                 </div>
-                            ) : (
-                                entry.kind === 'strava' && <LedgerStrava activity={entry.data} metricIcons sketchMaxPoints={32} />
                             )}
                         </div>
 

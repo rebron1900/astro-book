@@ -903,11 +903,17 @@
 /* Strava card：外观与运动页时间线共用，见 blocks/_strava-card.scss */
 .strava-cards {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    /* 默认就是两列：一天只有一条运动时也不拉成一整行宽，和书影音 / 阅读卡片一致 */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.8rem;
 }
-.strava-cards.is-group {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+/* 运动筛选页是单条流水，卡片铺满一行才好看；两列只用于首页那种混合时间线 */
+.timeline-list.is-filter-strava .strava-cards {
+    grid-template-columns: minmax(0, 1fr);
+}
+/* 运动页时间线也保持一张一行（它有自己的月份分组节奏） */
+.timeline-list.ex-timeline .strava-cards {
+    grid-template-columns: minmax(0, 1fr);
 }
 .strava-cards.is-group .strava-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -915,7 +921,7 @@
 }
 
 @media (max-width: 64rem) {
-    .strava-cards.is-group {
+    .strava-cards {
         grid-template-columns: minmax(0, 1fr);
     }
 }
