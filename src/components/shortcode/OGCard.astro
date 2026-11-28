@@ -2,6 +2,8 @@
 // OGCard.astro
 // 用法 1：<OGCard href="https://neodb.social/movie/xxx" />
 // 用法 2：<OGCard text="xxx RE：https://social.1900.live/@1900 yyy" />
+// 豆瓣/NeoDB 卡片样式：只有渲染 OGCard 的页面（文章、友邻、归档、花园）才需要
+import '../../styles/plugins/douban.css';
 import { parse } from 'node-html-parser';
 import { getCachedOG, setCachedOG } from '../../lib/og-cache';
 import { Star } from '@lucide/astro';

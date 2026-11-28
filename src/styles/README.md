@@ -4,14 +4,19 @@
 
 ## 1. 全局层：`src/styles/`（每个页面都会加载）
 
-入口是 `src/styles/book.scss`，`BaseLayout.astro` 引入一次，产物是一份公共 CSS（约 165KB）：
+入口是 `src/styles/book.scss`，`BaseLayout.astro` 引入一次，产物是一份公共 CSS（约 143KB）：
 
 - `_defaults.scss` / `_variables.scss` / `themes/`：设计令牌、主题变量
 - `normalize.css` / `_main.scss` / `_markdown.scss` / `_shortcodes.scss`：基础重置、排版、文章正文
-- `_fonts.scss` / `plugins/`：字体、第三方样式与覆盖（tippy、artalk、medium-zoom 等）
+- `_fonts.scss` / `plugins/`：字体、第三方样式与覆盖（tippy、ghost、medium-zoom 等）
 - `_custom.scss`：主题自有样式（书页框架、侧栏热力图、友邻/活动等**跨页面**的部分已陆续拆出，见下）
 
 只放「几乎每个页面都用到」的东西。这里的每一行都会出现在所有页面的公共 CSS 里，新增前先确认它真的全局。
+
+已经拆出去的：
+
+- `artalk/dist/Artalk.css`（约 37KB）→ `components/islands/Comments.astro`，评论页才加载（首页 / 时间线 / 运动页不再背它）。
+- `plugins/douban.css`（约 15KB）→ `components/shortcode/OGCard.astro`，只有渲染 OG 卡片的页面才加载。
 
 > 固定装饰渐变（`_defaults.scss` 的 `@mixin gradientback`）由 `BaseLayout.astro` 里的 `<div class="page-bg" aria-hidden="true">` 承载。它是 `position: fixed; z-index: 0`：压在 `body` 底色之上、`.container` 正文之下。**不要给它 `view-transition-name`** —— 一旦有名字，过渡期间浏览器会把它的快照画在所有内容之上，表现为「右上角/左下角冒出一块背景色，动画结束又消失」。几何不要绑到 `html.<theme>` 上（主题类是运行时加的，换页有空窗期）。
 

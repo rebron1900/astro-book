@@ -1,4 +1,6 @@
 ---
+// Artalk 评论样式跟着评论区块走：首页/时间线/运动页不渲染评论，不必再为它付 39KB CSS
+import 'artalk/dist/Artalk.css';
 const { postID, countPv = true, showFediverse = true } = Astro.props as { postID?: string; countPv?: boolean; showFediverse?: boolean };
 ---
 

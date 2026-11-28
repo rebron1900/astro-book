@@ -760,11 +760,105 @@ export function decodeRoute(encoded: string): Array<[number, number]> {
     return points;
 }
 
-/** 生成地图用的轨迹索引 { [id]: polyline } */
-export function buildRouteIndex(records: ExerciseRecord[]): Record<string, string> {
+/** Google encoded polyline 编码（精度 1e5，与 decodeRoute 对称） */
+export function encodeRoute(points: ReadonlyArray<readonly [number, number]>): string {
+    let out = '';
+    let prevLat = 0;
+    let prevLng = 0;
+    const encodeValue = (value: number) => {
+        let v = value < 0 ? ~(value << 1) : value << 1;
+        let chunk = '';
+        while (v >= 0x20) {
+            chunk += String.fromCharCode((0x20 | (v & 0x1f)) + 63);
+            v >>= 5;
+        }
+        return chunk + String.fromCharCode(v + 63);
+    };
+    for (const [lng, lat] of points) {
+        const nextLat = Math.round(lat * 1e5);
+        const nextLng = Math.round(lng * 1e5);
+        out += encodeValue(nextLat - prevLat) + encodeValue(nextLng - prevLng);
+        prevLat = nextLat;
+        prevLng = nextLng;
+    }
+    return out;
+}
+
+/**
+ * 轨迹简化容差（米）。
+ * 原始轨迹是每秒一个点，一条 5 公里跑步 1000+ 个点，全量传输 340KB；
+ * 3 米容差能砍掉 80% 的点、肉眼在小地图和 3D 回放里都看不出来
+ * （GPS 本身的抖动就比这个大）。
+ */
+export const ROUTE_SIMPLIFY_TOLERANCE = 3;
+
+/**
+ * Douglas-Peucker 轨迹简化：保端点、按到弦的垂距取舍。
+ * 用等距圆柱近似把经纬度换成米再算距离（几公里范围内误差可以忽略）。
+ */
+export function simplifyRoute(points: ReadonlyArray<readonly [number, number]>, tolerance = ROUTE_SIMPLIFY_TOLERANCE): Array<[number, number]> {
+    if (points.length < 3 || tolerance <= 0) return points.map(([lng, lat]) => [lng, lat] as [number, number]);
+
+    const lat0 = (points[0][1] * Math.PI) / 180;
+    const metersPerLng = 111320 * Math.cos(lat0);
+    const metersPerLat = 110540;
+    const xy = points.map(([lng, lat]) => [lng * metersPerLng, lat * metersPerLat] as [number, number]);
+
+    const keep = new Uint8Array(points.length);
+    keep[0] = 1;
+    keep[points.length - 1] = 1;
+    const stack: Array<[number, number]> = [[0, points.length - 1]];
+
+    while (stack.length) {
+        const [start, end] = stack.pop()!;
+        const [ax, ay] = xy[start];
+        const [bx, by] = xy[end];
+        const dx = bx - ax;
+        const dy = by - ay;
+        const lengthSq = dx * dx + dy * dy;
+        let maxDistance = -1;
+        let maxIndex = -1;
+
+        for (let i = start + 1; i < end; i++) {
+            const [px, py] = xy[i];
+            let distance: number;
+            if (lengthSq === 0) {
+                distance = Math.hypot(px - ax, py - ay);
+            } else {
+                // 投影到弦上，夹在 [0,1] 内就是垂距，否则是到端点的距离
+                const t = Math.min(1, Math.max(0, ((px - ax) * dx + (py - ay) * dy) / lengthSq));
+                distance = Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+            }
+            if (distance > maxDistance) {
+                maxDistance = distance;
+                maxIndex = i;
+            }
+        }
+
+        if (maxIndex !== -1 && maxDistance > tolerance) {
+            keep[maxIndex] = 1;
+            stack.push([start, maxIndex], [maxIndex, end]);
+        }
+    }
+
+    const simplified: Array<[number, number]> = [];
+    for (let i = 0; i < points.length; i++) {
+        if (keep[i]) simplified.push([points[i][0], points[i][1]]);
+    }
+    return simplified.length >= 2 ? simplified : points.map(([lng, lat]) => [lng, lat] as [number, number]);
+}
+
+/** 生成地图用的轨迹索引 { [id]: polyline }（轨迹在这里降采样，页面上只拉这一份） */
+export function buildRouteIndex(records: ExerciseRecord[], tolerance = ROUTE_SIMPLIFY_TOLERANCE): Record<string, string> {
     const index: Record<string, string> = {};
     for (const record of records) {
-        if (record.polyline) index[record.id] = record.polyline;
+        if (!record.polyline) continue;
+        try {
+            index[record.id] = encodeRoute(simplifyRoute(decodeRoute(record.polyline), tolerance));
+        } catch {
+            // 编码异常的轨迹不该拖垮整条接口：原样给出去，地图那边解码失败会自己跳过
+            index[record.id] = record.polyline;
+        }
     }
     return index;
 }

@@ -33,6 +33,7 @@ onPageLoad(() => {
 - `mount.ts`：`onPageLoad()` 页面挂载/清理。
 - `timeline.ts`：首页/时间线页的全部交互（无限滚动、memo 展开、图片堆叠画廊、滚动渐入），`List.astro` 只保留三行挂载代码。
 - `tippy.ts`：`createTippy()` / `destroyAllTippy()`，统一管理 tippy 实例并在导航前销毁。
+- `mapbox-loader.ts`：`loadMapbox()`，mapbox-gl 的 JS+CSS（1.4MB）动态 import 的唯一入口，两个运动地图都从这里拿 `mapboxgl`；不要再静态 `import 'mapbox-gl/dist/mapbox-gl.js'`（只有 `/map/` 页除外）。
 - `dom.ts`：`escapeHtml()` / `prefersReducedMotion()` / `onNextFrame()`。
 - `toc-view-transition.ts`：右侧栏（`.book-toc-content`）的 View Transition 命名时机。侧栏带 `transition:name` 后会独立成组，只在前后两页都有侧栏时保留这个名字，否则（进/出相册、友链这类没有侧栏的宽样式页）并回整页快照，避免侧栏在新页面上闪一下再消失。靠 `astro:before-preparation` 里包装 `event.loader`，在 `startViewTransition` 之前拿到目标文档。
 

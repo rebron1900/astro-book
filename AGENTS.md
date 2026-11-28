@@ -58,7 +58,7 @@
    统一入口：`node scripts/sync-data.mjs ghost,intervals`，`--full` 忽略增量缓存，`--dry-run` 只预览。
 3. 定时任务会同步数据并自动提交 `chore(data): … [skip ci]`（防止循环触发 CI）。不要手动提交数据文件除非确实需要。
 4. **运动数据契约是 `src/lib/activity-types.ts`**（intervals.icu 的 `Activity`，扁平字段）。改字段时同步更新：`src/lib/exercise.ts`（`buildRecords` 等）、`src/lib/intervals.ts`、`src/lib/strava-preview.ts`、`src/api/store.ts`、`exercise.astro`/`exercise-routes.json.ts` 以及测试。旧的 `StravaActivity` 只在历史迁移/测试里保留，不要在新代码里使用。
-5. 运动轨迹不进页面 HTML：`/exercise-routes.json` 只输出 `{ id: polyline }`，地图按需拉取。不要在服务端把 `polyline` 塞进列表数据。
+5. 运动轨迹不进页面 HTML：`/exercise-routes.json` 只输出 `{ id: polyline }`，地图按需拉取；轨迹在这里用 Douglas-Peucker 简到 3 米容差（点降八成、体积 340KB → 67KB），不要再把 `polyline` 塞进列表数据。
 6. 构建期零网络依赖：页面只读本地 JSON；新增外部源必须走 `sync-data.mjs` 落地文件。
 7. **足迹（走过的地方）数据也在构建期拼**：标点来自 `src/data/geojson.json`，游记按 Ghost 的 `#地点-<标点名>` 标签匹配（`src/lib/footprint.ts`）。不要再把 geojson 的 `description` 当游记来源；标签地名和标点名的匹配规则（完全一致 / 双向前缀）改动时同步 `tests/lib/footprint.test.ts`。
 
@@ -68,7 +68,7 @@
 
 四层结构，选哪层取决于「谁需要、什么时候加载」：
 
-1. **全局**：`src/styles/book.scss`（由 `BaseLayout` 引入，每个页面都会加载，约 168KB）。
+1. **全局**：`src/styles/book.scss`（由 `BaseLayout` 引入，每个页面都会加载，约 143KB）。
    - 只放设计令牌、基础排版、跨页面复用的全局样式、第三方覆盖。
    - `_custom.scss` 只保留真正全局的内容；页面专用样式**不要**往里加。
 2. **页面级**：`src/styles/pages/*.scss`，由页面/页面内组件在 frontmatter `import`，只随该页加载：
@@ -112,7 +112,7 @@ onPageLoad(() => {
   - `cards-loader.ts`：第三方卡片脚本按需加载（页面有 `.kg-video-card/.kg-audio-card/.kg-toggle-card` 才拉 chunk）
   - `timeline.ts`：时间线全部交互（无限滚动、memo、图片堆叠画廊、渐入）
   - `footprint-map.ts`：足迹地图控制器（独立 Mapbox 实例、标点聚合、卡片联动）；和 `exercise-map.ts` 互不 import
-- 重依赖（mapbox-gl、artalk、htmx、tippy、cards）不要静态 import 进 `Head.astro`；能动态 `import()` 的就动态加载，并检查 `dist/_astro` 分块。
+- 重依赖（mapbox-gl、artalk、htmx、tippy、cards）不要静态 import 进 `Head.astro`；能动态 `import()` 的就动态加载，并检查 `dist/_astro` 分块。mapbox-gl 统一走 `src/lib/client/mapbox-loader.ts`（地图真正创建时才下载，见 §9）。
 - 客户端模块以 `export default function initXxx()` 为主；共用导出用命名导出。**新代码禁止 `@ts-nocheck`**；历史例外：`cards.ts`（vendored 播放器）、`timeline.ts`（从内联脚本机械搬移，待补类型）、`coco-message.ts`、`LedgerMemo.astro`，后续改动可逐步收窄。
 - 第三方实例（tippy/artalk/Mapbox）必须可销毁；地图控制器要提供 `destroy()`。
 
@@ -144,7 +144,7 @@ onPageLoad(() => {
   - CI 里如果保留 `.astro` 缓存，缓存 key 必须包含 `src/styles/**`、`src/components/**`、`src/layouts/**`、`astro.config.mjs`、`package.json`、`yarn.lock` 等代码/样式指纹（`src/data/**` 可排除，这样纯数据同步还能吃到增量缓存）；否则宁可在 push 构建时加 `astro build --force`。
 
 - 部署：GitHub Actions（`.github/workflows/ci.yml`）→ `rsync dist/` 到 VPS。**不要修改 workflow 里的 secrets / cache key 表达式**（本地看到的是脱敏占位符，改坏会直接破坏部署）。
-- 构建产物体积基线：全局 `BaseLayout.css` ~168KB；运动页 chunk ~38KB；`List.css` ~22KB；mapbox/artalk/htmx 各自独立 chunk。新增静态 import 前先想想是否该动态加载。
+- 构建产物体积基线：全局 `BaseLayout.css` ~143KB（artalk / 豆瓣卡片样式已按组件拆出去，见 §3）；运动页 chunk ~72KB；`List.css` ~22KB；mapbox / artalk / OGCard / htmx 各自独立 chunk。新增静态 import 前先想想是否该动态加载。
 - Astro 配置里的 `vite.build.rollupOptions.manualChunks` 按 `node_modules` 包拆 chunk；不要随意改动。
 
 ---

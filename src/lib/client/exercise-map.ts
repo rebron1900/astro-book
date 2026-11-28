@@ -18,9 +18,9 @@
  * SSR 安全：模块顶层只声明常量与函数，不访问 window / document；
  * 只有 createExerciseMap() 被调用（Solid 的 onMount）之后才会操作 DOM 与地图。
  */
-import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js';
+import type * as MapboxGL from 'mapbox-gl';
 import MapboxLanguage from '@mapbox/mapbox-gl-language';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { loadMapbox, type MapboxAPI } from './mapbox-loader';
 
 import type { ExerciseScope } from '../exercise';
 import { recordsInScope, scopeKey } from '../exercise';
@@ -88,7 +88,9 @@ export { PRIVACY_CITIES } from './exercise-map/constants';
 
 class ExerciseMapInstance implements ExerciseMapController {
     private readonly options: ExerciseMapOptions;
-    private map: mapboxgl.Map | null = null;
+    private map: MapboxGL.Map | null = null;
+    /** mapbox-gl 命名空间（动态 import 得到，地图创建后才可用） */
+    private gl: MapboxAPI | null = null;
     private data: RouteData | null = null;
 
     private scope: ExerciseScope = { kind: 'all' };
@@ -176,9 +178,13 @@ class ExerciseMapInstance implements ExerciseMapController {
             // 触屏设备上关闭单指拖动：手指下滑应该滚页面，而不是把预览地图拖走
             const touchPrimary =
                 typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(hover: none), (pointer: coarse)').matches;
-            mapboxgl.accessToken = this.options.token.trim();
+            // 1.38MB 的 mapbox-gl 到这一步才下载：首屏和换页动画都不再等它
+            const gl = await loadMapbox();
+            if (this.destroyed) return;
+            this.gl = gl;
+            gl.accessToken = this.options.token.trim();
             this.theme = readTheme();
-            this.map = new mapboxgl.Map({
+            this.map = new gl.Map({
                 container: this.options.container,
                 style: MAP_STYLES[this.theme],
                 center: INITIAL_CENTER,
@@ -641,7 +647,7 @@ class ExerciseMapInstance implements ExerciseMapController {
                     'line-blur': 1.5,
                     'line-gradient': gradient
                 }
-            } as mapboxgl.LineLayerSpecification);
+            } as MapboxGL.LineLayerSpecification);
             map.addLayer({
                 id: REPLAY_LAYER,
                 type: 'line',
@@ -652,7 +658,7 @@ class ExerciseMapInstance implements ExerciseMapController {
                     'line-opacity': 0.96,
                     'line-gradient': gradient
                 }
-            } as mapboxgl.LineLayerSpecification);
+            } as MapboxGL.LineLayerSpecification);
             map.addLayer({
                 id: REPLAY_HEAD_LAYER,
                 type: 'circle',
@@ -665,7 +671,7 @@ class ExerciseMapInstance implements ExerciseMapController {
                     'circle-pitch-alignment': 'map',
                     'circle-pitch-scale': 'map'
                 }
-            } as mapboxgl.CircleLayerSpecification);
+            } as MapboxGL.CircleLayerSpecification);
         } catch {
             this.stopReplay(false);
             return;
@@ -842,8 +848,8 @@ class ExerciseMapInstance implements ExerciseMapController {
         if (!map || this.destroyed || !this.styleReady) return;
 
         const ids = this.idsInScope(this.scope);
-        const focusFilter: mapboxgl.FilterSpecification = ids.length ? ['in', ['get', 'id'], ['literal', ids]] : NO_MATCH;
-        const hoverFilter: mapboxgl.FilterSpecification = this.hoverId ? ['==', ['get', 'id'], this.hoverId] : NO_MATCH;
+        const focusFilter: MapboxGL.FilterSpecification = ids.length ? ['in', ['get', 'id'], ['literal', ids]] : NO_MATCH;
+        const hoverFilter: MapboxGL.FilterSpecification = this.hoverId ? ['==', ['get', 'id'], this.hoverId] : NO_MATCH;
 
         this.setLayerFilter(LAYER_BASE, this.baseFilter());
         this.setLayerFilter(LAYER_FOCUS_GLOW, focusFilter);
@@ -852,7 +858,7 @@ class ExerciseMapInstance implements ExerciseMapController {
         this.setLayerFilter(LAYER_HOVER, hoverFilter);
     }
 
-    private setLayerFilter(layer: string, filter: mapboxgl.FilterSpecification | null): void {
+    private setLayerFilter(layer: string, filter: MapboxGL.FilterSpecification | null): void {
         const map = this.map;
         if (!map || this.destroyed) return;
         try {
@@ -1017,7 +1023,7 @@ class ExerciseMapInstance implements ExerciseMapController {
         }
     }
 
-    private baseFilter(): mapboxgl.FilterSpecification | null {
+    private baseFilter(): MapboxGL.FilterSpecification | null {
         const scope = this.scope;
         if (scope.kind !== 'record') return null;
         const record = this.options.records.find((item) => item.id === scope.id);
@@ -1249,7 +1255,7 @@ class ExerciseMapInstance implements ExerciseMapController {
         this.layersBound = true;
     }
 
-    private handleLayerClick = (event: mapboxgl.MapLayerMouseEvent): void => {
+    private handleLayerClick = (event: MapboxGL.MapLayerMouseEvent): void => {
         if (this.destroyed) return;
         const id = event.features?.[0]?.properties?.id;
         if (id === undefined || id === null) return;

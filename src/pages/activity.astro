@@ -16,7 +16,7 @@ import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, BookmarkCheck, CalendarRange
 import ExerciseMapPanel from '../components/islands/ExerciseMapPanel';
 import ExerciseTimeline from '../components/islands/ExerciseTimeline.astro';
 import ExerciseSidebar from '../components/islands/ExerciseSidebar';
-import ExerciseFootprint from '../components/islands/ExerciseFootprint';
+import ExerciseFootprintLoader from '../components/islands/ExerciseFootprintLoader';
 
 // 时间线、运动侧栏、地图卡片的样式都在 exercise.scss 里，必须一起引入，
 // 否则岛里的 .ex-* / .ex-fp-* 结构就是裸的
@@ -166,7 +166,7 @@ const note = `${footprint.stats.places} 个地点 · ${footprint.stats.articles}
 
             <div class="act-mode act-mode--footprint">
                 <div class="act-fp-sentinel" aria-hidden="true"></div>
-                <ExerciseFootprint client:visible data={footprint} token={mapToken} activeMode="footprint" />
+                <ExerciseFootprintLoader client:idle dataUrl="/footprint-data.json" token={mapToken} activeMode="footprint" />
             </div>
         </div>
     </article>

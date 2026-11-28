@@ -177,7 +177,7 @@ export default function ExerciseFootprint(props: ExerciseFootprintProps) {
             onReady: () => setMapError(false),
             onStateChange: (state) => setPitchMode(state.pitchMode)
         });
-        controller.start();
+        void controller.start();
         // 地图可能是「筛选过之后才第一次打开」的，创建后立刻补一次当前筛选
         controller.setFilter(selected());
     };

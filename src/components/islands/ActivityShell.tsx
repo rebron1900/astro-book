@@ -81,7 +81,7 @@ export default function ActivityShell(props: ActivityShellProps) {
                 onError: () => setStatus('地图加载失败，可以稍后再试'),
                 onReady: () => setStatus(null)
             });
-            footprintMap.start();
+            void footprintMap.start();
             footprintMap.setFilter(filterNames);
         }
     };

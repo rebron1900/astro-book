@@ -4,6 +4,8 @@ import {
     buildRecords,
     buildRouteIndex,
     decodeRoute,
+    encodeRoute,
+    simplifyRoute,
     defaultScope,
     formatDistance,
     formatDuration,
@@ -187,6 +189,61 @@ describe('decodeRoute', () => {
 
     it('空串返回空数组', () => {
         expect(decodeRoute('')).toEqual([]);
+    });
+});
+
+describe('encodeRoute / simplifyRoute', () => {
+    it('编码后能原样解回来（精度 1e5）', () => {
+        const points: Array<[number, number]> = [
+            [-120.2, 38.5],
+            [-120.95, 40.7],
+            [-126.453, 43.252]
+        ];
+        const encoded = encodeRoute(points);
+        expect(decodeRoute(encoded)).toEqual(points);
+        // 编解码是对称的：再编一次结果不变
+        expect(encodeRoute(decodeRoute(encoded))).toBe(encoded);
+    });
+
+    it('直线上的中间点被去掉，首尾保留', () => {
+        const points: Array<[number, number]> = [];
+        for (let i = 0; i <= 40; i += 1) points.push([116.4 + i * 0.0001, 39.9 + i * 0.0001]);
+        const simplified = simplifyRoute(points, 1);
+        expect(simplified).toEqual([points[0], points[points.length - 1]]);
+    });
+
+    it('拐弯处不会被砍掉，拐点偏离弦线远大于容差', () => {
+        const points: Array<[number, number]> = [
+            [116.4, 39.9],
+            [116.401, 39.9],
+            [116.401, 39.901],
+            [116.402, 39.901]
+        ];
+        const simplified = simplifyRoute(points, 5);
+        expect(simplified).toHaveLength(4);
+    });
+
+    it('两点 / 空轨迹原样返回，不会简化成一条空线', () => {
+        expect(simplifyRoute([[1, 2], [3, 4]], 5)).toEqual([
+            [1, 2],
+            [3, 4]
+        ]);
+        expect(simplifyRoute([], 5)).toEqual([]);
+    });
+
+    it('buildRouteIndex 输出的轨迹点明显变少、但保留起终点与范围', () => {
+        const dense: Array<[number, number]> = [];
+        for (let i = 0; i <= 200; i += 1) dense.push([116.4 + Math.sin(i / 10) * 0.002, 39.9 + i * 0.00005]);
+        const encoded = encodeRoute(dense);
+        const index = buildRouteIndex([{ ...record({ id: 'r1', date: '2026-10-01' }), polyline: encoded }]);
+        const out = decodeRoute(index['r1']);
+        expect(out.length).toBeLessThan(dense.length / 2);
+        expect(out.length).toBeGreaterThanOrEqual(2);
+        // 坐标按 1e5 取整，端点只允许差小数点后第 5 位
+        expect(out[0][0]).toBeCloseTo(dense[0][0], 5);
+        expect(out[0][1]).toBeCloseTo(dense[0][1], 5);
+        expect(out[out.length - 1][0]).toBeCloseTo(dense[dense.length - 1][0], 5);
+        expect(out[out.length - 1][1]).toBeCloseTo(dense[dense.length - 1][1], 5);
     });
 });
 

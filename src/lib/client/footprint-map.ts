@@ -9,10 +9,10 @@
  *
  * SSR 安全：模块顶层只声明常量与函数，只有 createFootprintMap() 被调用之后才碰 DOM。
  */
-import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js';
+import type * as MapboxGL from 'mapbox-gl';
 import MapboxLanguage from '@mapbox/mapbox-gl-language';
 import Supercluster from 'supercluster';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { loadMapbox, type MapboxAPI } from './mapbox-loader';
 
 import type { FootprintPlace } from '../footprint';
 import {
@@ -67,7 +67,8 @@ export interface FootprintMapOptions {
 }
 
 export interface FootprintMapController {
-    start(): void;
+    /** 异步：首次调用要等 mapbox-gl 下载完（之后共用同一份） */
+    start(): Promise<void>;
     destroy(): void;
     resize(): void;
     /** 飞到某个地点并选中；source 区分卡片聚焦和直接点标点 */
@@ -105,7 +106,7 @@ interface FootprintPointFeature {
 
 /** 一个已渲染的标点实例：缩放时按 key 复用，不整片清空重建 */
 interface MarkerEntry {
-    marker: mapboxgl.Marker;
+    marker: MapboxGL.Marker;
     element: HTMLButtonElement;
     kind: 'place' | 'cluster';
     /** 当前经纬度：聚合点展开时直接用，不依赖 Marker.getLngLat() */
@@ -152,7 +153,9 @@ function appendFocusHalo(element: HTMLElement): void {
 
 class FootprintMapInstance implements FootprintMapController {
     private readonly options: FootprintMapOptions;
-    private map: mapboxgl.Map | null = null;
+    private map: MapboxGL.Map | null = null;
+    /** mapbox-gl 命名空间（动态 import 得到） */
+    private gl: MapboxAPI | null = null;
     private cluster = new Supercluster({ radius: CLUSTER_RADIUS, maxZoom: CLUSTER_MAX_ZOOM });
     private readonly placeById = new Map<string, FootprintPlace>();
     private readonly markerElements = new Map<string, HTMLButtonElement>();
@@ -232,19 +235,27 @@ class FootprintMapInstance implements FootprintMapController {
         this.cluster.load(features as unknown as unknown[]);
     }
 
-    start(): void {
-        if (this.started || this.destroyed) return;
+    start(): Promise<void> {
+        if (this.started || this.destroyed) return Promise.resolve();
         this.started = true;
 
         if (!this.options.token?.trim()) {
             this.options.onError?.();
-            return;
+            return Promise.resolve();
         }
 
+        return this.boot();
+    }
+
+    private async boot(): Promise<void> {
         try {
-            mapboxgl.accessToken = this.options.token.trim();
+            // mapbox-gl 1.38MB：足迹模式第一次真正打开时才下载
+            const gl = await loadMapbox();
+            if (this.destroyed) return;
+            this.gl = gl;
+            gl.accessToken = this.options.token.trim();
             this.theme = readTheme();
-            this.map = new mapboxgl.Map({
+            this.map = new gl.Map({
                 container: this.options.container,
                 style: MAP_STYLES[this.theme],
                 center: INITIAL_CENTER,
@@ -984,7 +995,7 @@ class FootprintMapInstance implements FootprintMapController {
         if (!this.focusMarker) {
             const element = this.buildPlaceElement(place);
             element.classList.add('is-active');
-            const marker = new mapboxgl.Marker({ element, anchor: 'center' }).setLngLat([place.lng, place.lat]).addTo(map);
+            const marker = new this.gl!.Marker({ element, anchor: 'center' }).setLngLat([place.lng, place.lat]).addTo(map);
             this.focusMarker = { marker, element };
         } else {
             this.focusMarker.marker.setLngLat([place.lng, place.lat]);
@@ -1005,7 +1016,7 @@ class FootprintMapInstance implements FootprintMapController {
 
     private createPlaceEntry(place: FootprintPlace, coordinates: [number, number]): MarkerEntry {
         const element = this.buildPlaceElement(place);
-        const marker = new mapboxgl.Marker({ element, anchor: 'center' }).setLngLat(coordinates).addTo(this.map!);
+        const marker = new this.gl!.Marker({ element, anchor: 'center' }).setLngLat(coordinates).addTo(this.map!);
         return { marker, element, kind: 'place', placeId: place.id, lngLat: coordinates };
     }
 
@@ -1089,7 +1100,7 @@ class FootprintMapInstance implements FootprintMapController {
             this.expandClusterEntry(entry);
         });
 
-        entry.marker = new mapboxgl.Marker({ element, anchor: 'center' }).setLngLat(coordinates).addTo(this.map!);
+        entry.marker = new this.gl!.Marker({ element, anchor: 'center' }).setLngLat(coordinates).addTo(this.map!);
         return entry;
     }
 

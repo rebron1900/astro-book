@@ -19,16 +19,14 @@
 @import 'blocks/metric-icons';
 @import 'plugins/ghost';
 @import 'plugins/highlightjs-copy';
-@import 'plugins/douban';
+// 豆瓣 / NeoDB 卡片样式由 OGCard.astro 自己引入（只有文章类页面用到）
 @import 'plugins/hint.min';
 @import 'tippy.js/dist/tippy.css';
 @import 'tippy.js/dist/border.css';
 @import 'tippy.js/animations/shift-away-subtle.css';
 // @import '@tippy.js/dist/tippy';
-// 全局引入 artalk 样式，避免 View Transitions SPA 导航时 CSS 丢失
-@import 'artalk/dist/Artalk.css';
-// @import 'mapbox-gl/dist/mapbox-gl.css';
-// 全局引入 medium-zoom 样式，避免 View Transitions SPA 导航时运行时注入的 <style> 丢失
+// Artalk 评论样式由 Comments.astro 引入：首页 / 时间线 / 运动页没有评论区，不该为它付这份 CSS
+// @import 'mapbox-gl/dist/mapbox-gl.css';// 全局引入 medium-zoom 样式，避免 View Transitions SPA 导航时运行时注入的 <style> 丢失
 @import 'medium-zoom/dist/style.css';
 
 // medium-zoom 默认不设置 z-index；明确保证放大图位于遮罩和页面内容之上。
