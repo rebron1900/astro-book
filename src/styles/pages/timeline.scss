@@ -912,7 +912,9 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.8rem;
 }
-/* 运动页时间线也保持一张一行（它有自己的月份分组节奏） */
+/* 运动筛选页不再单列铺满：沿用默认两列，宽屏时同一天的几条并排，日期栏等时间线几何不变；
+   窄屏（≤64rem）由下面那条规则统一回一张一行。 */
+/* 运动页（运动&足迹）的时间线保持一张一行，它有自己的月份分组节奏 */
 .timeline-list.ex-timeline .strava-cards {
     grid-template-columns: minmax(0, 1fr);
 }
@@ -921,100 +923,9 @@
     column-gap: 0.9rem;
 }
 
-/* 窄屏也保持两列：卡片换成紧凑版（指标单列、只留前四项），
-   否则一张卡就要占满 390 宽的一整行，滚 178 条要翻很久。 */
 @media (max-width: 64rem) {
-    /* 运动筛选页整页改成两列卡片墙：每行只有一张卡，行内两列网格会留下半个空列，
-       所以把网格提到列表这一级，日期从左侧时间轴搬到卡片上方当小标签。 */
-    .timeline-list.is-filter-strava {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        column-gap: 0.6rem;
-        row-gap: 1rem;
-        align-items: start;
-    }
-
-    .timeline-list.is-filter-strava .ledger-row,
-    .timeline-list.is-filter-strava .ledger-row + .ledger-row {
-        display: block;
-        margin-block-start: 0;
-    }
-
-    .timeline-list.is-filter-strava .ledger-row::before,
-    .timeline-list.is-filter-strava .ledger-rail {
-        display: none;
-    }
-
-    .timeline-list.is-filter-strava .ledger-date,
-    .timeline-list.is-filter-strava .ledger-row.is-repeat .ledger-date {
-        flex-direction: row;
-        align-items: baseline;
-        justify-content: flex-start;
-        justify-self: start;
-        gap: 0.3rem;
-        padding: 0 0 0.3rem;
-        text-align: start;
-        visibility: visible;
-    }
-
-    .timeline-list.is-filter-strava .ledger-date .ledger-date-value {
-        font-size: 0.8rem;
-    }
-
-    .timeline-list.is-filter-strava .ledger-date .ledger-weekday {
-        font-size: 0.6875rem;
-    }
-
-    /* 卡片底部那行「2026-10-12 00:06」在这一页与上方日期重复，省掉一行高度 */
-    .timeline-list.is-filter-strava .card-foot {
-        display: none;
-    }
-
     .strava-cards {
         grid-template-columns: minmax(0, 1fr);
-    }
-
-    .timeline-list.is-filter-strava .strava-card {
-        padding: 0.55rem 0.6rem 0.6rem;
-    }
-
-    .timeline-list.is-filter-strava .strava-title-row {
-        gap: 0.28rem;
-    }
-
-    .timeline-list.is-filter-strava .strava-title-row .entry-title {
-        font-size: 0.8rem;
-        line-height: 1.3;
-    }
-
-    .timeline-list.is-filter-strava .strava-sport-icon {
-        inline-size: 0.75rem;
-        block-size: 0.75rem;
-    }
-
-    .timeline-list.is-filter-strava .strava-sport-name {
-        font-size: 0.625rem;
-    }
-
-    /* 指标改成单列（一行一个「标签 数值」），窄卡片里也不会挤出边界 */
-    .timeline-list.is-filter-strava .strava-stats {
-        grid-template-columns: minmax(0, 1fr);
-        column-gap: 0;
-        row-gap: 0.12rem;
-        margin-block-start: 0.4rem;
-    }
-
-    /* 只留前四项（骑行是距离/均速/用时/爬升，徒步是距离/爬升/用时/心率） */
-    .timeline-list.is-filter-strava .strava-stats > div:nth-child(n + 5) {
-        display: none;
-    }
-
-    .timeline-list.is-filter-strava .strava-stats dt {
-        font-size: 0.625rem;
-    }
-
-    .timeline-list.is-filter-strava .strava-stats dd {
-        font-size: 0.7rem;
     }
 }
 
