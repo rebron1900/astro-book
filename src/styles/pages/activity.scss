@@ -336,15 +336,21 @@ body:has(.activity-page[data-activity-mode='footprint']) .act-mode--footprint {
 }
 
 @media screen and (max-width: 47.84rem) {
-    /* 独立足迹页的 is-map-compact 会把地图压到 28svh；合并页需要固定 13rem，
-       所以把 compact 选择器的优先级也一起覆盖掉 */
+    /* 独立足迹页的 is-map-compact 会把地图压到 28svh；合并页固定一个高度，
+       所以把 compact 选择器的优先级也一起覆盖掉。
+       高度取基准窄屏的 15rem：卡片和地图是同一个数，地图才填得满。 */
     .act-mode--footprint .ex-fp-map-wrap,
     .act-mode--footprint .ex-fp.is-map-compact .ex-fp-map-wrap {
-        block-size: 13rem;
+        block-size: 15rem;
+        /* 基准样式给的最小高度也是 15rem；这里显式写一遍，防止和块高不一致时
+           卡片被撑高、地图底下露出一条空白带 */
+        min-block-size: 15rem;
+        max-block-size: 15rem;
     }
 
+    /* 地图填满卡片：高度只由卡片这一处决定，地图不再自己定高 */
     .act-mode--footprint .ex-fp-map {
-        block-size: 13rem;
+        block-size: 100%;
     }
 }
 

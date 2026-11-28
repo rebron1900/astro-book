@@ -301,18 +301,30 @@ const currentId = pathname === '/garden' ? '' : pathname.replace(/^\/garden\//, 
 
     /* 窄屏抽屉：跟着博客左栏那套平铺排版走（见 _main.scss 抽屉一节） */
     @media screen and (max-width: 47.84rem) {
+        /* 品牌与搜索之间要和博客抽屉一致。桌面那份 `margin-block-end: 0` 是为
+           普通块级排版下的外边距合并写的；抽屉里 nav 是 flex，边距不合并，
+           清零后搜索框直接贴在品牌上，比博客抽屉紧了一档。 */
+        .book-menu-content > nav[data-garden='true'] .book-brand {
+            margin-block-end: 0.85rem;
+        }
+
         /* 「配色」到「花园目录」的间距按抽屉里的栏目间距收紧 */
         .book-menu-content > nav[data-garden='true'] .book-theme {
             margin-block: 0 0.3rem;
         }
 
+        /* 博客抽屉里「配色 → 路线牌」是 0.3rem + 0.9rem 两个外边距合并后的 0.9rem；
+           flex 下会相加，所以标题这边只补 0.6rem，合计仍是 0.9rem。 */
         .book-menu-content > nav[data-garden='true'] .garden-explorer-head {
+            margin-block-start: 0.6rem;
             padding-block: 0.7rem 0.25rem;
         }
 
+        /* 标题和博客抽屉的栏目标题（.book-section-flat > span）同高：
+           字号、内边距一致，行高也对齐到它的 1.15，整块 30.8px。 */
         .book-menu-content > nav[data-garden='true'] .garden-explorer-title {
             font-size: 0.85rem;
-            line-height: 1.4;
+            line-height: 1.15;
         }
 
         /* 树每层只缩进一小档：296px 的抽屉里深目录也读得清 */
@@ -321,11 +333,17 @@ const currentId = pathname === '/garden' ? '' : pathname.replace(/^\/garden\//, 
         }
 
         /* 「返回博客」在窄屏里跟其它导航行完全一致：
-           不要那条只有它有的分隔线，行高/缩进由 _main.scss 那套平铺行接管 */
+           不要那条只有它有的分隔线，行高/缩进由 _main.scss 那套平铺行接管。
+           它前面留一档模块间距（0.9rem），和「配色 → 花园目录」同一档。 */
         .book-menu-content > nav[data-garden='true'] .garden-return-nav {
-            margin-block-start: 0.35rem;
+            margin-block-start: 0.9rem;
             padding-block-start: 0;
             border-block-start: 0;
+        }
+
+        /* 「关于本站」也是一块，跟「返回博客」同样留一档间距 */
+        .book-menu-content > nav[data-garden='true'] .book-copy-wrap {
+            margin-block-start: 0.9rem;
         }
 
         /* 窄屏抽屉跟博客左栏走同一套：整栏一起滚，不把目录树框成独立滚动区。
