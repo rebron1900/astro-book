@@ -1,5 +1,21 @@
 [
   {
+    "id": "30089",
+    "type": "movie",
+    "title": "河狸变身计划",
+    "meta": "2026 · 动画",
+    "overview": "梅宝是一位对动物世界充满好奇的年轻女孩，她利用先进的意识上传技术，将自己的思维注入一只机械河狸体内。以这种独特的形态，梅宝结识了河狸王国的乔治国王等动物伙伴。然而，一个由房地产开发计划带来的威胁，正试图破坏动物们的栖息地。梅宝与她的新朋友们联手，利用机械河狸的能力和人类的智慧，共同对抗这个危机，守护动物们的家园。",
+    "minutes": 96,
+    "rating": 8.1,
+    "seriesRating": null,
+    "seriesOverview": null,
+    "played": true,
+    "playedPercent": 100,
+    "lastPlayedAt": 1795839292000,
+    "imageTag": "b037bcc0f206ab00bd77aeefca515154_639252152711400000",
+    "cover": "/emby-cover/30089.jpg"
+  },
+  {
     "id": "40802",
     "type": "episode",
     "title": "不着边际的你",
@@ -550,13 +566,13 @@
     "episodeTitle": "慕兰之战25",
     "overview": "韩立以紫罗极火压制慕兰神秘灯焰，钟吾拜见毕神师，鬼灵门所谋为何？",
     "minutes": 21,
-    "rating": null,
+    "rating": 6.5,
     "seriesRating": 8.5,
     "seriesOverview": "看机智的凡人小子韩立如何稳健发展、步步为营，战魔道、夺至宝、驰骋星海、快意恩仇，成为纵横三界的强者。他日仙界重相逢，一声道友尽沧桑。",
     "played": true,
     "playedPercent": 100,
     "lastPlayedAt": 1795240976000,
-    "imageTag": "e7f300a466485ffc482fca8e050e0d8c_639308786028325305",
+    "imageTag": "e7f300a466485ffc482fca8e050e0d8c_639314333188832518",
     "cover": "/emby-cover/7795.jpg"
   },
   {
@@ -565,6 +581,7 @@
     "title": "光阴之外",
     "episodeCode": "S01E49",
     "episodeTitle": "六",
+    "overview": "许青带人搜捕叶鸠余党时，言言主动出手帮忙，并当众宣称自己是许青的未婚妻。她要求捕凶司的兄弟们以后都要叫她“嫂子”，却被从天而降的黄一坤直接打断，为了谈好许青，直接把黄一坤拎到许青面前，掰断剩余两指送给了许青。。。",
     "minutes": 22,
     "rating": null,
     "seriesRating": 9.4,
@@ -572,7 +589,7 @@
     "played": false,
     "playedPercent": 86,
     "lastPlayedAt": 1795240354000,
-    "imageTag": "2ccfa8c61fcacaf2ede408faf62f2486_639308769144807534",
+    "imageTag": "2ccfa8c61fcacaf2ede408faf62f2486_639314299370359755",
     "cover": "/emby-cover/7782.jpg"
   },
   {
@@ -589,7 +606,7 @@
     "played": true,
     "playedPercent": 100,
     "lastPlayedAt": 1795239212000,
-    "imageTag": "4f0b15ae4cf8175ab14ad8055e502da5_639308769126021213",
+    "imageTag": "4f0b15ae4cf8175ab14ad8055e502da5_639314299331397905",
     "cover": "/emby-cover/7782.jpg"
   },
   {
@@ -947,13 +964,13 @@
     "episodeTitle": "慕兰之战24",
     "overview": "紫灵揭秘坠魔谷秘辛，邀韩立同行。",
     "minutes": 19,
-    "rating": 7,
+    "rating": 6.5,
     "seriesRating": 8.5,
     "seriesOverview": "看机智的凡人小子韩立如何稳健发展、步步为营，战魔道、夺至宝、驰骋星海、快意恩仇，成为纵横三界的强者。他日仙界重相逢，一声道友尽沧桑。",
     "played": true,
     "playedPercent": 100,
     "lastPlayedAt": 1794843147000,
-    "imageTag": "d8792ac2676bea4024ce2dc46b749a42_639308786015208741",
+    "imageTag": "d8792ac2676bea4024ce2dc46b749a42_639314333146790578",
     "cover": "/emby-cover/7795.jpg"
   },
   {
@@ -970,7 +987,7 @@
     "played": true,
     "playedPercent": 100,
     "lastPlayedAt": 1794841385000,
-    "imageTag": "2f9909f921bbb187f27474794b8ea8a7_639308785990123432",
+    "imageTag": "2f9909f921bbb187f27474794b8ea8a7_639314333115869151",
     "cover": "/emby-cover/7795.jpg"
   },
   {
@@ -1140,7 +1157,7 @@
     "played": false,
     "playedPercent": 87,
     "lastPlayedAt": 1794633824000,
-    "imageTag": "12ca1333e5112787771372d4220f9e28_639308769109593888",
+    "imageTag": "12ca1333e5112787771372d4220f9e28_639314299279595446",
     "cover": "/emby-cover/7782.jpg"
   },
   {
@@ -1543,7 +1560,7 @@
     "played": false,
     "playedPercent": 86,
     "lastPlayedAt": 1793598026000,
-    "imageTag": "af454c74e6698461fdb3da2d2338ccca_639308769089345712",
+    "imageTag": "af454c74e6698461fdb3da2d2338ccca_639314299235393348",
     "cover": "/emby-cover/7782.jpg"
   },
   {
@@ -1577,7 +1594,7 @@
     "played": true,
     "playedPercent": 100,
     "lastPlayedAt": 1793542411000,
-    "imageTag": "b5094dffe6deebe8d942fa6f7c784f16_639308785974418433",
+    "imageTag": "b5094dffe6deebe8d942fa6f7c784f16_639314333077947401",
     "cover": "/emby-cover/7795.jpg"
   },
   {
@@ -2099,7 +2116,7 @@
     "played": false,
     "playedPercent": 87,
     "lastPlayedAt": 1792938361000,
-    "imageTag": "bdd9c1fc5e3673ca32cd14c39de44427_639308769071455297",
+    "imageTag": "bdd9c1fc5e3673ca32cd14c39de44427_639314299189631175",
     "cover": "/emby-cover/7782.jpg"
   },
   {
@@ -2116,7 +2133,7 @@
     "played": false,
     "playedPercent": 87,
     "lastPlayedAt": 1792937287000,
-    "imageTag": "17eab6fb117c3f8dafab6bbdf8f3168d_639308768506029337",
+    "imageTag": "17eab6fb117c3f8dafab6bbdf8f3168d_639314298241226125",
     "cover": "/emby-cover/7782.jpg"
   },
   {
@@ -2181,7 +2198,7 @@
     "played": true,
     "playedPercent": 100,
     "lastPlayedAt": 1792853036000,
-    "imageTag": "fab8d5a785aa84eefa8e18dd8dd75ecf_639308785960848793",
+    "imageTag": "fab8d5a785aa84eefa8e18dd8dd75ecf_639314333024565865",
     "cover": "/emby-cover/7795.jpg"
   },
   {
