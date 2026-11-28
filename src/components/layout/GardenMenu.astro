@@ -334,9 +334,10 @@ const currentId = pathname === '/garden' ? '' : pathname.replace(/^\/garden\//, 
 
         /* 「返回博客」在窄屏里跟其它导航行完全一致：
            不要那条只有它有的分隔线，行高/缩进由 _main.scss 那套平铺行接管。
-           它前面留一档模块间距（0.9rem），和「配色 → 花园目录」同一档。 */
+           它前面的目录树自带 0.3rem 下边距，这里再补 0.6rem，
+           合计和「配色 → 花园目录」同一档（0.9rem）。 */
         .book-menu-content > nav[data-garden='true'] .garden-return-nav {
-            margin-block-start: 0.9rem;
+            margin-block-start: 0.6rem;
             padding-block-start: 0;
             border-block-start: 0;
         }
