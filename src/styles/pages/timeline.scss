@@ -801,6 +801,11 @@
     -webkit-line-clamp: 2;
 }
 
+/* 没有短评时的回退文案（作品简介）：不是自己说的话，颜色淡一档，也不加引号 */
+.neodb-card .excerpt.is-brief {
+    color: color-mix(in srgb, var(--body-font-color) 74%, transparent);
+}
+
 .kicker {
     color: var(--gray-500);
     font-size: 0.6875rem;

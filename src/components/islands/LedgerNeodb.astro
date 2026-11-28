@@ -10,6 +10,9 @@ const category = categoryMap[mark.item.category] ?? mark.item.category;
 const action = actionMap[mark.item.category] ?? '记录';
 const rating = Number(mark.rating_grade);
 const hasRating = rating > 0;
+/** 自己的短评优先；没有就回退到作品简介（同步时补进 item.brief），卡片不至于只剩一个标题 */
+const comment = typeof mark.comment_text === 'string' ? mark.comment_text.trim() : '';
+const brief = typeof mark.item.brief === 'string' ? mark.item.brief.trim() : '';
 const href = `/golink?target=${btoa(encodeURIComponent(mark.item.id ?? `https://neodb.social${mark.item.url}`))}`;
 ---
 
@@ -29,6 +32,13 @@ const href = `/golink?target=${btoa(encodeURIComponent(mark.item.id ?? `https://
         <h2 class="entry-title">
             <a href={href}>{title}<span class="ext">↗</span></a>
         </h2>
-        {mark.comment_text && <p class="excerpt">“{mark.comment_text}”</p>}
+        {comment ? (
+            <p class="excerpt">“{comment}”</p>
+        ) : (
+            brief && (
+                /* 回退：没有短评时展示作品简介，不加引号，和「我说的」区分开 */
+                <p class="excerpt is-brief">{brief}</p>
+            )
+        )}
     </div>
 </div>

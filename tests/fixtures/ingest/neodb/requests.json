@@ -1,3 +1,4 @@
 [
-  "GET https://neodb.test/me/shelf/complete?page=1"
+  "GET https://neodb.test/me/shelf/complete?page=1",
+  "GET https://neodb.test/movie/u-101"
 ]

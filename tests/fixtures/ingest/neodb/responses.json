@@ -50,6 +50,26 @@
           }
         }
       ]
+    },
+    "GET https://neodb.test/movie/u-101": {
+      "id": "https://neodb.test/movie/u-101",
+      "uuid": "u-101",
+      "category": "movie",
+      "type": "Movie",
+      "title": "Item 101",
+      "display_title": "Item 101",
+      "url": "/movie/u-101",
+      "api_url": "/api/movie/u-101",
+      "parent_uuid": null,
+      "cover_image_url": null,
+      "localized_title": [],
+      "external_resources": [],
+      "brief": "一百零一号的作品简介。",
+      "description": "更长的描述，不该被用上。",
+      "credits": [],
+      "tags": [
+        "demo"
+      ]
     }
   }
 }

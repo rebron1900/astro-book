@@ -21,7 +21,8 @@ export const meta = {
 };
 
 // NeoDB 条目消费字段（douban 页）
-const NEODB_ITEM_FIELDS = ['id', 'title', 'category', 'cover_image_url', 'url', 'uuid', 'localized_title', 'type'];
+// brief：没有短评的标记用它当卡片的回退文案（作品简介），同步时按需从条目接口补齐
+const NEODB_ITEM_FIELDS = ['id', 'title', 'category', 'cover_image_url', 'url', 'uuid', 'localized_title', 'type', 'brief'];
 const NEODB_MARK_FIELDS = ['post_id', 'shelf', 'type', 'title', 'comment_text', 'rating_grade', 'item', 'created_time', 'visibility'];
 
 function pick(obj, fields) {
@@ -75,6 +76,93 @@ export function trimNeodb(data, previousItems = new Map()) {
 
 function neodbKey(mark) {
     return String(mark?.post_id ?? `${mark?.item?.uuid || ''}|${mark?.created_time || ''}`);
+}
+
+/** 简介最多存这么多字：卡片只露两行，多存的只给悬停提示用 */
+const BRIEF_MAX = 240;
+
+/** 把简介压成一行、截到上限；空白返回 undefined */
+export function normalizeBrief(text) {
+    if (typeof text !== 'string') return undefined;
+    const flat = text.replace(/\s+/g, ' ').trim();
+    if (!flat) return undefined;
+    return flat.length > BRIEF_MAX ? `${flat.slice(0, BRIEF_MAX).trimEnd()}…` : flat;
+}
+
+/**
+ * NeoDB 给部分条目只填了一句「film directed by X」这种占位简介：
+ * 篇幅很短、句式就是「谁拍的/谁写的」，当卡片文案没信息量，不如不显示。
+ */
+const STUB_BRIEF = /^(?:a\s+)?(?:film|movie|tv\s*(?:series|show)|book|novel|album|podcast|game)\b[^。.!?]{0,40}?\b(?:directed|written|created|produced|by)\b/i;
+
+/** 从 brief / description 里挑一段能用的简介；都是占位台词就返回 undefined */
+export function pickBriefText(brief, description) {
+    const candidates = [normalizeBrief(brief), normalizeBrief(description)];
+    const usable = (text) => Boolean(text) && !(text.length < 90 && STUB_BRIEF.test(text));
+    const [shortBrief, desc] = candidates;
+    const briefOk = usable(shortBrief);
+    const descOk = usable(desc);
+    // brief 只是一句话、description 更长时用 description
+    if (briefOk && !(descOk && shortBrief.length < 80 && desc.length > shortBrief.length + 40)) return shortBrief;
+    if (descOk) return desc;
+    return undefined;
+}
+
+/** 判断一个已存的简介是不是占位台词（回填脚本用它清理旧数据） */
+export function isStubBrief(text) {
+    const flat = normalizeBrief(text);
+    return Boolean(flat) && flat.length < 90 && STUB_BRIEF.test(flat);
+}
+
+/**
+ * 没有短评的标记，补一段作品简介当卡片回退文案。
+ *
+ * 走 NeoDB 公开的条目接口（不需要 token），已经有 brief 的不再请求——
+ * 增量同步时只有新标记会发请求。失败只记数不抛出：简介是锦上添花，
+ * 不该让整个书影音同步因此失败。
+ */
+export async function enrichBriefs(marks, { apiBase, fetchJson, log }, { gapMs = 120, attempts = 2 } = {}) {
+    const targets = marks.filter((mark) => !String(mark?.comment_text ?? '').trim() && mark?.item?.uuid && !mark.item.brief);
+    if (targets.length === 0) return 0;
+
+    const fetchDetail = async (category, uuid) =>
+        fetchJson(`${apiBase}/${encodeURIComponent(category)}/${encodeURIComponent(uuid)}`, { headers: { Accept: 'application/json', 'User-Agent': 'astro-book-sync' } }, 20000);
+
+    let filled = 0;
+    let failed = 0;
+    for (const mark of targets) {
+        const { category, uuid } = mark.item;
+        let brief;
+        let parentUuid;
+        for (let attempt = 1; attempt <= attempts && !brief; attempt += 1) {
+            try {
+                const detail = await fetchDetail(category, uuid);
+                brief = pickBriefText(detail?.brief, detail?.description);
+                parentUuid = typeof detail?.parent_uuid === 'string' ? detail.parent_uuid : undefined;
+            } catch {
+                // 都重试一次：上游偶发超时/限流，单条失败不影响整体
+                if (attempt < attempts) await new Promise((resolve) => setTimeout(resolve, 500));
+            }
+        }
+        // 季（TVSeason）本身没有简介，作品简介写在父级剧集上
+        if (!brief && parentUuid) {
+            try {
+                const parent = await fetchDetail(category, parentUuid);
+                brief = pickBriefText(parent?.brief, parent?.description);
+            } catch {
+                // 父级取不到就当没有简介
+            }
+        }
+        if (brief) {
+            mark.item.brief = brief;
+            filled += 1;
+        } else {
+            failed += 1;
+        }
+        if (gapMs > 0) await new Promise((resolve) => setTimeout(resolve, gapMs));
+    }
+    log?.(`[neodb] 简介补齐：需要 ${targets.length} 条，补上 ${filled} 条${failed ? `，失败 ${failed} 条` : ''}`);
+    return filled;
 }
 
 export async function collect(ctx) {
@@ -143,6 +231,9 @@ export async function collect(ctx) {
     const deduped = [...new Map(merged.map((mark) => [neodbKey(mark), mark])).values()];
     deduped.sort((a, b) => new Date(b.created_time).getTime() - new Date(a.created_time).getTime());
     ctx.log(`[neodb] ${fullSync ? '全量' : '增量'}同步：拉取 ${fetched.length} 条，合并后 ${deduped.length} 条`);
+
+    // 没有短评的条目补一段简介当卡片回退（已有 brief / 上一版已补过的不会重复请求）
+    await enrichBriefs(deduped, { apiBase, fetchJson: ctx.fetchJson, log: ctx.log });
 
     return { outputs: [{ dataset: 'neodb.marks', data: { data: trimNeodb(deduped, previousItems) }, complete: true }] };
 }
